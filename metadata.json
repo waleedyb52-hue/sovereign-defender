@@ -1,0 +1,8 @@
+{
+  "name": "Sovereign Defender v7.0 Core Efficiency & Advanced Telemetry",
+  "description": "منظومة مركز عمليات الأمن السيبراني والدفاع السيادي v7.0 - خريطة التهديدات العالمية ثلاثية الأبعاد (3D Global Threat Heatmap) بحساب مسارات الدائرة العظمى (Haversine & Bezier Trajectories)، التصنيف البايزي الآلي (Bayesian Risk Scoring)، التجميع المكاني K-Means للشاشات الجدارية (SOC Wall Kiosk)، ومحرك eBPF XDP للعزل الفوري.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
+

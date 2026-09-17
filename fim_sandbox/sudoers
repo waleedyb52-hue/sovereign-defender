@@ -1,0 +1,6 @@
+# /etc/sudoers - Sovereign Defender Base Security Policy
+root ALL=(ALL:ALL) ALL
+%admin ALL=(ALL) ALL
+%sudo ALL=(ALL:ALL) ALL
+Defaults env_reset, timestamp_timeout=15
+Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

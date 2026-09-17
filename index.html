@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sovereign Defender v7.0 Core Efficiency & Advanced Telemetry | مركز عمليات الأمن السيبراني والدفاع السيادي</title>
+    <meta name="description" content="منظومة مركز عمليات الأمن السيبراني والدفاع السيادي v7.0 - خريطة التهديدات العالمية ثلاثية الأبعاد (3D Global Threat Heatmap) بحساب مسارات الدائرة العظمى (Haversine & Bezier Trajectories)، التصنيف البايزي الآلي (Bayesian Risk Scoring)، التجميع المكاني K-Means للشاشات الجدارية (SOC Wall Kiosk)، ومحرك eBPF XDP للعزل الفوري." />
+    <meta property="og:title" content="Sovereign Defender v7.0 Core Efficiency & Advanced Telemetry | مركز عمليات الأمن السيبراني والدفاع السيادي" />
+    <meta property="og:description" content="منظومة مركز عمليات الأمن السيبراني والدفاع السيادي v7.0 - خريطة التهديدات العالمية ثلاثية الأبعاد (3D Global Threat Heatmap) بحساب مسارات الدائرة العظمى (Haversine & Bezier Trajectories)، التصنيف البايزي الآلي (Bayesian Risk Scoring)، التجميع المكاني K-Means للشاشات الجدارية (SOC Wall Kiosk)، ومحرك eBPF XDP للعزل الفوري." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      window.addEventListener('unhandledrejection', function(event) {
+        if (
+          event.reason?.message?.includes('WebSocket') ||
+          event.reason?.includes?.('WebSocket') ||
+          String(event.reason || '').includes('WebSocket') ||
+          String(event.reason || '').includes('websocket')
+        ) {
+          event.preventDefault();
+        }
+      });
+
+      window.addEventListener('error', function(event) {
+        var msg = (event.message || '') + ' ' + (event.error?.message || '');
+        if (msg.includes('WebSocket') || msg.includes('websocket')) {
+          event.preventDefault();
+        }
+      });
+
+      (function() {
+        var origConsoleError = console.error;
+        console.error = function() {
+          var first = arguments[0];
+          if (
+            typeof first === 'string' &&
+            (first.includes('[vite] failed to connect to websocket') ||
+             first.includes('WebSocket closed without opened'))
+          ) {
+            return;
+          }
+          return origConsoleError.apply(console, arguments);
+        };
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#050505] text-[#EAEAEA] antialiased font-['Cairo',sans-serif]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

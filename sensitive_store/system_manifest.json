@@ -1,0 +1,24 @@
+{
+  "manifestVersion": "1.0",
+  "generatedAt": "2026-09-10T15:53:26.603Z",
+  "services": [
+    {
+      "name": "sovereign-api",
+      "version": "4.0.0",
+      "port": 3000,
+      "integrity": "sha256-pinned"
+    },
+    {
+      "name": "telemetry-bus",
+      "version": "2.3.1",
+      "port": 9090,
+      "integrity": "sha256-pinned"
+    }
+  ],
+  "protectedPaths": [
+    "/etc/passwd",
+    "/etc/shadow",
+    "/opt/sovereign"
+  ],
+  "rotationPolicyDays": 30
+}

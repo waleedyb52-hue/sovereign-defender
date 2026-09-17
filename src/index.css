@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-root: #050505;
+    --surface-panel: #121212;
+    --border-subtle: #2A2A2A;
+    --text-primary: #EAEAEA;
+    --text-secondary: #888888;
+    --threat-safe: #39FF14;
+    --threat-critical: #FF003C;
+    --threat-warning: #FFB000;
+  }
+
+  html, body, #root {
+    background-color: #050505 !important;
+    color: #EAEAEA;
+    min-height: 100vh;
+  }
+
+  body {
+    font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #EAEAEA;
+  }
+
+  /* Force Monospace for all IP addresses, hashes, timestamps, logs, and numerical data */
+  code, pre, .font-mono, [data-mono="true"] {
+    font-family: 'Fira Code', 'Roboto Mono', 'Courier New', monospace !important;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Strict Pitch Black Theme Helper Utilities */
+.pitch-black-bg {
+  background-color: #050505 !important;
+}
+
+.pitch-black-surface {
+  background-color: #121212 !important;
+  border: 1px solid #2A2A2A !important;
+}
+
+.pitch-black-border {
+  border-color: #2A2A2A !important;
+}
+
+.text-primary-offwhite {
+  color: #EAEAEA !important;
+}
+
+.text-muted-gray {
+  color: #888888 !important;
+}
+
+.text-cyber-green {
+  color: #39FF14 !important;
+}
+
+.bg-cyber-green {
+  background-color: #39FF14 !important;
+}
+
+.border-cyber-green {
+  border-color: #39FF14 !important;
+}
+
+.text-crimson-red {
+  color: #FF003C !important;
+}
+
+.bg-crimson-red {
+  background-color: #FF003C !important;
+}
+
+.border-crimson-red {
+  border-color: #FF003C !important;
+}
+
+.text-amber-warning {
+  color: #FFB000 !important;
+}
+
+.bg-amber-warning {
+  background-color: #FFB000 !important;
+}
+
+.border-amber-warning {
+  border-color: #FFB000 !important;
+}
