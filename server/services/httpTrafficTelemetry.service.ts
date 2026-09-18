@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { GoogleGenAI } from '@google/genai';
+import { cloudAiApiKey } from '../aiPolicy.js';
 import { globalUnifiedTelemetryService } from './unifiedTelemetry.service';
 
 export type TrafficCategory =
@@ -863,7 +864,7 @@ export class HttpTrafficTelemetryService {
 
     // Try Gemini Deep Analysis if API key is present
     try {
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = cloudAiApiKey();
       if (apiKey && (isPhpScript || isPolyglot)) {
         const ai = new GoogleGenAI({ apiKey });
         const response = await ai.models.generateContent({

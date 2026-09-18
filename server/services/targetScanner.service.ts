@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from '@google/genai';
+import { cloudAiApiKey } from '../aiPolicy.js';
 import crypto from 'crypto';
 
 export interface HeaderCheckResult {
@@ -61,10 +62,10 @@ export class TargetSecurityScannerService {
   }
 
   private initAiClient() {
-    if (process.env.GEMINI_API_KEY) {
+    if (cloudAiApiKey()) {
       try {
         this.aiClient = new GoogleGenAI({
-          apiKey: process.env.GEMINI_API_KEY,
+          apiKey: cloudAiApiKey(),
           httpOptions: {
             headers: {
               'User-Agent': 'aistudio-build'

@@ -116,6 +116,15 @@ export class RealEbpfBridge {
    * Helper: Convert dotted-decimal IPv4 string (e.g. "194.26.29.112") to
    * Little-Endian 4-byte hex string array required by bpftool map commands.
    */
+  /**
+   * Validates a Linux network interface name. The kernel caps names at
+   * IFNAMSIZ-1 (15) chars and they contain no shell metacharacters; enforcing
+   * this makes the value safe to pass to the `ip` binary as an argv element.
+   */
+  public static isValidInterfaceName(iface: unknown): iface is string {
+    return typeof iface === 'string' && /^[A-Za-z0-9._-]{1,15}$/.test(iface);
+  }
+
   public ipToHexBytes(ip: string): string[] {
     const octets = ip.trim().split('.').map(o => parseInt(o, 10));
     if (octets.length !== 4 || octets.some(isNaN)) {
@@ -299,6 +308,15 @@ export class RealEbpfBridge {
     iface: string = 'eth0',
     mode: 'xdpdrv' | 'xdpgeneric' = 'xdpdrv'
   ): Promise<{ success: boolean; message: string; mode: string }> {
+    // SECURITY: iface and mode arrive from network input. Validate strictly and
+    // use execFile with an argument array so no value is ever interpreted by a
+    // shell (prevents command injection, e.g. iface = "eth0; rm -rf /").
+    if (!RealEbpfBridge.isValidInterfaceName(iface)) {
+      return { success: false, message: `Rejected: invalid interface name '${iface}'.`, mode: this.driverMode };
+    }
+    if (mode !== 'xdpdrv' && mode !== 'xdpgeneric') {
+      return { success: false, message: `Rejected: invalid XDP mode '${mode}'.`, mode: this.driverMode };
+    }
     const objPath = path.resolve(process.cwd(), 'ebpf/xdp_drop.o');
     if (!fs.existsSync(objPath)) {
       return {
@@ -309,8 +327,7 @@ export class RealEbpfBridge {
     }
 
     try {
-      const cmd = `ip link set dev ${iface} ${mode} obj ${objPath} sec xdp`;
-      await execPromise(cmd);
+      await execFilePromise('ip', ['link', 'set', 'dev', iface, mode, 'obj', objPath, 'sec', 'xdp'], { timeout: 5000 });
       this.defaultInterface = iface;
       this.driverMode = mode === 'xdpdrv' ? 'XDP_NATIVE_DRV' : 'XDP_GENERIC_SKB';
       this.stats.driverMode = this.driverMode;
@@ -334,8 +351,11 @@ export class RealEbpfBridge {
    * Detaches XDP program from a network interface
    */
   public async detachInterface(iface: string = 'eth0'): Promise<{ success: boolean; message: string }> {
+    if (!RealEbpfBridge.isValidInterfaceName(iface)) {
+      return { success: false, message: `Rejected: invalid interface name '${iface}'.` };
+    }
     try {
-      await execPromise(`ip link set dev ${iface} xdp off`);
+      await execFilePromise('ip', ['link', 'set', 'dev', iface, 'xdp', 'off'], { timeout: 5000 });
       return { success: true, message: `Detached XDP program from ${iface}.` };
     } catch (err: any) {
       return { success: false, message: `Detachment failed: ${err.message}` };

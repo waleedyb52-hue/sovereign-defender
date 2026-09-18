@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { GoogleGenAI } from '@google/genai';
+import { cloudAiApiKey } from '../aiPolicy.js';
 import { globalUnifiedTelemetryService } from './unifiedTelemetry.service';
 import { globalFimService } from './fim.service';
 
@@ -71,9 +72,9 @@ export class ThreatLabsService {
   private genAI: GoogleGenAI | null = null;
 
   constructor() {
-    if (process.env.GEMINI_API_KEY) {
+    if (cloudAiApiKey()) {
       try {
-        this.genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        this.genAI = new GoogleGenAI({ apiKey: cloudAiApiKey() });
       } catch (err) {
         console.warn('ThreatLabs Gemini init warning:', err);
       }

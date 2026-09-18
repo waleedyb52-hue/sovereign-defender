@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { GoogleGenAI } from '@google/genai';
+import { cloudAiApiKey } from '../aiPolicy.js';
 import { globalUnifiedTelemetryService } from './unifiedTelemetry.service';
 
 export interface ForensicProcess {
@@ -161,9 +162,9 @@ export class BlueTeamForensicsService {
   private packetFrameCounter = 1000;
 
   constructor() {
-    if (process.env.GEMINI_API_KEY) {
+    if (cloudAiApiKey()) {
       try {
-        this.genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        this.genAI = new GoogleGenAI({ apiKey: cloudAiApiKey() });
       } catch (err) {
         console.warn('Forensics Gemini init warning:', err);
       }

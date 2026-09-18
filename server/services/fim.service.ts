@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { GoogleGenAI, Type } from '@google/genai';
+import { cloudAiApiKey } from '../aiPolicy.js';
 
 export interface FimAlert {
   id: string;
@@ -63,6 +64,43 @@ export class FileIntegrityMonitoringService {
     this.initAiClient();
     this.initSandbox();
     this.startWatcher();
+  }
+
+  // ==========================================
+  // PATH SAFETY (anti-symlink / anti-TOCTOU) & BINARY-SAFE INTEGRITY
+  // ==========================================
+
+  /**
+   * Rejects a path that is a symlink or that escapes the sandbox root.
+   *
+   * FIM operates on a fixed sandbox tree; an attacker who plants a symlink
+   * inside it (or races a rename) could otherwise steer a privileged
+   * rename/write/chmod at an arbitrary target (classic TOCTOU). We refuse to
+   * follow symlinked leaves and confirm the resolved real path stays contained.
+   */
+  private isSafeSandboxPath(absPath: string): boolean {
+    try {
+      const base = fs.realpathSync(this.sandboxDir);
+      if (fs.existsSync(absPath) && fs.lstatSync(absPath).isSymbolicLink()) {
+        return false; // never operate through a symlink
+      }
+      const real = fs.existsSync(absPath) ? fs.realpathSync(absPath) : path.resolve(absPath);
+      const rel = path.relative(base, real);
+      return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Binary-safe integrity read: hashes the raw bytes so tampering is detected
+   * byte-accurately even for non-text payloads, while returning a UTF-8 view
+   * used for human-readable diffs of the (text) protected corpus.
+   */
+  private computeIntegrity(absPath: string): { text: string; hash: string } {
+    const bytes = fs.readFileSync(absPath);
+    const hash = crypto.createHash('sha256').update(bytes).digest('hex');
+    return { text: bytes.toString('utf-8'), hash };
   }
 
   // ==========================================
@@ -130,10 +168,10 @@ export class FileIntegrityMonitoringService {
   }
 
   private initAiClient() {
-    if (process.env.GEMINI_API_KEY) {
+    if (cloudAiApiKey()) {
       try {
         this.aiClient = new GoogleGenAI({
-          apiKey: process.env.GEMINI_API_KEY,
+          apiKey: cloudAiApiKey(),
           httpOptions: {
             headers: {
               'User-Agent': 'aistudio-build'
@@ -210,8 +248,7 @@ ENABLE_EBPF_OFFLOADING=true
         if (!fs.existsSync(filePath)) {
           fs.writeFileSync(filePath, file.content, 'utf-8');
         }
-        const currentContent = fs.readFileSync(filePath, 'utf-8');
-        const hash = crypto.createHash('sha256').update(currentContent).digest('hex');
+        const { text: currentContent, hash } = this.computeIntegrity(filePath);
         this.snapshots.set(filePath, {
           content: currentContent,
           hash,
@@ -293,11 +330,16 @@ ENABLE_EBPF_OFFLOADING=true
     if (!exists) return;
 
     try {
-      const stats = fs.statSync(filePath);
-      if (stats.isDirectory()) return;
+      // TOCTOU / symlink guard: never follow a symlinked leaf or a path that
+      // resolves outside the sandbox, even if fs.watch fired for that name.
+      if (!this.isSafeSandboxPath(filePath)) {
+        console.warn('[FIM] Refused unsafe path (symlink or escape):', filePath);
+        return;
+      }
+      const stats = fs.lstatSync(filePath);
+      if (stats.isDirectory() || stats.isSymbolicLink()) return;
 
-      const currentContent = fs.readFileSync(filePath, 'utf-8');
-      const currentHash = crypto.createHash('sha256').update(currentContent).digest('hex');
+      const { text: currentContent, hash: currentHash } = this.computeIntegrity(filePath);
 
       if (!snapshot) {
         // Newly created file
@@ -597,6 +639,10 @@ Evaluate if this modification contains a Web Shell, Backdoor, Sudoers Privilege 
 
     try {
       if (fs.existsSync(alert.filePath)) {
+        // Refuse to relocate through a symlink or a path that escaped the sandbox.
+        if (!this.isSafeSandboxPath(alert.filePath)) {
+          return { success: false, message: 'Quarantine refused: path is a symlink or resolves outside the sandbox.' };
+        }
         const quarantineName = `${alert.fileName}.${Date.now()}.isolated`;
         const destPath = path.join(this.quarantineDir, quarantineName);
 
@@ -633,6 +679,10 @@ Evaluate if this modification contains a Web Shell, Backdoor, Sudoers Privilege 
     }
 
     try {
+      // Refuse to write through a symlink or outside the sandbox (TOCTOU guard).
+      if (fs.existsSync(alert.filePath) && !this.isSafeSandboxPath(alert.filePath)) {
+        return { success: false, message: 'Rollback refused: path is a symlink or resolves outside the sandbox.' };
+      }
       fs.writeFileSync(alert.filePath, snapshot.content, 'utf-8');
       alert.status = 'ROLLEDBACK';
       return {
