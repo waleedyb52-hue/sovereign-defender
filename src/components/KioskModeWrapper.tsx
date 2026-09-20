@@ -115,7 +115,7 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({
 
           <button
             onClick={onExitKiosk}
-            className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#181818] border border-[#1e2733] hover:border-[#f85149] hover:text-[#f85149] transition text-xs font-bold"
+            className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#1a2230] border border-[#1e2733] hover:border-[#f85149] hover:text-[#f85149] transition text-xs font-bold"
             title="Press Esc to Exit"
           >
             <Minimize2 className="w-3.5 h-3.5" />
@@ -147,7 +147,7 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({
             {[...logs.map(l => ({ ...l, loopSegment: 'alpha', itemUuid: crypto.randomUUID() })), ...logs.map(l => ({ ...l, loopSegment: 'beta', itemUuid: crypto.randomUUID() }))].map((log) => (
               <div
                 key={`kiosk-ticker-${log.itemUuid}`}
-                className="flex items-center gap-2.5 text-xs text-[#e6edf3] bg-[#181818] px-3 py-1 rounded border border-[#1e2733]"
+                className="flex items-center gap-2.5 text-xs text-[#e6edf3] bg-[#1a2230] px-3 py-1 rounded border border-[#1e2733]"
               >
                 <span className="text-[10px] text-[#93a1b3]">{log.timestamp}</span>
                 <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#f85149]/20 text-[#f85149] border border-[#f85149]/40">

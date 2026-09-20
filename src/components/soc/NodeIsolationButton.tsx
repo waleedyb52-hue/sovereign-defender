@@ -158,13 +158,13 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
             : isolationStatus === 'error'
             ? 'bg-[#131a24] text-[#f85149] border-[#f85149] shadow-[0_0_12px_rgba(255,0,60,0.3)]'
             : isIsolating
-            ? 'bg-[#131a24] text-[#d29922] border-[#d29922]/70'
+            ? 'bg-[#131a24] text-[#fab219] border-[#fab219]/70'
             : 'bg-[#131a24] hover:bg-[#1f0a0e] text-[#f85149] border-[#f85149]/80 hover:border-[#f85149] shadow-[0_0_8px_rgba(255,0,60,0.2)]'
         } ${className}`}
       >
         {/* State Indicator Icon */}
         {isIsolating ? (
-          <Loader2 className="w-3.5 h-3.5 text-[#d29922] animate-spin flex-shrink-0" />
+          <Loader2 className="w-3.5 h-3.5 text-[#fab219] animate-spin flex-shrink-0" />
         ) : isAlreadyIsolated ? (
           <Undo2 className="w-3.5 h-3.5 text-[#3fb950] flex-shrink-0" />
         ) : isolationStatus === 'success' ? (

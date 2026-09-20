@@ -1052,8 +1052,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('sovereign_phases')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'sovereign_phases'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <ShieldAlert className={`w-3.5 h-3.5 ${subTab === 'sovereign_phases' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1066,8 +1066,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('traffic_waf')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'traffic_waf'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Activity className={`w-3.5 h-3.5 ${subTab === 'traffic_waf' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1080,8 +1080,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('ebpf_containment')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'ebpf_containment'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Zap className={`w-3.5 h-3.5 ${subTab === 'ebpf_containment' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1094,8 +1094,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('deception_sandbox')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'deception_sandbox'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Flame className={`w-3.5 h-3.5 ${subTab === 'deception_sandbox' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1108,8 +1108,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('fim')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'fim'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <FileCheck className={`w-3.5 h-3.5 ${subTab === 'fim' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1124,8 +1124,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('interception')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'interception'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#DC143C] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#DC143C] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <ShieldOff className={`w-3.5 h-3.5 ${subTab === 'interception' ? 'text-[#DC143C]' : 'text-[#93a1b3]'}`} />
@@ -1138,8 +1138,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('deception_grid')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'deception_grid'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#8A2BE2] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#8A2BE2] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Drama className={`w-3.5 h-3.5 ${subTab === 'deception_grid' ? 'text-[#8A2BE2]' : 'text-[#93a1b3]'}`} />
@@ -1152,8 +1152,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('telemetry')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'telemetry'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Radio className={`w-3.5 h-3.5 ${subTab === 'telemetry' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1166,8 +1166,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('threat_timeline')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'threat_timeline'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Clock className={`w-3.5 h-3.5 ${subTab === 'threat_timeline' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1180,8 +1180,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('scanner')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'scanner'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Crosshair className={`w-3.5 h-3.5 ${subTab === 'scanner' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1193,8 +1193,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('processes')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'processes'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Cpu className={`w-3.5 h-3.5 ${subTab === 'processes' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1207,8 +1207,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('rules_engine')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'rules_engine'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <FileCode className={`w-3.5 h-3.5 ${subTab === 'rules_engine' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1220,8 +1220,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('network_pcap')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'network_pcap'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Wifi className={`w-3.5 h-3.5 ${subTab === 'network_pcap' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1233,8 +1233,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('threat_intel')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'threat_intel'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <Globe className={`w-3.5 h-3.5 ${subTab === 'threat_intel' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />
@@ -1247,8 +1247,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('playbooks_reports')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'playbooks_reports'
-              ? 'bg-[#181818] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
-              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
+              ? 'bg-[#1a2230] text-[#e6edf3] border-t-2 border-[#3fb950] border-x border-[#1e2733]'
+              : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] bg-[#0D0D0D] border-t border-x border-[#1e2733]'
           }`}
         >
           <FileText className={`w-3.5 h-3.5 ${subTab === 'playbooks_reports' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`} />

@@ -40,7 +40,7 @@
   --color-rose-600:    #da3633;
   --color-amber-300:   #e9c46a;
   --color-amber-400:   #dbab3a;
-  --color-amber-500:   #d29922;
+  --color-amber-500:   #fab219;
   --color-emerald-300: #6fd08a;
   --color-emerald-400: #56b96a;
   --color-emerald-500: #3fb950;
@@ -62,7 +62,7 @@
 
     /* Severity tokens (three-colour system) */
     --sev-critical: #f85149;
-    --sev-warning: #d29922;
+    --sev-warning: #fab219;
     --sev-safe: #3fb950;
     --sev-info: #58a6ff;
   }
@@ -120,7 +120,7 @@
 }
 .sev-warning {
   border-left: 3px solid var(--sev-warning);
-  background: linear-gradient(90deg, rgba(210, 153, 34, 0.07), transparent 55%);
+  background: linear-gradient(90deg, rgba(250, 178, 25, 0.07), transparent 55%);
 }
 .sev-safe {
   border-left: 3px solid var(--sev-safe);
@@ -133,7 +133,7 @@
   border-right: 3px solid currentColor;
 }
 [dir="rtl"] .sev-critical { border-right-color: var(--sev-critical); background: linear-gradient(-90deg, rgba(248, 81, 73, 0.07), transparent 55%); }
-[dir="rtl"] .sev-warning  { border-right-color: var(--sev-warning);  background: linear-gradient(-90deg, rgba(210, 153, 34, 0.07), transparent 55%); }
+[dir="rtl"] .sev-warning  { border-right-color: var(--sev-warning);  background: linear-gradient(-90deg, rgba(250, 178, 25, 0.07), transparent 55%); }
 [dir="rtl"] .sev-safe     { border-right-color: var(--sev-safe);     background: linear-gradient(-90deg, rgba(63, 185, 80, 0.06), transparent 55%); }
 
 /* Reserved for an ACTIVE critical incident only. */

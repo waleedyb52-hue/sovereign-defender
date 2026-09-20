@@ -29,6 +29,10 @@ import { SystemComplianceReport } from './components/SystemComplianceReport';
 import { KillChainPanel } from './components/soc/KillChainPanel';
 import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
 import { IncidentQueue } from './components/soc/IncidentQueue';
+import { PostureStrip } from './components/soc/PostureStrip';
+import { SecurityAnalyticsRow } from './components/soc/SecurityAnalyticsRow';
+import { MitreMatrix } from './components/soc/MitreMatrix';
+import { AttackPathGraph } from './components/soc/AttackPathGraph';
 import {
   INITIAL_INTEL_METRICS,
   INITIAL_NETWORK_EDGES,
@@ -579,56 +583,25 @@ export default function App() {
           <div className="flex-1 flex flex-col justify-start max-w-[1600px] mx-auto w-full py-2 space-y-5">
             {/* Posture strip — four numbers a reviewer reads first. Quiet by
                 default; only a live critical count carries colour. */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="soc-panel p-4">
-                <div className="soc-label">{isAr ? 'حجم الحركة الواردة' : 'Ingress throughput'}</div>
-                <div className="mt-2 flex items-baseline gap-2 font-mono">
-                  <span className="text-2xl font-bold text-slate-100 tabular-nums">48.2</span>
-                  <span className="text-xs text-slate-400">Gbps</span>
-                </div>
-                <div className="text-[11px] text-slate-500 font-mono mt-1">1.24M pps</div>
-              </div>
-
-              <div className="soc-panel p-4 sev-critical">
-                <div className="soc-label">{isAr ? 'تهديدات نشطة' : 'Active threats'}</div>
-                <div className="mt-2 flex items-baseline gap-2 font-mono">
-                  <span className="text-2xl font-bold text-rose-400 tabular-nums">
-                    {systemStatus.totalThreatsBlocked > 0 ? (systemStatus.totalThreatsBlocked % 30) + 12 : 14}
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-500 mt-1">
-                  {isAr ? 'قيد الاحتواء الآلي' : 'Under automatic containment'}
-                </div>
-              </div>
-
-              <div className="soc-panel p-4">
-                <div className="soc-label">{isAr ? 'الحظر في النواة' : 'Kernel mitigation'}</div>
-                <div className="mt-2 flex items-baseline gap-2 font-mono">
-                  <span className="text-2xl font-bold text-emerald-400 tabular-nums">99.98</span>
-                  <span className="text-xs text-slate-400">%</span>
-                </div>
-                <div className="text-[11px] text-slate-500 font-mono mt-1">
-                  {systemStatus.totalThreatsBlocked} {isAr ? 'حزمة مُسقطة' : 'dropped'}
-                </div>
-              </div>
-
-              <div className="soc-panel p-4">
-                <div className="soc-label">{isAr ? 'وضع الدفاع' : 'Defense posture'}</div>
-                <div className="mt-2 text-base font-bold text-slate-100">
-                  {flightMode === 'AUTOPILOT' ? (isAr ? 'ذاتي التشغيل' : 'Autonomous') : (isAr ? 'إشراف بشري' : 'Supervised')}
-                </div>
-                <div className="text-[11px] text-slate-500 font-mono mt-1">XDP · L2–L7 · Zero-Trust</div>
-              </div>
-            </div>
+            <PostureStrip lang={lang} flightMode={flightMode} threatsBlocked={systemStatus.totalThreatsBlocked} />
 
             {/* Triage first. Mature consoles lead with the prioritised queue —
                 the analyst works a list, and opens a picture only once a row
                 earns it. This is the working surface of the platform. */}
             <IncidentQueue lang={lang} />
 
+            {/* What the traffic is doing, where it comes from, how it is absorbed. */}
+            <SecurityAnalyticsRow lang={lang} />
+
+            {/* Coverage: the canonical MITRE view a security reviewer looks for. */}
+            <MitreMatrix lang={lang} />
+
             {/* The attack line: how far an adversary got, and which control
                 owns each stage of the chain. */}
             <KillChainPanel lang={lang} />
+
+            {/* The same story as a relationship path: actor -> controls -> assets. */}
+            <AttackPathGraph lang={lang} stoppedAt={1} actorIp="194.26.29.112" />
 
             {/* Protection stack: what stops what, and where. */}
             <DefenseLayersPanel lang={lang} />

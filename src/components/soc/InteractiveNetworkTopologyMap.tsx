@@ -408,7 +408,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
               <div className="flex items-center gap-2.5">
                 <div className={`p-2 rounded border ${
                   selectedNode.status === 'UNDER_ATTACK' ? 'bg-[#0d1117] text-[#f85149] border-[#f85149]' :
-                  selectedNode.status === 'SUSPICIOUS' ? 'bg-[#0d1117] text-[#d29922] border-[#d29922]' :
+                  selectedNode.status === 'SUSPICIOUS' ? 'bg-[#0d1117] text-[#fab219] border-[#fab219]' :
                   selectedNode.status === 'ISOLATED' ? 'bg-[#0d1117] text-[#93a1b3] border-[#93a1b3]' :
                   'bg-[#0d1117] text-[#3fb950] border-[#3fb950]'
                 }`}>
@@ -423,7 +423,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
               </div>
               <button
                 onClick={() => setIsDrillDownOpen(false)}
-                className="p-1 rounded text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#181818]"
+                className="p-1 rounded text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#1a2230]"
               >
                 <X className="w-5 h-5" />
               </button>

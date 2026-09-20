@@ -320,7 +320,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
             <button
               onClick={() => setIsPinned(!isPinned)}
               title={isPinned ? (isAr ? 'إلغاء التثبيت' : 'Unpin sidebar') : (isAr ? 'تثبيت الشريط' : 'Pin sidebar')}
-              className="p-1 rounded hover:bg-[#181818] hover:text-[#e6edf3] text-[#7d8590] transition"
+              className="p-1 rounded hover:bg-[#1a2230] hover:text-[#e6edf3] text-[#7d8590] transition"
             >
               {isExpanded ? (
                 isAr ? (
@@ -336,7 +336,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
 
           {/* Section 1: Navigation Tabs */}
           <div className="p-2 space-y-1">
-            <div className={`px-2 py-1 text-[9px] font-bold text-[#555555] uppercase tracking-widest ${isExpanded ? 'block' : 'hidden'}`}>
+            <div className={`px-2 py-1 text-[9px] font-bold text-[#6b7a90] uppercase tracking-widest ${isExpanded ? 'block' : 'hidden'}`}>
               {isAr ? 'طرق العرض المركزة' : 'FOCUSED VIEWS'}
             </div>
 
@@ -350,7 +350,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
                   title={isAr ? item.labelAr : item.labelEn}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono transition-all duration-150 relative group ${
                     isActive
-                      ? 'bg-[#181818] text-[#e6edf3] border border-[#2E2E2E]'
+                      ? 'bg-[#1a2230] text-[#e6edf3] border border-[#2E2E2E]'
                       : 'text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#131a24] border border-transparent'
                   }`}
                 >
@@ -397,7 +397,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
 
           {/* Section 2: Tactical Actions (Moved out of top bar) */}
           <div className="p-2 space-y-1">
-            <div className={`px-2 py-1 text-[9px] font-bold text-[#555555] uppercase tracking-widest ${isExpanded ? 'block' : 'hidden'}`}>
+            <div className={`px-2 py-1 text-[9px] font-bold text-[#6b7a90] uppercase tracking-widest ${isExpanded ? 'block' : 'hidden'}`}>
               {isAr ? 'إجراءات الدفاع التكتيكي' : 'TACTICAL DEFENSE'}
             </div>
 
@@ -452,12 +452,12 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
               title={isAr ? 'إغلاق شامل للشبكة (Zero-Trust)' : 'Zero-Trust Emergency Lockdown'}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono transition group relative ${
                 isLockdownActive
-                  ? 'bg-[#181818] text-[#3fb950] border border-[#3fb950]/40 shadow-[0_0_10px_rgba(57,255,20,0.15)]'
+                  ? 'bg-[#1a2230] text-[#3fb950] border border-[#3fb950]/40 shadow-[0_0_10px_rgba(57,255,20,0.15)]'
                   : 'text-[#93a1b3] hover:text-[#f85149] hover:bg-[#150a0c] border border-transparent hover:border-[#f85149]/30'
               }`}
             >
               {isLockingDown ? (
-                <Loader2 className="w-4 h-4 shrink-0 animate-spin text-[#d29922]" />
+                <Loader2 className="w-4 h-4 shrink-0 animate-spin text-[#fab219]" />
               ) : (
                 <AlertOctagon
                   className={`w-4 h-4 shrink-0 transition-colors ${
@@ -571,7 +571,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
           {pendingApprovalsCount > 0 && onOpenApprovalModal && (
             <button
               onClick={onOpenApprovalModal}
-              className="w-full mb-1.5 flex items-center gap-2 px-2.5 py-1.5 rounded bg-[#181818] text-[#d29922] border border-[#d29922]/40 text-xs font-mono"
+              className="w-full mb-1.5 flex items-center gap-2 px-2.5 py-1.5 rounded bg-[#1a2230] text-[#fab219] border border-[#fab219]/40 text-xs font-mono"
             >
               <UserCheck className="w-4 h-4 shrink-0" />
               {isExpanded && (
@@ -586,7 +586,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
           <div className="flex items-center gap-2 px-2 py-1 text-[10px] text-[#7d8590]">
             <span
               className={`w-2 h-2 rounded-full shrink-0 ${
-                flightMode === 'AUTOPILOT' ? 'bg-[#3fb950]' : 'bg-[#d29922]'
+                flightMode === 'AUTOPILOT' ? 'bg-[#3fb950]' : 'bg-[#fab219]'
               }`}
             />
             {isExpanded && (
@@ -664,7 +664,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
                 disabled={isQuarantining}
                 className="px-4 py-1.5 rounded-lg bg-[#131a24] hover:bg-[#1c080c] text-[#f85149] border border-[#f85149] text-xs font-mono font-bold flex items-center gap-1.5 disabled:opacity-50"
               >
-                {isQuarantining ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#d29922]" /> : <Ban className="w-3.5 h-3.5" />}
+                {isQuarantining ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#fab219]" /> : <Ban className="w-3.5 h-3.5" />}
                 <span>{isQuarantining ? (isAr ? 'جاري العزل...' : 'Enforcing...') : (isAr ? 'تنفيذ العزل (eBPF)' : 'Enforce Quarantine')}</span>
               </button>
             </div>

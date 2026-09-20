@@ -78,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="flex items-center gap-2">
             <span className="font-bold text-xs text-[#e6edf3] tracking-wider">SOVEREIGN DEFENDER</span>
-            <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-[#141414] text-[#93a1b3] border border-[#262626]">
+            <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-[#131a24] text-[#93a1b3] border border-[#1e2733]">
               v7.0 eBPF
             </span>
           </div>
@@ -90,7 +90,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>RIYADH CORE NODE (24.71°N, 46.67°E)</span>
           <span className="text-[#333333]">•</span>
           <div className="flex items-center gap-1 text-[#93a1b3]">
-            <Clock className="w-3 h-3 text-[#555555]" />
+            <Clock className="w-3 h-3 text-[#6b7a90]" />
             <span className="font-mono">{currentTime}</span>
           </div>
         </div>
@@ -99,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-2 sm:gap-2.5">
           
           {/* Flight Mode Pill */}
-          <div className="flex items-center p-0.5 rounded-md bg-[#131a24] border border-[#222222] text-[11px]">
+          <div className="flex items-center p-0.5 rounded-md bg-[#131a24] border border-[#1e2733] text-[11px]">
             <button
               type="button"
               onClick={() => onToggleFlightMode('AUTOPILOT')}
@@ -120,7 +120,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               title={isAr ? 'وضع الموافقة اليدوية' : 'Manual Approval Mode'}
               className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold transition ${
                 flightMode === 'MANUAL_APPROVAL'
-                  ? 'bg-[#1A1A1A] text-[#d29922]'
+                  ? 'bg-[#1A1A1A] text-[#fab219]'
                   : 'text-[#7d8590] hover:text-[#AAAAAA]'
               }`}
             >
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {flightMode === 'MANUAL_APPROVAL' && pendingApprovalsCount > 0 && (
             <button
               onClick={onOpenApprovalModal}
-              className="flex items-center gap-1 px-2 py-1 rounded bg-[#1A1505] text-[#d29922] text-[11px] font-bold border border-[#d29922]/40 transition animate-pulse"
+              className="flex items-center gap-1 px-2 py-1 rounded bg-[#1a2230] text-[#fab219] text-[11px] font-bold border border-[#fab219]/35 hover:border-[#fab219]/60 transition"
             >
               <UserCheck className="w-3 h-3" />
               <span>{pendingApprovalsCount}</span>
@@ -144,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onOpenAlertModal}
             title={isAr ? 'إعدادات التنبيهات' : 'Alert Configuration'}
-            className="p-1.5 rounded-md bg-[#131a24] hover:bg-[#181818] text-[#93a1b3] hover:text-[#e6edf3] border border-[#222222] transition"
+            className="p-1.5 rounded-md bg-[#131a24] hover:bg-[#1a2230] text-[#93a1b3] hover:text-[#e6edf3] border border-[#1e2733] transition"
           >
             <Bell className="w-3.5 h-3.5" />
           </button>
@@ -154,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onLaunchKiosk}
               title={isAr ? 'عرض الشاشة الجدارية (SOC Wall Display)' : 'SOC Wall Kiosk Display'}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#131a24] hover:bg-[#181818] text-[#3fb950] text-[11px] font-bold border border-[#3fb950]/40 hover:border-[#3fb950] transition"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1a2230] hover:bg-[#22303f] text-[#3fb950] text-[11px] font-bold border border-[#3fb950]/35 hover:border-[#3fb950]/60 transition"
             >
               <Maximize2 className="w-3 h-3" />
               <span className="hidden sm:inline">{isAr ? 'شاشة الجدار' : 'SOC Wall'}</span>
@@ -166,7 +166,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onLaunchWarGames}
               title={isAr ? 'إطلاق مناورات الحرب السيبرانية (VIP MoD Simulation)' : 'Launch MoD War Games Simulation'}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#180508] hover:bg-[#25070C] text-[#f85149] text-[11px] font-bold border border-[#f85149]/60 hover:border-[#f85149] shadow-[0_0_12px_rgba(255,0,60,0.25)] transition"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#1a2230] hover:bg-[#22303f] text-[#f85149] text-[11px] font-bold border border-[#f85149]/40 hover:border-[#f85149]/70 transition"
             >
               <Flame className="w-3 h-3 text-[#f85149] animate-pulse" />
               <span className="hidden sm:inline">{isAr ? 'مناورات الدفاع' : 'MoD War Games'}</span>
@@ -176,7 +176,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Language Toggle */}
           <button
             onClick={() => setLang(isAr ? 'en' : 'ar')}
-            className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#131a24] hover:bg-[#181818] text-[11px] text-[#93a1b3] hover:text-[#e6edf3] border border-[#222222] transition"
+            className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#131a24] hover:bg-[#1a2230] text-[11px] text-[#93a1b3] hover:text-[#e6edf3] border border-[#1e2733] transition"
           >
             <Globe className="w-3 h-3 text-[#7d8590]" />
             <span>{isAr ? 'EN' : 'عربي'}</span>
@@ -186,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onRefresh}
             title={isAr ? 'تحديث الحالة' : 'Sync Telemetry'}
-            className="p-1.5 rounded-md bg-[#131a24] hover:bg-[#181818] text-[#7d8590] hover:text-[#e6edf3] border border-[#222222] transition"
+            className="p-1.5 rounded-md bg-[#131a24] hover:bg-[#1a2230] text-[#7d8590] hover:text-[#e6edf3] border border-[#1e2733] transition"
           >
             <RefreshCw className="w-3 h-3" />
           </button>

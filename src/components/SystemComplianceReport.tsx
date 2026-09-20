@@ -148,13 +148,13 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
             <button
               onClick={handlePrintCertificate}
               title={isAr ? 'طباعة الشهادة الرسمية' : 'Print Official Certificate'}
-              className="p-2 rounded-lg bg-[#181818] hover:bg-[#252525] border border-[#2E2E2E] text-[#AAAAAA] hover:text-white transition"
+              className="p-2 rounded-lg bg-[#1a2230] hover:bg-[#252525] border border-[#2E2E2E] text-[#AAAAAA] hover:text-white transition"
             >
               <Printer className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg bg-[#181818] hover:bg-[#252525] border border-[#2E2E2E] text-[#93a1b3] hover:text-white transition"
+              className="p-2 rounded-lg bg-[#1a2230] hover:bg-[#252525] border border-[#2E2E2E] text-[#93a1b3] hover:text-white transition"
             >
               <X className="w-5 h-5" />
             </button>
@@ -189,7 +189,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
               className={`flex items-center gap-2 px-3 py-2 text-xs rounded-lg border transition ${
                 is10kInjected
                   ? 'bg-[#f85149]/15 border-[#f85149]/40 text-[#f85149]'
-                  : 'bg-[#181818] hover:bg-[#222222] border-[#1e2733] text-[#CCCCCC]'
+                  : 'bg-[#1a2230] hover:bg-[#1e2733] border-[#1e2733] text-[#CCCCCC]'
               }`}
             >
               <Activity className="w-3.5 h-3.5 text-[#3fb950]" />
@@ -212,7 +212,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
           )}
 
           {/* Navigation Sub-Tabs */}
-          <div className="flex items-center gap-1 bg-[#141414] p-1 rounded-lg border border-[#222222]">
+          <div className="flex items-center gap-1 bg-[#131a24] p-1 rounded-lg border border-[#1e2733]">
             <button
               onClick={() => setActiveTab('overview')}
               className={`px-3 py-1 text-xs rounded-md font-medium transition ${
@@ -278,7 +278,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
               {/* Top Level Metric Summary Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Card 1: Zero-Trust Integrity */}
-                <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4 relative overflow-hidden">
+                <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-[#3fb950]/5 rounded-full blur-2xl" />
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] uppercase tracking-wider text-[#93a1b3]">
@@ -300,7 +300,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                 </div>
 
                 {/* Card 2: MoD Operational Readiness */}
-                <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4 relative overflow-hidden">
+                <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-[#00FFCC]/5 rounded-full blur-2xl" />
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] uppercase tracking-wider text-[#93a1b3]">
@@ -322,13 +322,13 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                 </div>
 
                 {/* Card 3: WebGL 10,000 Vector Performance */}
-                <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#d29922]/5 rounded-full blur-2xl" />
+                <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#fab219]/5 rounded-full blur-2xl" />
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] uppercase tracking-wider text-[#93a1b3]">
                       {isAr ? 'محرك WebGL (10,000 مسار)' : 'WebGL 10k Rendering'}
                     </span>
-                    <Activity className="w-4 h-4 text-[#d29922]" />
+                    <Activity className="w-4 h-4 text-[#fab219]" />
                   </div>
                   <div className="text-2xl font-bold text-white flex items-center gap-2">
                     <span>60 FPS</span>
@@ -344,7 +344,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                 </div>
 
                 {/* Card 4: Volumetric eBPF Mitigation */}
-                <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4 relative overflow-hidden">
+                <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-[#3fb950]/5 rounded-full blur-2xl" />
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] uppercase tracking-wider text-[#93a1b3]">
@@ -406,8 +406,8 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                   {/* Standards Compliance Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* NIST SP 800-207 Pillar Checklist */}
-                    <div className="bg-[#131a24] border border-[#222222] rounded-xl p-5 space-y-4">
-                      <div className="flex items-center justify-between border-b border-[#222222] pb-3">
+                    <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-5 space-y-4">
+                      <div className="flex items-center justify-between border-b border-[#1e2733] pb-3">
                         <div className="flex items-center gap-2">
                           <Lock className="w-5 h-5 text-[#3fb950]" />
                           <h4 className="text-sm font-bold text-white">NIST SP 800-207 Architecture</h4>
@@ -418,7 +418,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                         {(report?.nistArchitecture?.pillars || []).map((pillar: any) => (
                           <div
                             key={`nist-pillar-${(pillar.nameEn || '').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${pillar.score || '100'}`}
-                            className="flex items-start gap-3 p-2.5 rounded-lg bg-[#161616] border border-[#262626]"
+                            className="flex items-start gap-3 p-2.5 rounded-lg bg-[#161616] border border-[#1e2733]"
                           >
                             <CheckCircle2 className="w-4 h-4 text-[#3fb950] shrink-0 mt-0.5" />
                             <div>
@@ -431,8 +431,8 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                     </div>
 
                     {/* MoD Readiness Benchmarks Table */}
-                    <div className="bg-[#131a24] border border-[#222222] rounded-xl p-5 space-y-4">
-                      <div className="flex items-center justify-between border-b border-[#222222] pb-3">
+                    <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-5 space-y-4">
+                      <div className="flex items-center justify-between border-b border-[#1e2733] pb-3">
                         <div className="flex items-center gap-2">
                           <ShieldCheck className="w-5 h-5 text-[#00FFCC]" />
                           <h4 className="text-sm font-bold text-white">MoD Readiness (SCDS-2026-V9)</h4>
@@ -443,7 +443,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                         {(report?.modOperationalReadiness?.benchmarks || []).map((bench: any) => (
                           <div
                             key={`mod-benchmark-${(bench.metricEn || '').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}`}
-                            className="flex items-center justify-between p-2.5 rounded-lg bg-[#161616] border border-[#262626] text-xs"
+                            className="flex items-center justify-between p-2.5 rounded-lg bg-[#161616] border border-[#1e2733] text-xs"
                           >
                             <div>
                               <div className="font-bold text-white">{isAr ? bench.metricAr || bench.metricEn : bench.metricEn}</div>
@@ -466,7 +466,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
               {/* View 2: Zero-Trust & Penetration Audit Logs */}
               {activeTab === 'zerotrust' && (
                 <div className="space-y-5">
-                  <div className="flex items-center justify-between bg-[#131a24] p-4 rounded-xl border border-[#222222]">
+                  <div className="flex items-center justify-between bg-[#131a24] p-4 rounded-xl border border-[#1e2733]">
                     <div>
                       <h4 className="text-sm font-bold text-white flex items-center gap-2">
                         <Lock className="w-4 h-4 text-[#3fb950]" />
@@ -485,8 +485,8 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                   </div>
 
                   {/* Audit Test Table */}
-                  <div className="border border-[#222222] rounded-xl overflow-hidden bg-[#101010]">
-                    <div className="grid grid-cols-12 bg-[#181818] px-4 py-2.5 text-xs font-bold text-[#93a1b3] border-b border-[#222222]">
+                  <div className="border border-[#1e2733] rounded-xl overflow-hidden bg-[#101010]">
+                    <div className="grid grid-cols-12 bg-[#1a2230] px-4 py-2.5 text-xs font-bold text-[#93a1b3] border-b border-[#1e2733]">
                       <div className="col-span-2">ID & MITRE</div>
                       <div className="col-span-4">{isAr ? 'نوع الهجوم الافتراضي' : 'Simulated Attack Vector'}</div>
                       <div className="col-span-4">{isAr ? 'الأدلة والتحقق' : 'Auditor Evidence'}</div>
@@ -523,7 +523,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                     </div>
                   </div>
 
-                  <div className="p-4 bg-[#141414] border border-[#222222] rounded-xl text-xs text-[#93a1b3] space-y-2">
+                  <div className="p-4 bg-[#131a24] border border-[#1e2733] rounded-xl text-xs text-[#93a1b3] space-y-2">
                     <div className="font-bold text-white flex items-center gap-2">
                       <Terminal className="w-4 h-4 text-[#3fb950]" />
                       <span>{isAr ? 'ملخص الترقيع الذاتي (Self-Healing Patches)' : 'Self-Healing Security Patches Applied'}</span>
@@ -546,30 +546,30 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
               {activeTab === 'ebpf' && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4">
+                    <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4">
                       <div className="text-xs text-[#93a1b3] uppercase">{isAr ? 'معدل الحزم المختبر' : 'Tested Packet Ingress'}</div>
                       <div className="text-2xl font-bold text-white font-mono mt-1">5,000,000 PPS</div>
                       <div className="text-[11px] text-[#3fb950] mt-1">{isAr ? 'حجم التدفق: 56.8 جيجابت/ث' : 'Throughput: 56.8 Gbps'}</div>
                     </div>
-                    <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4">
+                    <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4">
                       <div className="text-xs text-[#93a1b3] uppercase">{isAr ? 'الحزم المسقطة بسرعة العتاد' : 'Hardware Wire-Speed Drops'}</div>
                       <div className="text-2xl font-bold text-[#f85149] font-mono mt-1">4,825,000 Pkts</div>
                       <div className="text-[11px] text-[#93a1b3] mt-1">{isAr ? 'معدل الإسقاط XDP: 96.5%' : 'XDP Drop Ratio: 96.5%'}</div>
                     </div>
-                    <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4">
+                    <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4">
                       <div className="text-xs text-[#93a1b3] uppercase">{isAr ? 'تأخير حلقة أحداث Node.js' : 'Event Loop Lag Delay'}</div>
                       <div className="text-2xl font-bold text-[#3fb950] font-mono mt-1">1.84 ms</div>
                       <div className="text-[11px] text-[#3fb950] mt-1">{isAr ? 'أقصى تأخير: 3.2ms (ممتاز)' : 'Max Delay: 3.2ms (Safe < 15ms)'}</div>
                     </div>
                   </div>
 
-                  <div className="bg-[#131a24] border border-[#222222] rounded-xl p-5 space-y-4">
+                  <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-5 space-y-4">
                     <h4 className="text-sm font-bold text-white flex items-center gap-2">
                       <Cpu className="w-4 h-4 text-[#3fb950]" />
                       <span>{isAr ? 'تفاصيل بنية مشغل النواة Linux Kernel XDP' : 'Linux Kernel XDP Driver Subsystem Diagnostics'}</span>
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-                      <div className="p-3 bg-[#161616] rounded-lg border border-[#262626] space-y-2">
+                      <div className="p-3 bg-[#161616] rounded-lg border border-[#1e2733] space-y-2">
                         <div className="flex justify-between">
                           <span className="text-[#93a1b3]">{isAr ? 'وضع المشغل: ' : 'Driver Mode: '}</span>
                           <span className="text-[#3fb950] font-bold">XDP_NATIVE_DRV</span>
@@ -583,7 +583,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                           <span className="text-white">65,536 entries</span>
                         </div>
                       </div>
-                      <div className="p-3 bg-[#161616] rounded-lg border border-[#262626] space-y-2">
+                      <div className="p-3 bg-[#161616] rounded-lg border border-[#1e2733] space-y-2">
                         <div className="flex justify-between">
                           <span className="text-[#93a1b3]">{isAr ? 'زمن تقييم النواة: ' : 'Kernel Verdict Latency: '}</span>
                           <span className="text-[#3fb950] font-bold">295 nanoseconds</span>
@@ -606,26 +606,26 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
               {activeTab === 'webgl' && (
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4">
+                    <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4">
                       <div className="text-xs text-[#93a1b3] uppercase">{isAr ? 'المسارات المتزامنة' : 'Concurrent Vectors'}</div>
                       <div className="text-2xl font-bold text-white font-mono mt-1">10,000 Vectors</div>
                       <div className="text-[11px] text-[#3fb950] mt-1">{isAr ? 'محاكاة كاملة على الكرة ثلاثية الأبعاد' : 'Simulated on 3D Globe'}</div>
                     </div>
-                    <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4">
+                    <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4">
                       <div className="text-xs text-[#93a1b3] uppercase">{isAr ? 'معدل الإطارات المقاس' : 'Measured Frame Rate'}</div>
                       <div className="text-2xl font-bold text-[#3fb950] font-mono mt-1">60.0 FPS</div>
                       <div className="text-[11px] text-[#3fb950] mt-1">{isAr ? 'معدل مستقر دون أي تقطيع' : 'Rock-solid smooth rendering'}</div>
                     </div>
-                    <div className="bg-[#131a24] border border-[#222222] rounded-xl p-4">
+                    <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-4">
                       <div className="text-xs text-[#93a1b3] uppercase">{isAr ? 'زمن تجميع K-Means' : 'K-Means Cluster Latency'}</div>
                       <div className="text-2xl font-bold text-[#00FFCC] font-mono mt-1">14.8 ms</div>
                       <div className="text-[11px] text-[#93a1b3] mt-1">{isAr ? '6 عناقيد جغرافية متزامنة' : '6 spatial clusters computed'}</div>
                     </div>
                   </div>
 
-                  <div className="bg-[#131a24] border border-[#222222] rounded-xl p-5 space-y-3">
+                  <div className="bg-[#131a24] border border-[#1e2733] rounded-xl p-5 space-y-3">
                     <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-[#d29922]" />
+                      <Activity className="w-4 h-4 text-[#fab219]" />
                       <span>{isAr ? 'تقارير ترقيع الذاكرة الرسومية وأداء WebGL' : 'WebGL Engine & GPU Memory Leak Elimination Report'}</span>
                     </h4>
                     <p className="text-xs text-[#AAAAAA] leading-relaxed">
@@ -638,7 +638,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                       <button
                         onClick={handleToggle10kStream}
                         disabled={inject10kLoading}
-                        className="px-4 py-2 text-xs font-bold rounded-lg bg-[#181818] hover:bg-[#252525] border border-[#333333] text-white flex items-center gap-2 transition"
+                        className="px-4 py-2 text-xs font-bold rounded-lg bg-[#1a2230] hover:bg-[#252525] border border-[#333333] text-white flex items-center gap-2 transition"
                       >
                         <Radio className="w-3.5 h-3.5 text-[#3fb950]" />
                         {is10kInjected
@@ -666,7 +666,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                       MoD CYBER COMMAND HQ
                     </div>
 
-                    <div className="text-center space-y-3 pt-4 pb-6 border-b border-[#222222]">
+                    <div className="text-center space-y-3 pt-4 pb-6 border-b border-[#1e2733]">
                       <div className="w-16 h-16 mx-auto rounded-full bg-[#3fb950]/10 border-2 border-[#3fb950]/40 flex items-center justify-center text-[#3fb950] mb-2">
                         <Award className="w-9 h-9" />
                       </div>
@@ -704,7 +704,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
 
                       <div className="space-y-3 font-mono">
                         <div className="text-[#93a1b3] font-bold uppercase tracking-wider">{isAr ? 'الختم الجنائي الرقمي:' : 'Cryptographic Proof & Ledger:'}</div>
-                        <div className="p-3 rounded bg-[#141414] border border-[#222222] space-y-1.5 text-[11px]">
+                        <div className="p-3 rounded bg-[#131a24] border border-[#1e2733] space-y-1.5 text-[11px]">
                           <div>
                             <span className="text-[#7d8590]">DIGEST: </span>
                             <span className="text-[#AAAAAA] break-all">{report?.cryptographicSeal?.sha256Hash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'}</span>
@@ -722,7 +722,7 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                     </div>
 
                     {/* Bottom Signature Line */}
-                    <div className="pt-6 border-t border-[#222222] flex flex-wrap items-center justify-between gap-4 text-xs">
+                    <div className="pt-6 border-t border-[#1e2733] flex flex-wrap items-center justify-between gap-4 text-xs">
                       <div>
                         <div className="text-[#93a1b3]">{isAr ? 'حالة الاعتماد:' : 'Certification Status:'}</div>
                         <div className="text-[#3fb950] font-bold font-mono">100% OPERATIONAL & VERIFIED</div>

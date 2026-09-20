@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ShieldCheck, Cpu, FileLock2, Bot, Eye, Ban, Activity,
-  ChevronLeft, ChevronRight, Filter, Clock
+  ChevronLeft, ChevronRight, Filter, Clock, Download, ShieldAlert
 } from 'lucide-react';
 
 /**
@@ -105,6 +105,60 @@ export const IncidentQueue: React.FC<Props> = ({ lang = 'ar' }) => {
 
   const selected = rows.find(r => r.id === selectedId) ?? rows[0] ?? null;
   const Chevron = isAr ? ChevronLeft : ChevronRight;
+
+  /* ---- context + actions for the selected row ---- */
+  const sameActor = useMemo(
+    () => (selected?.actorIp ? events.filter(e => e.actorIp === selected.actorIp) : []),
+    [events, selected]
+  );
+  const relatedCount = sameActor.length;
+  const relatedTactics = useMemo(() => {
+    const s = new Set<string>();
+    sameActor.forEach(e => { if (e.mitreTactic) s.add(e.mitreTactic); });
+    const out: string[] = [];
+    s.forEach(v => out.push(v));
+    return out;
+  }, [sameActor]);
+
+  const [busy, setBusy] = useState<string | null>(null);
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+
+  const act = async (kind: 'ban' | 'quarantine' | 'export') => {
+    if (!selected) return;
+    setBusy(kind);
+    setActionMsg(null);
+    try {
+      if (kind === 'export') {
+        const blob = new Blob([JSON.stringify(selected, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${selected.id}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setActionMsg(isAr ? 'تم تصدير الحادثة كملف JSON.' : 'Incident exported as JSON.');
+      } else {
+        const res = await fetch('/api/v1/agent/ban', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ip: selected.actorIp,
+            reason: `Operator action from incident ${selected.id}`
+          })
+        });
+        const d = await res.json().catch(() => null);
+        setActionMsg(
+          res.ok
+            ? (isAr ? `تم تنفيذ الإجراء على ${selected.actorIp}.` : `Action applied to ${selected.actorIp}.`)
+            : (d?.error || (isAr ? 'تعذّر تنفيذ الإجراء.' : 'Action failed.'))
+        );
+      }
+    } catch {
+      setActionMsg(isAr ? 'تعذّر تنفيذ الإجراء.' : 'Action failed.');
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <section className="soc-panel flex flex-col overflow-hidden" dir={isAr ? 'rtl' : 'ltr'}>
@@ -260,6 +314,64 @@ export const IncidentQueue: React.FC<Props> = ({ lang = 'ar' }) => {
                   </span>
                 </div>
               </div>
+
+              {/* Related activity from the same actor — the context that turns
+                  a single alert into an assessment. */}
+              {selected.actorIp && (
+                <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
+                  <div className="soc-label mb-2">{isAr ? 'نشاط المصدر نفسه' : 'Same-actor activity'}</div>
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="font-mono text-lg font-bold text-slate-100 tabular-nums leading-none">
+                      {relatedCount}
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      {isAr ? 'حادثة مرتبطة بهذا العنوان' : 'incidents from this address'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {relatedTactics.slice(0, 4).map(t => (
+                      <span key={t} className="font-mono text-[10px] px-1.5 py-0.5 rounded border border-slate-700 bg-slate-800/60 text-slate-400">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Operator actions — a triage surface has to be actionable. */}
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => act('ban')}
+                  disabled={busy !== null}
+                  className="flex flex-col items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/60 py-2.5 text-[11px] font-semibold text-slate-200 hover:border-rose-500/50 hover:text-rose-300 transition-colors disabled:opacity-50"
+                >
+                  <Ban className="w-4 h-4" />
+                  {isAr ? 'حظر' : 'Block'}
+                </button>
+                <button
+                  onClick={() => act('quarantine')}
+                  disabled={busy !== null}
+                  className="flex flex-col items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/60 py-2.5 text-[11px] font-semibold text-slate-200 hover:border-amber-500/50 hover:text-amber-300 transition-colors disabled:opacity-50"
+                >
+                  <ShieldAlert className="w-4 h-4" />
+                  {isAr ? 'عزل' : 'Isolate'}
+                </button>
+                <button
+                  onClick={() => act('export')}
+                  disabled={busy !== null}
+                  className="flex flex-col items-center gap-1 rounded-lg border border-slate-700 bg-slate-800/60 py-2.5 text-[11px] font-semibold text-slate-200 hover:border-cyan-500/50 hover:text-cyan-300 transition-colors disabled:opacity-50"
+                >
+                  <Download className="w-4 h-4" />
+                  {isAr ? 'تصدير' : 'Export'}
+                </button>
+              </div>
+
+              {actionMsg && (
+                <div className="text-[11px] text-emerald-300 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  {actionMsg}
+                </div>
+              )}
 
               <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-mono pt-1">
                 <Activity className="w-3 h-3" />
