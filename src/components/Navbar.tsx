@@ -67,7 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Brand & System Identity */}
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-7 h-7 rounded bg-[#121212] flex items-center justify-center border border-[#2A2A2A]">
+            <div className="w-7 h-7 rounded bg-[#0b1730] flex items-center justify-center border border-[#22385c]">
               <Shield className="w-4 h-4 text-[#39FF14]" />
             </div>
             <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
@@ -78,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="flex items-center gap-2">
             <span className="font-bold text-xs text-[#EAEAEA] tracking-wider">SOVEREIGN DEFENDER</span>
-            <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-[#141414] text-[#888888] border border-[#262626]">
+            <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-[#141414] text-[#7a9bd1] border border-[#262626]">
               v7.0 eBPF
             </span>
           </div>
@@ -89,7 +89,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="w-1.5 h-1.5 rounded-full bg-[#39FF14]" />
           <span>RIYADH CORE NODE (24.71°N, 46.67°E)</span>
           <span className="text-[#333333]">•</span>
-          <div className="flex items-center gap-1 text-[#888888]">
+          <div className="flex items-center gap-1 text-[#7a9bd1]">
             <Clock className="w-3 h-3 text-[#555555]" />
             <span className="font-mono">{currentTime}</span>
           </div>
@@ -99,7 +99,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-2 sm:gap-2.5">
           
           {/* Flight Mode Pill */}
-          <div className="flex items-center p-0.5 rounded-md bg-[#121212] border border-[#222222] text-[11px]">
+          <div className="flex items-center p-0.5 rounded-md bg-[#0b1730] border border-[#222222] text-[11px]">
             <button
               type="button"
               onClick={() => onToggleFlightMode('AUTOPILOT')}
@@ -144,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onOpenAlertModal}
             title={isAr ? 'إعدادات التنبيهات' : 'Alert Configuration'}
-            className="p-1.5 rounded-md bg-[#121212] hover:bg-[#181818] text-[#888888] hover:text-[#EAEAEA] border border-[#222222] transition"
+            className="p-1.5 rounded-md bg-[#0b1730] hover:bg-[#181818] text-[#7a9bd1] hover:text-[#EAEAEA] border border-[#222222] transition"
           >
             <Bell className="w-3.5 h-3.5" />
           </button>
@@ -154,7 +154,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onLaunchKiosk}
               title={isAr ? 'عرض الشاشة الجدارية (SOC Wall Display)' : 'SOC Wall Kiosk Display'}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#121212] hover:bg-[#181818] text-[#39FF14] text-[11px] font-bold border border-[#39FF14]/40 hover:border-[#39FF14] transition"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0b1730] hover:bg-[#181818] text-[#39FF14] text-[11px] font-bold border border-[#39FF14]/40 hover:border-[#39FF14] transition"
             >
               <Maximize2 className="w-3 h-3" />
               <span className="hidden sm:inline">{isAr ? 'شاشة الجدار' : 'SOC Wall'}</span>
@@ -176,7 +176,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Language Toggle */}
           <button
             onClick={() => setLang(isAr ? 'en' : 'ar')}
-            className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#121212] hover:bg-[#181818] text-[11px] text-[#888888] hover:text-[#EAEAEA] border border-[#222222] transition"
+            className="flex items-center gap-1 px-2 py-1 rounded-md bg-[#0b1730] hover:bg-[#181818] text-[11px] text-[#7a9bd1] hover:text-[#EAEAEA] border border-[#222222] transition"
           >
             <Globe className="w-3 h-3 text-[#666666]" />
             <span>{isAr ? 'EN' : 'عربي'}</span>
@@ -186,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onRefresh}
             title={isAr ? 'تحديث الحالة' : 'Sync Telemetry'}
-            className="p-1.5 rounded-md bg-[#121212] hover:bg-[#181818] text-[#666666] hover:text-[#EAEAEA] border border-[#222222] transition"
+            className="p-1.5 rounded-md bg-[#0b1730] hover:bg-[#181818] text-[#666666] hover:text-[#EAEAEA] border border-[#222222] transition"
           >
             <RefreshCw className="w-3 h-3" />
           </button>

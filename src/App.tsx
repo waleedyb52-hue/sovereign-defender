@@ -507,7 +507,7 @@ export default function App() {
   const pendingApprovalsCount = approvalQueue.filter(q => q.status === 'PENDING').length;
 
   return (
-    <div className={`min-h-screen bg-[#050505] text-[#EAEAEA] antialiased ${isAr ? 'rtl' : 'ltr'}`} dir={isAr ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-[#050d1e] text-[#EAEAEA] antialiased ${isAr ? 'rtl' : 'ltr'}`} dir={isAr ? 'rtl' : 'ltr'}>
       {/* Sleek Minimal Top Status Bar (Button-Free) */}
       <Navbar
         activeTab={activeTab}
@@ -574,19 +574,19 @@ export default function App() {
           <div className="flex-1 flex flex-col justify-start max-w-[1600px] mx-auto w-full py-4 space-y-6">
             {/* Minimalist High-Level Metrics HUD */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
-              <div className="bg-[#121212] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
-                <div className="text-[11px] text-[#888888] uppercase tracking-wider">
+              <div className="bg-[#0b1730] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-[#7a9bd1] uppercase tracking-wider">
                   {isAr ? 'حجم البيانات المتدفقة' : 'Network Ingress Throughput'}
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">
                   <span className="text-xl lg:text-2xl font-bold text-[#EAEAEA]">48.2</span>
-                  <span className="text-xs text-[#888888]">Gbps</span>
+                  <span className="text-xs text-[#7a9bd1]">Gbps</span>
                   <span className="text-[10px] text-[#666666] ml-auto">1.24M pps</span>
                 </div>
               </div>
 
-              <div className="bg-[#121212] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
-                <div className="text-[11px] text-[#888888] uppercase tracking-wider">
+              <div className="bg-[#0b1730] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-[#7a9bd1] uppercase tracking-wider">
                   {isAr ? 'التهديدات النشطة' : 'Active Ingress Threats'}
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">
@@ -600,8 +600,8 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-[#121212] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
-                <div className="text-[11px] text-[#888888] uppercase tracking-wider">
+              <div className="bg-[#0b1730] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-[#7a9bd1] uppercase tracking-wider">
                   {isAr ? 'معدل الحظر في النواة' : 'eBPF Auto-Mitigation'}
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">
@@ -612,8 +612,8 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-[#121212] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
-                <div className="text-[11px] text-[#888888] uppercase tracking-wider">
+              <div className="bg-[#0b1730] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
+                <div className="text-[11px] text-[#7a9bd1] uppercase tracking-wider">
                   {isAr ? 'حالة النواة السيادية' : 'Zero-Trust Posture'}
                 </div>
                 <div className="mt-2 flex items-baseline gap-2">

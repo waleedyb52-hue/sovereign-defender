@@ -303,7 +303,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
       >
         {/* Top Header / Expand Toggle Indicator */}
         <div>
-          <div className="h-10 border-b border-[#1E1E1E] flex items-center justify-between px-3 text-[#888888]">
+          <div className="h-10 border-b border-[#1E1E1E] flex items-center justify-between px-3 text-[#7a9bd1]">
             <span
               className={`text-[10px] font-bold uppercase tracking-wider text-[#666666] transition-opacity duration-200 ${
                 isExpanded ? 'opacity-100' : 'opacity-0 hidden'
@@ -323,7 +323,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
                   isPinned ? <ChevronLeft className="w-3.5 h-3.5 text-[#39FF14]" /> : <ChevronRight className="w-3.5 h-3.5" />
                 )
               ) : (
-                <div className="w-2 h-2 rounded-full bg-[#2A2A2A] mx-auto" />
+                <div className="w-2 h-2 rounded-full bg-[#22385c] mx-auto" />
               )}
             </button>
           </div>
@@ -345,7 +345,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono transition-all duration-150 relative group ${
                     isActive
                       ? 'bg-[#181818] text-[#EAEAEA] border border-[#2E2E2E]'
-                      : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#121212] border border-transparent'
+                      : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#0b1730] border border-transparent'
                   }`}
                 >
                   {/* Active Indicator Accent Line */}
@@ -359,7 +359,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
 
                   <Icon
                     className={`w-4 h-4 shrink-0 transition-colors ${
-                      isActive ? 'text-[#39FF14]' : 'text-[#888888] group-hover:text-[#EAEAEA]'
+                      isActive ? 'text-[#39FF14]' : 'text-[#7a9bd1] group-hover:text-[#EAEAEA]'
                     }`}
                   />
 
@@ -447,7 +447,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono transition group relative ${
                 isLockdownActive
                   ? 'bg-[#181818] text-[#39FF14] border border-[#39FF14]/40 shadow-[0_0_10px_rgba(57,255,20,0.15)]'
-                  : 'text-[#888888] hover:text-[#FF003C] hover:bg-[#150a0c] border border-transparent hover:border-[#FF003C]/30'
+                  : 'text-[#7a9bd1] hover:text-[#FF003C] hover:bg-[#150a0c] border border-transparent hover:border-[#FF003C]/30'
               }`}
             >
               {isLockingDown ? (
@@ -455,7 +455,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
               ) : (
                 <AlertOctagon
                   className={`w-4 h-4 shrink-0 transition-colors ${
-                    isLockdownActive ? 'text-[#39FF14]' : 'text-[#888888] group-hover:text-[#FF003C]'
+                    isLockdownActive ? 'text-[#39FF14]' : 'text-[#7a9bd1] group-hover:text-[#FF003C]'
                   }`}
                 />
               )}
@@ -480,9 +480,9 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
             <button
               onClick={() => setShowQuarantineModal(true)}
               title={isAr ? 'عزل يدوي لعنوان IP / CIDR' : 'Manual IP / CIDR Quarantine'}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono text-[#888888] hover:text-[#FF003C] hover:bg-[#150a0c] border border-transparent hover:border-[#FF003C]/30 transition group"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono text-[#7a9bd1] hover:text-[#FF003C] hover:bg-[#150a0c] border border-transparent hover:border-[#FF003C]/30 transition group"
             >
-              <Ban className="w-4 h-4 shrink-0 text-[#888888] group-hover:text-[#FF003C] transition-colors" />
+              <Ban className="w-4 h-4 shrink-0 text-[#7a9bd1] group-hover:text-[#FF003C] transition-colors" />
               {isExpanded && (
                 <div className="flex-1 text-left rtl:text-right overflow-hidden">
                   <div className="font-bold text-[11px] truncate">
@@ -502,9 +502,9 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
                 handleRunSecurityAudit();
               }}
               title={isAr ? 'فحص الأمان والـ SSL' : 'Security & SSL Audit'}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono text-[#888888] hover:text-[#EAEAEA] hover:bg-[#121212] border border-transparent hover:border-[#2E2E2E] transition group"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#0b1730] border border-transparent hover:border-[#2E2E2E] transition group"
             >
-              <ShieldCheck className="w-4 h-4 shrink-0 text-[#888888] group-hover:text-[#39FF14] transition-colors" />
+              <ShieldCheck className="w-4 h-4 shrink-0 text-[#7a9bd1] group-hover:text-[#39FF14] transition-colors" />
               {isExpanded && (
                 <div className="flex-1 text-left rtl:text-right overflow-hidden">
                   <div className="font-bold text-[11px] truncate">
@@ -521,9 +521,9 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
             <button
               onClick={handleExportForensics}
               title={isAr ? 'تصدير التقرير الجنائي (JSON)' : 'Export Forensic Report'}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono text-[#888888] hover:text-[#EAEAEA] hover:bg-[#121212] border border-transparent hover:border-[#2E2E2E] transition group"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#0b1730] border border-transparent hover:border-[#2E2E2E] transition group"
             >
-              <Download className="w-4 h-4 shrink-0 text-[#888888] group-hover:text-[#EAEAEA] transition-colors" />
+              <Download className="w-4 h-4 shrink-0 text-[#7a9bd1] group-hover:text-[#EAEAEA] transition-colors" />
               {isExpanded && (
                 <div className="flex-1 text-left rtl:text-right overflow-hidden">
                   <div className="font-bold text-[11px] truncate">
@@ -541,9 +541,9 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
               <button
                 onClick={onResetTelemetry}
                 title={isAr ? 'تفريغ السجلات والجداول' : 'Reset Telemetry Logs'}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono text-[#888888] hover:text-[#FF003C] hover:bg-[#150a0c] border border-transparent transition group"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-mono text-[#7a9bd1] hover:text-[#FF003C] hover:bg-[#150a0c] border border-transparent transition group"
               >
-                <Trash2 className="w-4 h-4 shrink-0 text-[#888888] group-hover:text-[#FF003C] transition-colors" />
+                <Trash2 className="w-4 h-4 shrink-0 text-[#7a9bd1] group-hover:text-[#FF003C] transition-colors" />
                 {isExpanded && (
                   <div className="flex-1 text-left rtl:text-right overflow-hidden">
                     <div className="font-bold text-[11px] truncate">
@@ -596,59 +596,59 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
 
       {/* Floating Action Feedback Notification (Minimalist Toast) */}
       {actionFeedback && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-lg bg-[#121212]/95 border border-[#2E2E2E] text-[#EAEAEA] text-xs font-mono flex items-center gap-3 shadow-2xl backdrop-blur-md">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-lg bg-[#0b1730]/95 border border-[#2E2E2E] text-[#EAEAEA] text-xs font-mono flex items-center gap-3 shadow-2xl backdrop-blur-md">
           <span>{actionFeedback}</span>
-          <button onClick={() => setActionFeedback(null)} className="text-[#888888] hover:text-[#EAEAEA]">✕</button>
+          <button onClick={() => setActionFeedback(null)} className="text-[#7a9bd1] hover:text-[#EAEAEA]">✕</button>
         </div>
       )}
 
       {/* QUARANTINE MODAL */}
       {showQuarantineModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#050505]/85 backdrop-blur-sm font-mono">
-          <div className="bg-[#121212] border border-[#2A2A2A] rounded-xl max-w-md w-full p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-[#2A2A2A] pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#050d1e]/85 backdrop-blur-sm font-mono">
+          <div className="bg-[#0b1730] border border-[#22385c] rounded-xl max-w-md w-full p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#22385c] pb-3">
               <div className="flex items-center gap-2 text-[#FF003C] font-mono font-bold text-sm">
                 <Ban className="w-4 h-4" />
                 <span>{isAr ? 'عزل عنوان IP أو نطاق CIDR في النواة' : 'eBPF IP/CIDR Quarantine'}</span>
               </div>
-              <button onClick={() => setShowQuarantineModal(false)} className="text-[#888888] hover:text-[#EAEAEA]">✕</button>
+              <button onClick={() => setShowQuarantineModal(false)} className="text-[#7a9bd1] hover:text-[#EAEAEA]">✕</button>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-[#888888] mb-1 font-mono">{isAr ? 'العنوان أو النطاق الشبكي (IP / CIDR):' : 'Target IP or CIDR Subnet:'}</label>
+                <label className="block text-[#7a9bd1] mb-1 font-mono">{isAr ? 'العنوان أو النطاق الشبكي (IP / CIDR):' : 'Target IP or CIDR Subnet:'}</label>
                 <input
                   type="text"
                   value={quarantineTarget}
                   onChange={(e) => setQuarantineTarget(e.target.value)}
                   placeholder="e.g. 194.26.29.0/24"
-                  className="w-full px-3 py-2 bg-[#050505] border border-[#2A2A2A] rounded-lg text-[#EAEAEA] font-mono focus:outline-none focus:border-[#FF003C]"
+                  className="w-full px-3 py-2 bg-[#050d1e] border border-[#22385c] rounded-lg text-[#EAEAEA] font-mono focus:outline-none focus:border-[#FF003C]"
                 />
               </div>
 
               <div>
-                <label className="block text-[#888888] mb-1 font-mono">{isAr ? 'سبب الحظر في النواة:' : 'Quarantine Reason:'}</label>
+                <label className="block text-[#7a9bd1] mb-1 font-mono">{isAr ? 'سبب الحظر في النواة:' : 'Quarantine Reason:'}</label>
                 <input
                   type="text"
                   value={quarantineReason}
                   onChange={(e) => setQuarantineReason(e.target.value)}
                   placeholder="Operator eBPF Zero-Trust Drop"
-                  className="w-full px-3 py-2 bg-[#050505] border border-[#2A2A2A] rounded-lg text-[#EAEAEA] font-mono focus:outline-none focus:border-[#FF003C]"
+                  className="w-full px-3 py-2 bg-[#050d1e] border border-[#22385c] rounded-lg text-[#EAEAEA] font-mono focus:outline-none focus:border-[#FF003C]"
                 />
               </div>
 
               {quarantineErrorToast && (
-                <div className="p-2 rounded bg-[#050505] border border-[#FF003C] text-[#FF003C] text-[11px]">
+                <div className="p-2 rounded bg-[#050d1e] border border-[#FF003C] text-[#FF003C] text-[11px]">
                   {quarantineErrorToast}
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2A2A2A]">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#22385c]">
               <button
                 type="button"
                 onClick={() => setShowQuarantineModal(false)}
-                className="px-3 py-1.5 rounded-lg bg-[#050505] hover:bg-[#1a1a1a] text-[#888888] hover:text-[#EAEAEA] text-xs font-mono border border-[#2A2A2A]"
+                className="px-3 py-1.5 rounded-lg bg-[#050d1e] hover:bg-[#1a1a1a] text-[#7a9bd1] hover:text-[#EAEAEA] text-xs font-mono border border-[#22385c]"
               >
                 {isAr ? 'إلغاء' : 'Cancel'}
               </button>
@@ -656,7 +656,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
                 type="button"
                 onClick={handleExecuteQuarantine}
                 disabled={isQuarantining}
-                className="px-4 py-1.5 rounded-lg bg-[#121212] hover:bg-[#1c080c] text-[#FF003C] border border-[#FF003C] text-xs font-mono font-bold flex items-center gap-1.5 disabled:opacity-50"
+                className="px-4 py-1.5 rounded-lg bg-[#0b1730] hover:bg-[#1c080c] text-[#FF003C] border border-[#FF003C] text-xs font-mono font-bold flex items-center gap-1.5 disabled:opacity-50"
               >
                 {isQuarantining ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FFB000]" /> : <Ban className="w-3.5 h-3.5" />}
                 <span>{isQuarantining ? (isAr ? 'جاري العزل...' : 'Enforcing...') : (isAr ? 'تنفيذ العزل (eBPF)' : 'Enforce Quarantine')}</span>
@@ -668,14 +668,14 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
 
       {/* SECURITY AUDIT MODAL */}
       {showAuditModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#050505]/85 backdrop-blur-sm font-mono">
-          <div className="bg-[#121212] border border-[#2A2A2A] rounded-xl max-w-2xl w-full p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#2A2A2A] pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#050d1e]/85 backdrop-blur-sm font-mono">
+          <div className="bg-[#0b1730] border border-[#22385c] rounded-xl max-w-2xl w-full p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#22385c] pb-3">
               <div className="flex items-center gap-2 text-[#39FF14] font-mono font-bold text-sm">
                 <ShieldCheck className="w-4 h-4" />
                 <span>{isAr ? 'فحص ترويسات الأمان وشهادة SSL' : 'Target Security & SSL Header Audit'}</span>
               </div>
-              <button onClick={() => setShowAuditModal(false)} className="text-[#888888] hover:text-[#EAEAEA]">✕</button>
+              <button onClick={() => setShowAuditModal(false)} className="text-[#7a9bd1] hover:text-[#EAEAEA]">✕</button>
             </div>
 
             <div className="flex items-center gap-2">
@@ -684,13 +684,13 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
                 value={auditTargetUrl}
                 onChange={(e) => setAuditTargetUrl(e.target.value)}
                 placeholder="https://..."
-                className="flex-1 px-3 py-1.5 bg-[#050505] border border-[#2A2A2A] rounded-lg text-xs font-mono text-[#EAEAEA] focus:outline-none focus:border-[#39FF14]"
+                className="flex-1 px-3 py-1.5 bg-[#050d1e] border border-[#22385c] rounded-lg text-xs font-mono text-[#EAEAEA] focus:outline-none focus:border-[#39FF14]"
               />
               <button
                 type="button"
                 onClick={handleRunSecurityAudit}
                 disabled={isAuditing}
-                className="px-3.5 py-1.5 rounded-lg bg-[#121212] hover:bg-[#1a1a1a] text-[#39FF14] border border-[#39FF14] text-xs font-mono font-bold flex items-center gap-1.5 disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-lg bg-[#0b1730] hover:bg-[#1a1a1a] text-[#39FF14] border border-[#39FF14] text-xs font-mono font-bold flex items-center gap-1.5 disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isAuditing ? 'animate-spin' : ''}`} />
                 <span>{isAuditing ? (isAr ? 'جاري الفحص...' : 'Auditing...') : (isAr ? 'فحص الآن' : 'Run Audit')}</span>
@@ -700,23 +700,23 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
             {auditResult && (
               <div className="space-y-3 text-xs font-mono">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-[#050505] border border-[#2A2A2A]">
-                    <span className="text-[#888888] block text-[10px]">Security Score:</span>
+                  <div className="p-3 rounded-lg bg-[#050d1e] border border-[#22385c]">
+                    <span className="text-[#7a9bd1] block text-[10px]">Security Score:</span>
                     <span className="text-xl font-bold font-mono text-[#39FF14]">{auditResult.securityScore || 94}/100</span>
                   </div>
-                  <div className="p-3 rounded-lg bg-[#050505] border border-[#2A2A2A]">
-                    <span className="text-[#888888] block text-[10px]">SSL / TLS Grade:</span>
+                  <div className="p-3 rounded-lg bg-[#050d1e] border border-[#22385c]">
+                    <span className="text-[#7a9bd1] block text-[10px]">SSL / TLS Grade:</span>
                     <span className="text-sm font-bold font-mono text-[#39FF14]">{auditResult.sslStatus || 'TLS 1.3 Strict'}</span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-lg bg-[#050505] border border-[#2A2A2A] space-y-1.5">
+                <div className="p-3 rounded-lg bg-[#050d1e] border border-[#22385c] space-y-1.5">
                   <span className="font-bold text-[#EAEAEA] block text-[11px]">Enforced HTTP Security Headers:</span>
                   {auditResult.headers ? (
                     Object.entries(auditResult.headers).map(([k, v]) => (
-                      <div key={k} className="flex items-start justify-between gap-2 text-[10px] border-b border-[#2A2A2A] pb-1">
+                      <div key={k} className="flex items-start justify-between gap-2 text-[10px] border-b border-[#22385c] pb-1">
                         <span className="text-[#39FF14] font-mono font-bold">{k}:</span>
-                        <span className="text-[#888888] font-mono truncate max-w-xs">{String(v)}</span>
+                        <span className="text-[#7a9bd1] font-mono truncate max-w-xs">{String(v)}</span>
                       </div>
                     ))
                   ) : (
@@ -726,11 +726,11 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
               </div>
             )}
 
-            <div className="flex justify-end pt-2 border-t border-[#2A2A2A]">
+            <div className="flex justify-end pt-2 border-t border-[#22385c]">
               <button
                 type="button"
                 onClick={() => setShowAuditModal(false)}
-                className="px-4 py-1.5 rounded-lg bg-[#050505] hover:bg-[#1a1a1a] text-[#888888] hover:text-[#EAEAEA] text-xs font-mono border border-[#2A2A2A]"
+                className="px-4 py-1.5 rounded-lg bg-[#050d1e] hover:bg-[#1a1a1a] text-[#7a9bd1] hover:text-[#EAEAEA] text-xs font-mono border border-[#22385c]"
               >
                 {isAr ? 'إغلاق' : 'Close'}
               </button>

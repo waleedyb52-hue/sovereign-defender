@@ -1052,13 +1052,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('sovereign_phases')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'sovereign_phases'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <ShieldAlert className={`w-3.5 h-3.5 ${subTab === 'sovereign_phases' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <ShieldAlert className={`w-3.5 h-3.5 ${subTab === 'sovereign_phases' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'المصفوفة السيادية (1 - 5)' : 'Sovereign Matrix (Phases 1 - 5)'}</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#888888]">MoD</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#7a9bd1]">MoD</span>
         </button>
 
         {/* Pillar 1: Web Traffic & WAF */}
@@ -1066,13 +1066,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('traffic_waf')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'traffic_waf'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Activity className={`w-3.5 h-3.5 ${subTab === 'traffic_waf' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Activity className={`w-3.5 h-3.5 ${subTab === 'traffic_waf' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? '1. حركة المرور و WAF' : '1. Live Traffic & WAF'}</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#888888]">LIVE</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#7a9bd1]">LIVE</span>
         </button>
 
         {/* Pillar: Autonomous Containment Telemetry (eBPF Kernel) */}
@@ -1080,13 +1080,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('ebpf_containment')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'ebpf_containment'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Zap className={`w-3.5 h-3.5 ${subTab === 'ebpf_containment' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Zap className={`w-3.5 h-3.5 ${subTab === 'ebpf_containment' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'عزل النواة (eBPF)' : 'eBPF Containment'}</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#888888]">Zero-Trust</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#7a9bd1]">Zero-Trust</span>
         </button>
 
         {/* Pillar 2: Attack Chain & Honeytoken Deception */}
@@ -1094,13 +1094,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('deception_sandbox')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'deception_sandbox'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Flame className={`w-3.5 h-3.5 ${subTab === 'deception_sandbox' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Flame className={`w-3.5 h-3.5 ${subTab === 'deception_sandbox' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? '2. سلسلة الهجوم والخداع' : '2. Attack Graph & Deception'}</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#888888]">AUTO</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#7a9bd1]">AUTO</span>
         </button>
 
         {/* Pillar 3: FIM & Process Forensics */}
@@ -1108,11 +1108,11 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('fim')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'fim'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <FileCheck className={`w-3.5 h-3.5 ${subTab === 'fim' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <FileCheck className={`w-3.5 h-3.5 ${subTab === 'fim' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? '3. تكامل الملفات والعمليات' : '3. File Integrity & Processes'}</span>
           {activeQuarantined > 0 && (
             <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#2A0E12] text-[#FF003C] border border-[#FF003C]/30">{activeQuarantined}</span>
@@ -1124,11 +1124,11 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('interception')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'interception'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#DC143C] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#DC143C] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <ShieldOff className={`w-3.5 h-3.5 ${subTab === 'interception' ? 'text-[#DC143C]' : 'text-[#888888]'}`} />
+          <ShieldOff className={`w-3.5 h-3.5 ${subTab === 'interception' ? 'text-[#DC143C]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'الاعتراض النشط ومنع التسريب' : 'Active Interception & DLP'}</span>
           <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#2A0D14] text-[#FF5C7A]">LIVE</span>
         </button>
@@ -1138,11 +1138,11 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('deception_grid')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'deception_grid'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#8A2BE2] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#8A2BE2] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Drama className={`w-3.5 h-3.5 ${subTab === 'deception_grid' ? 'text-[#8A2BE2]' : 'text-[#888888]'}`} />
+          <Drama className={`w-3.5 h-3.5 ${subTab === 'deception_grid' ? 'text-[#8A2BE2]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'شبكة الخداع التكيفية' : 'Adaptive Deception Grid'}</span>
           <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1A0D2A] text-[#C89BFF]">TRAP</span>
         </button>
@@ -1152,13 +1152,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('telemetry')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'telemetry'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Radio className={`w-3.5 h-3.5 ${subTab === 'telemetry' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Radio className={`w-3.5 h-3.5 ${subTab === 'telemetry' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? '4. سجلات MITRE والتتبع' : '4. Telemetry & MITRE'}</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#888888]">{telemetryEvents.length}</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#7a9bd1]">{telemetryEvents.length}</span>
         </button>
 
         {/* Pillar: Threat Incident Timeline (D3.js) */}
@@ -1166,13 +1166,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('threat_timeline')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'threat_timeline'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Clock className={`w-3.5 h-3.5 ${subTab === 'threat_timeline' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Clock className={`w-3.5 h-3.5 ${subTab === 'threat_timeline' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'المخطط الزمني (D3)' : 'Threat Timeline (D3)'}</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#888888]">D3</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#7a9bd1]">D3</span>
         </button>
 
         {/* Pillar 5: Target Scanner */}
@@ -1180,11 +1180,11 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('scanner')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'scanner'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Crosshair className={`w-3.5 h-3.5 ${subTab === 'scanner' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Crosshair className={`w-3.5 h-3.5 ${subTab === 'scanner' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'ماسح الأهداف والثغرات' : '5. Target Scanner'}</span>
         </button>
 
@@ -1193,13 +1193,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('processes')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'processes'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Cpu className={`w-3.5 h-3.5 ${subTab === 'processes' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Cpu className={`w-3.5 h-3.5 ${subTab === 'processes' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'معالجات الذاكرة' : '6. Processes'}</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#888888]">{processes.length}</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#7a9bd1]">{processes.length}</span>
         </button>
 
         {/* Pillar 7: YARA & Sigma Rules */}
@@ -1207,11 +1207,11 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('rules_engine')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'rules_engine'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <FileCode className={`w-3.5 h-3.5 ${subTab === 'rules_engine' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <FileCode className={`w-3.5 h-3.5 ${subTab === 'rules_engine' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'قواعد YARA و Sigma' : '7. YARA & Sigma'}</span>
         </button>
 
@@ -1220,11 +1220,11 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('network_pcap')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'network_pcap'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Wifi className={`w-3.5 h-3.5 ${subTab === 'network_pcap' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Wifi className={`w-3.5 h-3.5 ${subTab === 'network_pcap' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'حزم PCAP' : '8. PCAP Inspector'}</span>
         </button>
 
@@ -1233,13 +1233,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('threat_intel')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'threat_intel'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <Globe className={`w-3.5 h-3.5 ${subTab === 'threat_intel' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <Globe className={`w-3.5 h-3.5 ${subTab === 'threat_intel' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'استخبارات IOC' : '9. Threat Intel'}</span>
-          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#888888]">{iocList.length}</span>
+          <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-[#1E1E1E] text-[#7a9bd1]">{iocList.length}</span>
         </button>
 
         {/* Pillar 10: Incident Playbooks & Audit Reports */}
@@ -1247,11 +1247,11 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('playbooks_reports')}
           className={`px-3 py-1.5 rounded-t-lg text-xs font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
             subTab === 'playbooks_reports'
-              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#2A2A2A]'
-              : 'text-[#888888] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
+              ? 'bg-[#181818] text-[#EAEAEA] border-t-2 border-[#39FF14] border-x border-[#22385c]'
+              : 'text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#141414] bg-[#0D0D0D] border-t border-x border-[#1E1E1E]'
           }`}
         >
-          <FileText className={`w-3.5 h-3.5 ${subTab === 'playbooks_reports' ? 'text-[#39FF14]' : 'text-[#888888]'}`} />
+          <FileText className={`w-3.5 h-3.5 ${subTab === 'playbooks_reports' ? 'text-[#39FF14]' : 'text-[#7a9bd1]'}`} />
           <span>{isAr ? 'التقارير' : '10. Reports'}</span>
         </button>
 

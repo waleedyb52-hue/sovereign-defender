@@ -152,14 +152,14 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
         }
         className={`inline-flex items-center justify-center gap-2 rounded font-mono font-bold tracking-tight transition-all duration-150 border disabled:cursor-wait select-none ${sizeClasses} ${
           isAlreadyIsolated
-            ? 'bg-[#121212] hover:bg-[#1a1a1a] text-[#39FF14] border-[#39FF14]/60 hover:border-[#39FF14] shadow-[0_0_10px_rgba(57,255,20,0.15)]'
+            ? 'bg-[#0b1730] hover:bg-[#1a1a1a] text-[#39FF14] border-[#39FF14]/60 hover:border-[#39FF14] shadow-[0_0_10px_rgba(57,255,20,0.15)]'
             : isolationStatus === 'success'
-            ? 'bg-[#121212] text-[#39FF14] border-[#39FF14] shadow-[0_0_12px_rgba(57,255,20,0.3)]'
+            ? 'bg-[#0b1730] text-[#39FF14] border-[#39FF14] shadow-[0_0_12px_rgba(57,255,20,0.3)]'
             : isolationStatus === 'error'
-            ? 'bg-[#121212] text-[#FF003C] border-[#FF003C] shadow-[0_0_12px_rgba(255,0,60,0.3)]'
+            ? 'bg-[#0b1730] text-[#FF003C] border-[#FF003C] shadow-[0_0_12px_rgba(255,0,60,0.3)]'
             : isIsolating
-            ? 'bg-[#121212] text-[#FFB000] border-[#FFB000]/70'
-            : 'bg-[#121212] hover:bg-[#1f0a0e] text-[#FF003C] border-[#FF003C]/80 hover:border-[#FF003C] shadow-[0_0_8px_rgba(255,0,60,0.2)]'
+            ? 'bg-[#0b1730] text-[#FFB000] border-[#FFB000]/70'
+            : 'bg-[#0b1730] hover:bg-[#1f0a0e] text-[#FF003C] border-[#FF003C]/80 hover:border-[#FF003C] shadow-[0_0_8px_rgba(255,0,60,0.2)]'
         } ${className}`}
       >
         {/* State Indicator Icon */}
@@ -193,8 +193,8 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
           role="alert"
           className={`absolute top-full mt-1.5 z-50 whitespace-nowrap px-3 py-1.5 rounded text-[11px] font-mono border shadow-2xl flex items-center gap-2 animate-in fade-in zoom-in-95 duration-150 ${
             isolationStatus === 'error'
-              ? 'bg-[#121212] text-[#FF003C] border-[#FF003C] shadow-[0_4px_20px_rgba(255,0,60,0.4)]'
-              : 'bg-[#121212] text-[#39FF14] border-[#39FF14] shadow-[0_4px_20px_rgba(57,255,20,0.3)]'
+              ? 'bg-[#0b1730] text-[#FF003C] border-[#FF003C] shadow-[0_4px_20px_rgba(255,0,60,0.4)]'
+              : 'bg-[#0b1730] text-[#39FF14] border-[#39FF14] shadow-[0_4px_20px_rgba(57,255,20,0.3)]'
           }`}
         >
           {isolationStatus === 'error' ? (
@@ -206,7 +206,7 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
           <button
             type="button"
             onClick={() => setToToastMessage(null)}
-            className="ms-1 text-[#888888] hover:text-[#EAEAEA] text-xs font-bold leading-none"
+            className="ms-1 text-[#7a9bd1] hover:text-[#EAEAEA] text-xs font-bold leading-none"
           >
             ✕
           </button>

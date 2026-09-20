@@ -1116,12 +1116,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       const width = canvas.width;
       const height = canvas.height;
 
-      // Dark futuristic background with subtle grid
-      ctx.fillStyle = '#030712';
+      // Tactical navy-blue background with clearly visible grid
+      ctx.fillStyle = '#050d1e';
       ctx.fillRect(0, 0, width, height);
 
       // Draw Grid Matrix Lines
-      ctx.strokeStyle = 'rgba(15, 23, 42, 0.6)';
+      ctx.strokeStyle = 'rgba(34, 211, 238, 0.16)';
       ctx.lineWidth = 1;
       const gridSize = 40;
       for (let x = 0; x < width; x += gridSize) {
@@ -1256,7 +1256,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           const to = nodePositions[toId];
           if (!from || !to) continue;
 
-          ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+          ctx.strokeStyle = 'rgba(122, 155, 209, 0.5)';
           ctx.beginPath();
           ctx.moveTo(from.x, from.y);
           ctx.lineTo(to.x, to.y);
@@ -1315,13 +1315,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           ctx.arc(pos.x, pos.y, isSelected || isHovered ? 38 : 28, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = isIsolated ? '#ef4444' : isUnderAttack ? '#f59e0b' : isSelected ? '#00f0ff' : isHovered ? '#38bdf8' : '#334155';
+          ctx.strokeStyle = isIsolated ? '#ef4444' : isUnderAttack ? '#f59e0b' : isSelected ? '#00f0ff' : isHovered ? '#38bdf8' : '#4d6fa0';
           ctx.lineWidth = isSelected ? 3.5 : isHovered ? 3 : 2;
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2);
           ctx.stroke();
 
-          ctx.fillStyle = isIsolated ? '#7f1d1d' : isUnderAttack ? '#78350f' : '#0f172a';
+          ctx.fillStyle = isIsolated ? '#7f1d1d' : isUnderAttack ? '#78350f' : '#0b1730';
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, 16, 0, Math.PI * 2);
           ctx.fill();
@@ -3889,7 +3889,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                   cy={getY(h.ingressMbps)}
                                   r="3"
                                   fill="#00f0ff"
-                                  stroke="#030712"
+                                  stroke="#050d1e"
                                   strokeWidth="1.5"
                                 />
                                 <circle
@@ -3897,7 +3897,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                   cy={getY(h.egressMbps)}
                                   r="3"
                                   fill="#10b981"
-                                  stroke="#030712"
+                                  stroke="#050d1e"
                                   strokeWidth="1.5"
                                 />
                               </g>
