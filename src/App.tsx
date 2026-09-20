@@ -26,6 +26,8 @@ import { KioskModeWrapper } from './components/KioskModeWrapper';
 import { SocSidebar } from './components/SocSidebar';
 import { MoDWarGamesSimulator } from './components/MoDWarGamesSimulator';
 import { SystemComplianceReport } from './components/SystemComplianceReport';
+import { KillChainPanel } from './components/soc/KillChainPanel';
+import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
 import {
   INITIAL_INTEL_METRICS,
   INITIAL_NETWORK_EDGES,
@@ -507,7 +509,7 @@ export default function App() {
   const pendingApprovalsCount = approvalQueue.filter(q => q.status === 'PENDING').length;
 
   return (
-    <div className={`min-h-screen bg-[#050d1e] text-[#EAEAEA] antialiased ${isAr ? 'rtl' : 'ltr'}`} dir={isAr ? 'rtl' : 'ltr'}>
+    <div className={`min-h-screen bg-[#0d1117] text-[#e6edf3] antialiased ${isAr ? 'rtl' : 'ltr'}`} dir={isAr ? 'rtl' : 'ltr'}>
       {/* Sleek Minimal Top Status Bar (Button-Free) */}
       <Navbar
         activeTab={activeTab}
@@ -571,68 +573,67 @@ export default function App() {
 
         {/* VIEW 5: 3D Global Threat Heatmap - FOCUS MODE (Massive Padding & Empty Space) */}
         {activeTab === 'threat_heatmap' && (
-          <div className="flex-1 flex flex-col justify-start max-w-[1600px] mx-auto w-full py-4 space-y-6">
-            {/* Minimalist High-Level Metrics HUD */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono">
-              <div className="bg-[#0b1730] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
-                <div className="text-[11px] text-[#7a9bd1] uppercase tracking-wider">
-                  {isAr ? 'حجم البيانات المتدفقة' : 'Network Ingress Throughput'}
+          <div className="flex-1 flex flex-col justify-start max-w-[1600px] mx-auto w-full py-2 space-y-5">
+            {/* Posture strip — four numbers a reviewer reads first. Quiet by
+                default; only a live critical count carries colour. */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="soc-panel p-4">
+                <div className="soc-label">{isAr ? 'حجم الحركة الواردة' : 'Ingress throughput'}</div>
+                <div className="mt-2 flex items-baseline gap-2 font-mono">
+                  <span className="text-2xl font-bold text-slate-100 tabular-nums">48.2</span>
+                  <span className="text-xs text-slate-400">Gbps</span>
                 </div>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-xl lg:text-2xl font-bold text-[#EAEAEA]">48.2</span>
-                  <span className="text-xs text-[#7a9bd1]">Gbps</span>
-                  <span className="text-[10px] text-[#666666] ml-auto">1.24M pps</span>
-                </div>
+                <div className="text-[11px] text-slate-500 font-mono mt-1">1.24M pps</div>
               </div>
 
-              <div className="bg-[#0b1730] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
-                <div className="text-[11px] text-[#7a9bd1] uppercase tracking-wider">
-                  {isAr ? 'التهديدات النشطة' : 'Active Ingress Threats'}
-                </div>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-xl lg:text-2xl font-bold text-[#EAEAEA]">
+              <div className="soc-panel p-4 sev-critical">
+                <div className="soc-label">{isAr ? 'تهديدات نشطة' : 'Active threats'}</div>
+                <div className="mt-2 flex items-baseline gap-2 font-mono">
+                  <span className="text-2xl font-bold text-rose-400 tabular-nums">
                     {systemStatus.totalThreatsBlocked > 0 ? (systemStatus.totalThreatsBlocked % 30) + 12 : 14}
                   </span>
-                  <span className="flex items-center gap-1 text-[10px] text-[#FF003C] ml-auto">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF003C] animate-ping" />
-                    {isAr ? 'تم الرصد' : 'Detected'}
-                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500 mt-1">
+                  {isAr ? 'قيد الاحتواء الآلي' : 'Under automatic containment'}
                 </div>
               </div>
 
-              <div className="bg-[#0b1730] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
-                <div className="text-[11px] text-[#7a9bd1] uppercase tracking-wider">
-                  {isAr ? 'معدل الحظر في النواة' : 'eBPF Auto-Mitigation'}
+              <div className="soc-panel p-4">
+                <div className="soc-label">{isAr ? 'الحظر في النواة' : 'Kernel mitigation'}</div>
+                <div className="mt-2 flex items-baseline gap-2 font-mono">
+                  <span className="text-2xl font-bold text-emerald-400 tabular-nums">99.98</span>
+                  <span className="text-xs text-slate-400">%</span>
                 </div>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-xl lg:text-2xl font-bold text-[#39FF14]">99.98%</span>
-                  <span className="text-[10px] text-[#666666] ml-auto">
-                    {systemStatus.totalThreatsBlocked} {isAr ? 'مسقط' : 'Dropped'}
-                  </span>
+                <div className="text-[11px] text-slate-500 font-mono mt-1">
+                  {systemStatus.totalThreatsBlocked} {isAr ? 'حزمة مُسقطة' : 'dropped'}
                 </div>
               </div>
 
-              <div className="bg-[#0b1730] border border-[#1E1E1E] rounded-xl p-4 flex flex-col justify-between">
-                <div className="text-[11px] text-[#7a9bd1] uppercase tracking-wider">
-                  {isAr ? 'حالة النواة السيادية' : 'Zero-Trust Posture'}
+              <div className="soc-panel p-4">
+                <div className="soc-label">{isAr ? 'وضع الدفاع' : 'Defense posture'}</div>
+                <div className="mt-2 text-base font-bold text-slate-100">
+                  {flightMode === 'AUTOPILOT' ? (isAr ? 'ذاتي التشغيل' : 'Autonomous') : (isAr ? 'إشراف بشري' : 'Supervised')}
                 </div>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-sm lg:text-base font-bold text-[#EAEAEA]">
-                    {flightMode === 'AUTOPILOT' ? (isAr ? 'حماية ذاتية نشطة' : 'AUTONOMOUS ACTIVE') : (isAr ? 'إشراف بشري' : 'SUPERVISED')}
-                  </span>
-                  <span className="text-[10px] text-[#39FF14] ml-auto">XDP L2-L7</span>
-                </div>
+                <div className="text-[11px] text-slate-500 font-mono mt-1">XDP · L2–L7 · Zero-Trust</div>
               </div>
             </div>
 
-            {/* 3D Global Threat Heatmap Container with Generous Negative Space */}
-            <div className="flex-1 w-full rounded-2xl border border-[#1E1E1E] bg-[#0A0A0A] p-2 shadow-2xl overflow-hidden">
+            {/* The attack line: the narrative element — how far an adversary
+                got, and which control ended the chain. */}
+            <KillChainPanel lang={lang} />
+
+            {/* The map gets the full canvas width: it carries its own floating
+                controls and overlays, which collide when the column narrows. */}
+            <div className="soc-panel p-2 overflow-hidden h-[460px] flex">
               <AutonomousThreatMap
                 lang={lang}
                 isKioskMode={false}
                 onToggleKiosk={() => setIsKioskMode(true)}
               />
             </div>
+
+            {/* Protection stack, full width underneath. */}
+            <DefenseLayersPanel lang={lang} />
           </div>
         )}
       </main>

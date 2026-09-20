@@ -391,19 +391,19 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
       
       {/* 1. VIP LOGIN AUTHENTICATION GATE */}
       {!isAuthenticated && (
-        <div className="relative w-full max-w-lg bg-[#0A0A0A] border-2 border-[#FFB000]/60 rounded-2xl shadow-[0_0_60px_rgba(255,176,0,0.25)] p-6 sm:p-8 text-center">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-[#FFB000]/10 border border-[#FFB000]/40 flex items-center justify-center mb-4">
-            <Lock className="w-7 h-7 text-[#FFB000] animate-pulse" />
+        <div className="relative w-full max-w-lg bg-[#0d1117] border-2 border-[#d29922]/60 rounded-2xl shadow-[0_0_60px_rgba(255,176,0,0.25)] p-6 sm:p-8 text-center">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-[#d29922]/10 border border-[#d29922]/40 flex items-center justify-center mb-4">
+            <Lock className="w-7 h-7 text-[#d29922] animate-pulse" />
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFB000]/10 border border-[#FFB000]/30 text-[#FFB000] text-[11px] font-bold uppercase tracking-widest mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d29922]/10 border border-[#d29922]/30 text-[#d29922] text-[11px] font-bold uppercase tracking-widest mb-2">
             <span>{isAr ? 'وزارة الدفاع • بوابة المحاكاة السرية' : 'MINISTRY OF DEFENSE • VIP WAR GAMES PORTAL'}</span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide mt-1">
             {isAr ? 'محاكي مناورات الحرب السيبرانية' : 'Red Team War Games Simulator'}
           </h2>
-          <p className="text-xs text-[#7a9bd1] mt-2 max-w-sm mx-auto">
+          <p className="text-xs text-[#93a1b3] mt-2 max-w-sm mx-auto">
             {isAr 
               ? 'مخصص للعروض الحية والتنفيذية أمام قيادات وزارة الدفاع. يتطلب إدخال مفتاح التفويض السيادي للبدء.'
               : 'Authorized executive presentation mode for high-stakes MoD demonstrations.'}
@@ -416,17 +416,17 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                 value={vipPasswordInput}
                 onChange={(e) => setVipPasswordInput(e.target.value)}
                 placeholder="ENTER VIP PASSCODE"
-                className="w-full text-center bg-[#141414] border border-[#333333] focus:border-[#FFB000] rounded-xl px-4 py-3 text-sm text-white tracking-widest uppercase outline-none transition"
+                className="w-full text-center bg-[#141414] border border-[#333333] focus:border-[#d29922] rounded-xl px-4 py-3 text-sm text-white tracking-widest uppercase outline-none transition"
               />
               {authError && (
-                <div className="text-[11px] text-[#FF003C] mt-2 font-bold">{authError}</div>
+                <div className="text-[11px] text-[#f85149] mt-2 font-bold">{authError}</div>
               )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="submit"
-                className="flex-1 bg-[#FFB000] hover:bg-[#FFB000]/90 text-black font-black py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg shadow-[#FFB000]/20"
+                className="flex-1 bg-[#d29922] hover:bg-[#d29922]/90 text-black font-black py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg shadow-[#d29922]/20"
               >
                 <Unlock className="w-4 h-4" />
                 <span>{isAr ? 'تحقق وبدء المحاكاة' : 'Authenticate & Unlock'}</span>
@@ -435,7 +435,7 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
               <button
                 type="button"
                 onClick={handleQuickVipAutoFill}
-                className="bg-[#181818] hover:bg-[#222222] border border-[#333333] text-[#FFB000] font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-1.5"
+                className="bg-[#181818] hover:bg-[#222222] border border-[#333333] text-[#d29922] font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-1.5"
                 title="Auto-fill default presentation passcode"
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -444,11 +444,11 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
             </div>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-[#1E1E1E] flex items-center justify-between text-[10px] text-[#666666]">
+          <div className="mt-6 pt-4 border-t border-[#1e2733] flex items-center justify-between text-[10px] text-[#7d8590]">
             <span>CLEARANCE: TOP SECRET // SCDS-V9</span>
             <button
               onClick={onClose}
-              className="text-[#7a9bd1] hover:text-white transition"
+              className="text-[#93a1b3] hover:text-white transition"
             >
               {isAr ? 'إلغاء والعودة' : 'Cancel'}
             </button>
@@ -458,24 +458,24 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
 
       {/* 2. AUTHENTICATED WAR GAMES STAGE CONTROLLER */}
       {isAuthenticated && (
-        <div className="relative w-full max-w-5xl bg-[#0A0A0A] border-2 border-[#FF003C]/50 rounded-2xl shadow-[0_0_80px_rgba(255,0,60,0.3)] overflow-hidden flex flex-col max-h-[92vh]">
+        <div className="relative w-full max-w-5xl bg-[#0d1117] border-2 border-[#f85149]/50 rounded-2xl shadow-[0_0_80px_rgba(255,0,60,0.3)] overflow-hidden flex flex-col max-h-[92vh]">
           
           {/* Header Bar */}
           <div className="px-6 py-4 bg-[#101010] border-b border-[#222222] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#FF003C]/20 border border-[#FF003C]/60 flex items-center justify-center">
-                <Flame className="w-5 h-5 text-[#FF003C] animate-pulse" />
+              <div className="w-9 h-9 rounded-xl bg-[#f85149]/20 border border-[#f85149]/60 flex items-center justify-center">
+                <Flame className="w-5 h-5 text-[#f85149] animate-pulse" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-black text-white text-base tracking-wide">
                     {isAr ? 'مناورات الحرب السيبرانية • القيادة العامة' : 'MoD WAR GAMES • RED TEAM EMULATOR'}
                   </h3>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FF003C]/20 text-[#FF003C] border border-[#FF003C]/40">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f85149]/20 text-[#f85149] border border-[#f85149]/40">
                     EXECUTIVE VIP
                   </span>
                 </div>
-                <div className="text-xs text-[#7a9bd1]">
+                <div className="text-xs text-[#93a1b3]">
                   {isAr 
                     ? 'محاكاة هجوم سيبراني متعدد المحاور (DDoS + APT + eBPF Killchain + Insider)'
                     : 'Real-time multi-vector red team scenario demonstrating autonomous zero-trust containment.'}
@@ -488,13 +488,13 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
               <button
                 onClick={handleResetSimulation}
                 title="Reset simulation state"
-                className="p-2 rounded-lg bg-[#181818] hover:bg-[#222222] text-[#7a9bd1] hover:text-white border border-[#333333] transition"
+                className="p-2 rounded-lg bg-[#181818] hover:bg-[#222222] text-[#93a1b3] hover:text-white border border-[#333333] transition"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
               <button
                 onClick={onClose}
-                className="p-2 rounded-lg bg-[#181818] hover:bg-[#FF003C]/20 text-[#7a9bd1] hover:text-[#FF003C] border border-[#333333] transition"
+                className="p-2 rounded-lg bg-[#181818] hover:bg-[#f85149]/20 text-[#93a1b3] hover:text-[#f85149] border border-[#333333] transition"
               >
                 <XCircle className="w-4 h-4" />
               </button>
@@ -502,14 +502,14 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
           </div>
 
           {/* Tactical HUD Breadcrumbs Timeline */}
-          <div className="px-6 py-3 bg-[#0E0E0E] border-b border-[#1E1E1E] grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <div className="px-6 py-3 bg-[#0E0E0E] border-b border-[#1e2733] grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             {/* Step 1 */}
             <div className={`p-2.5 rounded-lg border flex flex-col justify-between transition ${
               phase === 'PHASE_1_DDOS' 
-                ? 'bg-[#FFB000]/20 border-[#FFB000] text-white shadow-[0_0_15px_rgba(255,176,0,0.3)] animate-pulse' 
+                ? 'bg-[#d29922]/20 border-[#d29922] text-white shadow-[0_0_15px_rgba(255,176,0,0.3)] animate-pulse' 
                 : phase !== 'STANDBY' 
-                  ? 'bg-[#0b1730] border-emerald-500/40 text-emerald-400' 
-                  : 'bg-[#0b1730] border-[#222222] text-[#666666]'
+                  ? 'bg-[#131a24] border-emerald-500/40 text-emerald-400' 
+                  : 'bg-[#131a24] border-[#222222] text-[#7d8590]'
             }`}>
               <div className="flex items-center justify-between text-[10px] font-bold">
                 <span>T+0s • PHASE 1</span>
@@ -524,10 +524,10 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
             {/* Step 2 */}
             <div className={`p-2.5 rounded-lg border flex flex-col justify-between transition ${
               phase === 'PHASE_2_APT' 
-                ? 'bg-[#FF003C]/20 border-[#FF003C] text-white shadow-[0_0_15px_rgba(255,0,60,0.3)] animate-pulse' 
+                ? 'bg-[#f85149]/20 border-[#f85149] text-white shadow-[0_0_15px_rgba(255,0,60,0.3)] animate-pulse' 
                 : (phase === 'PHASE_3_EBPF_KILLCHAIN' || phase === 'PHASE_4_INSIDER' || phase === 'REPORT_READY') 
-                  ? 'bg-[#0b1730] border-emerald-500/40 text-emerald-400' 
-                  : 'bg-[#0b1730] border-[#222222] text-[#666666]'
+                  ? 'bg-[#131a24] border-emerald-500/40 text-emerald-400' 
+                  : 'bg-[#131a24] border-[#222222] text-[#7d8590]'
             }`}>
               <div className="flex items-center justify-between text-[10px] font-bold">
                 <span>T+5s • PHASE 2</span>
@@ -546,8 +546,8 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
               phase === 'PHASE_3_EBPF_KILLCHAIN' 
                 ? 'bg-cyan-500/20 border-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)] animate-pulse' 
                 : (phase === 'PHASE_4_INSIDER' || phase === 'REPORT_READY') 
-                  ? 'bg-[#0b1730] border-emerald-500/40 text-emerald-400' 
-                  : 'bg-[#0b1730] border-[#222222] text-[#666666]'
+                  ? 'bg-[#131a24] border-emerald-500/40 text-emerald-400' 
+                  : 'bg-[#131a24] border-[#222222] text-[#7d8590]'
             }`}>
               <div className="flex items-center justify-between text-[10px] font-bold">
                 <span>T+8s • PHASE 3</span>
@@ -564,10 +564,10 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
             {/* Step 4 */}
             <div className={`p-2.5 rounded-lg border flex flex-col justify-between transition ${
               phase === 'PHASE_4_INSIDER' 
-                ? 'bg-[#FF003C]/30 border-[#FF003C] text-white shadow-[0_0_15px_rgba(255,0,60,0.4)] animate-pulse' 
+                ? 'bg-[#f85149]/30 border-[#f85149] text-white shadow-[0_0_15px_rgba(255,0,60,0.4)] animate-pulse' 
                 : phase === 'REPORT_READY' 
-                  ? 'bg-[#0b1730] border-emerald-500/40 text-emerald-400' 
-                  : 'bg-[#0b1730] border-[#222222] text-[#666666]'
+                  ? 'bg-[#131a24] border-emerald-500/40 text-emerald-400' 
+                  : 'bg-[#131a24] border-[#222222] text-[#7d8590]'
             }`}>
               <div className="flex items-center justify-between text-[10px] font-bold">
                 <span>T+12s • PHASE 4</span>
@@ -585,8 +585,8 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
 
             {/* Standby Launch Hero Banner */}
             {phase === 'STANDBY' && (
-              <div className="rounded-2xl bg-gradient-to-b from-[#141414] to-[#0A0A0A] border border-[#222222] p-6 sm:p-8 text-center space-y-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF003C]/10 border border-[#FF003C]/30 text-[#FF003C] text-xs font-bold">
+              <div className="rounded-2xl bg-gradient-to-b from-[#141414] to-[#0d1117] border border-[#222222] p-6 sm:p-8 text-center space-y-5">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f85149]/10 border border-[#f85149]/30 text-[#f85149] text-xs font-bold">
                   <Radio className="w-3.5 h-3.5 animate-pulse" />
                   <span>{isAr ? 'جاهز للإطلاق المباشر في العرض' : 'ARMED & READY FOR LIVE VIP PRESENTATION'}</span>
                 </div>
@@ -595,7 +595,7 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                   <h4 className="text-xl sm:text-2xl font-black text-white">
                     {isAr ? 'محاكاة سيناريو الهجوم المعقد ضد النواة السيادية' : 'Sovereign Core Live Red Team Cyber Engagement'}
                   </h4>
-                  <p className="text-xs text-[#7a9bd1] mt-2 leading-relaxed">
+                  <p className="text-xs text-[#93a1b3] mt-2 leading-relaxed">
                     {isAr 
                       ? 'سيناريو تدريبي متكامل مدته 16 ثانية يحاكي هجوماً منسقاً: مسح استطلاعي بـ 54 روبوت، يليه استهداف مركز بحمولة تشفيرية APT، وتفعيل الإسقاط الذاتي في نواة لينكس (eBPF XDP)، ثم تجميد محاولة مستخدم داخلي لحذف السجلات عبر مصادقة انعدام الثقة.'
                       : 'A cinematic 16-second narrative: Injects 54 botnet scanners, fires a concentrated high-entropy APT laser, autonomously engages Linux eBPF zero-copy drop, and traps a rogue admin attempting log deletion.'}
@@ -605,7 +605,7 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                 <div className="pt-2">
                   <button
                     onClick={handleStartWarGames}
-                    className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-[#FF003C] to-[#E60033] hover:from-[#FF1A4D] hover:to-[#FF003C] text-white font-black text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(255,0,60,0.4)] transition transform hover:scale-[1.02] active:scale-[0.98]"
+                    className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-gradient-to-r from-[#f85149] to-[#E60033] hover:from-[#FF1A4D] hover:to-[#f85149] text-white font-black text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(255,0,60,0.4)] transition transform hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <Play className="w-5 h-5 fill-current" />
                     <span>{isAr ? 'إطلاق مناورات الحرب السيبرانية (START SIMULATION)' : 'Launch MoD War Games Simulation'}</span>
@@ -620,32 +620,32 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                 
                 {/* Real-time Telemetry Dashboard Strip */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="bg-[#0b1730] border border-[#222222] rounded-xl p-3.5">
-                    <div className="text-[10px] text-[#7a9bd1] uppercase font-bold">{isAr ? 'زمن المحاكاة' : 'Scenario Clock'}</div>
-                    <div className="text-xl font-black text-[#FFB000] font-mono mt-0.5">
+                  <div className="bg-[#131a24] border border-[#222222] rounded-xl p-3.5">
+                    <div className="text-[10px] text-[#93a1b3] uppercase font-bold">{isAr ? 'زمن المحاكاة' : 'Scenario Clock'}</div>
+                    <div className="text-xl font-black text-[#d29922] font-mono mt-0.5">
                       T+{(elapsedMs / 1000).toFixed(2)}s
                     </div>
                   </div>
 
-                  <div className="bg-[#0b1730] border border-[#222222] rounded-xl p-3.5">
-                    <div className="text-[10px] text-[#7a9bd1] uppercase font-bold">{isAr ? 'معدل تدفق الحزم' : 'Live Ingress Load'}</div>
+                  <div className="bg-[#131a24] border border-[#222222] rounded-xl p-3.5">
+                    <div className="text-[10px] text-[#93a1b3] uppercase font-bold">{isAr ? 'معدل تدفق الحزم' : 'Live Ingress Load'}</div>
                     <div className="text-xl font-black text-white font-mono mt-0.5">
-                      {liveThroughputGbps.toFixed(1)} <span className="text-xs text-[#7a9bd1]">Gbps</span>
+                      {liveThroughputGbps.toFixed(1)} <span className="text-xs text-[#93a1b3]">Gbps</span>
                     </div>
                   </div>
 
-                  <div className={`bg-[#0b1730] border rounded-xl p-3.5 transition ${
-                    liveEntropy > 7.0 ? 'border-[#FF003C]/60 bg-[#FF003C]/10' : 'border-[#222222]'
+                  <div className={`bg-[#131a24] border rounded-xl p-3.5 transition ${
+                    liveEntropy > 7.0 ? 'border-[#f85149]/60 bg-[#f85149]/10' : 'border-[#222222]'
                   }`}>
-                    <div className="text-[10px] text-[#7a9bd1] uppercase font-bold">{isAr ? 'إنتروبيا شانون' : 'Shannon Entropy'}</div>
+                    <div className="text-[10px] text-[#93a1b3] uppercase font-bold">{isAr ? 'إنتروبيا شانون' : 'Shannon Entropy'}</div>
                     <div className={`text-xl font-black font-mono mt-0.5 ${
-                      liveEntropy > 7.0 ? 'text-[#FF003C] animate-pulse' : 'text-emerald-400'
+                      liveEntropy > 7.0 ? 'text-[#f85149] animate-pulse' : 'text-emerald-400'
                     }`}>
                       {liveEntropy.toFixed(2)} <span className="text-xs">bits/byte</span>
                     </div>
                   </div>
 
-                  <div className="bg-[#0b1730] border border-cyan-500/40 bg-cyan-950/10 rounded-xl p-3.5">
+                  <div className="bg-[#131a24] border border-cyan-500/40 bg-cyan-950/10 rounded-xl p-3.5">
                     <div className="text-[10px] text-cyan-400 uppercase font-bold">{isAr ? 'إسقاط eBPF بالنواة' : 'Kernel XDP Drops'}</div>
                     <div className="text-xl font-black text-cyan-400 font-mono mt-0.5">
                       {liveDroppedPkts.toLocaleString()} <span className="text-xs">pkts</span>
@@ -655,13 +655,13 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
 
                 {/* Phase 1 Live Callout */}
                 {phase === 'PHASE_1_DDOS' && (
-                  <div className="bg-[#141414] border-2 border-[#FFB000]/60 rounded-xl p-5 shadow-[0_0_30px_rgba(255,176,0,0.15)] space-y-2">
+                  <div className="bg-[#141414] border-2 border-[#d29922]/60 rounded-xl p-5 shadow-[0_0_30px_rgba(255,176,0,0.15)] space-y-2">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-[#FFB000] font-bold text-sm">
+                      <div className="flex items-center gap-2 text-[#d29922] font-bold text-sm">
                         <Activity className="w-4 h-4 animate-spin" />
                         <span>{isAr ? 'المرحلة 1: مسح حجب الخدمة الموزع (54 روبوت)' : 'PHASE 1: GLOBAL DISTRIBUTED DDOS SCAN (54 BOTS)'}</span>
                       </div>
-                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#FFB000]/20 text-[#FFB000]">
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#d29922]/20 text-[#d29922]">
                         AI NOISE FILTER: MONITORING
                       </span>
                     </div>
@@ -675,13 +675,13 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
 
                 {/* Phase 2 Live Callout */}
                 {phase === 'PHASE_2_APT' && (
-                  <div className="bg-[#160507] border-2 border-[#FF003C] rounded-xl p-5 shadow-[0_0_40px_rgba(255,0,60,0.3)] space-y-2 animate-pulse">
+                  <div className="bg-[#160507] border-2 border-[#f85149] rounded-xl p-5 shadow-[0_0_40px_rgba(255,0,60,0.3)] space-y-2 animate-pulse">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-[#FF003C] font-black text-sm">
+                      <div className="flex items-center gap-2 text-[#f85149] font-black text-sm">
                         <AlertTriangle className="w-4 h-4 animate-bounce" />
                         <span>{isAr ? 'المرحلة 2: شعاع ليزري مركز بحمولة APT نحو العقدة السيادية' : 'PHASE 2: CONCENTRATED APT ZERO-DAY LASER TARGETING RIYADH NODE'}</span>
                       </div>
-                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#FF003C] text-white font-bold">
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#f85149] text-white font-bold">
                         THREAT SCORE: 98% CRITICAL
                       </span>
                     </div>
@@ -717,13 +717,13 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
 
             {/* 3. PHASE 4: FULL-SCREEN ZERO-TRUST OVERRIDE MODAL */}
             {showOtpModal && (
-              <div className="bg-gradient-to-b from-[#1C0507] to-[#0A0A0A] border-2 border-[#FF003C] rounded-2xl p-6 sm:p-8 shadow-[0_0_60px_rgba(255,0,60,0.5)] space-y-5 text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-[#FF003C]/20 border border-[#FF003C] flex items-center justify-center">
-                  <UserX className="w-8 h-8 text-[#FF003C] animate-pulse" />
+              <div className="bg-gradient-to-b from-[#1C0507] to-[#0d1117] border-2 border-[#f85149] rounded-2xl p-6 sm:p-8 shadow-[0_0_60px_rgba(255,0,60,0.5)] space-y-5 text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-[#f85149]/20 border border-[#f85149] flex items-center justify-center">
+                  <UserX className="w-8 h-8 text-[#f85149] animate-pulse" />
                 </div>
 
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF003C]/20 border border-[#FF003C]/40 text-[#FF003C] text-xs font-bold uppercase tracking-widest">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f85149]/20 border border-[#f85149]/40 text-[#f85149] text-xs font-bold uppercase tracking-widest">
                     <span>{isAr ? 'تحذير أمني: تجميد جلسة مستخدم مشبوه' : 'ZERO-TRUST OVERRIDE: PRIVILEGED INTERCEPTION'}</span>
                   </div>
                   <h3 className="text-xl sm:text-2xl font-black text-white mt-2">
@@ -736,10 +736,10 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                   </p>
                 </div>
 
-                <div className="max-w-md mx-auto bg-[#141414] border border-[#22385c] rounded-xl p-4 text-left font-mono text-xs space-y-1.5 text-[#7a9bd1]">
+                <div className="max-w-md mx-auto bg-[#141414] border border-[#1e2733] rounded-xl p-4 text-left font-mono text-xs space-y-1.5 text-[#93a1b3]">
                   <div>Target Actor: <span className="text-white font-bold">admin_svc_rogue@mod.gov.sa</span></div>
-                  <div>Origin IP: <span className="text-[#FF003C] font-bold">10.0.99.14 (Internal DMZ Subnet)</span></div>
-                  <div>Intercepted Command: <span className="text-[#FFB000]">rm -rf /var/log/audit.log && DELETE FROM security_events;</span></div>
+                  <div>Origin IP: <span className="text-[#f85149] font-bold">10.0.99.14 (Internal DMZ Subnet)</span></div>
+                  <div>Intercepted Command: <span className="text-[#d29922]">rm -rf /var/log/audit.log && DELETE FROM security_events;</span></div>
                   <div>Kernel Verdict: <span className="text-emerald-400 font-bold">BLOCKED [ZERO-TRUST PRIVILEGED ISOLATION]</span></div>
                 </div>
 
@@ -750,7 +750,7 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                       value={otpInput}
                       onChange={(e) => setOtpInput(e.target.value)}
                       placeholder="ENTER DUAL-KEY OTP (e.g. 992814)"
-                      className="flex-1 text-center bg-[#181818] border border-[#333333] focus:border-[#39FF14] rounded-xl px-3 py-2.5 text-sm text-white font-mono tracking-widest outline-none"
+                      className="flex-1 text-center bg-[#181818] border border-[#333333] focus:border-[#3fb950] rounded-xl px-3 py-2.5 text-sm text-white font-mono tracking-widest outline-none"
                     />
                     <button
                       onClick={() => handleAuthorizeOtp()}
@@ -765,7 +765,7 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                   <button
                     onClick={() => handleAuthorizeOtp('992814')}
                     disabled={otpApproving}
-                    className="w-full bg-[#181818] hover:bg-[#222222] border border-[#333333] text-[#FFB000] font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2"
+                    className="w-full bg-[#181818] hover:bg-[#222222] border border-[#333333] text-[#d29922] font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2"
                   >
                     <ShieldCheck className="w-4 h-4" />
                     <span>{isAr ? 'المصادقة السريعة لقائد العرض (1-Click VIP Override)' : '1-Click Executive Dual-Key Override'}</span>
@@ -788,7 +788,7 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                           {soarReport.classification}
                         </span>
-                        <span className="text-xs text-[#7a9bd1]">INCIDENT POST-ACTION REPORT</span>
+                        <span className="text-xs text-[#93a1b3]">INCIDENT POST-ACTION REPORT</span>
                       </div>
                       <h3 className="text-lg sm:text-xl font-black text-white mt-0.5">
                         {isAr ? 'تقرير ما بعد الواقعة السيبرانية • وزارة الدفاع' : 'Ministry of Defense • Incident Post-Action Report'}
@@ -827,40 +827,40 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
                 {/* Core Incident Metrics Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="bg-[#141414] border border-[#222222] rounded-xl p-4">
-                    <div className="text-[10px] text-[#7a9bd1] uppercase font-bold">Mean Time to Detect (MTTD)</div>
+                    <div className="text-[10px] text-[#93a1b3] uppercase font-bold">Mean Time to Detect (MTTD)</div>
                     <div className="text-2xl font-black text-emerald-400 mt-1">
                       {(soarReport.executiveSummary?.mttdSeconds * 1000).toFixed(1)} <span className="text-xs">ms</span>
                     </div>
-                    <div className="text-[10px] text-[#666666] mt-0.5">Bayesian Confidence: 99.8%</div>
+                    <div className="text-[10px] text-[#7d8590] mt-0.5">Bayesian Confidence: 99.8%</div>
                   </div>
 
                   <div className="bg-[#141414] border border-[#222222] rounded-xl p-4">
-                    <div className="text-[10px] text-[#7a9bd1] uppercase font-bold">Mean Time to Respond (MTTR)</div>
+                    <div className="text-[10px] text-[#93a1b3] uppercase font-bold">Mean Time to Respond (MTTR)</div>
                     <div className="text-2xl font-black text-cyan-400 mt-1">
                       310 <span className="text-xs">ns</span>
                     </div>
-                    <div className="text-[10px] text-[#666666] mt-0.5">Linux eBPF XDP Zero-Copy</div>
+                    <div className="text-[10px] text-[#7d8590] mt-0.5">Linux eBPF XDP Zero-Copy</div>
                   </div>
 
                   <div className="bg-[#141414] border border-[#222222] rounded-xl p-4">
-                    <div className="text-[10px] text-[#7a9bd1] uppercase font-bold">Data Exfiltrated / Loss</div>
+                    <div className="text-[10px] text-[#93a1b3] uppercase font-bold">Data Exfiltrated / Loss</div>
                     <div className="text-2xl font-black text-emerald-400 mt-1">
                       0.00 <span className="text-xs">Bytes</span>
                     </div>
-                    <div className="text-[10px] text-[#666666] mt-0.5">Zero Data Compromise</div>
+                    <div className="text-[10px] text-[#7d8590] mt-0.5">Zero Data Compromise</div>
                   </div>
 
                   <div className="bg-[#141414] border border-[#222222] rounded-xl p-4">
-                    <div className="text-[10px] text-[#7a9bd1] uppercase font-bold">Zero-Trust Compliance</div>
+                    <div className="text-[10px] text-[#93a1b3] uppercase font-bold">Zero-Trust Compliance</div>
                     <div className="text-2xl font-black text-emerald-400 mt-1">
                       100%
                     </div>
-                    <div className="text-[10px] text-[#666666] mt-0.5">Sovereign Standard SCDS-V9</div>
+                    <div className="text-[10px] text-[#7d8590] mt-0.5">Sovereign Standard SCDS-V9</div>
                   </div>
                 </div>
 
                 {/* Key Findings List */}
-                <div className="bg-[#0b1730] border border-[#222222] rounded-xl p-5 space-y-3">
+                <div className="bg-[#131a24] border border-[#222222] rounded-xl p-5 space-y-3">
                   <h4 className="font-bold text-white text-xs uppercase tracking-wider flex items-center gap-2">
                     <FileText className="w-4 h-4 text-emerald-400" />
                     <span>{isAr ? 'النتائج والاستنتاجات التنفيذية' : 'Executive Postmortem Findings'}</span>
@@ -881,27 +881,27 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
 
                 {/* Mitigated MITRE TTPs Matrix */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-[#0b1730] border border-[#222222]">
-                    <div className="text-[#7a9bd1] font-bold">T1498 • Volumetric DDoS</div>
+                  <div className="p-3 rounded-xl bg-[#131a24] border border-[#222222]">
+                    <div className="text-[#93a1b3] font-bold">T1498 • Volumetric DDoS</div>
                     <div className="text-white font-bold mt-1">54 Botnet Ingress Nodes</div>
                     <div className="text-[11px] text-emerald-400 mt-0.5">Neutralized at Edge Filter</div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#0b1730] border border-[#222222]">
-                    <div className="text-[#7a9bd1] font-bold">T1190 • Exploit Public-Facing App</div>
+                  <div className="p-3 rounded-xl bg-[#131a24] border border-[#222222]">
+                    <div className="text-[#93a1b3] font-bold">T1190 • Exploit Public-Facing App</div>
                     <div className="text-white font-bold mt-1">APT-41 Zero-Day Laser</div>
                     <div className="text-[11px] text-cyan-400 mt-0.5">eBPF Kernel Drop (0.31µs)</div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#0b1730] border border-[#222222]">
-                    <div className="text-[#7a9bd1] font-bold">T1070.002 • Clear Linux Logs</div>
+                  <div className="p-3 rounded-xl bg-[#131a24] border border-[#222222]">
+                    <div className="text-[#93a1b3] font-bold">T1070.002 • Clear Linux Logs</div>
                     <div className="text-white font-bold mt-1">Rogue Admin Interception</div>
-                    <div className="text-[11px] text-[#FFB000] mt-0.5">Dual-Key Step-Up Intercepted</div>
+                    <div className="text-[11px] text-[#d29922] mt-0.5">Dual-Key Step-Up Intercepted</div>
                   </div>
                 </div>
 
                 {/* Cryptographic Digital Signature Footer */}
-                <div className="pt-4 border-t border-[#222222] flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#7a9bd1] gap-2 font-mono">
+                <div className="pt-4 border-t border-[#222222] flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#93a1b3] gap-2 font-mono">
                   <div>
                     SHA-256 Seal: <span className="text-emerald-400 font-bold">{soarReport.cryptographicSeal?.sha256Digest?.substring(0, 24)}...</span>
                   </div>
@@ -915,12 +915,12 @@ export const MoDWarGamesSimulator: React.FC<MoDWarGamesSimulatorProps> = ({
           </div>
 
           {/* Footer Bar */}
-          <div className="px-6 py-3 bg-[#0C0C0C] border-t border-[#1E1E1E] flex items-center justify-between text-xs text-[#666666]">
+          <div className="px-6 py-3 bg-[#0C0C0C] border-t border-[#1e2733] flex items-center justify-between text-xs text-[#7d8590]">
             <span>SOVEREIGN DEFENDER 6.0 • MoD RED TEAM SIMULATOR</span>
             <div className="flex items-center gap-3">
               <button
                 onClick={onClose}
-                className="text-[#7a9bd1] hover:text-white transition text-xs"
+                className="text-[#93a1b3] hover:text-white transition text-xs"
               >
                 {isAr ? 'إغلاق المحاكي' : 'Dismiss'}
               </button>

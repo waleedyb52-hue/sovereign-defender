@@ -402,28 +402,28 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
 
       {/* Slide-out Drill-Down Drawer for Node Telemetry (Pitch-Black Cyber-Ops Surface) */}
       {isDrillDownOpen && selectedNode && (
-        <div className="fixed inset-0 bg-[#050d1e]/85 backdrop-blur-sm z-50 flex items-center justify-end p-4 animate-in fade-in">
-          <div className="bg-[#0b1730] border border-[#22385c] rounded-xl w-full max-w-md p-5 shadow-2xl space-y-4 text-[#EAEAEA] animate-in slide-in-from-right font-mono">
-            <div className="flex items-center justify-between pb-3 border-b border-[#22385c]">
+        <div className="fixed inset-0 bg-[#0d1117]/85 backdrop-blur-sm z-50 flex items-center justify-end p-4 animate-in fade-in">
+          <div className="bg-[#131a24] border border-[#1e2733] rounded-xl w-full max-w-md p-5 shadow-2xl space-y-4 text-[#e6edf3] animate-in slide-in-from-right font-mono">
+            <div className="flex items-center justify-between pb-3 border-b border-[#1e2733]">
               <div className="flex items-center gap-2.5">
                 <div className={`p-2 rounded border ${
-                  selectedNode.status === 'UNDER_ATTACK' ? 'bg-[#050d1e] text-[#FF003C] border-[#FF003C]' :
-                  selectedNode.status === 'SUSPICIOUS' ? 'bg-[#050d1e] text-[#FFB000] border-[#FFB000]' :
-                  selectedNode.status === 'ISOLATED' ? 'bg-[#050d1e] text-[#7a9bd1] border-[#7a9bd1]' :
-                  'bg-[#050d1e] text-[#39FF14] border-[#39FF14]'
+                  selectedNode.status === 'UNDER_ATTACK' ? 'bg-[#0d1117] text-[#f85149] border-[#f85149]' :
+                  selectedNode.status === 'SUSPICIOUS' ? 'bg-[#0d1117] text-[#d29922] border-[#d29922]' :
+                  selectedNode.status === 'ISOLATED' ? 'bg-[#0d1117] text-[#93a1b3] border-[#93a1b3]' :
+                  'bg-[#0d1117] text-[#3fb950] border-[#3fb950]'
                 }`}>
                   <Server className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-[#EAEAEA]">
+                  <h4 className="text-sm font-bold text-[#e6edf3]">
                     {isAr ? selectedNode.labelAr : selectedNode.label}
                   </h4>
-                  <span className="text-xs text-[#7a9bd1]">{selectedNode.ip} • {selectedNode.vlan}</span>
+                  <span className="text-xs text-[#93a1b3]">{selectedNode.ip} • {selectedNode.vlan}</span>
                 </div>
               </div>
               <button
                 onClick={() => setIsDrillDownOpen(false)}
-                className="p-1 rounded text-[#7a9bd1] hover:text-[#EAEAEA] hover:bg-[#181818]"
+                className="p-1 rounded text-[#93a1b3] hover:text-[#e6edf3] hover:bg-[#181818]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -431,29 +431,29 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
 
             {/* Drill-down telemetry metrics */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 bg-[#050d1e] rounded border border-[#22385c]">
-                <span className="text-[10px] text-[#7a9bd1]">{isAr ? 'درجة الخطورة' : 'Threat Score'}</span>
-                <div className={`text-base font-bold ${selectedNode.threatScore > 70 ? 'text-[#FF003C]' : 'text-[#39FF14]'}`}>
+              <div className="p-3 bg-[#0d1117] rounded border border-[#1e2733]">
+                <span className="text-[10px] text-[#93a1b3]">{isAr ? 'درجة الخطورة' : 'Threat Score'}</span>
+                <div className={`text-base font-bold ${selectedNode.threatScore > 70 ? 'text-[#f85149]' : 'text-[#3fb950]'}`}>
                   {selectedNode.threatScore}/100
                 </div>
               </div>
-              <div className="p-3 bg-[#050d1e] rounded border border-[#22385c]">
-                <span className="text-[10px] text-[#7a9bd1]">{isAr ? 'ضغط المعالج' : 'CPU Load'}</span>
-                <div className="text-base font-bold text-[#EAEAEA]">{selectedNode.cpuLoad}%</div>
+              <div className="p-3 bg-[#0d1117] rounded border border-[#1e2733]">
+                <span className="text-[10px] text-[#93a1b3]">{isAr ? 'ضغط المعالج' : 'CPU Load'}</span>
+                <div className="text-base font-bold text-[#e6edf3]">{selectedNode.cpuLoad}%</div>
               </div>
-              <div className="p-3 bg-[#050d1e] rounded border border-[#22385c]">
-                <span className="text-[10px] text-[#7a9bd1]">{isAr ? 'جلسات TCP' : 'Sockets'}</span>
-                <div className="text-base font-bold text-[#39FF14]">{selectedNode.activeSockets}</div>
+              <div className="p-3 bg-[#0d1117] rounded border border-[#1e2733]">
+                <span className="text-[10px] text-[#93a1b3]">{isAr ? 'جلسات TCP' : 'Sockets'}</span>
+                <div className="text-base font-bold text-[#3fb950]">{selectedNode.activeSockets}</div>
               </div>
             </div>
 
             {/* Security Diagnosis */}
-            <div className="p-3.5 bg-[#050d1e] rounded border border-[#22385c] space-y-2 text-xs">
-              <div className="font-semibold text-[#EAEAEA] flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#39FF14]" />
+            <div className="p-3.5 bg-[#0d1117] rounded border border-[#1e2733] space-y-2 text-xs">
+              <div className="font-semibold text-[#e6edf3] flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[#3fb950]" />
                 <span>{isAr ? 'التشخيص الأمني بنواة eBPF' : 'eBPF Kernel Security Diagnostics'}</span>
               </div>
-              <p className="text-[#7a9bd1] leading-relaxed">
+              <p className="text-[#93a1b3] leading-relaxed">
                 {selectedNode.status === 'UNDER_ATTACK'
                   ? (isAr ? 'تم رصد محاولات استغلال واستدعاء غير مصرح به للشل. تم تطبيق إسقاط الحزم عند خطاف XDP.' : 'Exploitation and unauthorized subshell spawn detected. XDP hook drop rules actively enforced.')
                   : selectedNode.status === 'SUSPICIOUS'

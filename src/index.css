@@ -1,39 +1,70 @@
 @import "tailwindcss";
 
 /* =========================================================================
-   SOVEREIGN DEFENDER — "CYBER NAVY" THEME
-   Overrides Tailwind's built-in `slate` scale (used by ~2,000 class instances
-   across every panel in the app: bg-slate-*, text-slate-*, border-slate-*).
-   Redefining these CSS variables re-colors the ENTIRE dashboard from a flat
-   near-black theme into a deep, saturated tactical navy-blue — with zero
-   changes required in any component file.
+   SOVEREIGN DEFENDER — SOC ANALYST THEME
+   Built to match how real security-operations platforms are designed
+   (CrowdStrike Falcon / Cortex XSIAM / MS Sentinel conventions):
+
+   1. Deep NEUTRAL grey-blue base, not pure black and not a saturated navy.
+      Analysts sit in front of this for full shifts; a low-saturation surface
+      avoids the contrast strain and colour vibration that cause eye fatigue.
+   2. A strict THREE-colour severity language (red / amber / green) plus one
+      muted blue for interactive affordances. Colour is reserved for meaning
+      — decorative colour is what turns a console into visual chaos.
+   3. No ambient glow on ordinary containers. Emphasis comes from contrast,
+      weight and spacing, and a glow is spent only on a genuine live alert.
+
+   The `slate` scale below overrides Tailwind's built-in one, which the app
+   uses ~2,000 times (bg/text/border-slate-*), so the whole console adopts
+   this surface system without per-component edits.
    ========================================================================= */
 @theme {
-  --color-slate-50:  #eef4ff;
-  --color-slate-100: #dfe9fc;
-  --color-slate-200: #c2d6f5;
-  --color-slate-300: #9ab8e8;
-  --color-slate-400: #7a9bd1;
-  --color-slate-500: #4d6fa0;
-  --color-slate-600: #35507d;
-  --color-slate-700: #22385c;
-  --color-slate-800: #162542;
-  --color-slate-900: #0b1730;
-  --color-slate-950: #050d1e;
+  --color-slate-50:  #f7f9fc;
+  --color-slate-100: #eef2f7;
+  --color-slate-200: #dde4ec;
+  --color-slate-300: #c2ccd9;
+  --color-slate-400: #93a1b3;
+  --color-slate-500: #6b7a90;
+  --color-slate-600: #48566a;
+  --color-slate-700: #2d3948;
+  --color-slate-800: #1e2733;
+  --color-slate-900: #131a24;
+  --color-slate-950: #0d1117;
+
+  /* Severity language — desaturated so it reads as authoritative, not alarming.
+     These deliberately replace the old neon values (#39FF14 / #FF003C) which
+     vibrate against a dark surface and are a known source of fatigue. */
+  --color-rose-300:    #ff9d97;
+  --color-rose-400:    #fa7970;
+  --color-rose-500:    #f85149;
+  --color-rose-600:    #da3633;
+  --color-amber-300:   #e9c46a;
+  --color-amber-400:   #dbab3a;
+  --color-amber-500:   #d29922;
+  --color-emerald-300: #6fd08a;
+  --color-emerald-400: #56b96a;
+  --color-emerald-500: #3fb950;
+  --color-cyan-300:    #79c0ff;
+  --color-cyan-400:    #58a6ff;
+  --color-cyan-500:    #388bfd;
 }
 
 @layer base {
   :root {
-    --bg-root: #050d1e;
-    --surface-panel: #0b1730;
-    --border-subtle: #22385c;
-    --text-primary: #e8f0ff;
-    --text-secondary: #7a9bd1;
-    --threat-safe: #22e5a8;
-    --threat-critical: #ff3b5c;
-    --threat-warning: #ffb236;
-    --accent-cyan: #22d3ee;
-    --accent-blue: #3b82f6;
+    --bg-root: #0d1117;
+    --surface-panel: #131a24;
+    --surface-raised: #1a2230;
+    --border-subtle: #1e2733;
+    --border-strong: #2d3948;
+    --text-primary: #e6edf3;
+    --text-secondary: #93a1b3;
+    --text-muted: #6b7a90;
+
+    /* Severity tokens (three-colour system) */
+    --sev-critical: #f85149;
+    --sev-warning: #d29922;
+    --sev-safe: #3fb950;
+    --sev-info: #58a6ff;
   }
 
   html, body, #root {
@@ -45,150 +76,109 @@
   body {
     font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--text-primary);
-    /* Subtle tactical circuit-grid + radial vignette: cheap CSS gradients,
-       no impact on canvas/WebGL frame budget, reinforces the SOC identity
-       on every screen behind the panels. */
-    background-image:
-      linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px),
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(34, 211, 238, 0.09), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 100% 100%, rgba(59, 130, 246, 0.07), transparent 60%);
-    background-size: 42px 42px, 42px 42px, 100% 100%, 100% 100%;
+    /* A single, very low-contrast ambient wash. No grid pattern behind content:
+       texture competes with data and is the first thing to go in a console
+       that has to stay readable for hours. */
+    background-image: radial-gradient(ellipse 90% 55% at 50% -10%, rgba(56, 139, 253, 0.06), transparent 70%);
     background-attachment: fixed;
   }
 
-  /* Force Monospace for all IP addresses, hashes, timestamps, logs, and numerical data */
+  /* Monospace for all IPs, hashes, timestamps and numeric telemetry */
   code, pre, .font-mono, [data-mono="true"] {
     font-family: 'Fira Code', 'Roboto Mono', 'Courier New', monospace !important;
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
   }
 
+  /* Calmer headings: tighter tracking, less shouting than default uppercase */
+  h1, h2, h3 { letter-spacing: -0.015em; }
+
   ::selection {
-    background-color: rgba(34, 211, 238, 0.35);
+    background-color: rgba(56, 139, 253, 0.3);
     color: #ffffff;
   }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: var(--bg-root); }
   ::-webkit-scrollbar-thumb {
-    background: var(--border-subtle);
+    background: var(--border-strong);
     border-radius: 6px;
     border: 2px solid var(--bg-root);
   }
-  ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 }
 
 /* =========================================================================
-   CYBERSECURITY GLOW ACCENTS
-   Every "active state" / important border in the app already uses one of
-   these four semantic Tailwind classes hundreds of times (cyan = info/live,
-   emerald = safe/success, amber = warning, rose = critical/danger). Adding a
-   neon glow to exactly these four classes gives the whole platform a
-   cohesive tactical-SOC look everywhere at once, with no per-component edits
-   and no risk of touching unrelated styling.
+   SEVERITY EMPHASIS
+   Real consoles mark severity with a solid edge and a faint tint, not a halo.
+   Only a live critical alert earns motion/glow, so it is the one thing that
+   pulls the eye across a wall display.
    ========================================================================= */
-.border-cyan-500, .border-cyan-400 {
-  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.15), 0 0 16px -4px rgba(34, 211, 238, 0.45);
+.sev-critical {
+  border-left: 3px solid var(--sev-critical);
+  background: linear-gradient(90deg, rgba(248, 81, 73, 0.07), transparent 55%);
 }
-.border-emerald-500, .border-emerald-400 {
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.15), 0 0 16px -4px rgba(16, 185, 129, 0.4);
+.sev-warning {
+  border-left: 3px solid var(--sev-warning);
+  background: linear-gradient(90deg, rgba(210, 153, 34, 0.07), transparent 55%);
 }
-.border-amber-500, .border-amber-400 {
-  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.15), 0 0 16px -4px rgba(245, 158, 11, 0.4);
+.sev-safe {
+  border-left: 3px solid var(--sev-safe);
+  background: linear-gradient(90deg, rgba(63, 185, 80, 0.06), transparent 55%);
 }
-.border-rose-500, .border-rose-400 {
-  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.18), 0 0 18px -3px rgba(244, 63, 94, 0.55);
+[dir="rtl"] .sev-critical,
+[dir="rtl"] .sev-warning,
+[dir="rtl"] .sev-safe {
+  border-left: none;
+  border-right: 3px solid currentColor;
 }
+[dir="rtl"] .sev-critical { border-right-color: var(--sev-critical); background: linear-gradient(-90deg, rgba(248, 81, 73, 0.07), transparent 55%); }
+[dir="rtl"] .sev-warning  { border-right-color: var(--sev-warning);  background: linear-gradient(-90deg, rgba(210, 153, 34, 0.07), transparent 55%); }
+[dir="rtl"] .sev-safe     { border-right-color: var(--sev-safe);     background: linear-gradient(-90deg, rgba(63, 185, 80, 0.06), transparent 55%); }
 
-/* Scanline sweep — a thin animated cyan line for the flagship map/globe
-   panels, reinforcing the "live sensor" feel judges expect from a SOC. */
-@keyframes sd-scan {
-  0%   { transform: translateY(-100%); opacity: 0; }
-  10%  { opacity: 0.55; }
-  90%  { opacity: 0.55; }
-  100% { transform: translateY(100%); opacity: 0; }
+/* Reserved for an ACTIVE critical incident only. */
+@keyframes sd-alert-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(248, 81, 73, 0.5), 0 0 18px -6px rgba(248, 81, 73, 0.55); }
+  50%      { box-shadow: 0 0 0 1px rgba(248, 81, 73, 0.85), 0 0 26px -4px rgba(248, 81, 73, 0.8); }
 }
-.cyber-scanline {
-  position: relative;
-  overflow: hidden;
-}
-.cyber-scanline::after {
-  content: '';
-  position: absolute;
-  left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.9), transparent);
-  animation: sd-scan 4.5s linear infinite;
-  pointer-events: none;
-  z-index: 5;
-}
+.alert-live { animation: sd-alert-pulse 2.4s ease-in-out infinite; }
 
-/* Reusable "glass panel" utility for new/updated cards: deep navy glass with
-   a cyan-tinted top edge highlight. */
-.cyber-glass {
-  background: linear-gradient(180deg, rgba(22, 37, 66, 0.85), rgba(11, 23, 48, 0.92));
+/* Panel surface: flat, defined by border + elevation, never by a halo. */
+.soc-panel {
+  background: var(--surface-panel);
   border: 1px solid var(--border-subtle);
-  backdrop-filter: blur(8px);
-  box-shadow: inset 0 1px 0 rgba(34, 211, 238, 0.12), 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+  border-radius: 12px;
+}
+.soc-panel-raised {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+}
+
+/* Section label: the quiet, consistent header used above every data group. */
+.soc-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 /* =========================================================================
-   Legacy helper utilities — kept for backward compatibility with any
-   component still referencing the old "pitch black" naming, remapped onto
-   the new Cyber Navy tokens.
+   Legacy helper utilities — remapped onto the new tokens so any component
+   still referencing the original naming stays consistent.
    ========================================================================= */
-.pitch-black-bg {
-  background-color: var(--bg-root) !important;
-}
-
-.pitch-black-surface {
-  background-color: var(--surface-panel) !important;
-  border: 1px solid var(--border-subtle) !important;
-}
-
-.pitch-black-border {
-  border-color: var(--border-subtle) !important;
-}
-
-.text-primary-offwhite {
-  color: var(--text-primary) !important;
-}
-
-.text-muted-gray {
-  color: var(--text-secondary) !important;
-}
-
-.text-cyber-green {
-  color: var(--threat-safe) !important;
-}
-
-.bg-cyber-green {
-  background-color: var(--threat-safe) !important;
-}
-
-.border-cyber-green {
-  border-color: var(--threat-safe) !important;
-}
-
-.text-crimson-red {
-  color: var(--threat-critical) !important;
-}
-
-.bg-crimson-red {
-  background-color: var(--threat-critical) !important;
-}
-
-.border-crimson-red {
-  border-color: var(--threat-critical) !important;
-}
-
-.text-amber-warning {
-  color: var(--threat-warning) !important;
-}
-
-.bg-amber-warning {
-  background-color: var(--threat-warning) !important;
-}
-
-.border-amber-warning {
-  border-color: var(--threat-warning) !important;
-}
+.pitch-black-bg { background-color: var(--bg-root) !important; }
+.pitch-black-surface { background-color: var(--surface-panel) !important; border: 1px solid var(--border-subtle) !important; }
+.pitch-black-border { border-color: var(--border-subtle) !important; }
+.text-primary-offwhite { color: var(--text-primary) !important; }
+.text-muted-gray { color: var(--text-secondary) !important; }
+.text-cyber-green { color: var(--sev-safe) !important; }
+.bg-cyber-green { background-color: var(--sev-safe) !important; }
+.border-cyber-green { border-color: var(--sev-safe) !important; }
+.text-crimson-red { color: var(--sev-critical) !important; }
+.bg-crimson-red { background-color: var(--sev-critical) !important; }
+.border-crimson-red { border-color: var(--sev-critical) !important; }
+.text-amber-warning { color: var(--sev-warning) !important; }
+.bg-amber-warning { background-color: var(--sev-warning) !important; }
+.border-amber-warning { border-color: var(--sev-warning) !important; }

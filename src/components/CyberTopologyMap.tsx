@@ -1117,7 +1117,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       const height = canvas.height;
 
       // Tactical navy-blue background with clearly visible grid
-      ctx.fillStyle = '#050d1e';
+      ctx.fillStyle = '#0d1117';
       ctx.fillRect(0, 0, width, height);
 
       // Draw Grid Matrix Lines
@@ -1321,7 +1321,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2);
           ctx.stroke();
 
-          ctx.fillStyle = isIsolated ? '#7f1d1d' : isUnderAttack ? '#78350f' : '#0b1730';
+          ctx.fillStyle = isIsolated ? '#7f1d1d' : isUnderAttack ? '#78350f' : '#131a24';
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, 16, 0, Math.PI * 2);
           ctx.fill();
@@ -3889,7 +3889,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                   cy={getY(h.ingressMbps)}
                                   r="3"
                                   fill="#00f0ff"
-                                  stroke="#050d1e"
+                                  stroke="#0d1117"
                                   strokeWidth="1.5"
                                 />
                                 <circle
@@ -3897,7 +3897,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                   cy={getY(h.egressMbps)}
                                   r="3"
                                   fill="#10b981"
-                                  stroke="#050d1e"
+                                  stroke="#0d1117"
                                   strokeWidth="1.5"
                                 />
                               </g>
