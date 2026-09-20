@@ -9,6 +9,7 @@
 import net from 'net';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { pathToFileURL } from 'url';
 const imp = (rel: string) => import(pathToFileURL(path.join(ROOT, rel)).href);
 
@@ -199,7 +200,6 @@ const auth = { 'x-api-key': KEY };
     return `Tamper simulated & alerted in ${dt}ms (round-trip); watcher is event-driven (fs.watch), not polled.`;
   });
   await run(20, 'FIM', 'SHA-256 recalculation accuracy', () => {
-    const crypto = require('crypto');
     const a = crypto.createHash('sha256').update('abc').digest('hex');
     assert(a === 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad', 'sha256 mismatch');
     return 'FIM uses crypto.createHash("sha256"); digest verified against NIST test vector "abc".';
