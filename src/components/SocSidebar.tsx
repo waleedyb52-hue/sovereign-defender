@@ -30,6 +30,8 @@ interface SocSidebarProps {
   onOpenApprovalModal?: () => void;
   onLaunchWarGames?: () => void;
   onOpenComplianceReport?: () => void;
+  /** Notifies the shell so main content can reflow instead of being covered. */
+  onPinnedChange?: (pinned: boolean) => void;
 }
 
 export const SocSidebar: React.FC<SocSidebarProps> = ({
@@ -41,11 +43,12 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
   pendingApprovalsCount = 0,
   onOpenApprovalModal,
   onLaunchWarGames,
-  onOpenComplianceReport
+  onOpenComplianceReport,
+  onPinnedChange
 }) => {
   const isAr = lang === 'ar';
   const [isHovered, setIsHovered] = useState<boolean>(false);
-  const [isPinned, setIsPinned] = useState<boolean>(false);
+  const [isPinned, setIsPinned] = useState<boolean>(true);
 
   // Tactical Actions State (Moved out of top bar)
   const [isLockdownActive, setIsLockdownActive] = useState<boolean>(false);
@@ -245,6 +248,9 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
   };
 
   const isExpanded = isHovered || isPinned;
+
+  // Keep the shell in sync with the pinned width so the layout reflows.
+  useEffect(() => { onPinnedChange?.(isPinned); }, [isPinned, onPinnedChange]);
 
   const navItems = [
     {

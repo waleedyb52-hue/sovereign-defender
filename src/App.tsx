@@ -28,6 +28,7 @@ import { MoDWarGamesSimulator } from './components/MoDWarGamesSimulator';
 import { SystemComplianceReport } from './components/SystemComplianceReport';
 import { KillChainPanel } from './components/soc/KillChainPanel';
 import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
+import { IncidentQueue } from './components/soc/IncidentQueue';
 import {
   INITIAL_INTEL_METRICS,
   INITIAL_NETWORK_EDGES,
@@ -58,6 +59,7 @@ export default function App() {
   const [isApprovalModalOpen, setIsApprovalModalOpen] = useState<boolean>(false);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState<boolean>(false);
   const [isKioskMode, setIsKioskMode] = useState<boolean>(false);
+  const [isSidebarPinned, setIsSidebarPinned] = useState<boolean>(true);
 
   // Network State
   const [nodes, setNodes] = useState<NetworkNode[]>(INITIAL_NETWORK_NODES);
@@ -539,10 +541,11 @@ export default function App() {
         onOpenApprovalModal={() => setIsApprovalModalOpen(true)}
         onLaunchWarGames={() => setIsWarGamesOpen(true)}
         onOpenComplianceReport={() => setIsComplianceReportOpen(true)}
+        onPinnedChange={setIsSidebarPinned}
       />
 
       {/* Main Content Layout Container (Offset by Sidebar Width) */}
-      <main className={`${isAr ? 'mr-16' : 'ml-16'} transition-all duration-300 min-h-[calc(100vh-48px)] p-4 sm:p-6 lg:p-8 flex flex-col`}>
+      <main className={`${isSidebarPinned ? (isAr ? 'mr-64' : 'ml-64') : (isAr ? 'mr-16' : 'ml-16')} transition-all duration-300 min-h-[calc(100vh-48px)] p-4 sm:p-6 lg:p-8 flex flex-col`}>
         {/* VIEW 1: Live Site Traffic & Security Inspector */}
         {activeTab === 'site_inspector' && (
           <div className="max-w-7xl mx-auto w-full">
@@ -618,22 +621,27 @@ export default function App() {
               </div>
             </div>
 
-            {/* The attack line: the narrative element — how far an adversary
-                got, and which control ended the chain. */}
+            {/* Triage first. Mature consoles lead with the prioritised queue —
+                the analyst works a list, and opens a picture only once a row
+                earns it. This is the working surface of the platform. */}
+            <IncidentQueue lang={lang} />
+
+            {/* The attack line: how far an adversary got, and which control
+                owns each stage of the chain. */}
             <KillChainPanel lang={lang} />
 
-            {/* The map gets the full canvas width: it carries its own floating
-                controls and overlays, which collide when the column narrows. */}
-            <div className="soc-panel p-2 overflow-hidden h-[460px] flex">
+            {/* Protection stack: what stops what, and where. */}
+            <DefenseLayersPanel lang={lang} />
+
+            {/* Geographic context last. It needs the full width — the map owns
+                floating overlays that collide the moment the column narrows. */}
+            <div className="soc-panel p-2 overflow-hidden h-[520px] flex">
               <AutonomousThreatMap
                 lang={lang}
                 isKioskMode={false}
                 onToggleKiosk={() => setIsKioskMode(true)}
               />
             </div>
-
-            {/* Protection stack, full width underneath. */}
-            <DefenseLayersPanel lang={lang} />
           </div>
         )}
       </main>
