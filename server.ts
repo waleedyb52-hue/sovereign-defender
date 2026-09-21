@@ -46,6 +46,7 @@ import { globalFileDlpEngine } from './server/services/fileDlpInterception.servi
 import { globalForensicAgent } from './server/services/aiForensicsAgent.service.js';
 import { globalThreatMemory } from './server/services/threatMemory.service.js';
 import { FEEDS, importFeed, type FeedId } from './server/services/intelFeeds.service.js';
+import { classifyPayload } from './server/services/payloadClassifier.service.js';
 import {
   computeBayesianThreatScore,
   runKMeansThreatClustering,
@@ -1791,8 +1792,19 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
     }
   }
 
-  // Fallback High-Quality Engine if Gemini API is offline or without key
-  const isAttack = packet.threatScore > 50 || packet.vector !== 'CLEAN_TRAFFIC';
+  // Fallback engine — the ONLY detection path on a sovereign deployment.
+  //
+  // The verdict is derived from the payload. It previously read
+  // `packet.vector !== 'CLEAN_TRAFFIC'`, i.e. the label the caller sent, which
+  // meant a one-character payload marked UNKNOWN was blocked while a real
+  // `DROP TABLE users; --` marked CLEAN_TRAFFIC was allowed straight through.
+  // The caller-supplied vector and score are now corroboration at most, never
+  // the decision.
+  const classification = classifyPayload(payloadStr);
+  const isAttack =
+    classification.malicious ||
+    (packet.threatScore > 50 && classification.score > 0) ||
+    (packet.vector && packet.vector !== 'CLEAN_TRAFFIC' && classification.score >= 25);
   const iptables = `iptables -I INPUT -s ${safeSrcIp} -p tcp --dport ${packet.port} -j DROP`;
   const suricata = `drop tcp ${safeSrcIp} any -> any ${packet.port} (msg:"SovereignDefender-v3.0 Alert: ${packet.vector}"; content:"${payloadStr.substring(0, 20)}"; sid:901002; rev:1;)`;
   const ebpf = `SEC("xdp") int xdp_sovereign_filter(struct xdp_md *ctx) { return XDP_DROP; }`;
@@ -1801,7 +1813,15 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
     success: true,
     aiGenerated: false,
     isFallbackMode: true,
-    threatScore: packet.threatScore || (isAttack ? 96 : 4),
+    threatScore: classification.score > 0 ? classification.score : (isAttack ? 96 : 4),
+    // What actually fired, so an analyst sees why rather than a bare number.
+    detection: {
+      engine: 'LOCAL_PAYLOAD_CLASSIFIER',
+      family: classification.family,
+      score: classification.score,
+      signatures: classification.signatures,
+      entropy: Number(classification.entropy.toFixed(2))
+    },
     confidence: 0.96,
     confidenceGatePassed: true,
     promptIsolationActive: true,
