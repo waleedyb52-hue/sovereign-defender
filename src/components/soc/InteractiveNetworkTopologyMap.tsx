@@ -272,7 +272,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
       node.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
     });
 
-    return () => simulation.stop();
+    return () => { simulation.stop(); };
   }, [nodes, links, isMinimalistMode, filterType, isAr]);
 
   const underAttackCount = nodes.filter(n => n.status === 'UNDER_ATTACK').length;
@@ -473,10 +473,12 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
                 isAlreadyIsolated={selectedNode.status === 'ISOLATED'}
                 lang={lang}
                 onSuccess={(targetId, newStatus) => {
+                  const nodeStatus: TopologyNodeData['status'] =
+                    newStatus === 'ISOLATED' ? 'ISOLATED' : 'PROTECTED';
                   setNodes(prev =>
                     prev.map(n => {
                       if (n.id === targetId) {
-                        return { ...n, status: newStatus };
+                        return { ...n, status: nodeStatus };
                       }
                       return n;
                     })
@@ -489,7 +491,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
                       return l;
                     })
                   );
-                  setSelectedNode(prev => prev ? { ...prev, status: newStatus } : null);
+                  setSelectedNode(prev => prev ? { ...prev, status: nodeStatus } : null);
                 }}
               />
             </div>

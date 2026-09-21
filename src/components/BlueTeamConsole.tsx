@@ -78,6 +78,8 @@ export interface BlueTeamConsoleProps {
 
 // Data Interfaces
 export interface UnifiedEvent {
+  /** Optional client-side unique id, used for stable React keys. */
+  uuid?: string;
   id: string;
   timestamp: string;
   source: 'WAF_EBPF' | 'FIM' | 'TARGET_SCANNER' | 'AI_DEFENSE' | 'SYSTEM_LOCKDOWN' | 'HONEYPOT';
@@ -245,6 +247,8 @@ export interface NetworkSocket {
 }
 
 export interface PcapPacket {
+  /** Optional client-side unique id, used for stable React keys. */
+  uuid?: string;
   id: string;
   frameNo: number;
   timestamp: string;

@@ -28,6 +28,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
     webhookUrl: '',
     telegramBotToken: '',
     telegramChatId: '',
+    totalDispatchedCount: 0,
     enabled: false,
     minSeverity: 'CRITICAL'
   });

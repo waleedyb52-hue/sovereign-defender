@@ -192,6 +192,13 @@ export interface NodeThroughputProfile {
   ingressDropRatePercent: number;
   ingressBufferSaturationPercent: number;
   ingressProtocols: { protocol: string; percent: number; color: string }[];
+  /** Transport-level split, derived from the protocol mix above. */
+  protocolBreakdown: {
+    tcpPercent: number;
+    udpPercent: number;
+    icmpPercent: number;
+    tlsEncryptedPercent: number;
+  };
   // Egress Telemetry (TX)
   egressBandwidthMbps: number;
   egressPeakMbps: number;
@@ -330,6 +337,31 @@ export const calculateNodeThroughputProfile = (
   };
 
   const rawEdges = edgeMappings[nodeId] || [];
+  // Transport split, classified from the protocol mix this node actually
+  // carries — the panel previously read a field nothing ever produced, so it
+  // rendered "undefined%".
+  const classify = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes('icmp') || n.includes('ping')) return 'icmp';
+    if (n.includes('udp') || n.includes('quic') || n.includes('dns')) return 'udp';
+    return 'tcp';
+  };
+  const isEncrypted = (name: string) => {
+    const n = name.toLowerCase();
+    return n.includes('tls') || n.includes('https') || n.includes('wss') || n.includes('ssl') || n.includes('mtls');
+  };
+  const protoTotal = ingressProtocols.reduce((sum, p) => sum + p.percent, 0) || 1;
+  const bucket = (kind: string) =>
+    Math.round((ingressProtocols.filter(p => classify(p.protocol) === kind)
+      .reduce((sum, p) => sum + p.percent, 0) / protoTotal) * 1000) / 10;
+  const protocolBreakdown = {
+    tcpPercent: bucket('tcp'),
+    udpPercent: bucket('udp'),
+    icmpPercent: bucket('icmp'),
+    tlsEncryptedPercent: Math.round((ingressProtocols.filter(p => isEncrypted(p.protocol))
+      .reduce((sum, p) => sum + p.percent, 0) / protoTotal) * 1000) / 10
+  };
+
   const connectedEdges: ConnectedEdgeDetail[] = rawEdges.map((re, index) => {
     const neighborNode = nodes.find(n => n.id === re.neighborId) || {
       id: re.neighborId,
@@ -394,6 +426,7 @@ export const calculateNodeThroughputProfile = (
     ingressDropRatePercent,
     ingressBufferSaturationPercent,
     ingressProtocols,
+    protocolBreakdown,
     egressBandwidthMbps,
     egressPeakMbps,
     egressPps,
@@ -456,22 +489,16 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
   const [showHeatmapLegend, setShowHeatmapLegend] = useState<boolean>(true);
   const [legendExpanded, setLegendExpanded] = useState<boolean>(false);
   const [canvasMousePos, setCanvasMousePos] = useState<{ x: number; y: number } | null>(null);
-  const [hoveredHeatPoint, setHoveredHeatPoint] = useState<{
-    id: string;
-    label: string;
-    labelAr: string;
-    vlan: string;
-    ipAddress: string;
-    densityScore: number;
-    threatCount: number;
-    activeSockets: number;
-    maliciousPct: number;
-    activeLoad: number;
-    latencyMs: number;
-    status: string;
-    x: number;
-    y: number;
-  } | null>(null);
+  /**
+   * What actually gets stored here is a SegmentDensityMetric plus the cursor
+   * position. The shape was previously re-typed by hand and had drifted from
+   * it — it declared `id` where the metric carries `nodeId`, and omitted
+   * `thermalStatus` — so the reads below were silently undefined. Deriving
+   * from the source type keeps the two from separating again.
+   */
+  const [hoveredHeatPoint, setHoveredHeatPoint] = useState<
+    (SegmentDensityMetric & { x: number; y: number }) | null
+  >(null);
 
   // Emergency & Combat Controls
   const [emergencyLockdown, setEmergencyLockdown] = useState<boolean>(false);
@@ -2579,15 +2606,15 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       <div className="flex flex-wrap gap-1">
                         {selectedNodeThroughput.connectedEdges.map((edge) => (
                           <button
-                            key={edge.edgeId}
+                            key={edge.id}
                             onClick={() => {
                               setIsNodeExpanded(true);
                               setExpandedNodeSubTab('EDGES');
                             }}
                             className="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-[10px] font-mono text-slate-300 flex items-center gap-1.5 transition"
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full ${edgeQuarantined[edge.edgeId] ? 'bg-rose-400' : edge.status === 'CONGESTED' ? 'bg-amber-400' : 'bg-emerald-400'}`} />
-                            <span className="truncate max-w-[90px]">{isAr ? edge.targetNodeLabelAr : edge.targetNodeLabel}</span>
+                            <span className={`w-1.5 h-1.5 rounded-full ${edgeQuarantined[edge.id] ? 'bg-rose-400' : edge.status === 'CONGESTED' ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+                            <span className="truncate max-w-[90px]">{isAr ? edge.neighborLabelAr : edge.neighborLabel}</span>
                             <span className="text-slate-500 text-[9px]">({edge.capacityGbps}G)</span>
                           </button>
                         ))}
@@ -4031,10 +4058,10 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   {/* Connected Edges Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {selectedNodeThroughput.connectedEdges.map((edge) => {
-                      const isQuarantined = edgeQuarantined[edge.edgeId] || edge.status === 'QUARANTINED';
-                      const isQoSLimited = edgeQoSThrottled[edge.edgeId];
-                      const pingResult = edgePingResults[edge.edgeId];
-                      const isPingTesting = pingTestingEdgeId === edge.edgeId;
+                      const isQuarantined = edgeQuarantined[edge.id] || edge.status === 'QUARANTINED';
+                      const isQoSLimited = edgeQoSThrottled[edge.id];
+                      const pingResult = edgePingResults[edge.id];
+                      const isPingTesting = pingTestingEdgeId === edge.id;
 
                       const saturationPercent = Math.min(
                         100,
@@ -4043,7 +4070,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
                       return (
                         <div
-                          key={edge.edgeId}
+                          key={edge.id}
                           className={`p-5 rounded-2xl border transition space-y-4 shadow-xl ${
                             isQuarantined
                               ? 'bg-rose-950/30 border-rose-600/70 shadow-rose-950/40'
@@ -4062,14 +4089,14 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                     : 'bg-cyan-950 text-cyan-300 border border-cyan-500/40'
                                 }`}
                               >
-                                {edge.direction === 'INGRESS_ONLY' ? '←' : edge.direction === 'EGRESS_ONLY' ? '→' : '⇄'}
+                                {edge.direction === 'INGRESS' ? '←' : edge.direction === 'EGRESS' ? '→' : '⇄'}
                               </div>
                               <div>
                                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                                  <span>{isAr ? edge.targetNodeLabelAr : edge.targetNodeLabel}</span>
+                                  <span>{isAr ? edge.neighborLabelAr : edge.neighborLabel}</span>
                                 </h4>
                                 <span className="text-[11px] font-mono text-slate-400 block">
-                                  {edge.targetIp} • {edge.targetVlan}
+                                  {edge.neighborIp} • {edge.neighborVlan}
                                 </span>
                               </div>
                             </div>
@@ -4140,7 +4167,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           {/* Action Directives per Edge */}
                           <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80">
                             <button
-                              onClick={() => handleTestEdgePing(edge.edgeId, edge.latencyMs)}
+                              onClick={() => handleTestEdgePing(edge.id, edge.latencyMs)}
                               disabled={isPingTesting}
                               className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition"
                             >
@@ -4149,7 +4176,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             </button>
 
                             <button
-                              onClick={() => handleToggleEdgeQoS(edge.edgeId)}
+                              onClick={() => handleToggleEdgeQoS(edge.id)}
                               className={`py-1.5 px-2 rounded-xl border text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition ${
                                 isQoSLimited
                                   ? 'bg-amber-950 border-amber-500 text-amber-300'
@@ -4161,7 +4188,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             </button>
 
                             <button
-                              onClick={() => handleToggleEdgeQuarantine(edge.edgeId)}
+                              onClick={() => handleToggleEdgeQuarantine(edge.id)}
                               className={`py-1.5 px-2 rounded-xl border text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition ${
                                 isQuarantined
                                   ? 'bg-emerald-950 border-emerald-500 text-emerald-300'

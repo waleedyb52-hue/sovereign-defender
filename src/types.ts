@@ -188,6 +188,8 @@ export interface LiveProtectionResponse {
     powDifficulty: number;
     token: string;
     expiresInSec: number;
+    /** Interactive-challenge question, emitted by the server for TIER-2. */
+    mathPrompt?: string;
   };
   enforcementActions: {
     iptablesRule: string;
@@ -502,6 +504,15 @@ export interface HoneypotSession {
   decoyCanariesTripped: string[];
   status: 'TRAPPED' | 'INTERACTING' | 'DISCONNECTED';
   baitCredentialsAccessed: string;
+  /**
+   * Geo/containment enrichment. The core honeypot feed does not carry these,
+   * so every consumer must fall back — they are declared optional rather than
+   * required to stop the UI reading fields that are simply absent.
+   */
+  country?: string;
+  countryFlag?: string;
+  jailContainerId?: string;
+  triggerVector?: string;
 }
 
 // =============================================================================

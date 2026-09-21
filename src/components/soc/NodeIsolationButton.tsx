@@ -3,6 +3,8 @@ import { ShieldAlert, Loader2, CheckCircle2, XCircle, Ban, Undo2 } from 'lucide-
 
 export interface NodeIsolationButtonProps {
   targetId: string;
+  /** Address of the target, when the caller knows it. */
+  targetIp?: string;
   targetType?: 'NODE' | 'IP' | 'CIDR';
   targetLabel?: string;
   isAlreadyIsolated?: boolean;
@@ -15,6 +17,7 @@ export interface NodeIsolationButtonProps {
 
 export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
   targetId,
+  targetIp,
   targetType = 'NODE',
   targetLabel,
   isAlreadyIsolated = false,
@@ -29,7 +32,7 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
   const [isolationStatus, setIsolationStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [toastMessage, setToToastMessage] = useState<string | null>(null);
 
-  const displayTarget = targetLabel || targetId;
+  const displayTarget = targetLabel || targetIp || targetId;
 
   const handleExecuteIsolation = async (e: React.MouseEvent) => {
     e.stopPropagation();

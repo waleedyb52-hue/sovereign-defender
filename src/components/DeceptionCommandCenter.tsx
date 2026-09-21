@@ -216,7 +216,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
 
                       <span
                         className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
-                          session.status === 'ACTIVE_TRAPPED'
+                          session.status === 'TRAPPED'
                             ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
                             : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                         }`}
@@ -236,7 +236,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
 
                     <div className="mt-2 flex items-center justify-between gap-2">
                       <span className="text-[10px] text-slate-400">
-                        Trigger: <code className="text-amber-300">{session.triggerVector}</code>
+                        Trigger: <code className="text-amber-300">{session.triggerVector || session.decoyService}</code>
                       </span>
                       <button
                         type="button"
