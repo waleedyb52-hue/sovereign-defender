@@ -62,7 +62,21 @@ export interface RetrievedContext {
   similar: StoredIncident[];
   /** Known-bad indicator hit, if the actor is already on file. */
   iocHit: IocRecord | null;
+  /** Reference knowledge for the technique in play (MITRE ATT&CK). */
+  technique: TechniqueRecord | null;
   totalCorpus: number;
+}
+
+export interface TechniqueRecord {
+  id: string;
+  name?: string;
+  tactic?: string;
+  description?: string;
+  detection?: string;
+  mitigations?: string;
+  platforms?: string;
+  url?: string;
+  source?: string;
 }
 
 export interface IocRecord {
@@ -136,6 +150,40 @@ export class ThreatMemoryService {
       CREATE VIRTUAL TABLE IF NOT EXISTS incidents_fts USING fts5(
         id UNINDEXED,
         body
+      );
+
+      -- TTP reference knowledge (MITRE ATT&CK and equivalents). Separate from
+      -- incidents: an incident is something that happened, a technique is what
+      -- that thing MEANS, how it is detected and how it is mitigated.
+      CREATE TABLE IF NOT EXISTS techniques (
+        id          TEXT PRIMARY KEY,
+        name        TEXT,
+        tactic      TEXT,
+        description TEXT,
+        detection   TEXT,
+        mitigations TEXT,
+        platforms   TEXT,
+        url         TEXT,
+        source      TEXT
+      );
+
+      CREATE VIRTUAL TABLE IF NOT EXISTS techniques_fts USING fts5(
+        id UNINDEXED,
+        body
+      );
+
+      -- Vulnerabilities known to be exploited in the wild (e.g. CISA KEV).
+      CREATE TABLE IF NOT EXISTS vulnerabilities (
+        cve            TEXT PRIMARY KEY,
+        vendor         TEXT,
+        product        TEXT,
+        name           TEXT,
+        description    TEXT,
+        required_action TEXT,
+        due_date       TEXT,
+        ransomware     TEXT,
+        date_added     TEXT,
+        source         TEXT
       );
 
       CREATE TABLE IF NOT EXISTS iocs (
@@ -235,6 +283,76 @@ export class ThreatMemoryService {
     } catch { /* indicator bookkeeping is best-effort */ }
   }
 
+  /** Upserts TTP reference knowledge. */
+  public importTechniques(rows: Array<{
+    id: string; name?: string; tactic?: string; description?: string;
+    detection?: string; mitigations?: string; platforms?: string; url?: string; source?: string;
+  }>): { imported: number } {
+    if (!this.ready) return { imported: 0 };
+    let imported = 0;
+    for (const t of rows) {
+      if (!t.id) continue;
+      try {
+        this.db.prepare(`
+          INSERT INTO techniques (id, name, tactic, description, detection, mitigations, platforms, url, source)
+          VALUES (?,?,?,?,?,?,?,?,?)
+          ON CONFLICT(id) DO UPDATE SET
+            name=excluded.name, tactic=excluded.tactic, description=excluded.description,
+            detection=excluded.detection, mitigations=excluded.mitigations,
+            platforms=excluded.platforms, url=excluded.url, source=excluded.source
+        `).run(
+          t.id, t.name ?? null, t.tactic ?? null, t.description ?? null,
+          t.detection ?? null, t.mitigations ?? null, t.platforms ?? null,
+          t.url ?? null, t.source ?? 'MITRE_ATTACK'
+        );
+        this.db.prepare('DELETE FROM techniques_fts WHERE id = ?').run(t.id);
+        this.db.prepare('INSERT INTO techniques_fts (id, body) VALUES (?, ?)').run(
+          t.id,
+          [t.id, t.name, t.tactic, t.description, t.detection, t.mitigations].filter(Boolean).join(' \n ')
+        );
+        imported++;
+      } catch { /* skip malformed row */ }
+    }
+    return { imported };
+  }
+
+  /** Upserts known-exploited vulnerability records. */
+  public importVulnerabilities(rows: Array<Record<string, any>>): { imported: number } {
+    if (!this.ready) return { imported: 0 };
+    let imported = 0;
+    for (const v of rows) {
+      const cve = v.cveID || v.cve || v.id;
+      if (!cve) continue;
+      try {
+        this.db.prepare(`
+          INSERT INTO vulnerabilities (cve, vendor, product, name, description, required_action, due_date, ransomware, date_added, source)
+          VALUES (?,?,?,?,?,?,?,?,?,?)
+          ON CONFLICT(cve) DO UPDATE SET
+            vendor=excluded.vendor, product=excluded.product, name=excluded.name,
+            description=excluded.description, required_action=excluded.required_action,
+            due_date=excluded.due_date, ransomware=excluded.ransomware
+        `).run(
+          cve, v.vendorProject ?? null, v.product ?? null, v.vulnerabilityName ?? v.name ?? null,
+          v.shortDescription ?? v.description ?? null, v.requiredAction ?? null,
+          v.dueDate ?? null, v.knownRansomwareCampaignUse ?? null,
+          v.dateAdded ?? null, v.source ?? 'CISA_KEV'
+        );
+        imported++;
+      } catch { /* skip malformed row */ }
+    }
+    return { imported };
+  }
+
+  /** Reference lookup for a technique id such as "T1059.004". */
+  public lookupTechnique(idOrLabel: string): any | null {
+    if (!this.ready || !idOrLabel) return null;
+    const id = (String(idOrLabel).match(/T\d{4}(?:\.\d{3})?/) || [])[0];
+    if (!id) return null;
+    try {
+      return this.db.prepare('SELECT * FROM techniques WHERE id = ?').get(id) ?? null;
+    } catch { return null; }
+  }
+
   /** Bulk import. Returns how many rows were genuinely new. */
   public importIncidents(rows: StoredIncident[]): { imported: number; skipped: number } {
     let imported = 0, skipped = 0;
@@ -293,7 +411,7 @@ export class ThreatMemoryService {
    */
   public retrieve(q: RetrievalQuery): RetrievedContext {
     const limit = q.limit ?? DEFAULT_LIMIT;
-    const empty: RetrievedContext = { sameActor: [], sameTechnique: [], similar: [], iocHit: null, totalCorpus: 0 };
+    const empty: RetrievedContext = { sameActor: [], sameTechnique: [], similar: [], iocHit: null, technique: null, totalCorpus: 0 };
     if (!this.ready) return empty;
 
     try {
@@ -316,7 +434,9 @@ export class ThreatMemoryService {
 
       const iocHit = q.actorIp ? this.lookupIoc(q.actorIp) : null;
 
-      return { sameActor, sameTechnique, similar, iocHit, totalCorpus: this.count() };
+      const technique = this.lookupTechnique(q.mitreTechnique || q.vector || '');
+
+      return { sameActor, sameTechnique, similar, iocHit, technique, totalCorpus: this.count() };
     } catch (err: any) {
       console.warn('[ThreatMemory] retrieve failed:', err?.message || err);
       return empty;
@@ -367,6 +487,15 @@ export class ThreatMemoryService {
       `- [${i.timestamp.slice(0, 19).replace('T', ' ')}] ${i.severity ?? '—'} · ${i.mitreTechnique ?? i.mitreTactic ?? 'n/a'}` +
       ` · actor ${i.actorIp ?? 'n/a'} · "${(i.title ?? '').slice(0, 110)}" -> response: ${i.actionTaken ?? 'n/a'}`;
 
+    if (ctx.technique) {
+      const t = ctx.technique;
+      lines.push(`TECHNIQUE REFERENCE ${t.id}${t.name ? ' — ' + t.name : ''}${t.tactic ? ' (' + t.tactic + ')' : ''}`);
+      if (t.description) lines.push(`  What it is: ${String(t.description).replace(/\s+/g, ' ').slice(0, 600)}`);
+      if (t.detection)   lines.push(`  Detection:  ${String(t.detection).replace(/\s+/g, ' ').slice(0, 400)}`);
+      if (t.mitigations) lines.push(`  Mitigation: ${String(t.mitigations).replace(/\s+/g, ' ').slice(0, 400)}`);
+      lines.push('');
+    }
+
     if (ctx.iocHit) {
       lines.push(
         `KNOWN INDICATOR: ${ctx.iocHit.indicator} (${ctx.iocHit.type}) — category ${ctx.iocHit.category}, ` +
@@ -401,7 +530,7 @@ export class ThreatMemoryService {
   // -------------------------------------------------------------------
 
   public stats() {
-    if (!this.ready) return { ready: false, incidents: 0, iocs: 0, bySeverity: [], topActors: [], topTechniques: [], dbPath: this.dbPath, sizeBytes: 0 };
+    if (!this.ready) return { ready: false, incidents: 0, iocs: 0, techniques: 0, vulnerabilities: 0, bySeverity: [], topActors: [], topTechniques: [], dbPath: this.dbPath, sizeBytes: 0 };
     const one = (sql: string) => { try { return (this.db.prepare(sql).get() as any) ?? {}; } catch { return {}; } };
     const many = (sql: string) => { try { return (this.db.prepare(sql).all() as any[]) ?? []; } catch { return []; } };
     let sizeBytes = 0;
@@ -413,6 +542,8 @@ export class ThreatMemoryService {
       sizeBytes,
       incidents: Number(one('SELECT COUNT(*) AS n FROM incidents').n ?? 0),
       iocs: Number(one('SELECT COUNT(*) AS n FROM iocs').n ?? 0),
+      techniques: Number(one('SELECT COUNT(*) AS n FROM techniques').n ?? 0),
+      vulnerabilities: Number(one('SELECT COUNT(*) AS n FROM vulnerabilities').n ?? 0),
       bySeverity: many('SELECT severity, COUNT(*) AS count FROM incidents GROUP BY severity ORDER BY count DESC'),
       topActors: many('SELECT actor_ip AS actorIp, COUNT(*) AS count FROM incidents WHERE actor_ip IS NOT NULL GROUP BY actor_ip ORDER BY count DESC LIMIT 10'),
       topTechniques: many('SELECT mitre_technique AS technique, COUNT(*) AS count FROM incidents WHERE mitre_technique IS NOT NULL GROUP BY mitre_technique ORDER BY count DESC LIMIT 10')
