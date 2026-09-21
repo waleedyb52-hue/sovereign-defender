@@ -1,0 +1,66 @@
+# =============================================================================
+# Sovereign Defender — self-hosted stack
+#
+# Runs on any machine you control: a laptop, a bare-metal server, a Proxmox or
+# Incus VM, or a K3s node. Every component is open source and nothing here
+# depends on a managed cloud service.
+#
+#   docker compose up -d           # start
+#   docker compose run --rm intel-import --all   # load threat-intel corpora
+#   docker compose logs -f app     # follow
+#
+# Compose is the small end of the range on purpose. If you need multi-node,
+# the same image runs unchanged under K3s/Kubernetes or Podman — there is no
+# Docker-specific behaviour in it.
+# =============================================================================
+
+services:
+  app:
+    build: .
+    image: sovereign-defender:latest
+    container_name: sovereign-defender
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Sovereign default: the AI reasons locally and the process makes no
+      # external calls. Flip to "true" only if you deliberately want cloud
+      # inference and outbound alert webhooks.
+      AI_CLOUD_ENABLED: "false"
+      # Set a real key before exposing this beyond localhost.
+      ADMIN_API_KEY: "${ADMIN_API_KEY:-change-me-before-exposing}"
+      WHITELIST_IPS: "${WHITELIST_IPS:-127.0.0.1,::1}"
+    volumes:
+      # The threat corpus. Keeping it in a named volume means rebuilding the
+      # image never discards what the AI has learned.
+      - sovereign-data:/app/data
+      # Monitored trees the FIM engine watches.
+      - sovereign-fim:/app/fim_sandbox
+      - sovereign-store:/app/sensitive_store
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+
+  # One-shot importer. Deliberately NOT part of `up`: pulling public feeds is
+  # an operator decision, not something the platform should do on its own.
+  # Shares the same volume, so what it imports is what the app retrieves from.
+  intel-import:
+    build: .
+    image: sovereign-defender:latest
+    profiles: ["tools"]
+    volumes:
+      - sovereign-data:/app/data
+    entrypoint: ["npx", "tsx", "scripts/import-intel.ts"]
+    command: ["--help"]
+
+volumes:
+  sovereign-data:
+  sovereign-fim:
+  sovereign-store:
