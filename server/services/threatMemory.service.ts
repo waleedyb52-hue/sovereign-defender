@@ -198,7 +198,15 @@ export class ThreatMemoryService {
         notes      TEXT
       );
 
-      CREATE INDEX IF NOT EXISTS idx_iocs_type ON iocs(type);
+      -- Indexes for the browse/search surface. Without these, paging 48k
+      -- indicators sorted by confidence is a full scan on every request.
+      CREATE INDEX IF NOT EXISTS idx_iocs_type       ON iocs(type);
+      CREATE INDEX IF NOT EXISTS idx_iocs_confidence ON iocs(confidence DESC);
+      CREATE INDEX IF NOT EXISTS idx_iocs_lastseen   ON iocs(last_seen DESC);
+      CREATE INDEX IF NOT EXISTS idx_iocs_source     ON iocs(source);
+      CREATE INDEX IF NOT EXISTS idx_tech_tactic     ON techniques(tactic);
+      CREATE INDEX IF NOT EXISTS idx_vuln_vendor     ON vulnerabilities(vendor);
+      CREATE INDEX IF NOT EXISTS idx_vuln_added      ON vulnerabilities(date_added DESC);
     `);
   }
 
@@ -548,6 +556,68 @@ export class ThreatMemoryService {
       topActors: many('SELECT actor_ip AS actorIp, COUNT(*) AS count FROM incidents WHERE actor_ip IS NOT NULL GROUP BY actor_ip ORDER BY count DESC LIMIT 10'),
       topTechniques: many('SELECT mitre_technique AS technique, COUNT(*) AS count FROM incidents WHERE mitre_technique IS NOT NULL GROUP BY mitre_technique ORDER BY count DESC LIMIT 10')
     };
+  }
+
+  /**
+   * Paginated browse over any corpus table.
+   *
+   * Server-side paging is not optional here: the indicator table alone holds
+   * tens of thousands of rows, and shipping them to a browser to filter there
+   * would stall the tab. Every filter and the sort are pushed into SQL, which
+   * the indexes above cover.
+   */
+  public browse(opts: {
+    table: 'iocs' | 'techniques' | 'vulnerabilities' | 'incidents';
+    q?: string;
+    type?: string;
+    source?: string;
+    page?: number;
+    pageSize?: number;
+  }): { rows: any[]; total: number; page: number; pageSize: number; pages: number } {
+    const page = Math.max(1, opts.page ?? 1);
+    const pageSize = Math.min(200, Math.max(1, opts.pageSize ?? 50));
+    const offset = (page - 1) * pageSize;
+    const blank = { rows: [], total: 0, page, pageSize, pages: 0 };
+    if (!this.ready) return blank;
+
+    const spec = {
+      iocs:            { search: ['indicator', 'category', 'notes'], order: 'confidence DESC, last_seen DESC' },
+      techniques:      { search: ['id', 'name', 'tactic', 'description'], order: 'id ASC' },
+      vulnerabilities: { search: ['cve', 'vendor', 'product', 'name'], order: 'date_added DESC' },
+      incidents:       { search: ['title', 'details', 'actor_ip', 'mitre_technique'], order: 'timestamp DESC' }
+    }[opts.table];
+    if (!spec) return blank;
+
+    const where: string[] = [];
+    const params: any[] = [];
+
+    if (opts.q && opts.q.trim()) {
+      where.push('(' + spec.search.map(c => `${c} LIKE ?`).join(' OR ') + ')');
+      for (const _ of spec.search) params.push(`%${opts.q.trim()}%`);
+    }
+    if (opts.type && opts.table === 'iocs') { where.push('type = ?'); params.push(opts.type); }
+    if (opts.source) { where.push('source = ?'); params.push(opts.source); }
+
+    const clause = where.length ? ' WHERE ' + where.join(' AND ') : '';
+    try {
+      const total = Number((this.db.prepare(`SELECT COUNT(*) AS n FROM ${opts.table}${clause}`).get(...params) as any)?.n ?? 0);
+      const rows = this.db.prepare(
+        `SELECT * FROM ${opts.table}${clause} ORDER BY ${spec.order} LIMIT ? OFFSET ?`
+      ).all(...params, pageSize, offset) as any[];
+      return { rows, total, page, pageSize, pages: Math.ceil(total / pageSize) };
+    } catch {
+      return blank;
+    }
+  }
+
+  /** Distinct sources present, for the filter control. */
+  public sources(table: 'iocs' | 'techniques' | 'vulnerabilities'): Array<{ source: string; count: number }> {
+    if (!this.ready) return [];
+    try {
+      return this.db.prepare(
+        `SELECT source, COUNT(*) AS count FROM ${table} WHERE source IS NOT NULL GROUP BY source ORDER BY count DESC`
+      ).all() as any[];
+    } catch { return []; }
   }
 
   public recent(limit = 50): StoredIncident[] {

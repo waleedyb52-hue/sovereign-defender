@@ -28,6 +28,7 @@ import {
   Boxes,
   Archive,
   Wrench,
+  Database,
   Award
 } from 'lucide-react';
 import { AppTab } from '../types';
@@ -324,6 +325,7 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
     { id: 'attack_sim' as AppTab, labelAr: 'محاكي الهجوم الحيّ', labelEn: 'Live Attack Simulator', subAr: 'حقن الحزم والرسم البياني', subEn: 'Packet injection & graph', icon: Crosshair, group: 'sim' },
     { id: 'digital_twin' as AppTab, labelAr: 'التوأم الرقمي', labelEn: 'Digital Twin', subAr: 'محاكاة سيناريوهات الاختراق', subEn: 'Breach scenario modelling', icon: Boxes, group: 'sim' },
     { id: 'forensics_vault' as AppTab, labelAr: 'خزينة الأدلة', labelEn: 'Forensics Vault', subAr: 'حزم PCAP والتقارير', subEn: 'PCAP & reports', icon: Archive, group: 'sim' },
+    { id: 'threat_corpus' as AppTab, labelAr: 'قاعدة المعرفة الأمنية', labelEn: 'Threat Corpus', subAr: 'المؤشّرات والتقنيات والاستيراد', subEn: 'Indicators, TTPs & import', icon: Database, group: 'intel' },
     { id: 'pro_tools' as AppTab, labelAr: 'أدوات الاحتراف', labelEn: 'Pro Cyber Tools', subAr: 'أدوات مساعدة للمحلل', subEn: 'Analyst utilities', icon: Wrench, group: 'sim' }
   ];
 

@@ -20,7 +20,9 @@ export type AppTab =
   | 'attack_sim'
   | 'digital_twin'
   | 'forensics_vault'
-  | 'pro_tools';
+  | 'pro_tools'
+  // Knowledge base
+  | 'threat_corpus';
 
 export type AttackVectorType = 
   | 'SSH_BRUTE_FORCE'

@@ -45,6 +45,7 @@ import { globalInLineInterceptionEngine } from './server/services/inLineIntercep
 import { globalFileDlpEngine } from './server/services/fileDlpInterception.service.js';
 import { globalForensicAgent } from './server/services/aiForensicsAgent.service.js';
 import { globalThreatMemory } from './server/services/threatMemory.service.js';
+import { FEEDS, importFeed, type FeedId } from './server/services/intelFeeds.service.js';
 import {
   computeBayesianThreatScore,
   runKMeansThreatClustering,
@@ -6365,6 +6366,56 @@ app.post('/api/v1/memory/import', adminAuthMiddleware, (req, res) => {
   } catch (err: any) {
     return res.status(500).json({ success: false, error: 'IMPORT_FAILED', message: err?.message || 'Unknown error.' });
   }
+});
+
+/** Paginated browse for the corpus UI. Paging is server-side by necessity. */
+app.get('/api/v1/memory/browse', (req, res) => {
+  const table = String(req.query.table ?? 'iocs') as any;
+  if (!['iocs', 'techniques', 'vulnerabilities', 'incidents'].includes(table)) {
+    return res.status(400).json({ success: false, error: 'INVALID_TABLE' });
+  }
+  const started = Date.now();
+  const result = globalThreatMemory.browse({
+    table,
+    q: req.query.q ? String(req.query.q) : undefined,
+    type: req.query.type ? String(req.query.type) : undefined,
+    source: req.query.source ? String(req.query.source) : undefined,
+    page: parseInt(String(req.query.page ?? '1'), 10) || 1,
+    pageSize: parseInt(String(req.query.pageSize ?? '50'), 10) || 50
+  });
+  return res.json({ success: true, ...result, queryMs: Date.now() - started });
+});
+
+/** The catalogue of open-source feeds the operator can pull. */
+app.get('/api/v1/memory/feeds', (_req, res) => {
+  res.json({ success: true, feeds: Object.values(FEEDS) });
+});
+
+/**
+ * Pulls one public feed into the corpus.
+ *
+ * Admin-gated: it writes the knowledge the AI reasons from, and it is the one
+ * place the platform deliberately reaches the internet. Never automatic.
+ */
+app.post('/api/v1/memory/import-feed', adminAuthMiddleware, async (req, res) => {
+  const feed = String((req.body || {}).feed || '') as FeedId;
+  if (!FEEDS[feed]) {
+    return res.status(400).json({ success: false, error: 'UNKNOWN_FEED', available: Object.keys(FEEDS) });
+  }
+  try {
+    const result = await importFeed(feed);
+    return res.json({ success: true, ...result, corpus: globalThreatMemory.stats() });
+  } catch (err: any) {
+    return res.status(502).json({ success: false, error: 'FEED_FAILED', feed, message: err?.message || 'Unknown error.' });
+  }
+});
+
+app.get('/api/v1/memory/sources', (req, res) => {
+  const table = String(req.query.table ?? 'iocs') as any;
+  if (!['iocs', 'techniques', 'vulnerabilities'].includes(table)) {
+    return res.status(400).json({ success: false, error: 'INVALID_TABLE' });
+  }
+  return res.json({ success: true, sources: globalThreatMemory.sources(table) });
 });
 
 app.get('/api/v1/memory/ioc/:indicator', (req, res) => {

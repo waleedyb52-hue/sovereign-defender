@@ -32,6 +32,7 @@ import { IncidentQueue } from './components/soc/IncidentQueue';
 import { PostureStrip } from './components/soc/PostureStrip';
 import { SecurityAnalyticsRow } from './components/soc/SecurityAnalyticsRow';
 import { MitreMatrix } from './components/soc/MitreMatrix';
+import { ThreatCorpusConsole } from './components/soc/ThreatCorpusConsole';
 import { AttackPathGraph } from './components/soc/AttackPathGraph';
 import {
   INITIAL_INTEL_METRICS,
@@ -681,6 +682,12 @@ export default function App() {
         {activeTab === 'forensics_vault' && (
           <div className="max-w-7xl mx-auto w-full">
             <ForensicsVault lang={lang} />
+          </div>
+        )}
+
+        {activeTab === 'threat_corpus' && (
+          <div className="max-w-[1500px] mx-auto w-full">
+            <ThreatCorpusConsole lang={lang} />
           </div>
         )}
 
