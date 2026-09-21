@@ -578,6 +578,118 @@ export default function App() {
           </div>
         )}
 
+        {/* ---- Network & kernel ---- */}
+        {activeTab === 'topology' && (
+          <div className="max-w-[1600px] mx-auto w-full">
+            <CyberTopologyMap lang={lang} />
+          </div>
+        )}
+
+        {activeTab === 'kernel_perf' && (
+          <div className="max-w-[1600px] mx-auto w-full">
+            <KernelIngressPerformanceCenter lang={lang} />
+          </div>
+        )}
+
+        {/* ---- Analytics & intelligence ---- */}
+        {activeTab === 'soc_analytics' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <SocAnalyticsDashboard lang={lang} />
+          </div>
+        )}
+
+        {activeTab === 'threat_intel' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <ThreatIntelStudio
+              lang={lang}
+              ingestedDatasets={ingestedDatasets}
+              intelMetrics={intelMetrics}
+              isIngesting={isIngesting}
+              onIngestDataset={handleIngestDataset}
+            />
+          </div>
+        )}
+
+        {activeTab === 'behavioral' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <BehavioralAnomalyStudio lang={lang} />
+          </div>
+        )}
+
+        {/* ---- Defense & response ---- */}
+        {activeTab === 'defense_overview' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <DefenseOverview
+              lang={lang}
+              quarantinedHosts={quarantinedHosts}
+              onUnbanHost={handleUnbanHost}
+            />
+          </div>
+        )}
+
+        {activeTab === 'live_protection' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <LiveWebsiteProtection
+              lang={lang}
+              apiKey={apiKey}
+              onRotateKey={handleRotateKey}
+              onTestProtection={handleTestProtection}
+            />
+          </div>
+        )}
+
+        {activeTab === 'deception' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <DeceptionCommandCenter lang={lang} />
+          </div>
+        )}
+
+        {/* ---- Simulation & tooling ----
+             The simulator, the graph it feeds and the resulting packet log are
+             one workflow, so they share a view rather than three tabs. */}
+        {activeTab === 'attack_sim' && (
+          <div className="max-w-[1600px] mx-auto w-full space-y-5">
+            <AttackSimulator
+              lang={lang}
+              isStreaming={isStreaming}
+              onInjectPacket={handleInjectPacket}
+              onToggleContinuousStream={handleToggleContinuousStream}
+              latestGeneratedRules={latestGeneratedRules}
+            />
+            <AttackGraph
+              lang={lang}
+              nodes={nodes}
+              edges={edges}
+              activePackets={packetLogs}
+              onToggleIsolateNode={handleToggleIsolateNode}
+            />
+            <PacketLogsStream
+              lang={lang}
+              packets={packetLogs}
+              onInspectPacket={setInspectingPacket}
+              onClearLogs={() => setPacketLogs([])}
+            />
+          </div>
+        )}
+
+        {activeTab === 'digital_twin' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <DigitalTwinSimulator lang={lang} />
+          </div>
+        )}
+
+        {activeTab === 'forensics_vault' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <ForensicsVault lang={lang} />
+          </div>
+        )}
+
+        {activeTab === 'pro_tools' && (
+          <div className="max-w-7xl mx-auto w-full">
+            <ProCyberTools lang={lang} />
+          </div>
+        )}
+
         {/* VIEW 5: 3D Global Threat Heatmap - FOCUS MODE (Massive Padding & Empty Space) */}
         {activeTab === 'threat_heatmap' && (
           <div className="flex-1 flex flex-col justify-start max-w-[1600px] mx-auto w-full py-2 space-y-5">

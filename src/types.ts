@@ -1,9 +1,26 @@
-export type AppTab = 
+export type AppTab =
+  // Core operations
   | 'site_inspector'
   | 'blue_team_soc'
   | 'threat_labs'
   | 'fim_forensics'
-  | 'threat_heatmap';
+  | 'threat_heatmap'
+  // Network & kernel
+  | 'topology'
+  | 'kernel_perf'
+  // Analytics & intelligence
+  | 'soc_analytics'
+  | 'threat_intel'
+  | 'behavioral'
+  // Defense & response
+  | 'defense_overview'
+  | 'live_protection'
+  | 'deception'
+  // Simulation & tooling
+  | 'attack_sim'
+  | 'digital_twin'
+  | 'forensics_vault'
+  | 'pro_tools';
 
 export type AttackVectorType = 
   | 'SSH_BRUTE_FORCE'

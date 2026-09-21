@@ -16,6 +16,18 @@ import {
   RefreshCw,
   UserCheck,
   Flame,
+  Network,
+  Cpu,
+  BarChart3,
+  Radar,
+  Brain,
+  LayoutDashboard,
+  Globe2,
+  Ghost,
+  Crosshair,
+  Boxes,
+  Archive,
+  Wrench,
   Award
 } from 'lucide-react';
 import { AppTab } from '../types';
@@ -292,7 +304,27 @@ export const SocSidebar: React.FC<SocSidebarProps> = ({
       subAr: 'أشجار ميركل والتحليل الجنائي',
       subEn: 'Merkle FIM & Vault',
       icon: FileSearch
-    }
+    },
+
+    // --- Network & kernel ---
+    { id: 'topology' as AppTab, labelAr: 'طوبولوجيا الشبكة', labelEn: 'Network Topology', subAr: 'خريطة الأصول والمسارات', subEn: 'Assets & lateral paths', icon: Network, group: 'net' },
+    { id: 'kernel_perf' as AppTab, labelAr: 'أداء النواة والـ XDP', labelEn: 'Kernel & XDP Performance', subAr: 'إنتاجية الحزم وزمن الاستجابة', subEn: 'Packet throughput & latency', icon: Cpu, group: 'net' },
+
+    // --- Analytics & intelligence ---
+    { id: 'soc_analytics' as AppTab, labelAr: 'تحليلات SOC', labelEn: 'SOC Analytics', subAr: 'اتجاهات ومؤشرات الأداء', subEn: 'Trends & KPIs', icon: BarChart3, group: 'intel' },
+    { id: 'threat_intel' as AppTab, labelAr: 'استخبارات التهديدات', labelEn: 'Threat Intelligence', subAr: 'مؤشرات الاختراق والمصادر', subEn: 'IOC feeds & sources', icon: Radar, group: 'intel' },
+    { id: 'behavioral' as AppTab, labelAr: 'الشذوذ السلوكي', labelEn: 'Behavioral Anomalies', subAr: 'خط الأساس والانحرافات', subEn: 'Baseline & deviations', icon: Brain, group: 'intel' },
+
+    // --- Defense & response ---
+    { id: 'defense_overview' as AppTab, labelAr: 'نظرة الدفاع العامة', labelEn: 'Defense Overview', subAr: 'المضيفات المحجورة', subEn: 'Quarantined hosts', icon: LayoutDashboard, group: 'def' },
+    { id: 'live_protection' as AppTab, labelAr: 'حماية الموقع المباشرة', labelEn: 'Live Site Protection', subAr: 'اختبار الحماية ومفاتيح API', subEn: 'Protection test & API keys', icon: Globe2, group: 'def' },
+    { id: 'deception' as AppTab, labelAr: 'مركز الخداع', labelEn: 'Deception Center', subAr: 'المصائد والطُعوم', subEn: 'Honeypots & decoys', icon: Ghost, group: 'def' },
+
+    // --- Simulation & tooling ---
+    { id: 'attack_sim' as AppTab, labelAr: 'محاكي الهجوم الحيّ', labelEn: 'Live Attack Simulator', subAr: 'حقن الحزم والرسم البياني', subEn: 'Packet injection & graph', icon: Crosshair, group: 'sim' },
+    { id: 'digital_twin' as AppTab, labelAr: 'التوأم الرقمي', labelEn: 'Digital Twin', subAr: 'محاكاة سيناريوهات الاختراق', subEn: 'Breach scenario modelling', icon: Boxes, group: 'sim' },
+    { id: 'forensics_vault' as AppTab, labelAr: 'خزينة الأدلة', labelEn: 'Forensics Vault', subAr: 'حزم PCAP والتقارير', subEn: 'PCAP & reports', icon: Archive, group: 'sim' },
+    { id: 'pro_tools' as AppTab, labelAr: 'أدوات الاحتراف', labelEn: 'Pro Cyber Tools', subAr: 'أدوات مساعدة للمحلل', subEn: 'Analyst utilities', icon: Wrench, group: 'sim' }
   ];
 
   return (
