@@ -44,6 +44,7 @@ import { globalSelfHealingLedger } from './server/services/selfHealingLedger.ser
 import { globalInLineInterceptionEngine } from './server/services/inLineInterception.service.js';
 import { globalFileDlpEngine } from './server/services/fileDlpInterception.service.js';
 import { globalForensicAgent } from './server/services/aiForensicsAgent.service.js';
+import { globalThreatMemory } from './server/services/threatMemory.service.js';
 import {
   computeBayesianThreatScore,
   runKMeansThreatClustering,
@@ -1708,11 +1709,26 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
     });
   }
 
-  // 3. STRICT PROMPT ISOLATION (<untrusted_payload>)
+  // 3. RETRIEVAL-AUGMENTED CONTEXT
+  //
+  // Instead of injecting the ever-growing `enrichedAiMemory` blob, pull the
+  // slice of the local corpus that actually bears on THIS event: what this
+  // actor did before, how this technique was handled previously, and any
+  // textually similar incident. The block is hard-capped, so prompt size
+  // stays flat no matter how large the corpus grows.
+  const retrieved = globalThreatMemory.retrieve({
+    actorIp: safeSrcIp,
+    vector: packet.vector,
+    mitreTechnique: packet.mitreTechnique,
+    payload: payloadStr
+  });
+  const groundedContext = globalThreatMemory.buildContextBlock(retrieved);
+
+  // 4. STRICT PROMPT ISOLATION (<untrusted_payload>)
   if (genAI) {
     try {
       const isolatedPrompt = buildIsolatedGeminiPrompt({
-        contextMemory: state.enrichedAiMemory,
+        contextMemory: groundedContext,
         sourceIp: safeSrcIp,
         targetIp: packet.dstIp,
         port: packet.port || 443,
@@ -6294,6 +6310,66 @@ app.post('/api/v1/ebpf/flush-maps', (req, res) => {
     message: 'In-kernel eBPF Maps reset and re-seeded successfully.',
     xdpStats: globalEbpfEngine.getStats()
   });
+});
+
+// =============================================================================
+// THREAT MEMORY — persistent corpus & retrieval (RAG) control surface
+// =============================================================================
+
+app.get('/api/v1/memory/stats', (_req, res) => {
+  res.json({ success: true, ...globalThreatMemory.stats() });
+});
+
+app.get('/api/v1/memory/recent', (req, res) => {
+  const limit = Math.min(200, Math.max(1, parseInt(String(req.query.limit ?? '50'), 10) || 50));
+  res.json({ success: true, incidents: globalThreatMemory.recent(limit) });
+});
+
+/** Ranked full-text search across the corpus. */
+app.get('/api/v1/memory/search', (req, res) => {
+  const q = String(req.query.q ?? '').trim();
+  if (!q) return res.status(400).json({ success: false, error: 'QUERY_REQUIRED' });
+  const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? '10'), 10) || 10));
+  return res.json({ success: true, query: q, results: globalThreatMemory.textSearch(q, limit) });
+});
+
+/**
+ * Shows exactly what the AI would be grounded on for a given indicator —
+ * the retrieval step made inspectable rather than hidden inside a prompt.
+ */
+app.get('/api/v1/memory/context', (req, res) => {
+  const actorIp = req.query.ip ? String(req.query.ip) : undefined;
+  const vector = req.query.vector ? String(req.query.vector) : undefined;
+  const payload = req.query.payload ? String(req.query.payload) : undefined;
+  const retrieved = globalThreatMemory.retrieve({ actorIp, vector, payload });
+  res.json({
+    success: true,
+    retrieved,
+    promptBlock: globalThreatMemory.buildContextBlock(retrieved),
+    promptBlockChars: globalThreatMemory.buildContextBlock(retrieved).length
+  });
+});
+
+/** Bulk import of prior incidents / indicator feeds. Admin-gated: it writes to the corpus the AI reasons from. */
+app.post('/api/v1/memory/import', adminAuthMiddleware, (req, res) => {
+  try {
+    const { incidents, iocs } = req.body || {};
+    const out: any = { success: true };
+    if (Array.isArray(incidents)) out.incidents = globalThreatMemory.importIncidents(incidents);
+    if (Array.isArray(iocs)) out.iocs = globalThreatMemory.importIocs(iocs);
+    if (!out.incidents && !out.iocs) {
+      return res.status(400).json({ success: false, error: 'NOTHING_TO_IMPORT', message: 'Provide an "incidents" and/or "iocs" array.' });
+    }
+    out.corpusSize = globalThreatMemory.stats().incidents;
+    return res.json(out);
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: 'IMPORT_FAILED', message: err?.message || 'Unknown error.' });
+  }
+});
+
+app.get('/api/v1/memory/ioc/:indicator', (req, res) => {
+  const hit = globalThreatMemory.lookupIoc(String(req.params.indicator));
+  res.json({ success: true, found: !!hit, ioc: hit });
 });
 
 // REAL PRODUCTION eBPF LINUX BRIDGE ENDPOINTS

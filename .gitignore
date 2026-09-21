@@ -6,3 +6,6 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local threat-memory corpus (operator data, never committed)
+data/

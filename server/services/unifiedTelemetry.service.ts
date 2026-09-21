@@ -1,3 +1,4 @@
+import { globalThreatMemory } from './threatMemory.service.js';
 import crypto from 'crypto';
 
 // =============================================================================
@@ -212,6 +213,28 @@ class UnifiedTelemetryService {
 
     this.events.unshift(event);
     if (this.events.length > MAX_EVENTS) this.events.length = MAX_EVENTS;
+
+    // Persist to the local corpus. The in-memory ring buffer above is capped
+    // and dies with the process; this is what gives the AI a history to
+    // retrieve from, and what survives a restart.
+    try {
+      globalThreatMemory.record({
+        id: event.id,
+        timestamp: event.timestamp,
+        source: event.source,
+        severity: event.severity,
+        title: event.title,
+        titleAr: event.titleAr,
+        details: event.details,
+        detailsAr: event.detailsAr,
+        actorIp: event.actorIp,
+        mitreTactic: event.mitreTactic,
+        mitreTechnique: event.mitreTechnique,
+        actionTaken: event.actionTaken,
+        actionTakenAr: event.actionTakenAr,
+        metadata: event.metadata
+      });
+    } catch { /* the store never blocks live telemetry */ }
 
     const incident = this.buildIncidentFromEvent(event);
     this.incidents.unshift(incident);

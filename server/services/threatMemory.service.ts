@@ -1,0 +1,482 @@
+import { DatabaseSync } from 'node:sqlite';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+
+/**
+ * THREAT MEMORY — persistent store + retrieval layer for AI grounding (RAG)
+ *
+ * Why SQLite, embedded:
+ *   The platform's core claim is sovereign, on-premises operation. A hosted
+ *   database or a cloud vector service would break that the same way the
+ *   cloud model did. `node:sqlite` ships inside Node 22+, so this adds a real
+ *   database with ZERO new dependencies, no daemon, and no network egress —
+ *   the whole corpus is one file on the operator's own disk.
+ *
+ * Why keyword/FTS retrieval rather than embeddings:
+ *   Threat intelligence is dominated by exact tokens — addresses, technique
+ *   IDs (T1059.004), CVE references, payload signatures, file hashes. BM25
+ *   over FTS5 matches those precisely, while an embedding model would blur
+ *   them into "looks similar" and would need either an external API (egress)
+ *   or a heavy local model. Retrieval here combines exact structured filters
+ *   (same actor, same technique) with full-text ranking over the corpus.
+ *
+ * What this replaces:
+ *   The AI previously received `state.enrichedAiMemory` — a single string
+ *   appended to forever. It grew without bound, was injected whole into every
+ *   prompt, and could not be searched. Retrieval returns a small, relevant,
+ *   bounded slice instead.
+ */
+
+export interface StoredIncident {
+  id: string;
+  timestamp: string;
+  source: string;
+  severity: string;
+  title: string;
+  titleAr?: string;
+  details?: string;
+  detailsAr?: string;
+  actorIp?: string;
+  mitreTactic?: string;
+  mitreTechnique?: string;
+  actionTaken?: string;
+  actionTakenAr?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface RetrievalQuery {
+  actorIp?: string;
+  vector?: string;
+  mitreTechnique?: string;
+  payload?: string;
+  limit?: number;
+}
+
+export interface RetrievedContext {
+  /** Prior incidents from this exact actor. */
+  sameActor: StoredIncident[];
+  /** Prior incidents sharing the technique/vector. */
+  sameTechnique: StoredIncident[];
+  /** Full-text matches against payload/title/details. */
+  similar: StoredIncident[];
+  /** Known-bad indicator hit, if the actor is already on file. */
+  iocHit: IocRecord | null;
+  totalCorpus: number;
+}
+
+export interface IocRecord {
+  indicator: string;
+  type: 'IP' | 'DOMAIN' | 'HASH' | 'URL' | 'SIGNATURE';
+  category: string;
+  confidence: number;
+  sightings: number;
+  firstSeen: string;
+  lastSeen: string;
+  source: string;
+  notes?: string;
+}
+
+/** How many characters of retrieved context we are willing to spend on a prompt. */
+const MAX_CONTEXT_CHARS = 4000;
+const DEFAULT_LIMIT = 4;
+
+export class ThreatMemoryService {
+  private db: DatabaseSync;
+  private readonly dbPath: string;
+  private ready = false;
+
+  constructor(dbPath?: string) {
+    const dir = path.join(process.cwd(), 'data');
+    try { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); } catch { /* fall through */ }
+    this.dbPath = dbPath ?? path.join(dir, 'threat_memory.db');
+
+    try {
+      this.db = new DatabaseSync(this.dbPath);
+      this.migrate();
+      this.ready = true;
+      console.log(`[ThreatMemory] Persistent corpus ready at ${this.dbPath} (${this.count()} incidents on file).`);
+    } catch (err: any) {
+      // A store that cannot open must not take the platform down with it; the
+      // AI simply falls back to prompt-only analysis.
+      console.warn('[ThreatMemory] Disabled — could not open store:', err?.message || err);
+      this.db = new DatabaseSync(':memory:');
+      try { this.migrate(); this.ready = true; } catch { this.ready = false; }
+    }
+  }
+
+  private migrate() {
+    this.db.exec(`
+      PRAGMA journal_mode = WAL;
+      PRAGMA synchronous = NORMAL;
+
+      CREATE TABLE IF NOT EXISTS incidents (
+        id              TEXT PRIMARY KEY,
+        timestamp       TEXT NOT NULL,
+        source          TEXT,
+        severity        TEXT,
+        title           TEXT,
+        title_ar        TEXT,
+        details         TEXT,
+        details_ar      TEXT,
+        actor_ip        TEXT,
+        mitre_tactic    TEXT,
+        mitre_technique TEXT,
+        action_taken    TEXT,
+        action_taken_ar TEXT,
+        metadata        TEXT
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_incidents_actor     ON incidents(actor_ip);
+      CREATE INDEX IF NOT EXISTS idx_incidents_technique ON incidents(mitre_technique);
+      CREATE INDEX IF NOT EXISTS idx_incidents_time      ON incidents(timestamp DESC);
+      CREATE INDEX IF NOT EXISTS idx_incidents_severity  ON incidents(severity);
+
+      -- Contentless-style FTS mirror used for ranked text retrieval.
+      CREATE VIRTUAL TABLE IF NOT EXISTS incidents_fts USING fts5(
+        id UNINDEXED,
+        body
+      );
+
+      CREATE TABLE IF NOT EXISTS iocs (
+        indicator  TEXT PRIMARY KEY,
+        type       TEXT NOT NULL,
+        category   TEXT,
+        confidence INTEGER DEFAULT 50,
+        sightings  INTEGER DEFAULT 1,
+        first_seen TEXT,
+        last_seen  TEXT,
+        source     TEXT,
+        notes      TEXT
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_iocs_type ON iocs(type);
+    `);
+  }
+
+  public isReady(): boolean { return this.ready; }
+
+  public count(): number {
+    try {
+      const r = this.db.prepare('SELECT COUNT(*) AS n FROM incidents').get() as any;
+      return Number(r?.n ?? 0);
+    } catch { return 0; }
+  }
+
+  // -------------------------------------------------------------------
+  // Ingestion
+  // -------------------------------------------------------------------
+
+  /**
+   * Persists one incident. Idempotent on id, so replaying a feed cannot
+   * inflate the corpus with duplicates.
+   */
+  public record(inc: StoredIncident): boolean {
+    if (!this.ready) return false;
+    try {
+      const existing = this.db.prepare('SELECT 1 FROM incidents WHERE id = ?').get(inc.id);
+      if (existing) return false;
+
+      this.db.prepare(`
+        INSERT INTO incidents (
+          id, timestamp, source, severity, title, title_ar, details, details_ar,
+          actor_ip, mitre_tactic, mitre_technique, action_taken, action_taken_ar, metadata
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      `).run(
+        inc.id,
+        inc.timestamp,
+        inc.source ?? null,
+        inc.severity ?? null,
+        inc.title ?? null,
+        inc.titleAr ?? null,
+        inc.details ?? null,
+        inc.detailsAr ?? null,
+        inc.actorIp ?? null,
+        inc.mitreTactic ?? null,
+        inc.mitreTechnique ?? null,
+        inc.actionTaken ?? null,
+        inc.actionTakenAr ?? null,
+        inc.metadata ? JSON.stringify(inc.metadata) : null
+      );
+
+      // One searchable blob per incident: the fields an analyst would grep.
+      const body = [
+        inc.title, inc.titleAr, inc.details, inc.detailsAr,
+        inc.actorIp, inc.mitreTactic, inc.mitreTechnique, inc.actionTaken,
+        inc.metadata ? JSON.stringify(inc.metadata) : ''
+      ].filter(Boolean).join(' \n ');
+
+      this.db.prepare('INSERT INTO incidents_fts (id, body) VALUES (?, ?)').run(inc.id, body);
+
+      if (inc.actorIp) this.upsertIoc(inc.actorIp, 'IP', inc.mitreTactic || inc.source || 'OBSERVED', inc.timestamp, inc.severity);
+      return true;
+    } catch (err: any) {
+      console.warn('[ThreatMemory] record failed:', err?.message || err);
+      return false;
+    }
+  }
+
+  /** Records or reinforces an indicator. Confidence rises with repeat sightings. */
+  public upsertIoc(indicator: string, type: IocRecord['type'], category: string, seenAt: string, severity?: string) {
+    if (!this.ready || !indicator) return;
+    try {
+      const row = this.db.prepare('SELECT sightings, confidence FROM iocs WHERE indicator = ?').get(indicator) as any;
+      const weight = severity === 'CRITICAL' ? 15 : severity === 'HIGH' ? 10 : 5;
+      if (row) {
+        this.db.prepare(
+          'UPDATE iocs SET sightings = sightings + 1, confidence = MIN(100, confidence + ?), last_seen = ? WHERE indicator = ?'
+        ).run(weight, seenAt, indicator);
+      } else {
+        this.db.prepare(`
+          INSERT INTO iocs (indicator, type, category, confidence, sightings, first_seen, last_seen, source)
+          VALUES (?,?,?,?,1,?,?,?)
+        `).run(indicator, type, category, Math.min(100, 40 + weight), seenAt, seenAt, 'PLATFORM_OBSERVED');
+      }
+    } catch { /* indicator bookkeeping is best-effort */ }
+  }
+
+  /** Bulk import. Returns how many rows were genuinely new. */
+  public importIncidents(rows: StoredIncident[]): { imported: number; skipped: number } {
+    let imported = 0, skipped = 0;
+    for (const r of rows) {
+      const withId: StoredIncident = {
+        ...r,
+        id: r.id || 'IMP-' + crypto.randomBytes(6).toString('hex').toUpperCase(),
+        timestamp: r.timestamp || new Date().toISOString()
+      };
+      if (this.record(withId)) imported++; else skipped++;
+    }
+    return { imported, skipped };
+  }
+
+  public importIocs(rows: Array<Partial<IocRecord> & { indicator: string }>): { imported: number } {
+    let imported = 0;
+    const now = new Date().toISOString();
+    for (const r of rows) {
+      if (!r.indicator) continue;
+      try {
+        this.db.prepare(`
+          INSERT INTO iocs (indicator, type, category, confidence, sightings, first_seen, last_seen, source, notes)
+          VALUES (?,?,?,?,?,?,?,?,?)
+          ON CONFLICT(indicator) DO UPDATE SET
+            confidence = MAX(iocs.confidence, excluded.confidence),
+            last_seen  = excluded.last_seen,
+            source     = excluded.source
+        `).run(
+          r.indicator,
+          r.type ?? 'IP',
+          r.category ?? 'IMPORTED',
+          r.confidence ?? 60,
+          r.sightings ?? 1,
+          r.firstSeen ?? now,
+          r.lastSeen ?? now,
+          r.source ?? 'IMPORT',
+          r.notes ?? null
+        );
+        imported++;
+      } catch { /* skip malformed row */ }
+    }
+    return { imported };
+  }
+
+  // -------------------------------------------------------------------
+  // Retrieval (the R in RAG)
+  // -------------------------------------------------------------------
+
+  /**
+   * Gathers the corpus evidence relevant to one live event.
+   *
+   * Three complementary passes, because "relevant" means different things:
+   *   - same actor      -> has this address done something before?
+   *   - same technique  -> how did we handle this TTP previously?
+   *   - full-text       -> anything textually close to this payload
+   */
+  public retrieve(q: RetrievalQuery): RetrievedContext {
+    const limit = q.limit ?? DEFAULT_LIMIT;
+    const empty: RetrievedContext = { sameActor: [], sameTechnique: [], similar: [], iocHit: null, totalCorpus: 0 };
+    if (!this.ready) return empty;
+
+    try {
+      const sameActor = q.actorIp
+        ? this.rows('SELECT * FROM incidents WHERE actor_ip = ? ORDER BY timestamp DESC LIMIT ?', [q.actorIp, limit])
+        : [];
+
+      const techKey = (q.mitreTechnique || q.vector || '').split(' - ')[0].trim();
+      const sameTechnique = techKey
+        ? this.rows(
+            `SELECT * FROM incidents
+             WHERE (mitre_technique LIKE ? OR mitre_tactic LIKE ?)
+               AND (? IS NULL OR actor_ip IS NULL OR actor_ip <> ?)
+             ORDER BY timestamp DESC LIMIT ?`,
+            [`%${techKey}%`, `%${techKey}%`, q.actorIp ?? null, q.actorIp ?? '', limit]
+          )
+        : [];
+
+      const similar = this.textSearch(q.payload || q.vector || '', limit);
+
+      const iocHit = q.actorIp ? this.lookupIoc(q.actorIp) : null;
+
+      return { sameActor, sameTechnique, similar, iocHit, totalCorpus: this.count() };
+    } catch (err: any) {
+      console.warn('[ThreatMemory] retrieve failed:', err?.message || err);
+      return empty;
+    }
+  }
+
+  public lookupIoc(indicator: string): IocRecord | null {
+    if (!this.ready) return null;
+    try {
+      const r = this.db.prepare('SELECT * FROM iocs WHERE indicator = ?').get(indicator) as any;
+      if (!r) return null;
+      return {
+        indicator: r.indicator, type: r.type, category: r.category,
+        confidence: Number(r.confidence), sightings: Number(r.sightings),
+        firstSeen: r.first_seen, lastSeen: r.last_seen, source: r.source, notes: r.notes ?? undefined
+      };
+    } catch { return null; }
+  }
+
+  /** BM25-ranked full-text search over the corpus. */
+  public textSearch(text: string, limit = 5): StoredIncident[] {
+    if (!this.ready) return [];
+    const query = toMatchQuery(text);
+    if (!query) return [];
+    try {
+      return this.rows(
+        `SELECT i.* FROM incidents_fts f
+         JOIN incidents i ON i.id = f.id
+         WHERE incidents_fts MATCH ?
+         ORDER BY rank
+         LIMIT ?`,
+        [query, limit]
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Renders retrieved evidence as prompt context.
+   *
+   * Hard-capped: an unbounded context is exactly the failure mode this
+   * replaces, and an over-long prompt costs latency on every single analysis.
+   */
+  public buildContextBlock(ctx: RetrievedContext, isAr = false): string {
+    const lines: string[] = [];
+    const fmt = (i: StoredIncident) =>
+      `- [${i.timestamp.slice(0, 19).replace('T', ' ')}] ${i.severity ?? '—'} · ${i.mitreTechnique ?? i.mitreTactic ?? 'n/a'}` +
+      ` · actor ${i.actorIp ?? 'n/a'} · "${(i.title ?? '').slice(0, 110)}" -> response: ${i.actionTaken ?? 'n/a'}`;
+
+    if (ctx.iocHit) {
+      lines.push(
+        `KNOWN INDICATOR: ${ctx.iocHit.indicator} (${ctx.iocHit.type}) — category ${ctx.iocHit.category}, ` +
+        `confidence ${ctx.iocHit.confidence}/100, seen ${ctx.iocHit.sightings}x, first ${ctx.iocHit.firstSeen.slice(0, 10)}.`
+      );
+    }
+    if (ctx.sameActor.length) {
+      lines.push('', `PRIOR ACTIVITY FROM THIS ACTOR (${ctx.sameActor.length}):`, ...ctx.sameActor.map(fmt));
+    }
+    if (ctx.sameTechnique.length) {
+      lines.push('', `HOW THIS TECHNIQUE WAS HANDLED BEFORE (${ctx.sameTechnique.length}):`, ...ctx.sameTechnique.map(fmt));
+    }
+    if (ctx.similar.length) {
+      lines.push('', `TEXTUALLY SIMILAR PAST INCIDENTS (${ctx.similar.length}):`, ...ctx.similar.map(fmt));
+    }
+
+    if (!lines.length) {
+      return isAr
+        ? 'لا توجد سوابق مطابقة في قاعدة الحوادث المحلية لهذا المؤشر.'
+        : 'No matching precedent in the local incident corpus for this indicator.';
+    }
+
+    lines.unshift(`[RETRIEVED FROM LOCAL INCIDENT CORPUS — ${ctx.totalCorpus} incidents on file]`);
+    const block = lines.join('\n');
+    return block.length > MAX_CONTEXT_CHARS
+      ? block.slice(0, MAX_CONTEXT_CHARS) + '\n… [context truncated to bound prompt size]'
+      : block;
+  }
+
+  // -------------------------------------------------------------------
+  // Reporting
+  // -------------------------------------------------------------------
+
+  public stats() {
+    if (!this.ready) return { ready: false, incidents: 0, iocs: 0, bySeverity: [], topActors: [], topTechniques: [], dbPath: this.dbPath, sizeBytes: 0 };
+    const one = (sql: string) => { try { return (this.db.prepare(sql).get() as any) ?? {}; } catch { return {}; } };
+    const many = (sql: string) => { try { return (this.db.prepare(sql).all() as any[]) ?? []; } catch { return []; } };
+    let sizeBytes = 0;
+    try { sizeBytes = fs.statSync(this.dbPath).size; } catch { /* :memory: */ }
+
+    return {
+      ready: true,
+      dbPath: this.dbPath,
+      sizeBytes,
+      incidents: Number(one('SELECT COUNT(*) AS n FROM incidents').n ?? 0),
+      iocs: Number(one('SELECT COUNT(*) AS n FROM iocs').n ?? 0),
+      bySeverity: many('SELECT severity, COUNT(*) AS count FROM incidents GROUP BY severity ORDER BY count DESC'),
+      topActors: many('SELECT actor_ip AS actorIp, COUNT(*) AS count FROM incidents WHERE actor_ip IS NOT NULL GROUP BY actor_ip ORDER BY count DESC LIMIT 10'),
+      topTechniques: many('SELECT mitre_technique AS technique, COUNT(*) AS count FROM incidents WHERE mitre_technique IS NOT NULL GROUP BY mitre_technique ORDER BY count DESC LIMIT 10')
+    };
+  }
+
+  public recent(limit = 50): StoredIncident[] {
+    return this.rows('SELECT * FROM incidents ORDER BY timestamp DESC LIMIT ?', [limit]);
+  }
+
+  /** Test/maintenance helper. */
+  public clear() {
+    if (!this.ready) return;
+    try { this.db.exec('DELETE FROM incidents; DELETE FROM incidents_fts; DELETE FROM iocs;'); } catch { /* noop */ }
+  }
+
+  // -------------------------------------------------------------------
+
+  private rows(sql: string, params: any[]): StoredIncident[] {
+    try {
+      const out = this.db.prepare(sql).all(...params) as any[];
+      return out.map(mapRow);
+    } catch {
+      return [];
+    }
+  }
+}
+
+function mapRow(r: any): StoredIncident {
+  return {
+    id: r.id,
+    timestamp: r.timestamp,
+    source: r.source,
+    severity: r.severity,
+    title: r.title,
+    titleAr: r.title_ar ?? undefined,
+    details: r.details ?? undefined,
+    detailsAr: r.details_ar ?? undefined,
+    actorIp: r.actor_ip ?? undefined,
+    mitreTactic: r.mitre_tactic ?? undefined,
+    mitreTechnique: r.mitre_technique ?? undefined,
+    actionTaken: r.action_taken ?? undefined,
+    actionTakenAr: r.action_taken_ar ?? undefined,
+    metadata: r.metadata ? safeParse(r.metadata) : undefined
+  };
+}
+
+function safeParse(s: string) { try { return JSON.parse(s); } catch { return undefined; } }
+
+/**
+ * Turns arbitrary attacker-supplied text into a safe FTS5 MATCH expression.
+ *
+ * FTS5 has its own query syntax; passing a raw payload through would either
+ * throw on stray operators or let the payload steer the query. Every token is
+ * therefore stripped to word characters and quoted, then OR-ed.
+ */
+function toMatchQuery(text: string): string | null {
+  const tokens = String(text || '')
+    .split(/[^A-Za-z0-9_.:-]+/)
+    .map(t => t.trim())
+    .filter(t => t.length >= 3 && t.length <= 40)
+    .slice(0, 12)
+    .map(t => `"${t.replace(/"/g, '')}"`);
+  return tokens.length ? tokens.join(' OR ') : null;
+}
+
+export const globalThreatMemory = new ThreatMemoryService();
