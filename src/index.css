@@ -136,6 +136,55 @@
 [dir="rtl"] .sev-warning  { border-right-color: var(--sev-warning);  background: linear-gradient(-90deg, rgba(250, 178, 25, 0.07), transparent 55%); }
 [dir="rtl"] .sev-safe     { border-right-color: var(--sev-safe);     background: linear-gradient(-90deg, rgba(63, 185, 80, 0.06), transparent 55%); }
 
+/* =========================================================================
+   MOTION BUDGET
+   A console is watched for hours, so movement is rationed. Two controls:
+
+   1. `prefers-reduced-motion` — the OS-level accessibility setting. When the
+      viewer has asked for less motion we stop essentially all of it, including
+      the WebGL globe's auto-rotation (the renderer reads this flag too).
+   2. `[data-motion="calm"]` on <html> — the in-app toggle, so a viewer can get
+      the same stillness without changing their OS settings.
+
+   Decorative pulsing is damped rather than removed: `animate-pulse` is used
+   ~106 times across the app, mostly as ornament. Slowing it and shrinking its
+   opacity swing keeps any "this is live" hint while stopping the whole screen
+   from breathing at once.
+   ========================================================================= */
+@keyframes sd-pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.72; }
+}
+.animate-pulse {
+  animation: sd-pulse-soft 3.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html[data-motion="calm"] .animate-pulse,
+html[data-motion="calm"] .animate-ping,
+html[data-motion="calm"] .animate-bounce,
+html[data-motion="calm"] .alert-live {
+  animation: none !important;
+}
+/* Spinners still turn in calm mode — a frozen spinner reads as a hang — but
+   slower, and only where something is genuinely in flight. */
+html[data-motion="calm"] .animate-spin {
+  animation-duration: 1.6s !important;
+}
+
+/* Numbers settle instead of snapping when a poll lands. */
+.num-settle {
+  transition: color 240ms ease, opacity 240ms ease;
+}
+
 /* Reserved for an ACTIVE critical incident only. */
 @keyframes sd-alert-pulse {
   0%, 100% { box-shadow: 0 0 0 1px rgba(248, 81, 73, 0.5), 0 0 18px -6px rgba(248, 81, 73, 0.55); }

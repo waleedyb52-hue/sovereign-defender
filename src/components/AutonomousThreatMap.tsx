@@ -18,6 +18,7 @@ import {
   ThreatCluster,
   Vector3D
 } from '../utils/threatMath';
+import { usePrefersCalm, useOnScreen } from '../hooks/useLiveData';
 
 export interface ThreatVectorData {
   id: string;
@@ -81,7 +82,7 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
 
   // Controls & Toggles
   const [noiseFilterEnabled, setNoiseFilterEnabled] = useState(true);
-  const [autoCameraEnabled, setAutoCameraEnabled] = useState(true);
+  const [autoCameraEnabled, setAutoCameraEnabled] = useState(false);
   const [showClusterOverlays, setShowClusterOverlays] = useState(true);
   const [showLaserBeams, setShowLaserBeams] = useState(true);
   const [noiseThreshold, setNoiseThreshold] = useState(35); // Filter noise < 35%
@@ -103,6 +104,15 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
   const currentLookAtRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
 
   // User Interaction State (manual drag / orbit)
+  // Read inside the render loop via refs so changing them never tears down
+  // and rebuilds the WebGL context.
+  const prefersCalm = usePrefersCalm();
+  const onScreen = useOnScreen(mountRef);
+  const calmRef = useRef(prefersCalm);
+  const onScreenRef = useRef(onScreen);
+  useEffect(() => { calmRef.current = prefersCalm; }, [prefersCalm]);
+  useEffect(() => { onScreenRef.current = onScreen; }, [onScreen]);
+
   const isDraggingRef = useRef(false);
   const previousMousePositionRef = useRef({ x: 0, y: 0 });
   const autoRotatePauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -356,13 +366,20 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
         elapsedTime = (now - startTime) / 1000;
       }
 
-      // Slow passive rotation if user is not actively dragging
-      if (globeGroupRef.current && !isDraggingRef.current && !autoCameraEnabled) {
+      // Scrolled past: keep the loop alive but do no work. A globe nobody can
+      // see should not hold a GPU busy or move in peripheral vision.
+      if (!onScreenRef.current) return;
+
+      const calm = calmRef.current;
+
+      // Passive rotation is the single most constant movement on the page, so
+      // it stops outright in calm mode.
+      if (globeGroupRef.current && !isDraggingRef.current && !autoCameraEnabled && !calm) {
         globeGroupRef.current.rotation.y += 0.0015;
       }
 
       // Sovereign Ring Pulse Animation
-      if (ringMesh) {
+      if (ringMesh && !calm) {
         const pulse = (Math.sin(elapsedTime * 4) + 1) / 2;
         ringMesh.scale.set(1 + pulse * 0.4, 1 + pulse * 0.4, 1);
         (ringMesh.material as THREE.MeshBasicMaterial).opacity = 0.8 - pulse * 0.5;
@@ -370,6 +387,7 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
 
       // Animate Laser Beam Photon Pulses along 3D Bezier Trajectories
       laserPulsesRef.current.forEach(laser => {
+        if (calm) return;
         laser.progress = (laser.progress + laser.speed * delta) % 1.0;
         if (laser.points.length > 2) {
           const index = Math.floor(laser.progress * (laser.points.length - 1));
@@ -380,7 +398,7 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
       });
 
       // Autonomous Camera Panning & Smooth Interpolation (Phase 3 Zero-Touch)
-      if (autoCameraEnabled && cameraRef.current && !isDraggingRef.current) {
+      if (autoCameraEnabled && !calm && cameraRef.current && !isDraggingRef.current) {
         cameraRef.current.position.lerp(targetCamPosRef.current, 0.035);
         currentLookAtRef.current.lerp(targetLookAtRef.current, 0.04);
         cameraRef.current.lookAt(currentLookAtRef.current);

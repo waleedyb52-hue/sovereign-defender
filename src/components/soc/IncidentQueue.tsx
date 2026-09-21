@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ShieldCheck, Cpu, FileLock2, Bot, Eye, Ban, Activity,
   ChevronLeft, ChevronRight, Filter, Clock, Download, ShieldAlert
@@ -88,12 +88,27 @@ export const IncidentQueue: React.FC<Props> = ({ lang = 'ar' }) => {
     return () => clearInterval(t);
   }, []);
 
+  /**
+   * Ordering is computed once per id and then frozen. Re-sorting on every
+   * poll moved rows out from under the cursor mid-read, which is the most
+   * disorienting thing a live list can do; new incidents take their place in
+   * the order, existing ones stay put.
+   */
+  const orderRef = useRef<Map<string, number>>(new Map());
+  const seqRef = useRef(0);
+
   const rows = useMemo(() => {
+    const order = orderRef.current;
+    for (const e of events) {
+      if (!order.has(e.id)) order.set(e.id, seqRef.current++);
+    }
     const f = filter === 'ALL' ? events : events.filter(e => (e.severity || '').toUpperCase() === filter);
     return [...f].sort((a, b) => {
       const d = sevOf(a.severity).rank - sevOf(b.severity).rank;
       if (d !== 0) return d;
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      // Within a severity, keep first-seen order stable rather than
+      // re-deriving it from timestamps on every refresh.
+      return (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0);
     });
   }, [events, filter]);
 

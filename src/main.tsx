@@ -2,6 +2,7 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { initCalmMode } from './hooks/useLiveData';
 
 // Safely intercept and suppress sandbox environment WebSocket closed errors and Vite HMR warnings
 if (typeof window !== 'undefined') {
@@ -27,6 +28,8 @@ if (typeof window !== 'undefined') {
     }
   });
 }
+
+initCalmMode();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

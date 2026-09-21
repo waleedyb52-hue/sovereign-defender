@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Shield, 
   RefreshCw,
+  Waves,
+  Pause,
   Bell,
   UserCheck,
   Zap,
@@ -11,6 +13,7 @@ import {
   Flame
 } from 'lucide-react';
 import { DefenseFlightMode, AppTab } from '../types';
+import { usePrefersCalm, setCalmMode } from '../hooks/useLiveData';
 export type { AppTab };
 
 interface NavbarProps {
@@ -48,6 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLaunchWarGames
 }) => {
   const isAr = lang === 'ar';
+  const calm = usePrefersCalm();
   const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
@@ -147,6 +151,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="p-1.5 rounded-md bg-[#131a24] hover:bg-[#1a2230] text-[#93a1b3] hover:text-[#e6edf3] border border-[#1e2733] transition"
           >
             <Bell className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Motion toggle — a console watched for hours needs a real way to
+              stop things moving, without changing OS settings. */}
+          <button
+            onClick={() => setCalmMode(!calm)}
+            title={calm
+              ? (isAr ? 'استئناف الحركة والرسوم المتحركة' : 'Resume motion')
+              : (isAr ? 'وضع السكون — إيقاف كل الحركة' : 'Calm mode — stop all motion')}
+            aria-pressed={calm}
+            className={`p-1.5 rounded-md border transition ${
+              calm
+                ? 'bg-[#1a2230] text-[#58a6ff] border-[#58a6ff]/40'
+                : 'bg-[#131a24] hover:bg-[#1a2230] text-[#93a1b3] hover:text-[#e6edf3] border-[#1e2733]'
+            }`}
+          >
+            {calm ? <Pause className="w-3.5 h-3.5" /> : <Waves className="w-3.5 h-3.5" />}
           </button>
 
           {/* SOC Wall Kiosk Launcher Button */}
