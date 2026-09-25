@@ -89,7 +89,11 @@ const RULES: Rule[] = [
   { re: /\b(admin|root|administrator)\s*[:\/]\s*(admin|root|toor|password|123456|letmein)\b/i, weight: 55, label: 'default credential pair', family: 'SSH_BRUTE_FORCE' },
 
   // ---- Server-side template injection (found missing by the held-out set) ----
-  { re: /\{\{\s*[\w.]*\s*[*+\-/]\s*[\w.]+\s*\}\}/, weight: 60, label: 'template expression {{expr}}', family: 'REMOTE_CODE_EXECUTION' },
+  // Any operator inside a template expression. The previous form required the
+  // operands to be bare words, so `{{ config.items() * 7 }}` — a call, which is
+  // what an SSTI probe actually looks like — slipped past. A plain placeholder
+  // such as {{customerName}} has no operator and still passes.
+  { re: /\{\{[^}]*[*+\-/][^}]*\}\}/, weight: 60, label: 'template expression with operator', family: 'REMOTE_CODE_EXECUTION' },
   { re: /<%=?[^%>]*[*+\-/][^%>]*%>/, weight: 55, label: 'ERB/JSP template expression', family: 'REMOTE_CODE_EXECUTION' },
   { re: /\$\{\s*[\w.]+\s*[*+\-/]\s*[\w.]+\s*\}/, weight: 55, label: 'EL/template expression', family: 'REMOTE_CODE_EXECUTION' },
 
@@ -123,6 +127,10 @@ const RULES: Rule[] = [
   // ---- Prototype pollution (CWE-1321) ----
   { re: /["']?__proto__["']?\s*[:=]/, weight: 70, label: '__proto__ assignment', family: 'OBJECT_TAMPERING' },
   { re: /constructor\s*\[\s*["']prototype["']|constructor\.prototype\s*[.\[]/i, weight: 65, label: 'constructor.prototype access', family: 'OBJECT_TAMPERING' },
+  // The same attack expressed as nested JSON keys rather than property access.
+  // Only fires when constructor and prototype are adjacent keys, so prose
+  // mentioning either word is unaffected.
+  { re: /["']constructor["']\s*:\s*\{\s*["']prototype["']\s*:/i, weight: 70, label: 'constructor/prototype nested keys', family: 'OBJECT_TAMPERING' },
 
   // ---- Mass assignment / privilege escalation via body (CWE-915) ----
   { re: /["'](role|isAdmin|is_admin|admin|superuser|privilege|permissions?|verified|isVerified)["']\s*:\s*(true|["']?(super)?admin)/i,

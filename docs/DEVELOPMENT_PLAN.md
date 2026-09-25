@@ -90,6 +90,32 @@ constraints and avoiding the Arp et al. pitfalls.
 benchmark, and the gap is explainable. If it still reports ~100%, the harness
 is wrong and Phase 1 is not done.
 
+**Result — criterion met.** The naive benchmark reported 100%. Set A reported
+F1 54.5% on first run, with 891 false alarms per 10,000 requests projected at
+a 2% deployed prevalence. After OWASP/CWE rule families and a structural
+prose guard, Set A reads F1 92.3% with zero false positives — but Set A is now
+contaminated, because its failures were visible before those rules were
+written. It is retained as a regression baseline only.
+
+**Set B** (`audit/eval_holdout_b.ts`) was authored afterwards and separates two
+claims that are usually blended:
+
+| | Recall | What it measures |
+|---|---|---|
+| Tier 1 — covered classes, unseen payloads | **100%** (15/15) | Rules capture their class, not the string they were written against |
+| Tier 2 — classes with no rule | **25%** (3/12) | The measured ceiling of signature detection |
+| Benign — fresh legitimate traffic | **0 / 22 false positives** | Guards hold on traffic never seen before |
+| Overall attack recall | **66.7%** | The honest headline number |
+
+Tier 1 began at 86.7%: two rules were written narrowly enough to miss their
+own class (an SSTI probe containing a call, and prototype pollution expressed
+as nested JSON keys rather than property access). Both were genuine defects
+and were widened; the benign set confirmed the widening introduced no false
+positives. **Tier 2 was deliberately left untouched.** Writing rules for SSI,
+XSLT, request smuggling, formula injection, entity expansion, ReDoS, cache
+poisoning, CORS abuse or unicode traversal would raise the number and destroy
+the measurement. 25% is the finding, and it is the evidence for Phase 3.
+
 ### Phase 2 — Live data, honestly labelled
 
 **Build:** a labelling pipeline that turns live traffic into evaluation data
@@ -155,7 +181,7 @@ a clean machine and reproduce the reported numbers.
 | Payload classifier reads payloads | Done | Replaced a decision that read a caller-supplied label |
 | MTTD / MTTR measured | Done | MTTD 2 ms p95 (n=30); MTTR 5 ms p95 (n=25); reports "insufficient data" when unmeasured |
 | Encrypted object storage | Built, **unverified end to end** | Crypto and refusal paths tested; no live S3 round-trip yet — Docker is not installed on the development machine |
-| Honest evaluation harness | Phase 1, in progress | — |
+| Honest evaluation harness | Done | Set A (regression) + Set B (clean); Tier 2 recall 25% is the measured signature ceiling |
 | Live training | Phase 3, not started | — |
 
 ---
@@ -163,9 +189,14 @@ a clean machine and reproduce the reported numbers.
 ## 5. Open risks
 
 - **The classifier is rule-based.** It cannot generalise to attack classes
-  nobody wrote a rule for. Held-out testing showed exactly this: 8 unseen
-  attack classes, 2 detected, before canonicalisation and new rules were added.
-  Phase 3 exists because rules alone will plateau.
+  nobody wrote a rule for. Set B Tier 2 measures this precisely: 3 of 12
+  unseen classes detected, and the three hits were incidental (a traversal
+  path inside a zip-slip payload, a Host-header pattern) rather than the class
+  being understood. Rules plateau here by construction, which is the entire
+  argument for Phase 3.
+- **Set B will degrade with use.** Every rule written against a Tier 2 miss
+  converts Set B into Set A. When Tier 2 is exhausted, a Set C must be authored
+  before any further generalisation claim is made.
 - **Live traffic volume.** Phases 2 and 3 need real adjudicated data. Synthetic
   substitutes would reintroduce the bias this plan exists to remove.
 - **Storage is unproven.** The S3 client is written and its cryptography is
