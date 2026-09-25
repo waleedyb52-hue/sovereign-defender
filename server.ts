@@ -47,6 +47,8 @@ import { globalForensicAgent } from './server/services/aiForensicsAgent.service.
 import { globalThreatMemory } from './server/services/threatMemory.service.js';
 import { FEEDS, importFeed, type FeedId } from './server/services/intelFeeds.service.js';
 import { classifyPayload } from './server/services/payloadClassifier.service.js';
+import { globalSovereignStorage } from './server/services/sovereignStorage.service.js';
+import { globalSocMetrics } from './server/services/socMetrics.service.js';
 import {
   computeBayesianThreatScore,
   runKMeansThreatClustering,
@@ -1792,6 +1794,9 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
     }
   }
 
+  // Timed so MTTD is measured rather than quoted.
+  const detectStarted = Date.now();
+
   // Fallback engine — the ONLY detection path on a sovereign deployment.
   //
   // The verdict is derived from the payload. It previously read
@@ -1814,6 +1819,7 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
     aiGenerated: false,
     isFallbackMode: true,
     threatScore: classification.score > 0 ? classification.score : (isAttack ? 96 : 4),
+    detectionLatencyMs: Date.now() - detectStarted,
     // What actually fired, so an analyst sees why rather than a bare number.
     detection: {
       engine: 'LOCAL_PAYLOAD_CLASSIFIER',
@@ -1848,6 +1854,11 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
     tacticalAdviceAr: 'تم إنشاء قواعد العزل تلقائياً وتفعيل الحظر على مستوى طبقة نواة لينكس (Kernel) مع جدولة فك الحظر التلقائي بعد انتهاء مهلة TTL.',
     tacticalAdviceEn: 'Automated kernel mitigation rules synthesized. IP isolated at eBPF layer with auto-rollback TTL timer.'
   };
+
+  // Record the observed latency so MTTD is derived from real traffic. Cached
+  // responses are excluded on purpose: replaying a cache hit would report a
+  // sub-millisecond "detection" that never ran the classifier.
+  globalSocMetrics.record('detect', fallbackResult.detectionLatencyMs);
 
   evaluationCache.set(aiCacheHash, fallbackResult, 5 * 60 * 1000);
   return res.json(fallbackResult);
@@ -2220,6 +2231,9 @@ app.post('/api/v1/agent/unban', adminAuthMiddleware, (req, res) => {
 
 // Real Asynchronous eBPF Node & IP Zero-Trust Isolation Engine
 app.post(['/api/v1/ebpf/quarantine', '/api/v1/ebpf/isolate'], (req, res) => {
+  // Timed end to end so MTTR reflects how long containment actually takes:
+  // request in, enforcement applied and propagated to the kernel map, out.
+  const respondStarted = Date.now();
   try {
     const { target, targetType = 'IP', ip, nodeName, reason = 'Operator eBPF Zero-Trust Isolation' } = req.body || {};
     const actualTarget = target || ip || nodeName;
@@ -2295,6 +2309,11 @@ app.post(['/api/v1/ebpf/quarantine', '/api/v1/ebpf/isolate'], (req, res) => {
       actionTaken: 'EBPF_DROP_ENFORCED',
       actionTakenAr: 'إسقاط فوري في النواة'
     });
+
+    // Only the successful containment path is recorded. A rejected or
+    // whitelisted target never applied a control, so counting it would
+    // flatter MTTR with work that did not happen.
+    globalSocMetrics.record('respond', Date.now() - respondStarted);
 
     return res.status(200).json({
       success: true,
@@ -4096,16 +4115,14 @@ app.post('/api/v1/compliance/run-stress-test', async (req, res) => {
         {
           metricEn: 'Mean Time to Detect (MTTD)',
           metricAr: 'متوسط زمن رصد التهديد (MTTD)',
-          target: '< 50 ms',
-          measured: '42.0 ms',
-          verdict: 'SUPERIOR'
+          // Measured from live traffic. Reports "insufficient data" rather
+          // than a figure when too few requests have been observed.
+          ...globalSocMetrics.benchmark('detect', 50)
         },
         {
           metricEn: 'Mean Time to Respond (MTTR)',
           metricAr: 'متوسط زمن استجابة وعزل التهديد (MTTR)',
-          target: '< 1,000 ns',
-          measured: '310.0 ns (eBPF XDP Wire-Speed)',
-          verdict: 'SUPERIOR'
+          ...globalSocMetrics.benchmark('respond', 1000)
         },
         {
           metricEn: 'Volumetric DDoS Suppression Capacity',
@@ -4182,6 +4199,18 @@ app.post('/api/v1/compliance/run-stress-test', async (req, res) => {
 
 app.get('/api/v1/compliance/audit-status', (req, res) => {
   if (cachedComplianceReport) {
+    // Latency benchmarks are refreshed on read rather than served from the
+    // cache. Caching the rest of the certificate is fine — it describes fixed
+    // controls — but MTTD/MTTR describe how the system is performing right
+    // now, and a figure frozen at cache-warm time is exactly the kind of
+    // stale claim this work replaced.
+    const live = (cachedComplianceReport as any)?.modReadinessAudit?.benchmarks;
+    if (Array.isArray(live)) {
+      for (const row of live) {
+        if (row?.metricEn === 'Mean Time to Detect (MTTD)') Object.assign(row, globalSocMetrics.benchmark('detect', 50));
+        if (row?.metricEn === 'Mean Time to Respond (MTTR)') Object.assign(row, globalSocMetrics.benchmark('respond', 1000));
+      }
+    }
     return res.json({ success: true, report: cachedComplianceReport });
   }
 
@@ -4283,8 +4312,10 @@ app.get('/api/v1/compliance/audit-status', (req, res) => {
       operationalStatus: 'DEFCON_1_COMBAT_READY',
       operationalScore: 100,
       benchmarks: [
-        { metricEn: 'Mean Time to Detect (MTTD)', target: '< 50 ms', measured: '42.0 ms', verdict: 'SUPERIOR' },
-        { metricEn: 'Mean Time to Respond (MTTR)', target: '< 1,000 ns', measured: '310.0 ns (eBPF XDP Wire-Speed)', verdict: 'SUPERIOR' },
+        // Measured from live traffic, not asserted. Says "insufficient data"
+        // rather than inventing a figure when too little has been observed.
+        { metricEn: 'Mean Time to Detect (MTTD)', ...globalSocMetrics.benchmark('detect', 50) },
+        { metricEn: 'Mean Time to Respond (MTTR)', ...globalSocMetrics.benchmark('respond', 1000) },
         { metricEn: 'Volumetric DDoS Suppression Capacity', target: '3,000,000 PPS', measured: '5,000,000 PPS Line-Rate', verdict: 'PASSED' },
         { metricEn: 'Zero-Trust Bypass Prevention Rate', target: '100%', measured: '100% (4/4 Vectors Defeated)', verdict: 'IMPERVIOUS' }
       ]
@@ -6407,6 +6438,33 @@ app.get('/api/v1/memory/browse', (req, res) => {
 });
 
 /** The catalogue of open-source feeds the operator can pull. */
+/** Whether replication is configured, and crucially whether it stays in-house. */
+/** Measured SOC latency percentiles over a rolling 24h window. */
+app.get('/api/v1/metrics/soc', (_req, res) => {
+  res.json({ success: true, ...globalSocMetrics.snapshot() });
+});
+
+app.get('/api/v1/storage/status', (_req, res) => {
+  res.json({ success: true, ...globalSovereignStorage.status() });
+});
+
+/**
+ * Replicates the corpus to object storage. Admin-gated and operator-driven:
+ * this is the one action that moves the corpus off this machine, so it never
+ * runs on a timer.
+ */
+app.post('/api/v1/storage/sync', adminAuthMiddleware, async (req, res) => {
+  const what = String((req.body || {}).what || 'corpus');
+  try {
+    const result = what === 'incidents'
+      ? await globalSovereignStorage.syncJson('incidents', globalThreatMemory.recent(5000))
+      : await globalSovereignStorage.syncCorpus();
+    return res.json({ success: true, ...result });
+  } catch (err: any) {
+    return res.status(502).json({ success: false, error: 'SYNC_FAILED', message: err?.message || 'Unknown error.' });
+  }
+});
+
 app.get('/api/v1/memory/feeds', (_req, res) => {
   res.json({ success: true, feeds: Object.values(FEEDS) });
 });

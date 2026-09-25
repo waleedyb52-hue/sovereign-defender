@@ -32,6 +32,15 @@ services:
       # Set a real key before exposing this beyond localhost.
       ADMIN_API_KEY: "${ADMIN_API_KEY:-change-me-before-exposing}"
       WHITELIST_IPS: "${WHITELIST_IPS:-127.0.0.1,::1}"
+      # Object storage. Points at the MinIO service below by default, so the
+      # corpus is replicated to storage the operator runs, not a vendor's.
+      STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://minio:9000}"
+      STORAGE_BUCKET: "${STORAGE_BUCKET:-sovereign-corpus}"
+      STORAGE_ACCESS_KEY: "${MINIO_ROOT_USER:-sovereign}"
+      STORAGE_SECRET_KEY: "${MINIO_ROOT_PASSWORD:-change-me-minio-secret}"
+      # Objects are AES-256-GCM encrypted before upload under this passphrase.
+      # Without it the service refuses to replicate rather than send plaintext.
+      STORAGE_ENCRYPTION_KEY: "${STORAGE_ENCRYPTION_KEY:-}"
     volumes:
       # The threat corpus. Keeping it in a named volume means rebuilding the
       # image never discards what the AI has learned.
@@ -41,6 +50,34 @@ services:
       - sovereign-store:/app/sensitive_store
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+
+  # Self-hosted S3-compatible object storage (AGPL-3.0). This is what makes
+  # "cloud storage" compatible with the sovereignty claim: the bucket runs on
+  # the operator's own hardware, so replication never crosses their boundary.
+  # Swap for SeaweedFS or Ceph RGW if preferred — the client speaks plain S3.
+  minio:
+    image: minio/minio:latest
+    container_name: sovereign-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: "${MINIO_ROOT_USER:-sovereign}"
+      MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD:-change-me-minio-secret}"
+    ports:
+      # Bound to loopback: the bucket is reachable from the host and the app,
+      # not from the network, unless the operator deliberately republishes it.
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - sovereign-objects:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -62,5 +99,6 @@ services:
 
 volumes:
   sovereign-data:
+  sovereign-objects:
   sovereign-fim:
   sovereign-store:
