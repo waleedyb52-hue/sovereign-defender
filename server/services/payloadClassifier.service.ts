@@ -21,7 +21,9 @@ import { shannonEntropy } from './payloadForensics.js';
 
 export type AttackFamily =
   | 'SQL_INJECTION' | 'XSS_ATTACK' | 'PATH_TRAVERSAL' | 'REMOTE_CODE_EXECUTION'
-  | 'SSH_BRUTE_FORCE' | 'CREDENTIAL_STUFFING' | 'DNS_EXFILTRATION' | 'CLEAN_TRAFFIC';
+  | 'SSH_BRUTE_FORCE' | 'CREDENTIAL_STUFFING' | 'DNS_EXFILTRATION'
+  | 'INJECTION_OTHER' | 'DESERIALIZATION' | 'OBJECT_TAMPERING' | 'RESOURCE_ABUSE'
+  | 'CLEAN_TRAFFIC';
 
 export interface ClassificationResult {
   family: AttackFamily;
@@ -101,10 +103,36 @@ const RULES: Rule[] = [
   // ---- Server-side request forgery ----
   { re: /https?:\/\/(169\.254\.169\.254|metadata\.google\.internal)/i, weight: 75, label: 'cloud metadata endpoint', family: 'REMOTE_CODE_EXECUTION' },
   { re: /https?:\/\/(127\.0\.0\.1|localhost|0\.0\.0\.0|\[::1\])(:\d+)?/i, weight: 40, label: 'loopback URL in parameter', family: 'REMOTE_CODE_EXECUTION' },
-  { re: /(file|gopher|dict):\/\//i, weight: 60, label: 'dangerous URI scheme', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\b(file|gopher|dict):\/\//i, weight: 60, label: 'dangerous URI scheme', family: 'REMOTE_CODE_EXECUTION' },
 
   // ---- Header / CRLF injection ----
   { re: /(%0d%0a|[\r\n])\s*(set-cookie|location|content-length)\s*:/i, weight: 70, label: 'CRLF header injection', family: 'REMOTE_CODE_EXECUTION' },
+
+  // ---- LDAP injection (CWE-90) ----
+  { re: /[)(]\s*\|\s*\(|\*\)\s*\(/, weight: 55, label: 'LDAP filter metacharacters', family: 'INJECTION_OTHER' },
+  { re: /\((uid|cn|objectClass|sAMAccountName)\s*=\s*\*/i, weight: 55, label: 'LDAP wildcard predicate', family: 'INJECTION_OTHER' },
+
+  // ---- Insecure deserialization (CWE-502) ----
+  // Magic prefixes, which are structural facts about each format rather than
+  // signatures of any particular exploit.
+  { re: /\brO0AB/, weight: 75, label: 'Java serialized object (rO0AB)', family: 'DESERIALIZATION' },
+  { re: /\baced0005/i, weight: 75, label: 'Java serialization stream header', family: 'DESERIALIZATION' },
+  { re: /\bO:\d+:"[^"]+":\d+:\{/, weight: 70, label: 'PHP serialized object', family: 'DESERIALIZATION' },
+  { re: /(^|[^\w])(c__builtin__|c__main__|cposix)\s*(system|eval|exec|popen)/, weight: 70, label: 'Python pickle GLOBAL opcode', family: 'DESERIALIZATION' },
+
+  // ---- Prototype pollution (CWE-1321) ----
+  { re: /["']?__proto__["']?\s*[:=]/, weight: 70, label: '__proto__ assignment', family: 'OBJECT_TAMPERING' },
+  { re: /constructor\s*\[\s*["']prototype["']|constructor\.prototype\s*[.\[]/i, weight: 65, label: 'constructor.prototype access', family: 'OBJECT_TAMPERING' },
+
+  // ---- Mass assignment / privilege escalation via body (CWE-915) ----
+  { re: /["'](role|isAdmin|is_admin|admin|superuser|privilege|permissions?|verified|isVerified)["']\s*:\s*(true|["']?(super)?admin)/i,
+    weight: 60, label: 'privilege field in request body', family: 'OBJECT_TAMPERING' },
+
+  // ---- Host header injection (CWE-644) ----
+  { re: /^\s*host\s*:\s*\S+[\s\S]*x-forwarded-host\s*:/im, weight: 65, label: 'conflicting Host headers', family: 'INJECTION_OTHER' },
+
+  // ---- Resource abuse: deeply nested query (GraphQL and similar) ----
+  { re: /(\{\s*\w+\s*){12,}/, weight: 55, label: 'pathologically nested query', family: 'RESOURCE_ABUSE' },
 
   // ---- Exfiltration ----
   { re: /\b[A-Za-z0-9+/]{16,}={0,2}\.[A-Za-z0-9+/]{16,}={0,2}\./, weight: 55, label: 'base64 chunks in DNS labels', family: 'DNS_EXFILTRATION' },
@@ -123,6 +151,49 @@ const BENIGN_GUARDS: Array<{ re: RegExp; label: string }> = [
   { re: /\beyJ[A-Za-z0-9_-]{8,}\./, label: 'JWT (structured token, not exfil)' },
   { re: /\/[\w-]+\.v\d+(\.\d+)*\/\.\.\/[\w-]+\.v\d+/, label: 'version-segment path, single level' }
 ];
+
+/**
+ * True when every suspicious token sits inside a JSON string value that reads
+ * as natural language.
+ *
+ * The distinction is structural, not a keyword exception. A support ticket
+ * reading "Cannot run system() in sandbox" and a lesson titled "DROP TABLE
+ * basics" are text ABOUT code; an injection is text that IS code, and carries
+ * the syntax to prove it — statement terminators, quote breaks, comment
+ * sequences, operators. Without this a platform flags its own security team's
+ * bug reports, which is how analysts learn to ignore a WAF.
+ */
+function isProseInJsonValue(payload: string): boolean {
+  const trimmed = payload.trim();
+  const brace = trimmed.indexOf('{');
+  if (brace === -1) return false;
+
+  let parsed: any;
+  try { parsed = JSON.parse(trimmed.slice(brace)); } catch { return false; }
+  if (!parsed || typeof parsed !== 'object') return false;
+
+  const values: string[] = [];
+  const walk = (v: any, depth = 0) => {
+    if (depth > 6) return;
+    if (typeof v === 'string') values.push(v);
+    else if (Array.isArray(v)) v.forEach(x => walk(x, depth + 1));
+    else if (v && typeof v === 'object') Object.values(v).forEach(x => walk(x, depth + 1));
+  };
+  walk(parsed);
+  if (!values.length) return false;
+
+  // Injection syntax anywhere in the values disqualifies the whole payload.
+  const injectionSyntax = /['"];|--\s*$|\/\*|\bunion\b[\s\S]*\bselect\b|<\s*script|\$\{|__proto__|\.\.[/\\]/i;
+  if (values.some(v => injectionSyntax.test(v))) return false;
+
+  // Prose: several words, mostly letters and spaces, no code punctuation density.
+  return values.some(v => {
+    const words = v.trim().split(/\s+/).filter(Boolean);
+    if (words.length < 2) return false;
+    const symbols = (v.match(/[;|&$`<>\\]/g) || []).length;
+    return symbols === 0;
+  });
+}
 
 /** A bare SQL keyword inside a sentence is prose, not an injection. */
 function looksLikeProse(payload: string): boolean {
@@ -177,15 +248,18 @@ export function classifyPayload(rawPayload: unknown): ClassificationResult {
   }
 
   const guard = BENIGN_GUARDS.find(g => g.re.test(payload));
-  const prose = looksLikeProse(payload);
+  const prose = looksLikeProse(payload) || isProseInJsonValue(original);
 
   // Accumulate per family so the dominant family wins rather than a blend.
   const byFamily = new Map<AttackFamily, { score: number; sigs: string[] }>();
   for (const rule of RULES) {
     if (!rule.re.test(payload)) continue;
-    // Prose suppresses the weak SQL signals only; a UNION SELECT in a sentence
-    // is still a UNION SELECT.
-    if (prose && rule.family === 'SQL_INJECTION' && rule.weight < 50) continue;
+    // Prose suppresses signals that a sentence can contain incidentally. An
+    // unambiguous payload (a script tag, a traversal sequence, a serialized
+    // object header) still convicts, because prose cannot contain those by
+    // accident.
+    if (prose && rule.weight <= 65 &&
+        (rule.family === 'SQL_INJECTION' || rule.family === 'REMOTE_CODE_EXECUTION')) continue;
     const cur = byFamily.get(rule.family) ?? { score: 0, sigs: [] };
     cur.score += rule.weight;
     cur.sigs.push(rule.label);
