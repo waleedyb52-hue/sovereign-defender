@@ -116,7 +116,7 @@ XSLT, request smuggling, formula injection, entity expansion, ReDoS, cache
 poisoning, CORS abuse or unicode traversal would raise the number and destroy
 the measurement. 25% is the finding, and it is the evidence for Phase 3.
 
-### Phase 2 — Live data, honestly labelled
+### Phase 2 — Live data, honestly labelled *(pipeline built; corpus accruing)*
 
 **Build:** a labelling pipeline that turns live traffic into evaluation data
 without fabricating ground truth.
@@ -130,7 +130,71 @@ without fabricating ground truth.
 against, with recorded provenance and timestamps, large enough for the harness
 to produce a stable figure.
 
-**Blocked on:** nothing technical. Needs live traffic to accumulate.
+**Status: built and verified; criterion not yet met.** The pipeline exists and
+its guarantees are tested. The corpus does not — it needs operators ruling on
+real traffic, and no amount of engineering substitutes for that. The platform
+says so rather than filling the gap: `audit/eval_from_adjudicated.ts` prints the
+shortfall and exits 0, because an honest "not yet" is the correct output.
+
+| Component | Where |
+|---|---|
+| Label store, folds, exports | [`server/services/adjudication.service.ts`](../server/services/adjudication.service.ts) |
+| Operator API | [`server/routes/adjudication.routes.ts`](../server/routes/adjudication.routes.ts) |
+| Analyst surface | [`src/components/soc/AdjudicationPanel.tsx`](../src/components/soc/AdjudicationPanel.tsx) |
+| Scoring harness | [`audit/eval_from_adjudicated.ts`](../audit/eval_from_adjudicated.ts) |
+| Machinery drill | [`audit/seed_adjudication_drill.ts`](../audit/seed_adjudication_drill.ts) |
+
+**Five guarantees, each enforced by structure rather than by a comment.** Tests
+51–60 in the audit suite assert the refusals, not the happy paths.
+
+1. **Append-only.** No `UPDATE`, no `DELETE`, and no HTTP delete route. A
+   revision inserts a row that supersedes its predecessor and the predecessor
+   stays readable, so it can be proved that a label was not quietly rewritten.
+2. **Provenance is mandatory.** An adjudication without an identity is refused
+   with `ADJUDICATOR_IDENTITY_REQUIRED`. A label without provenance is an
+   assertion, and this plan does not report assertions as measurements.
+3. **Agreement is derived, never supplied.** `agreed` is computed from the two
+   verdicts inside the service. A client able to assert it could manufacture the
+   platform's own accuracy figure, which is precisely the failure Phase 1 exists
+   to prevent.
+4. **The test fold is unreachable for tuning.** `exportForTuning()` excludes the
+   newest fold before the slice is taken. There is no parameter that returns it
+   — principle 3 expressed as an API rather than as a promise.
+5. **The label cannot reach the classifier.** `exportForTest()` withholds labels
+   by default. A caller classifies first, then fetches the answers, so at the
+   moment of classification the answers are not in its process.
+
+**Drill validation.** Because the fold and export machinery must not ship
+untested, `seed_adjudication_drill.ts` fills the store with 81 labels marked
+`AUTOMATED_IMPORT` / `DRILL`. Folds computed correctly (20/20/20/22, newest
+reserved for test) and the two-step scoring protocol ran end to end, returning
+F1 81.8% on the test fold. **That figure measures the pipeline, not the
+detector**, and it cannot be mistaken for one that does: `stats()` reports label
+counts by origin, `operatorGrounded` goes false, and the harness prints a
+NOT OPERATOR-GROUNDED banner *above* the numbers. The drill data was purged
+afterwards; the store ships empty.
+
+**What the drill found anyway.** Scoring against labels assigned from payload
+construction rather than from classifier output surfaced three real defects,
+all in the test fold and therefore **deliberately left unfixed**:
+
+| Payload | Operator label | Machine |
+|---|---|---|
+| `POST /api/v1/tickets {"desc":"User sees an alert(1) popup on checkout"}` | BENIGN | blocked — false positive on prose |
+| `'; EXEC xp_cmdshell 'dir'--` | MALICIOUS | allowed |
+| `X-Forwarded-Host: evil.tld` | MALICIOUS | allowed |
+| `query{__schema{types{name fields{name}}}}` | MALICIOUS | allowed |
+
+Fixing these from the test fold would convert it into tuning data and destroy
+the only clean measurement surface the platform has. They are recorded here as
+known defects; repairs must come from tuning-fold evidence or a fresh set.
+
+A separate gap, found through the same surface and also unfixed: the classifier
+still misses quoteless numeric SQL tautologies — `id=1 OR 1=1--` classifies as
+`CLEAN_TRAFFIC`. This is the Set A miss from Phase 1 reappearing in live
+traffic, which is some evidence the adjudication surface does what it is for.
+
+**Blocked on:** operator rulings. Needs live traffic and an analyst.
 
 ### Phase 3 — Continual learning under drift
 
@@ -182,6 +246,7 @@ a clean machine and reproduce the reported numbers.
 | MTTD / MTTR measured | Done | MTTD 2 ms p95 (n=30); MTTR 5 ms p95 (n=25); reports "insufficient data" when unmeasured |
 | Encrypted object storage | Built, **unverified end to end** | Crypto and refusal paths tested; no live S3 round-trip yet — Docker is not installed on the development machine |
 | Honest evaluation harness | Done | Set A (regression) + Set B (clean); Tier 2 recall 25% is the measured signature ceiling |
+| Operator adjudication pipeline | Built, corpus empty | Append-only, provenance-bearing, temporally folded; reports its shortfall instead of a figure |
 | Live training | Phase 3, not started | — |
 
 ---

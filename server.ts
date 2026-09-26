@@ -39,6 +39,8 @@ import {
 import { globalLiveHostCanary } from './server/services/liveHostCanary.service.js';
 import { liveRouter } from './server/routes/live.routes.js';
 import { defenseRouter, adminRouter } from './server/routes/defense.routes.js';
+import { adjudicationRouter } from './server/routes/adjudication.routes.js';
+import { globalAdjudication } from './server/services/adjudication.service.js';
 import { globalKernelMitigationDriver } from './server/services/kernelMitigationDriver.js';
 import { globalSelfHealingLedger } from './server/services/selfHealingLedger.service.js';
 import { globalInLineInterceptionEngine } from './server/services/inLineInterception.service.js';
@@ -208,6 +210,10 @@ app.use('/api/v1/soc/live', liveRouter);
 // reachable unauthenticated. adminAuthMiddleware is hoisted (function decl).
 app.use('/api/v1/soc/defense', adminAuthMiddleware, defenseRouter);
 app.use('/api/v1/soc/admin', adminAuthMiddleware, adminRouter);
+// Writing ground truth is a higher-privilege act than reading the console:
+// whoever reaches this surface defines what the platform measures itself
+// against. Admin auth, same as the defense controls.
+app.use('/api/v1/soc/adjudication', adminAuthMiddleware, adjudicationRouter);
 
 // Helper: Reliable client IP extraction (avoid spoofable client-supplied overrides)
 function getReliableClientIp(req: express.Request): string {
@@ -1859,6 +1865,21 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
   // responses are excluded on purpose: replaying a cache hit would report a
   // sub-millisecond "detection" that never ran the classifier.
   globalSocMetrics.record('detect', fallbackResult.detectionLatencyMs);
+
+  // Queue this classification for an analyst ruling.
+  //
+  // Placed after the cache check rather than before it, so a replayed cache hit
+  // does not inflate the sighting count for a payload nobody sent again. The
+  // call is deduplicated on the payload hash and cannot throw into the response
+  // path, so a degraded label store never costs a detection.
+  globalAdjudication.recordPending({
+    payload: payloadStr,
+    machineVerdict: fallbackResult.verdict === 'ALLOW' ? 'ALLOW' : 'BLOCK',
+    machineScore: classification.score,
+    machineFamily: classification.family,
+    machineSignatures: classification.signatures,
+    srcIp: safeSrcIp
+  });
 
   evaluationCache.set(aiCacheHash, fallbackResult, 5 * 60 * 1000);
   return res.json(fallbackResult);

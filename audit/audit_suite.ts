@@ -436,11 +436,126 @@ const auth = { 'x-api-key': KEY };
     return `Self-healing ledger continuously verifies protected artifacts vs baseline hashes; control surface admin-gated (status ${r.status}).`;
   });
 
+  // ---- Adjudication (Phase 2): the labelling pipeline's own guarantees ----
+  //
+  // These assert the properties the pipeline claims structurally, not that it
+  // returns 200. Each would pass trivially if the guarantee were only a comment,
+  // so each asserts the refusal rather than the happy path.
+  await run(51, 'LABELS', 'Ground-truth surface requires admin authentication', async () => {
+    const r = await http('GET', '/api/v1/soc/adjudication/stats');
+    assert(r.status === 401, `expected 401 without a key, got ${r.status}`);
+    return 'Writing ground truth is admin-gated: whoever reaches it defines what the platform measures itself against.';
+  });
+
+  await run(52, 'LABELS', 'A label without an adjudicator identity is refused', async () => {
+    const q = await http('GET', '/api/v1/soc/adjudication/queue?limit=1', undefined, auth);
+    const id = q.json?.items?.[0]?.id;
+    if (!id) return 'Queue empty in this run; the provenance requirement is asserted at the service level instead.';
+    const r = await http('POST', '/api/v1/soc/adjudication/adjudicate',
+      { detectionId: id, analystLabel: 'BENIGN' }, auth);
+    assert(r.json?.error === 'ADJUDICATOR_IDENTITY_REQUIRED', `expected identity refusal, got ${JSON.stringify(r.json)}`);
+    return 'Anonymous labels rejected — a label without provenance is an assertion, not a measurement.';
+  });
+
+  await run(53, 'LABELS', 'Agreement with the machine is derived, never accepted from the client', async () => {
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
+    assert(/const agreed = machineSaysMalicious === analystSaysMalicious/.test(src),
+      'agreement is not computed from the two verdicts');
+    const routes = fs.readFileSync(path.join(ROOT, 'server/routes/adjudication.routes.ts'), 'utf-8');
+    assert(!/agreed:\s*b\./.test(routes), 'route forwards a client-supplied agreed flag');
+    return 'A client that could assert agreement could manufacture the platform accuracy figure; it cannot.';
+  });
+
+  await run(54, 'LABELS', 'Tuning export structurally cannot return the test fold', async () => {
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
+    // Anchored on the signatures, not the names: both are also mentioned in the
+    // class header comment, and slicing from there yields the wrong window.
+    const fn = src.slice(src.indexOf('exportForTuning(foldCount'), src.indexOf('exportForTest(opts'));
+    assert(fn.length > 0, 'could not isolate exportForTuning');
+    assert(/cutoff\s*=\s*\(k - 1\) \* per/.test(fn), 'no structural cutoff excluding the newest fold');
+    assert(/rows\.slice\(0, cutoff\)/.test(fn), 'tuning export does not slice below the cutoff');
+    assert(!/withLabels|includeTest|allFolds/.test(fn), 'tuning export exposes a flag that could reach test data');
+    return 'The newest fold is excluded before the slice is taken — no parameter returns it, per plan principle 3.';
+  });
+
+  await run(55, 'LABELS', 'Test fold withholds labels unless scoring is explicit', async () => {
+    const r = await http('GET', '/api/v1/soc/adjudication/export/test', undefined, auth);
+    if (r.status === 409) {
+      assert(/INSUFFICIENT_CORPUS/.test(JSON.stringify(r.json)), 'unexpected 409 body');
+      return 'Corpus below the fold threshold, so the endpoint states the shortfall instead of serving a thin fold.';
+    }
+    assert(r.json?.labelsWithheld === true, 'labels were served without being asked for');
+    assert((r.json?.samples ?? []).every((x: any) => x.label === undefined), 'a sample carried its label');
+    return 'Classify-then-score: at the moment of classification the answers are not in the caller process.';
+  });
+
+  await run(56, 'LABELS', 'Corpus reports its own inadequacy instead of a figure', async () => {
+    const r = await http('GET', '/api/v1/soc/adjudication/stats', undefined, auth);
+    assert(r.status === 200, `stats unavailable (${r.status})`);
+    const j = r.json;
+    if (j.sufficient) {
+      assert(typeof j.agreementRate === 'number', 'sufficient corpus but no agreement rate');
+      return `Corpus sufficient (n=${j.totalLabels}); agreement reported as a number.`;
+    }
+    assert(j.agreementRate === null, 'a rate was reported over an insufficient corpus');
+    assert(typeof j.shortfall === 'string' && j.shortfall.length > 0, 'no shortfall stated');
+    return `Withholds the rate and states the gap: ${j.shortfall}`;
+  });
+
+  await run(57, 'LABELS', 'Label provenance is reported so drill data cannot pass as operator data', async () => {
+    const r = await http('GET', '/api/v1/soc/adjudication/stats', undefined, auth);
+    const j = r.json;
+    assert(j && typeof j.bySource === 'object', 'no per-origin breakdown');
+    assert(typeof j.operatorGrounded === 'boolean', 'operatorGrounded not reported');
+    const harness = fs.readFileSync(path.join(ROOT, 'audit/eval_from_adjudicated.ts'), 'utf-8');
+    assert(/NOT OPERATOR-GROUNDED/.test(harness), 'the harness does not warn on non-operator labels');
+    return `Origins ${JSON.stringify(j.bySource)}; operatorGrounded=${j.operatorGrounded}, and the harness banners it above any figure.`;
+  });
+
+  await run(58, 'LABELS', 'Temporal folds are derived from timestamps, not stored', async () => {
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
+    assert(/ORDER BY detected_at ASC/.test(src), 'labels are not read in temporal order');
+    assert(!/\bfold\s+(?:TEXT|INTEGER)/i.test(src), 'a stored fold column exists and can drift from the data');
+    const r = await http('GET', '/api/v1/soc/adjudication/folds', undefined, auth);
+    if (r.json?.sufficient) {
+      const folds = r.json.folds as any[];
+      const roles = folds.map((f: any) => f.role);
+      assert(roles[roles.length - 1] === 'TEST', 'the newest fold is not the test fold');
+      assert(roles.slice(0, -1).every((x: string) => x === 'TUNING'), 'an older fold is marked TEST');
+      for (let i = 1; i < folds.length; i++) {
+        assert(folds[i - 1].to <= folds[i].from, `fold ${i} overlaps its predecessor in time`);
+      }
+      return `${folds.length} contiguous folds, oldest-first, newest reserved for test (TESSERACT ordering).`;
+    }
+    return `Folds withheld: ${r.json?.shortfall}`;
+  });
+
+  await run(59, 'LABELS', 'Labels are append-only; a revision supersedes rather than overwrites', async () => {
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
+    assert(/supersedes/.test(src), 'no supersede mechanism');
+    assert(!/UPDATE labels\s+SET/i.test(src), 'labels are mutated in place somewhere');
+    assert(!/DELETE FROM labels/i.test(src), 'a label deletion path exists in the service');
+    const routes = fs.readFileSync(path.join(ROOT, 'server/routes/adjudication.routes.ts'), 'utf-8');
+    assert(!/\.delete\(/.test(routes), 'an HTTP delete route exists on an append-only trail');
+    return 'No UPDATE, no DELETE, no delete route: the trail can prove a label was not quietly rewritten.';
+  });
+
+  await run(60, 'LABELS', 'A degraded label store never costs a detection', async () => {
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
+    assert(/if \(!this\.ready\) return null/.test(src), 'recordPending does not bail out when degraded');
+    assert(/recordPending failed/.test(src), 'recordPending does not swallow its own errors');
+    const server = fs.readFileSync(path.join(ROOT, 'server.ts'), 'utf-8');
+    const idx = server.indexOf('globalAdjudication.recordPending');
+    assert(idx > 0, 'detections are not queued for adjudication at all');
+    assert(/evaluationCache\.set/.test(server.slice(idx, idx + 900)), 'queuing is not followed by the normal response path');
+    return 'Queuing is bounded, deduplicated, swallows its own errors, and sits off the response path.';
+  });
+
   // ---- Report ----
   const pass = results.filter(r => r.status === 'PASS').length;
   const warn = results.filter(r => r.status === 'WARN').length;
   const fail = results.filter(r => r.status === 'FAIL').length;
-  console.log('\n================ SOVEREIGN DEFENDER — 50 TEST MATRIX ================');
+  console.log('\n================ SOVEREIGN DEFENDER — TEST MATRIX ================');
   for (const r of results.sort((a,b)=>a.id-b.id)) {
     const tag = r.status === 'PASS' ? 'PASS' : r.status === 'WARN' ? 'WARN' : 'FAIL';
     console.log(`#${String(r.id).padStart(2,'0')} [${tag}] ${(r.cat+'').padEnd(9)} ${r.ms.toString().padStart(5)}ms  ${r.name}`);

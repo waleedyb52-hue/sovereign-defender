@@ -28,6 +28,7 @@ import { MoDWarGamesSimulator } from './components/MoDWarGamesSimulator';
 import { SystemComplianceReport } from './components/SystemComplianceReport';
 import { KillChainPanel } from './components/soc/KillChainPanel';
 import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
+import { AdjudicationPanel } from './components/soc/AdjudicationPanel';
 import { IncidentQueue } from './components/soc/IncidentQueue';
 import { PostureStrip } from './components/soc/PostureStrip';
 import { SecurityAnalyticsRow } from './components/soc/SecurityAnalyticsRow';
@@ -724,6 +725,11 @@ export default function App() {
 
             {/* Protection stack: what stops what, and where. */}
             <DefenseLayersPanel lang={lang} />
+
+            {/* Where the platform's own accuracy claim comes from: an analyst
+                ruling on live detections. Placed after the defence stack because
+                it is about how the detector is judged, not how it protects. */}
+            <AdjudicationPanel lang={lang} />
 
             {/* Geographic context last. It needs the full width — the map owns
                 floating overlays that collide the moment the column narrows. */}
