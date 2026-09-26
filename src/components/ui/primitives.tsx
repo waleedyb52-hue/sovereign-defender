@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
+import { Modal } from './modal';
 
 /**
  * UI PRIMITIVES — button, card, table, badge, dialog
@@ -191,13 +192,20 @@ export const TD: React.FC<React.TdHTMLAttributes<HTMLTableCellElement> & { mono?
 /* ── Dialog ─────────────────────────────────────────────────────────────── */
 
 /**
- * Modal dialog.
+ * Dialog.
  *
- * Deliberately built on <dialog>'s semantics by hand rather than pulled from a
- * headless library: Escape closes, focus is trapped to the panel, the backdrop
- * is inert to clicks when `dismissible` is false, and the whole thing is one
- * file with no new dependency. `dismissible={false}` is what the isolation
- * confirmation uses — a kill switch must not be closeable by a stray click.
+ * This was a hand-rolled focus trap. It is now a thin adapter over the Radix
+ * modal in `./modal`, keeping the same props so existing callers did not change.
+ *
+ * The swap was made on capability, not preference. The hand-rolled version
+ * handled the straightforward Tab case and nothing else — it did not do nested
+ * dialogs, `aria-hidden` on siblings, background scroll lock, pointer-events
+ * containment, or returning focus to a trigger that has unmounted. The last two
+ * matter most for the isolation confirmation, where a stray click reaching a
+ * control behind the overlay is a safety problem rather than a cosmetic one.
+ *
+ * See `./modal` for the full reasoning and for `ModalShell`, which the console's
+ * pre-existing modals were migrated onto.
  */
 export const Dialog: React.FC<{
   open: boolean;
@@ -217,98 +225,20 @@ export const Dialog: React.FC<{
   tone = 'default',
   dismissible = true,
   dir = 'ltr'
-}) => {
-  const panelRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && dismissible) onClose();
-      if (e.key !== 'Tab') return;
-      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (!focusable?.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    // Move focus in on open; returning it on close is the browser's job here
-    // because the trigger may have unmounted.
-    const t = setTimeout(() => {
-      panelRef.current?.querySelector<HTMLElement>('button, input, [tabindex]')?.focus();
-    }, 20);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      clearTimeout(t);
-    };
-  }, [open, dismissible, onClose]);
-
-  if (!open) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      dir={dir}
-    >
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={dismissible ? onClose : undefined}
-        aria-hidden
-      />
-      <div
-        ref={panelRef}
-        className={cn(
-          'relative w-full max-w-md rounded-lg border backdrop-blur-md',
-          'bg-[#0F1420]/90 shadow-2xl shadow-black/60',
-          tone === 'danger' ? 'border-[#EF4444]/45' : 'border-slate-700/70'
-        )}
-      >
-        <div
-          className={cn(
-            'flex items-center justify-between border-b px-4 py-3',
-            tone === 'danger' ? 'border-[#EF4444]/25' : 'border-slate-800/80'
-          )}
-        >
-          <h2
-            className={cn(
-              'text-[13px] font-semibold tracking-wide',
-              tone === 'danger' ? 'text-[#fca5a5]' : 'text-slate-200'
-            )}
-            style={{ fontFamily: 'var(--font-sans)' }}
-          >
-            {title}
-          </h2>
-          {dismissible && (
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              className="rounded px-1.5 text-slate-500 transition-colors hover:text-slate-200"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-        <div className="px-4 py-3.5">{children}</div>
-        {footer && (
-          <div className="flex justify-end gap-2 border-t border-slate-800/80 px-4 py-3">
-            {footer}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
+}) => (
+  <Modal
+    open={open}
+    onClose={onClose}
+    title={title}
+    footer={footer}
+    tone={tone}
+    dismissible={dismissible}
+    dir={dir}
+    size="md"
+  >
+    {children}
+  </Modal>
+);
 
 /* ── Mono ───────────────────────────────────────────────────────────────── */
 

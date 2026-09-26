@@ -149,3 +149,64 @@ detection figure the harness would refuse to report.** Where the adjudicated
 corpus is too thin to support a number, the panel shows the shortfall — as
 `AdjudicationPanel.tsx` already does. The newest temporal fold is test-only and
 no rule, and no UI threshold, may be tuned against it.
+
+---
+
+## 12. Graph rendering — which engine, and why
+
+Three graph engines coexist deliberately. Each is efficient in a different
+regime, and picking by habit rather than by node count is how a console ends up
+slow or over-engineered.
+
+| Engine | Use for | Why it wins there |
+|---|---|---|
+| `@xyflow/react` | Service topology up to ~100 nodes | Zero maintenance, keyboard-reachable nodes, standard pan/zoom and controls. DOM-based, so it degrades past a few hundred nodes. |
+| `ForceGraphCanvas` | Attack chains and any graph past ~100 nodes | Canvas rendering plus a built-in force simulation. Far faster than DOM at high node counts, which `@xyflow` cannot match. |
+| `InteractiveNetworkTopologyMap` | The existing curated network view | 700 lines of SVG with hand-built pan/zoom already tuned to this console's interaction model. |
+
+**The boundary is the node count, not the feature list.** `EbpfTopologyGraph`
+uses `@xyflow` because `/api/v1/soc/ebpf/cluster-nodes` returns single digits; if
+a deployment's cluster grows past roughly a hundred nodes, that component should
+move to `ForceGraphCanvas` rather than being optimised in place.
+
+Neither `@xyflow` nor `InteractiveNetworkTopologyMap` does automatic layout.
+`ForceGraphCanvas` does, via its force simulation. Reach for a layout dependency
+(dagre, elk) only if a graph needs hierarchical layout that force cannot express.
+
+## 13. Dialogs
+
+Every modal goes through `Modal` or `ModalShell` in `src/components/ui/modal.tsx`,
+which wrap `@radix-ui/react-dialog`. Do not hand-roll a focus trap again.
+
+An audit of the pre-existing modals found none carried `role="dialog"` or
+`aria-modal`, two did not handle Escape, none trapped focus, none locked
+background scroll, and none restored focus on close. The hand-written trap that
+replaced them covered Tab and nothing else. Radix additionally handles nested
+dialogs, `aria-hidden` on sibling content, scroll lock, `pointer-events`
+containment and focus restoration to an unmounted trigger.
+
+`pointer-events` containment is a safety property here, not polish: on the
+isolation dialog it is what stops a stray click reaching a control behind the
+overlay.
+
+Pass `dismissible={false}` for irreversible confirmations. Escape and
+outside-click are then suppressed while focus stays inside, so the explicit
+Cancel control remains the only way out.
+
+## 14. Charts — accessibility is the deciding factor, not the library
+
+`StackedBars` in `src/components/soc/charts/primitives.tsx` stayed hand-rolled
+rather than moving to `recharts`, on merit: it already had tooltips and hover
+dimming, its tooltip positioning is RTL-aware — which `recharts` is not, in a
+console that is Arabic-first — and flexbox divs are lighter than SVG for this
+shape.
+
+What it genuinely lacked was keyboard access and a value scale, so both were
+added: one tab stop for the series, arrow keys between buckets following reading
+order, a Y axis with gridlines, an `aria-live` readout, and the same data as an
+`sr-only` table.
+
+**A chart readable only by hovering is not finished.** Whichever engine draws it,
+the data must be reachable by keyboard and available to a screen reader as text.
+`recharts` remains the right choice where a chart needs real axes with ticks,
+brushing or zooming — `SocAnalyticsDashboard` uses it for exactly that.

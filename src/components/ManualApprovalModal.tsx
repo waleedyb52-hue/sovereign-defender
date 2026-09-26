@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalShell } from './ui/modal';
 import {
   Check,
   X,
@@ -31,7 +32,8 @@ export const ManualApprovalModal: React.FC<ManualApprovalModalProps> = ({
   const isAr = lang === 'ar';
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  if (!isOpen) return null;
+  // Early return removed: Radix owns mount and unmount, and bailing out
+  // before it renders skips focus restoration to the trigger.
 
   const pendingItems = queue.filter(item => item.status === 'PENDING');
 
@@ -54,7 +56,14 @@ export const ManualApprovalModal: React.FC<ManualApprovalModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <ModalShell
+      open={isOpen}
+      onClose={onClose}
+      title={isAr ? 'طلبات الموافقة اليدوية' : 'Manual approval queue'}
+      dir={isAr ? 'rtl' : 'ltr'}
+      overlayClassName="bg-black/80"
+      className="w-full max-w-2xl"
+    >
       <div className="animate-in fade-in zoom-in-95 flex max-h-[85vh] w-full max-w-2xl flex-col space-y-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-2xl duration-200">
         {/* Header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-800 pb-3">
@@ -190,6 +199,6 @@ export const ManualApprovalModal: React.FC<ManualApprovalModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 };

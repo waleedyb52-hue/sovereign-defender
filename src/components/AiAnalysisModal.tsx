@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ModalShell } from './ui/modal';
 import { TelemetryPacket } from '../types';
 import {
   Sparkles,
@@ -26,23 +27,15 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
   onRunAiAnalyze,
   lang
 }) => {
-  if (!packet) return null;
   const isAr = lang === 'ar';
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [aiResult, setAiResult] = useState<any>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // Close on ESC key press
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  // The manual window-level Escape listener was removed: it fired even when
+  // another dialog sat on top of this one. Radix scopes Escape to the
+  // topmost layer.
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -76,11 +69,13 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
     `SEC("xdp") int xdp_drop_node(struct xdp_md *ctx) { return XDP_DROP; }`;
 
   return (
-    <div
-      onClick={e => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/80 p-4 backdrop-blur-sm"
+    <ModalShell
+      open={Boolean(packet)}
+      onClose={onClose}
+      title={isAr ? 'تحليل الحزمة بالذكاء الاصطناعي' : 'AI packet analysis'}
+      dir={isAr ? 'rtl' : 'ltr'}
+      overlayClassName="bg-black/80"
+      className="w-full max-w-2xl"
     >
       <div className="max-h-[90vh] w-full max-w-2xl space-y-5 overflow-y-auto rounded-2xl border border-purple-500/40 bg-slate-900 p-6 text-slate-100 shadow-2xl">
         {/* Header */}
@@ -311,6 +306,6 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 };

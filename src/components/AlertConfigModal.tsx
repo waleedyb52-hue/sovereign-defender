@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ModalShell } from './ui/modal';
 import {
   Bell,
   Send,
@@ -48,7 +49,8 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  // The early return was removed deliberately: Radix owns mount and
+  // unmount, and bailing out before it renders skips focus restoration.
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -95,7 +97,13 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+    <ModalShell
+      open={isOpen}
+      onClose={onClose}
+      title={isAr ? 'إعداد التنبيهات' : 'Alert configuration'}
+      dir={isAr ? 'rtl' : 'ltr'}
+      className="w-full max-w-xl"
+    >
       <div className="animate-in fade-in zoom-in-95 w-full max-w-xl space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-2xl duration-200">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -324,6 +332,6 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
           </div>
         </div>
       </div>
-    </div>
+    </ModalShell>
   );
 };
