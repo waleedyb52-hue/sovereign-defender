@@ -3,6 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { GoogleGenAI, Type } from '@google/genai';
 import { cloudAiApiKey } from '../aiPolicy.js';
+import { globalRansomwareBurstDetector } from './ransomwareBurst.service.js';
 
 export interface FimAlert {
   id: string;
@@ -270,6 +271,24 @@ ENABLE_EBPF_OFFLOADING=true
         if (!filename || filename.startsWith('.') || filename.includes('.quarantined')) {
           return;
         }
+        // Feed the ransomware burst detector from the same real event. Rate and
+        // entropy are measured here rather than modelled: this callback fires on
+        // an actual write, and the file is read for its post-write entropy.
+        try {
+          const abs = path.join(this.sandboxDir, filename);
+          let buf: Buffer | null = null;
+          try {
+            buf = fs.readFileSync(abs);
+          } catch {
+            // Deleted or locked between the event and the read. Entropy is
+            // genuinely unknown, and null says so rather than claiming zero.
+            buf = null;
+          }
+          globalRansomwareBurstDetector.recordWrite(abs, buf);
+        } catch {
+          /* The burst detector must never cost an integrity event. */
+        }
+
         this.handleFileSystemEvent(eventType, filename);
       });
       this.isEnabled = true;

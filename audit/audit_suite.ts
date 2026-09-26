@@ -616,6 +616,101 @@ const auth = { 'x-api-key': KEY };
     return 'Ticker now derives req/s from real counter deltas; the modelled ping says modelled, not measured.';
   });
 
+  // ---- Sensors built from the capability report's gap list ----
+  await run(75, 'SENSORS', 'Kernel integrity never claims VERIFIED without reading the kernel', async () => {
+    const r = await http('GET', '/api/v1/soc/sensors/kernel-integrity', undefined, auth);
+    assert(r.status === 200, `sensor unavailable (${r.status})`);
+    const { result, statistics } = r.json;
+    if (!statistics.operational) {
+      assert(result.status === 'UNAVAILABLE',
+        `not operational but reported ${result.status} — a false assurance`);
+      assert(typeof result.unavailableReason === 'string' && result.unavailableReason.length > 20,
+        'UNAVAILABLE without a stated reason');
+      return `platform ${statistics.platform}: UNAVAILABLE with reason, no integrity implied.`;
+    }
+    assert(['VERIFIED', 'TAMPERED'].includes(result.status), `unexpected status ${result.status}`);
+    assert(typeof result.tableHash === 'string', 'claims a verdict with no table hash');
+    return `Kernel readable: ${result.status} over ${result.symbolsRead} syscall symbols.`;
+  });
+
+  await run(76, 'SENSORS', 'Kill-safety refuses to SIGKILL a kernel thread', async () => {
+    const kw = await http('POST', '/api/v1/soc/sensors/kill-safety', { processName: 'kworker/u4:2' }, auth);
+    const a = kw.json?.assessment;
+    assert(a, 'no assessment returned');
+    assert(a.safe === false, 'would SIGKILL a kernel worker');
+    assert(a.classification === 'KERNEL_THREAD', `misclassified as ${a.classification}`);
+    assert(a.recommendedAction === 'ISOLATE_HOST_INSTEAD', `wrong action ${a.recommendedAction}`);
+
+    const crit = await http('POST', '/api/v1/soc/sensors/kill-safety', { processName: 'systemd' }, auth);
+    assert(crit.json?.assessment?.safe === false, 'would kill systemd');
+
+    const usr = await http('POST', '/api/v1/soc/sensors/kill-safety', { processName: 'evil_miner' }, auth);
+    assert(usr.json?.assessment?.safe === true, 'refuses an ordinary user process');
+
+    const empty = await http('POST', '/api/v1/soc/sensors/kill-safety', { processName: '' }, auth);
+    assert(empty.json?.assessment?.safe === false, 'permits a kill with no process name');
+    return 'Kernel threads and system-critical processes refused; user processes permitted; empty name refused.';
+  });
+
+  await run(77, 'SENSORS', 'DNS tunnel detector spares ordinary resolution', async () => {
+    // The negative case first: a detector that flags www.example.com is useless.
+    for (let i = 0; i < 6; i++) {
+      await http('POST', '/api/v1/soc/sensors/dns-query',
+        { name: 'www.benign-check.com', recordType: 'A', srcIp: '10.0.0.9' }, auth);
+    }
+    const r = await http('GET', '/api/v1/soc/sensors/dns-tunnel?zone=benign-check.com', undefined, auth);
+    const a = r.json?.assessment;
+    assert(a, 'no assessment');
+    assert(a.tunnelSuspected === false, `false positive on ordinary resolution (score ${a.score})`);
+    assert(a.recommendedAction !== 'TCP_TARPIT_ENGAGEMENT', 'would tarpit legitimate traffic');
+    return `Short low-entropy A-record resolution scored ${a.score}; no tarpit engaged.`;
+  });
+
+  await run(78, 'SENSORS', 'DNS tunnel detector catches encoded TXT exfiltration', async () => {
+    const zone = 'audit-tunnel-probe.cc';
+    for (let i = 0; i < 40; i++) {
+      // Long, high-entropy label — what base32 of ciphertext looks like.
+      const chunk = crypto.randomBytes(28).toString('base64url').toLowerCase().slice(0, 45);
+      await http('POST', '/api/v1/soc/sensors/dns-query',
+        { name: `${chunk}.tun.${zone}`, recordType: 'TXT', payloadLength: 240, srcIp: '10.0.0.45' }, auth);
+    }
+    const r = await http('GET', `/api/v1/soc/sensors/dns-tunnel?zone=${zone}`, undefined, auth);
+    const a = r.json?.assessment;
+    assert(a.tunnelSuspected === true, `missed a textbook tunnel (score ${a.score})`);
+    const hits = Object.values(a.marks as Record<string, any>).filter(m => m.hit).length;
+    assert(hits >= 2, 'fired on a single mark — any one has a legitimate explanation');
+    assert(a.recommendedAction === 'TCP_TARPIT_ENGAGEMENT', `wrong action ${a.recommendedAction}`);
+    assert(r.json?.tarpit?.activeSessions >= 1, 'tarpit did not engage');
+    assert(r.json?.tarpit?.mode === 'USERSPACE', 'tarpit mode not declared');
+    assert(r.json?.tarpit?.kernelTarpitAvailable === false, 'claims a kernel tarpit it does not have');
+    return `score ${a.score} on ${hits} independent marks; tarpit engaged and declared USERSPACE.`;
+  });
+
+  await run(79, 'SENSORS', 'Ransomware burst reports zero rate when nothing was observed', async () => {
+    const r = await http('GET', '/api/v1/soc/sensors/ransomware-burst', undefined, auth);
+    const { assessment: a, statistics: st } = r.json;
+    assert(st.provenance?.seeded === false, 'burst detector carries seeded values');
+    // A detector reporting a plausible idle rate is indistinguishable from one
+    // that is not running.
+    if (a.distinctFilesInWindow === 0) {
+      assert(a.opsPerSec === 0, `idle but reports ${a.opsPerSec} ops/sec`);
+      assert(a.peakEntropy === null, 'idle but reports an entropy figure');
+      assert(a.burstDetected === false, 'reports a burst with no observed writes');
+    }
+    return `Measured from watcher events only; idle state reports zero rather than a plausible baseline.`;
+  });
+
+  await run(80, 'SENSORS', 'Burst detection requires rate AND entropy, not either alone', async () => {
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/ransomwareBurst.service.ts'), 'utf-8');
+    assert(/const rateSignal = conditions\.rateExceeded && conditions\.distinctFilesExceeded/.test(src),
+      'rate signal does not require multiple files');
+    assert(/const burstDetected = rateSignal && contentSignal/.test(src),
+      'burst fires without requiring both rate and content signals');
+    // High rate alone is a build or a backup; high entropy alone is a zip file.
+    assert(/first sighting|First sighting/i.test(src), 'no entropy baseline discipline documented');
+    return 'Conjunction enforced: a build is not an attack and a .zip is not an incident.';
+  });
+
   // ---- Report ----
   const pass = results.filter(r => r.status === 'PASS').length;
   const warn = results.filter(r => r.status === 'WARN').length;

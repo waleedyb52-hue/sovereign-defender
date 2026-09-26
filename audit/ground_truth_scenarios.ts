@@ -109,7 +109,7 @@ export const GROUND_TRUTH_SCENARIOS: GroundTruthScenario[] = [
     // No ingress path takes a syscall id and a kernel address. Leaving this null
     // rather than inventing a string is the honest representation of that gap.
     probePayload: null,
-    requiredSensors: ['syscall_table_integrity', 'kernel_memory_hashing', 'process_kill', 'panic_guard']
+    requiredSensors: ['syscall_table_integrity', 'kernel_memory_hashing', 'process_kill', 'kill_safety_guard', 'kernel_panic_handler']
   },
   {
     scenarioId: 'RANSOMWARE_ENCRYPTION_BURST_003',
@@ -166,7 +166,13 @@ export const SENSOR_PROBES: Record<string, { pattern: RegExp; note: string }> = 
   syscall_table_integrity: { pattern: /syscall.*(table|hook)|sys_call_table/i, note: 'syscall table integrity' },
   kernel_memory_hashing: { pattern: /kernel.*(hash|integrity)|memory_region/i, note: 'kernel memory hashing' },
   process_kill: { pattern: /SIGKILL|killProcess|process\.kill/, note: 'process termination' },
-  panic_guard: { pattern: /kernel_panic|panicGuard|panic_prevention/i, note: 'kernel panic guard' },
+  /**
+   * The scenario's action is SIGKILL_AND_KERNEL_PANIC_PREVENTION, which conflates
+   * two capabilities. Split, because one is built and one is not reachable from
+   * userspace, and reporting them together would hide which is which.
+   */
+  kill_safety_guard: { pattern: /assessKillSafety|KERNEL_THREAD/, note: 'kill-safety guard (refuses unsafe SIGKILL)' },
+  kernel_panic_handler: { pattern: /panic_notifier|register_die_notifier|kernel_panic_handler/i, note: 'kernel panic handler — requires a Linux kernel module, not implementable from userspace' },
   file_io_rate: { pattern: /io_?rate|opsPerSec|writeRate|iops/i, note: 'file I/O rate monitoring' },
   post_write_entropy: { pattern: /shannonEntropy|calculateEntropy|entropy/i, note: 'entropy computation' },
   pid_quarantine: { pattern: /quarantinePid|quarantine.*pid/i, note: 'PID quarantine' },

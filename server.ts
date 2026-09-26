@@ -40,6 +40,9 @@ import { globalLiveHostCanary } from './server/services/liveHostCanary.service.j
 import { liveRouter } from './server/routes/live.routes.js';
 import { defenseRouter, adminRouter } from './server/routes/defense.routes.js';
 import { adjudicationRouter } from './server/routes/adjudication.routes.js';
+import { globalRansomwareBurstDetector } from './server/services/ransomwareBurst.service.js';
+import { globalDnsTunnelDetector, globalTcpTarpit, type DnsRecordType } from './server/services/dnsTunnelDetector.service.js';
+import { globalKernelIntegrity } from './server/services/kernelIntegrity.service.js';
 import { globalAdjudication } from './server/services/adjudication.service.js';
 import { globalKernelMitigationDriver } from './server/services/kernelMitigationDriver.js';
 import { globalSelfHealingLedger } from './server/services/selfHealingLedger.service.js';
@@ -1934,6 +1937,95 @@ app.get('/api/v1/soc/inference-posture', (_req, res) => {
     aiEvaluationsCount: state.metrics?.aiEvaluationsCount ?? 0,
     uptimeSec: Math.round(process.uptime())
   });
+});
+
+/**
+ * SENSOR ENDPOINTS — the three capabilities the scenario report found missing
+ *
+ * Each reports its own provenance and, where a sensor cannot operate on this
+ * host, says so instead of returning a healthy-looking figure. Kernel integrity
+ * on a non-Linux host is the clearest case: it returns UNAVAILABLE with the
+ * reason, never VERIFIED.
+ */
+
+/** T1486 — ransomware encryption burst. Rate and entropy from real watcher events. */
+app.get('/api/v1/soc/sensors/ransomware-burst', (_req, res) => {
+  res.json({
+    success: true,
+    assessment: globalRansomwareBurstDetector.assess(),
+    statistics: globalRansomwareBurstDetector.getStatistics()
+  });
+});
+
+app.post('/api/v1/soc/sensors/ransomware-burst/thresholds', adminAuthMiddleware, (req, res) => {
+  const b = req.body || {};
+  globalRansomwareBurstDetector.configure({
+    ...(typeof b.opsPerSec === 'number' ? { opsPerSec: b.opsPerSec } : {}),
+    ...(typeof b.distinctFiles === 'number' ? { distinctFiles: b.distinctFiles } : {}),
+    ...(typeof b.entropy === 'number' ? { entropy: b.entropy } : {}),
+    ...(typeof b.entropyDelta === 'number' ? { entropyDelta: b.entropyDelta } : {})
+  });
+  res.json({ success: true, thresholds: globalRansomwareBurstDetector.getThresholds() });
+});
+
+/** T1048 — DNS tunnelling. Queries are observed, then a zone is assessed. */
+app.post('/api/v1/soc/sensors/dns-query', adminAuthMiddleware, (req, res) => {
+  const b = req.body || {};
+  const name = sanitizeUntrustedInput(String(b.name ?? ''));
+  if (!name) {
+    return res.status(400).json({ success: false, error: 'QUERY_NAME_REQUIRED' });
+  }
+  globalDnsTunnelDetector.record({
+    name,
+    recordType: (String(b.recordType ?? 'A').toUpperCase() as DnsRecordType),
+    payloadLength: typeof b.payloadLength === 'number' ? b.payloadLength : null,
+    srcIp: sanitizeUntrustedInput(String(b.srcIp ?? '0.0.0.0'))
+  });
+  const assessment = globalDnsTunnelDetector.assess(name);
+
+  // Engage the tarpit on the detector's own recommendation rather than on a
+  // caller-supplied flag, so the response cannot be dictated by the client.
+  let tarpit = null;
+  if (assessment.recommendedAction === 'TCP_TARPIT_ENGAGEMENT' && b.srcIp) {
+    tarpit = globalTcpTarpit.engage(sanitizeUntrustedInput(String(b.srcIp)), assessment.classification);
+  }
+
+  res.json({ success: true, assessment, tarpit });
+});
+
+app.get('/api/v1/soc/sensors/dns-tunnel', (req, res) => {
+  const zone = typeof req.query.zone === 'string' ? req.query.zone : null;
+  res.json({
+    success: true,
+    assessment: zone ? globalDnsTunnelDetector.assess(zone) : null,
+    statistics: globalDnsTunnelDetector.getStatistics(),
+    tarpit: globalTcpTarpit.getStatistics(),
+    sessions: globalTcpTarpit.getSessions().slice(0, 25)
+  });
+});
+
+app.post('/api/v1/soc/sensors/tarpit/release', adminAuthMiddleware, (req, res) => {
+  const id = String(req.body?.sessionId ?? '');
+  const ok = globalTcpTarpit.release(id);
+  res.json({ success: ok, sessionId: id });
+});
+
+/** T1014 — syscall table integrity and kill safety. */
+app.get('/api/v1/soc/sensors/kernel-integrity', async (_req, res) => {
+  const result = await globalKernelIntegrity.checkIntegrity();
+  const interfaces = await globalKernelIntegrity.probeInterfaces();
+  res.json({
+    success: true,
+    result,
+    interfaces,
+    statistics: globalKernelIntegrity.getStatistics()
+  });
+});
+
+app.post('/api/v1/soc/sensors/kill-safety', adminAuthMiddleware, (req, res) => {
+  const name = sanitizeUntrustedInput(String(req.body?.processName ?? ''));
+  const pid = typeof req.body?.pid === 'number' ? req.body.pid : null;
+  res.json({ success: true, assessment: globalKernelIntegrity.assessKillSafety(name, pid) });
 });
 
 // 4. Ingest Threat Intelligence & Train Dynamic Prompt Context
