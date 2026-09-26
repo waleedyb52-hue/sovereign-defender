@@ -57,7 +57,9 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
   const isAr = lang === 'ar';
 
   // Sub-view toggle
-  const [activeView, setActiveView] = useState<'ATTACK_GRAPH' | 'HONEYTOKENS' | 'CREDENTIAL_STUFFING'>('ATTACK_GRAPH');
+  const [activeView, setActiveView] = useState<
+    'ATTACK_GRAPH' | 'HONEYTOKENS' | 'CREDENTIAL_STUFFING'
+  >('ATTACK_GRAPH');
 
   // Attack Chains State
   const [attackChains, setAttackChains] = useState<AttackChainSession[]>([]);
@@ -73,7 +75,9 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
   const [triggeringTrapId, setTriggeringTrapId] = useState<string | null>(null);
   const [trapActionFeedback, setTrapActionFeedback] = useState<string | null>(null);
   const [newTrapPath, setNewTrapPath] = useState<string>('');
-  const [newTrapType, setNewTrapType] = useState<'ENV_SECRETS' | 'GIT_CONFIG' | 'ADMIN_PANEL' | 'WORDPRESS_WP_LOGIN' | 'AWS_IAM_CREDENTIALS'>('ENV_SECRETS');
+  const [newTrapType, setNewTrapType] = useState<
+    'ENV_SECRETS' | 'GIT_CONFIG' | 'ADMIN_PANEL' | 'WORDPRESS_WP_LOGIN' | 'AWS_IAM_CREDENTIALS'
+  >('ENV_SECRETS');
   const [isDeployingTrap, setIsDeployingTrap] = useState<boolean>(false);
 
   // Credential Stuffing State
@@ -89,9 +93,10 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       labelEn: '1. Reconnaissance',
       labelAr: '1. الاستطلاع وفحص الأهداف',
       mitreTechnique: 'T1595 - Active Scanning',
-      icon: <Search className="w-4 h-4 text-cyan-400" />,
+      icon: <Search className="h-4 w-4 text-cyan-400" />,
       color: 'cyan',
-      descriptionEn: 'Port sweep, directory enumeration, and vulnerability probing against public surfaces.',
+      descriptionEn:
+        'Port sweep, directory enumeration, and vulnerability probing against public surfaces.',
       descriptionAr: 'مسح المنافذ واستكشاف المسارات البرمجية بحثاً عن ثغرات مكشوفة.'
     },
     {
@@ -100,9 +105,10 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       labelEn: '2. Initial Access',
       labelAr: '2. الوصول الأولي والاختراق',
       mitreTechnique: 'T1190 - Exploit Public-Facing App',
-      icon: <KeyRound className="w-4 h-4 text-amber-400" />,
+      icon: <KeyRound className="h-4 w-4 text-amber-400" />,
       color: 'amber',
-      descriptionEn: 'Credential stuffing, password spraying, or bypass of application authentication gates.',
+      descriptionEn:
+        'Credential stuffing, password spraying, or bypass of application authentication gates.',
       descriptionAr: 'تخمين كلمات المرور أو تجاوز بوابات التحقق الأمنية للدخول.'
     },
     {
@@ -111,9 +117,10 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       labelEn: '3. Exploitation',
       labelAr: '3. استغلال الثغرات والحقن',
       mitreTechnique: 'T1059.004 - Command Injection / SQLi',
-      icon: <Zap className="w-4 h-4 text-rose-400" />,
+      icon: <Zap className="h-4 w-4 text-rose-400" />,
       color: 'rose',
-      descriptionEn: 'Arbitrary shell execution, SQL union injection, or SSRF cloud metadata queries.',
+      descriptionEn:
+        'Arbitrary shell execution, SQL union injection, or SSRF cloud metadata queries.',
       descriptionAr: 'تنفيذ أوامر النظام عن بعد، حقن قواعد البيانات واستغلال ثغرات SSRF.'
     },
     {
@@ -122,9 +129,10 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       labelEn: '4. Persistence (FIM)',
       labelAr: '4. التثبيت والامتيازات (FIM)',
       mitreTechnique: 'T1505.003 - Web Shell / Sudoers',
-      icon: <FileCode className="w-4 h-4 text-purple-400" />,
+      icon: <FileCode className="h-4 w-4 text-purple-400" />,
       color: 'purple',
-      descriptionEn: 'Planting backdoors, modifying /etc/sudoers (NOPASSWD), or modifying critical binaries.',
+      descriptionEn:
+        'Planting backdoors, modifying /etc/sudoers (NOPASSWD), or modifying critical binaries.',
       descriptionAr: 'زرع أبواب خلفية (Web Shell)، وتعديل ملفات الصلاحيات لضمان البقاء.'
     },
     {
@@ -133,9 +141,10 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       labelEn: '5. Exfiltration',
       labelAr: '5. تسريب البيانات وقناة C2',
       mitreTechnique: 'T1048 - Exfil Over Alternative Protocol',
-      icon: <Skull className="w-4 h-4 text-red-500" />,
+      icon: <Skull className="h-4 w-4 text-red-500" />,
       color: 'red',
-      descriptionEn: 'Encrypted outbound C2 tunneling, leaking environment tokens or database dumps.',
+      descriptionEn:
+        'Encrypted outbound C2 tunneling, leaking environment tokens or database dumps.',
       descriptionAr: 'فتح قنوات اتصال خارجية مشفرة لتسريب أسرار الإنتاج وقواعد البيانات.'
     }
   ];
@@ -235,7 +244,11 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       });
       if (res.ok) {
         const data = await res.json();
-        setTrapActionFeedback(isAr ? `🚨 تم إطلاق فخ ${trap.endpointPath} وحظر المهاجم فوراً في نواة eBPF!` : `🚨 Tripwire ${trap.endpointPath} triggered! Attacker IP quarantined in kernel.`);
+        setTrapActionFeedback(
+          isAr
+            ? `🚨 تم إطلاق فخ ${trap.endpointPath} وحظر المهاجم فوراً في نواة eBPF!`
+            : `🚨 Tripwire ${trap.endpointPath} triggered! Attacker IP quarantined in kernel.`
+        );
         fetchHoneytokens();
         fetchAttackChains();
       }
@@ -306,7 +319,11 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
         })
       });
       if (res.ok) {
-        alert(isAr ? `تم حظر المهاجم ${ip} في نواة eBPF بنجاح.` : `Attacker ${ip} quarantined in kernel.`);
+        alert(
+          isAr
+            ? `تم حظر المهاجم ${ip} في نواة eBPF بنجاح.`
+            : `Attacker ${ip} quarantined in kernel.`
+        );
         fetchAttackChains();
       }
     } catch (err) {
@@ -316,7 +333,8 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
   // Generate dynamic Gemini Intent Summary for selected chain
   const getGeminiIntentSummary = (chain: AttackChainSession | null): string => {
-    if (!chain) return isAr ? 'لا توجد جلسة هجومية محددة حالياً.' : 'No active attack chain selected.';
+    if (!chain)
+      return isAr ? 'لا توجد جلسة هجومية محددة حالياً.' : 'No active attack chain selected.';
     const count = chain.stagesCompleted.length;
     if (count >= 5) {
       return isAr
@@ -335,55 +353,61 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
   return (
     <div className="space-y-4 text-slate-200" dir={isAr ? 'rtl' : 'ltr'}>
-
       {/* ========================================================================= */}
       {/* 1. TOP SUB-NAVIGATION BAR & QUICK SUMMARY                                 */}
       {/* ========================================================================= */}
-      <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 shadow-xl backdrop-blur-md">
-        
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/90 p-3 shadow-xl backdrop-blur-md">
         {/* Navigation Mode Tabs */}
-        <div className="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-lg border border-slate-800">
+        <div className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/90 p-1">
           <button
             onClick={() => setActiveView('ATTACK_GRAPH')}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 ${
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold transition ${
               activeView === 'ATTACK_GRAPH'
-                ? 'bg-gradient-to-r from-rose-900/80 to-purple-900/80 text-rose-200 border border-rose-500/50 shadow-md'
+                ? 'border border-rose-500/50 bg-gradient-to-r from-rose-900/80 to-purple-900/80 text-rose-200 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <GitCommit className="w-3.5 h-3.5 text-rose-400" />
-            <span>{isAr ? 'مخطط سلسلة الهجمات التفاعلي (MITRE ATT&CK)' : 'MITRE ATT&CK Intrusion Graph'}</span>
-            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-rose-950 text-rose-300 border border-rose-500/40">
+            <GitCommit className="h-3.5 w-3.5 text-rose-400" />
+            <span>
+              {isAr ? 'مخطط سلسلة الهجمات التفاعلي (MITRE ATT&CK)' : 'MITRE ATT&CK Intrusion Graph'}
+            </span>
+            <span className="py-0.2 rounded border border-rose-500/40 bg-rose-950 px-1.5 font-mono text-[10px] text-rose-300">
               {attackChains.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveView('HONEYTOKENS')}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 ${
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold transition ${
               activeView === 'HONEYTOKENS'
-                ? 'bg-gradient-to-r from-purple-900/80 to-cyan-900/80 text-purple-200 border border-purple-500/50 shadow-md'
+                ? 'border border-purple-500/50 bg-gradient-to-r from-purple-900/80 to-cyan-900/80 text-purple-200 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Radio className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
-            <span>{isAr ? 'فخاخ الخداع والمصائد المسمومة (Honeytokens)' : 'Honeytoken & Canary Traps'}</span>
-            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-purple-950 text-purple-300 border border-purple-500/40">
+            <Radio className="h-3.5 w-3.5 animate-pulse text-purple-400" />
+            <span>
+              {isAr ? 'فخاخ الخداع والمصائد المسمومة (Honeytokens)' : 'Honeytoken & Canary Traps'}
+            </span>
+            <span className="py-0.2 rounded border border-purple-500/40 bg-purple-950 px-1.5 font-mono text-[10px] text-purple-300">
               {honeytokens.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveView('CREDENTIAL_STUFFING')}
-            className={`px-3 py-1.5 rounded-md text-xs font-bold transition flex items-center gap-2 ${
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold transition ${
               activeView === 'CREDENTIAL_STUFFING'
-                ? 'bg-gradient-to-r from-amber-900/80 to-rose-900/80 text-amber-200 border border-amber-500/50 shadow-md'
+                ? 'border border-amber-500/50 bg-gradient-to-r from-amber-900/80 to-rose-900/80 text-amber-200 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-            <span>{isAr ? 'تعقب هجمات التخمين والبوتات (Credential Stuffing)' : 'Credential Stuffing Botnets'}</span>
-            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono bg-amber-950 text-amber-300 border border-amber-500/40">
+            <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+            <span>
+              {isAr
+                ? 'تعقب هجمات التخمين والبوتات (Credential Stuffing)'
+                : 'Credential Stuffing Botnets'}
+            </span>
+            <span className="py-0.2 rounded border border-amber-500/40 bg-amber-950 px-1.5 font-mono text-[10px] text-amber-300">
               {credentialEvents.length}
             </span>
           </button>
@@ -397,9 +421,9 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               fetchHoneytokens();
               fetchCredentialStuffing();
             }}
-            className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-xs font-bold text-slate-300 transition hover:bg-slate-800"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
+            <RefreshCw className="h-3.5 w-3.5 text-cyan-400" />
             <span>{isAr ? 'تحديث البيانات' : 'Refresh Telemetry'}</span>
           </button>
         </div>
@@ -407,14 +431,14 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
       {/* Feedback Banner */}
       {trapActionFeedback && (
-        <div className="p-3 bg-purple-950/80 border border-purple-500/60 rounded-xl text-purple-200 text-xs flex items-center justify-between shadow-lg">
+        <div className="flex items-center justify-between rounded-xl border border-purple-500/60 bg-purple-950/80 p-3 text-xs text-purple-200 shadow-lg">
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-purple-400 animate-pulse" />
+            <Radio className="h-4 w-4 animate-pulse text-purple-400" />
             <span className="font-mono">{trapActionFeedback}</span>
           </div>
           <button
             onClick={() => setTrapActionFeedback(null)}
-            className="text-xs text-purple-400 hover:text-white px-2 py-0.5"
+            className="px-2 py-0.5 text-xs text-purple-400 hover:text-white"
           >
             ✕
           </button>
@@ -426,78 +450,96 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       {/* ========================================================================= */}
       {activeView === 'ATTACK_GRAPH' && (
         <div className="space-y-4">
-          
           {/* Top Controls: Session Selector & Simulation Trigger */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* Left: Active Intrusion Sessions List */}
-            <div className="lg:col-span-1 bg-slate-950/90 border border-slate-800 rounded-xl p-3.5 space-y-3">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950/90 p-3.5 lg:col-span-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Skull className="w-4 h-4 text-rose-400" />
-                  <h3 className="text-xs font-black uppercase text-slate-200 tracking-wider">
+                  <Skull className="h-4 w-4 text-rose-400" />
+                  <h3 className="text-xs font-black tracking-wider text-slate-200 uppercase">
                     {isAr ? 'جلسات الهجمات المرصودة' : 'Correlated Attack Sessions'}
                   </h3>
                 </div>
                 <button
                   onClick={handleSimulateAttackChain}
                   disabled={isSimulatingChain}
-                  className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-mono text-[11px] font-bold transition flex items-center gap-1 shadow-md shadow-rose-950/50"
+                  className="flex items-center gap-1 rounded bg-rose-600 px-2.5 py-1 font-mono text-[11px] font-bold text-white shadow-md shadow-rose-950/50 transition hover:bg-rose-500"
                 >
-                  <Play className="w-3 h-3" />
-                  <span>{isSimulatingChain ? (isAr ? 'جارِ المحاكاة...' : 'Simulating...') : (isAr ? 'محاكاة هجوم 5 مراحل' : 'Simulate 5-Stage APT')}</span>
+                  <Play className="h-3 w-3" />
+                  <span>
+                    {isSimulatingChain
+                      ? isAr
+                        ? 'جارِ المحاكاة...'
+                        : 'Simulating...'
+                      : isAr
+                        ? 'محاكاة هجوم 5 مراحل'
+                        : 'Simulate 5-Stage APT'}
+                  </span>
                 </button>
               </div>
 
               {/* Sessions Scroller */}
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
                 {attackChains.length === 0 ? (
-                  <div className="text-center py-8 text-slate-500 text-xs">
-                    {isAr ? 'لا توجد جلسات هجومية مكتشفة حالياً. انقر على "محاكاة هجوم 5 مراحل" لإنشاء سلسلة.' : 'No active attack chains correlated. Click "Simulate 5-Stage APT" to generate a live sequence.'}
+                  <div className="py-8 text-center text-xs text-slate-500">
+                    {isAr
+                      ? 'لا توجد جلسات هجومية مكتشفة حالياً. انقر على "محاكاة هجوم 5 مراحل" لإنشاء سلسلة.'
+                      : 'No active attack chains correlated. Click "Simulate 5-Stage APT" to generate a live sequence.'}
                   </div>
                 ) : (
-                  attackChains.map((chain) => {
+                  attackChains.map(chain => {
                     const isSelected = selectedChain?.sessionId === chain.sessionId;
                     return (
                       <div
                         key={chain.sessionId}
                         onClick={() => setSelectedChain(chain)}
-                        className={`p-3 rounded-lg border cursor-pointer transition ${
+                        className={`cursor-pointer rounded-lg border p-3 transition ${
                           isSelected
-                            ? 'bg-rose-950/40 border-rose-500/80 shadow-lg shadow-rose-950/40'
-                            : 'bg-slate-900/60 border-slate-800/80 hover:bg-slate-900 hover:border-slate-700'
+                            ? 'border-rose-500/80 bg-rose-950/40 shadow-lg shadow-rose-950/40'
+                            : 'border-slate-800/80 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900'
                         }`}
                       >
-                        <div className="flex items-center justify-between mb-1.5">
+                        <div className="mb-1.5 flex items-center justify-between">
                           <span className="font-mono text-xs font-black text-rose-300">
                             {chain.actorIp}
                           </span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                            chain.threatScore >= 90 ? 'bg-rose-950 text-rose-300 border border-rose-500/40' : 'bg-amber-950 text-amber-300 border border-amber-500/40'
-                          }`}>
+                          <span
+                            className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
+                              chain.threatScore >= 90
+                                ? 'border border-rose-500/40 bg-rose-950 text-rose-300'
+                                : 'border border-amber-500/40 bg-amber-950 text-amber-300'
+                            }`}
+                          >
                             SCORE {chain.threatScore}/100
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                        <div className="flex items-center justify-between font-mono text-[11px] text-slate-400">
                           <span>Stages: {chain.stagesCompleted.length}/5</span>
-                          <span className={`px-1.5 py-0.2 rounded text-[10px] ${
-                            chain.status === 'CONTAINED' ? 'bg-emerald-950 text-emerald-300' : 'bg-rose-950 text-rose-400 animate-pulse'
-                          }`}>
+                          <span
+                            className={`py-0.2 rounded px-1.5 text-[10px] ${
+                              chain.status === 'CONTAINED'
+                                ? 'bg-emerald-950 text-emerald-300'
+                                : 'animate-pulse bg-rose-950 text-rose-400'
+                            }`}
+                          >
                             {chain.status}
                           </span>
                         </div>
 
                         {/* Visual Stage Progress Dots */}
-                        <div className="flex items-center gap-1 mt-2">
-                          {CANONICAL_STAGES.map((s) => {
+                        <div className="mt-2 flex items-center gap-1">
+                          {CANONICAL_STAGES.map(s => {
                             const completed = chain.stagesCompleted.some(sc => sc.stage === s.id);
                             return (
                               <div
                                 key={s.id}
                                 title={`${s.labelEn}: ${completed ? 'TRIGGERED' : 'PENDING'}`}
                                 className={`h-1.5 flex-1 rounded-full ${
-                                  completed ? 'bg-rose-500 shadow-sm shadow-rose-500' : 'bg-slate-800'
+                                  completed
+                                    ? 'bg-rose-500 shadow-sm shadow-rose-500'
+                                    : 'bg-slate-800'
                                 }`}
                               />
                             );
@@ -511,26 +553,27 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
             </div>
 
             {/* Right: Selected Session Detail & Gemini AI Intent Reasoning */}
-            <div className="lg:col-span-2 bg-slate-950/90 border border-slate-800 rounded-xl p-4 space-y-3 flex flex-col justify-between">
-              
+            <div className="flex flex-col justify-between space-y-3 rounded-xl border border-slate-800 bg-slate-950/90 p-4 lg:col-span-2">
               {/* Header Info */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase text-slate-400 font-mono">
+                    <span className="font-mono text-xs font-black text-slate-400 uppercase">
                       {isAr ? 'معرف جلسة التهديد' : 'ATTACK CHAIN ID'}:
                     </span>
-                    <span className="text-sm font-black text-rose-400 font-mono">
+                    <span className="font-mono text-sm font-black text-rose-400">
                       {selectedChain ? selectedChain.sessionId : 'N/A'}
                     </span>
                     {selectedChain && (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-950 text-rose-300 border border-rose-500/40">
+                      <span className="rounded border border-rose-500/40 bg-rose-950 px-2 py-0.5 font-mono text-[10px] text-rose-300">
                         ACTOR: {selectedChain.actorIp}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                    {selectedChain ? `${isAr ? 'أول رصد' : 'First Seen'}: ${new Date(selectedChain.firstSeen).toLocaleTimeString()} | ${isAr ? 'آخر نشاط' : 'Last Seen'}: ${new Date(selectedChain.lastSeen).toLocaleTimeString()}` : ''}
+                  <p className="mt-0.5 font-mono text-[11px] text-slate-400">
+                    {selectedChain
+                      ? `${isAr ? 'أول رصد' : 'First Seen'}: ${new Date(selectedChain.firstSeen).toLocaleTimeString()} | ${isAr ? 'آخر نشاط' : 'Last Seen'}: ${new Date(selectedChain.lastSeen).toLocaleTimeString()}`
+                      : ''}
                   </p>
                 </div>
 
@@ -550,61 +593,82 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               </div>
 
               {/* Gemini AI Reasoning Box */}
-              <div className="bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-slate-900/60 border border-purple-500/40 rounded-xl p-3.5 shadow-inner">
-                <div className="flex items-center gap-2 text-purple-300 text-xs font-bold mb-1.5">
-                  <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
-                  <span>{isAr ? 'تحليل النوايا الهجومية (Gemini AI Threat Intent Summary)' : 'Gemini AI Attack Intent & Blast Radius Assessment'}</span>
+              <div className="rounded-xl border border-purple-500/40 bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-slate-900/60 p-3.5 shadow-inner">
+                <div className="mb-1.5 flex items-center gap-2 text-xs font-bold text-purple-300">
+                  <Sparkles className="h-4 w-4 animate-pulse text-purple-400" />
+                  <span>
+                    {isAr
+                      ? 'تحليل النوايا الهجومية (Gemini AI Threat Intent Summary)'
+                      : 'Gemini AI Attack Intent & Blast Radius Assessment'}
+                  </span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed font-mono">
+                <p className="font-mono text-xs leading-relaxed text-slate-300">
                   {getGeminiIntentSummary(selectedChain)}
                 </p>
               </div>
 
               {/* Quick Attack Chain Metrics */}
               <div className="grid grid-cols-3 gap-3 font-mono">
-                <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                  <span className="text-[10px] text-slate-400 block">{isAr ? 'مستوى الخطورة' : 'THREAT LEVEL'}</span>
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                  <span className="block text-[10px] text-slate-400">
+                    {isAr ? 'مستوى الخطورة' : 'THREAT LEVEL'}
+                  </span>
                   <span className="text-sm font-bold text-rose-400">
-                    {selectedChain ? (selectedChain.threatScore >= 80 ? 'CRITICAL' : 'HIGH') : 'NOMINAL'}
+                    {selectedChain
+                      ? selectedChain.threatScore >= 80
+                        ? 'CRITICAL'
+                        : 'HIGH'
+                      : 'NOMINAL'}
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                  <span className="text-[10px] text-slate-400 block">{isAr ? 'المراحل المكتملة' : 'PROGRESSION'}</span>
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                  <span className="block text-[10px] text-slate-400">
+                    {isAr ? 'المراحل المكتملة' : 'PROGRESSION'}
+                  </span>
                   <span className="text-sm font-bold text-cyan-300">
-                    {selectedChain ? `${selectedChain.stagesCompleted.length} of 5 Stages` : '0 / 5'}
+                    {selectedChain
+                      ? `${selectedChain.stagesCompleted.length} of 5 Stages`
+                      : '0 / 5'}
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                  <span className="text-[10px] text-slate-400 block">{isAr ? 'حالة الاحتواء' : 'CONTAINMENT'}</span>
-                  <span className={`text-sm font-bold ${selectedChain?.status === 'CONTAINED' ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                  <span className="block text-[10px] text-slate-400">
+                    {isAr ? 'حالة الاحتواء' : 'CONTAINMENT'}
+                  </span>
+                  <span
+                    className={`text-sm font-bold ${selectedChain?.status === 'CONTAINED' ? 'text-emerald-400' : 'text-amber-400'}`}
+                  >
                     {selectedChain ? selectedChain.status : 'N/A'}
                   </span>
                 </div>
               </div>
-
             </div>
           </div>
 
           {/* ========================================================================= */}
           {/* 5-STAGE INTERACTIVE MITRE ATT&CK PROGRESSION GRAPH                       */}
           {/* ========================================================================= */}
-          <div className="bg-slate-950/95 border border-slate-800 rounded-xl p-5 shadow-2xl space-y-4">
+          <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950/95 p-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <GitCommit className="w-5 h-5 text-rose-400" />
-                <h3 className="text-sm font-black uppercase text-slate-200 tracking-wider">
-                  {isAr ? 'المسار الزمني لمراحل الهجوم الخمس (5-Stage MITRE Progression Graph)' : '5-Stage MITRE ATT&CK Intrusion Pipeline'}
+                <GitCommit className="h-5 w-5 text-rose-400" />
+                <h3 className="text-sm font-black tracking-wider text-slate-200 uppercase">
+                  {isAr
+                    ? 'المسار الزمني لمراحل الهجوم الخمس (5-Stage MITRE Progression Graph)'
+                    : '5-Stage MITRE ATT&CK Intrusion Pipeline'}
                 </h3>
               </div>
-              <span className="text-xs text-slate-400 font-mono">
-                {isAr ? 'اضغط على أي مرحلة لعرض الأدلة والحمولة' : 'Click any node to inspect raw forensic payload'}
+              <span className="font-mono text-xs text-slate-400">
+                {isAr
+                  ? 'اضغط على أي مرحلة لعرض الأدلة والحمولة'
+                  : 'Click any node to inspect raw forensic payload'}
               </span>
             </div>
 
             {/* Visual 5-Stage Pipeline */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 relative">
+            <div className="relative grid grid-cols-1 gap-3 md:grid-cols-5">
               {CANONICAL_STAGES.map((stage, idx) => {
                 const stageData = selectedChain?.stagesCompleted.find(sc => sc.stage === stage.id);
                 const isTriggered = !!stageData;
@@ -612,53 +676,57 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                 return (
                   <div
                     key={stage.id}
-                    className={`relative p-3.5 rounded-xl border flex flex-col justify-between min-h-[190px] transition-all duration-300 ${
+                    className={`relative flex min-h-[190px] flex-col justify-between rounded-xl border p-3.5 transition-all duration-300 ${
                       isTriggered
-                        ? 'bg-slate-900/90 border-rose-500/70 shadow-lg shadow-rose-950/50'
-                        : 'bg-slate-950/40 border-slate-800/60 opacity-60'
+                        ? 'border-rose-500/70 bg-slate-900/90 shadow-lg shadow-rose-950/50'
+                        : 'border-slate-800/60 bg-slate-950/40 opacity-60'
                     }`}
                   >
                     {/* Top Order & Status Badge */}
                     <div>
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="mb-2 flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           {stage.icon}
                           <span className="font-mono text-xs font-black text-slate-200">
                             {isAr ? stage.labelAr : stage.labelEn}
                           </span>
                         </div>
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
-                          isTriggered ? 'bg-rose-950 text-rose-300 border border-rose-500/50 animate-pulse' : 'bg-slate-800 text-slate-400'
-                        }`}>
+                        <span
+                          className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold ${
+                            isTriggered
+                              ? 'animate-pulse border border-rose-500/50 bg-rose-950 text-rose-300'
+                              : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
                           {isTriggered ? 'TRIGGERED' : 'INACTIVE'}
                         </span>
                       </div>
 
                       {/* MITRE Technique Badge */}
-                      <div className="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-slate-950 text-cyan-300 border border-cyan-500/30 mb-2">
+                      <div className="mb-2 inline-block rounded border border-cyan-500/30 bg-slate-950 px-2 py-0.5 font-mono text-[10px] text-cyan-300">
                         {stageData?.technique || stage.mitreTechnique}
                       </div>
 
-                      <p className="text-[11px] text-slate-400 leading-snug">
+                      <p className="text-[11px] leading-snug text-slate-400">
                         {isAr ? stage.descriptionAr : stage.descriptionEn}
                       </p>
                     </div>
 
                     {/* Bottom Evidence & Timestamp */}
-                    <div className="mt-3 pt-2 border-t border-slate-800/80 font-mono text-[10px]">
+                    <div className="mt-3 border-t border-slate-800/80 pt-2 font-mono text-[10px]">
                       {isTriggered ? (
                         <div className="space-y-1">
-                          <div className="text-emerald-400 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" />
+                          <div className="flex items-center gap-1 text-emerald-400">
+                            <CheckCircle2 className="h-3 w-3" />
                             <span>{new Date(stageData.timestamp).toLocaleTimeString()}</span>
                           </div>
-                          <p className="text-rose-300 truncate" title={stageData.description}>
+                          <p className="truncate text-rose-300" title={stageData.description}>
                             {stageData.description}
                           </p>
                         </div>
                       ) : (
-                        <span className="text-slate-500 flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                        <span className="flex items-center gap-1 text-slate-500">
+                          <Clock className="h-3 w-3" />
                           <span>{isAr ? 'في انتظار الرصد' : 'Awaiting Detection'}</span>
                         </span>
                       )}
@@ -666,8 +734,10 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
                     {/* Step Connector Arrow (for desktop) */}
                     {idx < 4 && (
-                      <div className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 z-10">
-                        <ArrowRight className={`w-4 h-4 ${isTriggered ? 'text-rose-400' : 'text-slate-700'}`} />
+                      <div className="absolute top-1/2 -right-3 z-10 hidden -translate-y-1/2 md:block">
+                        <ArrowRight
+                          className={`h-4 w-4 ${isTriggered ? 'text-rose-400' : 'text-slate-700'}`}
+                        />
                       </div>
                     )}
                   </div>
@@ -675,7 +745,6 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               })}
             </div>
           </div>
-
         </div>
       )}
 
@@ -684,18 +753,19 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       {/* ========================================================================= */}
       {activeView === 'HONEYTOKENS' && (
         <div className="space-y-4">
-          
           {/* Top Banner & Deployment Controls */}
-          <div className="bg-slate-950/90 border border-purple-500/30 rounded-xl p-4 shadow-xl backdrop-blur-md">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div className="rounded-xl border border-purple-500/30 bg-slate-950/90 p-4 shadow-xl backdrop-blur-md">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <Radio className="w-5 h-5 text-purple-400 animate-pulse" />
-                  <h3 className="text-sm font-black uppercase text-purple-300 tracking-wider">
-                    {isAr ? 'منظومة الخداع السيبراني والمصائد المسمومة (Honeytoken Deception Engine)' : 'Autonomous Honeytoken & Canary Trap Monitor'}
+                  <Radio className="h-5 w-5 animate-pulse text-purple-400" />
+                  <h3 className="text-sm font-black tracking-wider text-purple-300 uppercase">
+                    {isAr
+                      ? 'منظومة الخداع السيبراني والمصائد المسمومة (Honeytoken Deception Engine)'
+                      : 'Autonomous Honeytoken & Canary Trap Monitor'}
                   </h3>
                 </div>
-                <p className="text-xs text-slate-400 mt-1 font-mono">
+                <p className="mt-1 font-mono text-xs text-slate-400">
                   {isAr
                     ? 'نشر مسارات وهمية وأصول مسمومة (/env., /.git, /admin). أي محاولة وصول تفعل الحظر الفوري التلقائي في نواة eBPF.'
                     : 'Active decoys deployed across critical endpoints. Any unauthorized request instantly triggers auto-jail & kernel IP ban.'}
@@ -704,12 +774,16 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
               {/* Stats Counters */}
               <div className="flex items-center gap-3 font-mono">
-                <div className="px-3 py-1.5 rounded-lg bg-purple-950/60 border border-purple-500/40 text-center">
-                  <span className="text-[10px] text-purple-300 block leading-none">ACTIVE TRAPS</span>
-                  <span className="text-sm font-bold text-purple-200">{honeytokens.length} Endpoints</span>
+                <div className="rounded-lg border border-purple-500/40 bg-purple-950/60 px-3 py-1.5 text-center">
+                  <span className="block text-[10px] leading-none text-purple-300">
+                    ACTIVE TRAPS
+                  </span>
+                  <span className="text-sm font-bold text-purple-200">
+                    {honeytokens.length} Endpoints
+                  </span>
                 </div>
-                <div className="px-3 py-1.5 rounded-lg bg-rose-950/60 border border-rose-500/40 text-center">
-                  <span className="text-[10px] text-rose-300 block leading-none">TOTAL HITS</span>
+                <div className="rounded-lg border border-rose-500/40 bg-rose-950/60 px-3 py-1.5 text-center">
+                  <span className="block text-[10px] leading-none text-rose-300">TOTAL HITS</span>
                   <span className="text-sm font-bold text-rose-200">
                     {honeytokens.reduce((acc, t) => acc + t.hitsCount, 0)} Intercepted
                   </span>
@@ -718,21 +792,21 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
             </div>
 
             {/* Deploy Custom Trap Form */}
-            <div className="bg-slate-900/80 border border-slate-800 rounded-lg p-3 flex flex-wrap items-center gap-3">
-              <span className="text-xs font-bold text-slate-300 whitespace-nowrap">
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/80 p-3">
+              <span className="text-xs font-bold whitespace-nowrap text-slate-300">
                 {isAr ? 'نشر فخ مخصص جديد:' : 'Deploy Custom Canary Trap:'}
               </span>
               <input
                 type="text"
                 value={newTrapPath}
-                onChange={(e) => setNewTrapPath(e.target.value)}
+                onChange={e => setNewTrapPath(e.target.value)}
                 placeholder="/admin/credentials.txt or /.aws/config"
-                className="px-3 py-1.5 rounded bg-slate-950 border border-slate-700 text-xs font-mono text-cyan-300 focus:outline-none focus:border-purple-400 flex-1 min-w-[200px]"
+                className="min-w-[200px] flex-1 rounded border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-cyan-300 focus:border-purple-400 focus:outline-none"
               />
               <select
                 value={newTrapType}
-                onChange={(e) => setNewTrapType(e.target.value as any)}
-                className="px-3 py-1.5 rounded bg-slate-950 border border-slate-700 text-xs font-mono text-slate-200 focus:outline-none"
+                onChange={e => setNewTrapType(e.target.value as any)}
+                className="rounded border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:outline-none"
               >
                 <option value="ENV_SECRETS">ENV Secrets Decoy</option>
                 <option value="GIT_CONFIG">Git Config Trap</option>
@@ -743,28 +817,32 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               <button
                 onClick={handleDeployCustomTrap}
                 disabled={isDeployingTrap || !newTrapPath}
-                className="px-3 py-1.5 rounded bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold font-mono transition flex items-center gap-1.5 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded bg-purple-600 px-3 py-1.5 font-mono text-xs font-bold text-white transition hover:bg-purple-500 disabled:opacity-50"
               >
-                <Sparkles className="w-3.5 h-3.5" />
+                <Sparkles className="h-3.5 w-3.5" />
                 <span>{isAr ? 'نشر الفخ في المسار' : 'Deploy Canary Asset'}</span>
               </button>
             </div>
           </div>
 
           {/* Active Honeytokens Table */}
-          <div className="bg-slate-950/90 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-            <div className="p-3.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-slate-300 tracking-wider">
-                {isAr ? 'قائمة الفخاخ والمصائد النشطة' : 'Active Deception Endpoints & Auto-Jail Status'}
+          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/90 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/90 p-3.5">
+              <span className="text-xs font-black tracking-wider text-slate-300 uppercase">
+                {isAr
+                  ? 'قائمة الفخاخ والمصائد النشطة'
+                  : 'Active Deception Endpoints & Auto-Jail Status'}
               </span>
-              <span className="text-xs text-purple-400 font-mono">
-                {isAr ? 'نظام الحظر الفوري: نشط في النواة (Kernel Auto-Ban Active)' : 'Kernel eBPF Auto-Jail: ENFORCED'}
+              <span className="font-mono text-xs text-purple-400">
+                {isAr
+                  ? 'نظام الحظر الفوري: نشط في النواة (Kernel Auto-Ban Active)'
+                  : 'Kernel eBPF Auto-Jail: ENFORCED'}
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs" dir="ltr">
-                <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
+                <thead className="border-b border-slate-800 bg-slate-950 text-slate-400">
                   <tr>
                     <th className="px-4 py-2.5">TRAP ID</th>
                     <th className="px-4 py-2.5">CANARY ENDPOINT</th>
@@ -777,25 +855,31 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {honeytokens.map((trap) => (
-                    <tr key={trap.id} className="hover:bg-slate-900/60 transition">
+                  {honeytokens.map(trap => (
+                    <tr key={trap.id} className="transition hover:bg-slate-900/60">
                       <td className="px-4 py-3 font-bold text-purple-300">{trap.id}</td>
                       <td className="px-4 py-3 font-bold text-cyan-300">{trap.endpointPath}</td>
                       <td className="px-4 py-3 text-slate-300">{trap.trapType}</td>
                       <td className="px-4 py-3 text-center">
-                        <span className={`px-2 py-0.5 rounded font-bold ${
-                          trap.hitsCount > 0 ? 'bg-rose-950 text-rose-300 border border-rose-500/40' : 'bg-slate-900 text-slate-500'
-                        }`}>
+                        <span
+                          className={`rounded px-2 py-0.5 font-bold ${
+                            trap.hitsCount > 0
+                              ? 'border border-rose-500/40 bg-rose-950 text-rose-300'
+                              : 'bg-slate-900 text-slate-500'
+                          }`}
+                        >
                           {trap.hitsCount}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-slate-400">
-                        {trap.lastTriggered ? new Date(trap.lastTriggered).toLocaleTimeString() : 'NEVER'}
+                        {trap.lastTriggered
+                          ? new Date(trap.lastTriggered).toLocaleTimeString()
+                          : 'NEVER'}
                       </td>
                       <td className="px-4 py-3 text-amber-300">{trap.lastAttackerIp || 'NONE'}</td>
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 w-fit">
-                          <CheckCircle2 className="w-3 h-3" />
+                        <span className="flex w-fit items-center gap-1 rounded border border-emerald-500/30 bg-emerald-950 px-2 py-0.5 text-[10px] text-emerald-300">
+                          <CheckCircle2 className="h-3 w-3" />
                           <span>eBPF BAN</span>
                         </span>
                       </td>
@@ -803,10 +887,14 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                         <button
                           onClick={() => handleTriggerHoneytoken(trap)}
                           disabled={triggeringTrapId === trap.id}
-                          className="px-2.5 py-1 rounded bg-rose-900/80 hover:bg-rose-800 text-rose-200 text-[11px] font-bold border border-rose-500/40 transition flex items-center gap-1 ml-auto"
+                          className="ml-auto flex items-center gap-1 rounded border border-rose-500/40 bg-rose-900/80 px-2.5 py-1 text-[11px] font-bold text-rose-200 transition hover:bg-rose-800"
                         >
-                          <Zap className="w-3 h-3 text-amber-400" />
-                          <span>{triggeringTrapId === trap.id ? 'Triggering...' : 'Simulate Tripwire Hit'}</span>
+                          <Zap className="h-3 w-3 text-amber-400" />
+                          <span>
+                            {triggeringTrapId === trap.id
+                              ? 'Triggering...'
+                              : 'Simulate Tripwire Hit'}
+                          </span>
                         </button>
                       </td>
                     </tr>
@@ -815,7 +903,6 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               </table>
             </div>
           </div>
-
         </div>
       )}
 
@@ -824,18 +911,19 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       {/* ========================================================================= */}
       {activeView === 'CREDENTIAL_STUFFING' && (
         <div className="space-y-4">
-          
           {/* Top Controls */}
-          <div className="bg-slate-950/90 border border-amber-500/30 rounded-xl p-4 shadow-xl backdrop-blur-md">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div className="rounded-xl border border-amber-500/30 bg-slate-950/90 p-4 shadow-xl backdrop-blur-md">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <KeyRound className="w-5 h-5 text-amber-400" />
-                  <h3 className="text-sm font-black uppercase text-amber-300 tracking-wider">
-                    {isAr ? 'مراقبة هجمات التخمين والبوتات الموزعة (Credential Stuffing & Password Spraying)' : 'Distributed Credential Stuffing & Velocity Defense'}
+                  <KeyRound className="h-5 w-5 text-amber-400" />
+                  <h3 className="text-sm font-black tracking-wider text-amber-300 uppercase">
+                    {isAr
+                      ? 'مراقبة هجمات التخمين والبوتات الموزعة (Credential Stuffing & Password Spraying)'
+                      : 'Distributed Credential Stuffing & Velocity Defense'}
                   </h3>
                 </div>
-                <p className="text-xs text-slate-400 mt-1 font-mono">
+                <p className="mt-1 font-mono text-xs text-slate-400">
                   {isAr
                     ? 'رصد محاولات التخمين عالية التردد وحظر شبكات البوتات الموزعة وتطبيق تحديات CAPTCHA التلقائية.'
                     : 'Real-time velocity thresholding, automated account lockouts, and distributed botnet swarm neutralization.'}
@@ -843,40 +931,50 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               </div>
 
               {/* Attack Simulator Form */}
-              <div className="flex items-center gap-2 bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+              <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 p-2">
                 <input
                   type="text"
                   value={targetUsernameInput}
-                  onChange={(e) => setTargetUsernameInput(e.target.value)}
+                  onChange={e => setTargetUsernameInput(e.target.value)}
                   placeholder="target_user@domain.com"
-                  className="px-2.5 py-1 rounded bg-slate-950 border border-slate-700 text-xs font-mono text-cyan-300 focus:outline-none"
+                  className="rounded border border-slate-700 bg-slate-950 px-2.5 py-1 font-mono text-xs text-cyan-300 focus:outline-none"
                 />
                 <button
                   onClick={handleSimulateCredentialStuffing}
                   disabled={isSimulatingBruteForce}
-                  className="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold font-mono text-xs transition flex items-center gap-1.5"
+                  className="flex items-center gap-1.5 rounded bg-amber-600 px-3 py-1 font-mono text-xs font-bold text-slate-950 transition hover:bg-amber-500"
                 >
-                  <Play className="w-3 h-3" />
-                  <span>{isSimulatingBruteForce ? (isAr ? 'جارِ الإطلاق...' : 'Launching...') : (isAr ? 'محاكاة هجوم تخمين' : 'Simulate Brute Force')}</span>
+                  <Play className="h-3 w-3" />
+                  <span>
+                    {isSimulatingBruteForce
+                      ? isAr
+                        ? 'جارِ الإطلاق...'
+                        : 'Launching...'
+                      : isAr
+                        ? 'محاكاة هجوم تخمين'
+                        : 'Simulate Brute Force'}
+                  </span>
                 </button>
               </div>
             </div>
           </div>
 
           {/* Credential Events Feed Table */}
-          <div className="bg-slate-950/90 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-            <div className="p-3.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
-              <span className="text-xs font-black uppercase text-slate-300 tracking-wider">
-                {isAr ? 'سجل هجمات التخمين والبوتات المعترضة' : 'Intercepted Credential Stuffing Telemetry Feed'}
+          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/90 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/90 p-3.5">
+              <span className="text-xs font-black tracking-wider text-slate-300 uppercase">
+                {isAr
+                  ? 'سجل هجمات التخمين والبوتات المعترضة'
+                  : 'Intercepted Credential Stuffing Telemetry Feed'}
               </span>
-              <span className="text-xs text-amber-400 font-mono">
+              <span className="font-mono text-xs text-amber-400">
                 {isAr ? 'تأمين المصادقة: فعال' : 'PAM Shield: ACTIVE'}
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs" dir="ltr">
-                <thead className="bg-slate-950 text-slate-400 border-b border-slate-800">
+                <thead className="border-b border-slate-800 bg-slate-950 text-slate-400">
                   <tr>
                     <th className="px-4 py-2.5">TIMESTAMP</th>
                     <th className="px-4 py-2.5">BOTNET NODE IP</th>
@@ -888,20 +986,26 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {credentialEvents.map((evt) => (
-                    <tr key={evt.id} className="hover:bg-slate-900/60 transition">
-                      <td className="px-4 py-3 text-slate-400">{new Date(evt.timestamp).toLocaleTimeString()}</td>
+                  {credentialEvents.map(evt => (
+                    <tr key={evt.id} className="transition hover:bg-slate-900/60">
+                      <td className="px-4 py-3 text-slate-400">
+                        {new Date(evt.timestamp).toLocaleTimeString()}
+                      </td>
                       <td className="px-4 py-3 font-bold text-rose-400">{evt.sourceIp}</td>
                       <td className="px-4 py-3 text-cyan-300">{evt.targetEndpoint}</td>
-                      <td className="px-4 py-3 font-bold text-amber-300">{evt.usernameAttempted}</td>
+                      <td className="px-4 py-3 font-bold text-amber-300">
+                        {evt.usernameAttempted}
+                      </td>
                       <td className="px-4 py-3 text-slate-200">
-                        <span className="px-2 py-0.5 rounded bg-rose-950 text-rose-300 font-bold">
+                        <span className="rounded bg-rose-950 px-2 py-0.5 font-bold text-rose-300">
                           {evt.velocityPerMinute} req/min
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-purple-300">{evt.botnetClusterName || 'Distributed Swarm'}</td>
+                      <td className="px-4 py-3 text-purple-300">
+                        {evt.botnetClusterName || 'Distributed Swarm'}
+                      </td>
                       <td className="px-4 py-3 text-right">
-                        <span className="px-2 py-0.5 rounded text-[10px] bg-rose-950 text-rose-300 border border-rose-500/40 font-bold">
+                        <span className="rounded border border-rose-500/40 bg-rose-950 px-2 py-0.5 text-[10px] font-bold text-rose-300">
                           {evt.actionTaken}
                         </span>
                       </td>
@@ -911,10 +1015,8 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               </table>
             </div>
           </div>
-
         </div>
       )}
-
     </div>
   );
 };

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Bell, 
-  Send, 
-  Check, 
-  X, 
-  Sliders, 
-  ShieldAlert, 
-  Radio, 
-  MessageSquare, 
-  Sparkles, 
+import {
+  Bell,
+  Send,
+  Check,
+  X,
+  Sliders,
+  ShieldAlert,
+  Radio,
+  MessageSquare,
+  Sparkles,
   RefreshCw,
   Zap,
   Globe
@@ -95,39 +95,39 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-      <div className="w-full max-w-xl p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl space-y-5 text-left animate-in fade-in zoom-in-95 duration-200">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+      <div className="animate-in fade-in zoom-in-95 w-full max-w-xl space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-2xl duration-200">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-              <Bell className="w-5 h-5" />
+            <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/20 p-2 text-indigo-400">
+              <Bell className="h-5 w-5" />
             </div>
             <div>
               <h3 className="text-base font-black text-white">
                 {isAr ? 'إعداد التنبيهات الفورية متعددة القنوات' : 'Multi-Channel Instant Alerting'}
               </h3>
               <p className="text-xs text-slate-400">
-                {isAr ? 'ربط الحوادث السيبرانية تلقائياً مع Discord و Slack و Telegram' : 'Dispatch instant SOC incident webhooks to Discord, Slack & Telegram'}
+                {isAr
+                  ? 'ربط الحوادث السيبرانية تلقائياً مع Discord و Slack و Telegram'
+                  : 'Dispatch instant SOC incident webhooks to Discord, Slack & Telegram'}
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-slate-200"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
         {/* Form Body */}
         <div className="space-y-4 text-xs">
-          
           {/* Channel Selector */}
           <div className="space-y-2">
-            <label className="font-bold text-slate-200 block">
+            <label className="block font-bold text-slate-200">
               {isAr ? 'قناة الإشعار المستهدفة:' : 'Target Dispatch Channel:'}
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -136,13 +136,13 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
                   key={p}
                   type="button"
                   onClick={() => setConfig(prev => ({ ...prev, provider: p }))}
-                  className={`flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition ${
+                  className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition ${
                     config.provider === p
-                      ? 'bg-indigo-600/30 border-indigo-500 text-indigo-200 shadow-md shadow-indigo-950'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'border-indigo-500 bg-indigo-600/30 text-indigo-200 shadow-md shadow-indigo-950'
+                      : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
                   }`}
                 >
-                  <MessageSquare className="w-3.5 h-3.5" />
+                  <MessageSquare className="h-3.5 w-3.5" />
                   <span>{p}</span>
                 </button>
               ))}
@@ -152,21 +152,25 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
           {/* Webhook URL or Telegram Token */}
           {config.provider !== 'TELEGRAM' ? (
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-200 block">
+              <label className="block font-bold text-slate-200">
                 {isAr ? 'رابط الـ Webhook:' : 'Webhook URL:'}
               </label>
               <input
                 type="url"
-                placeholder={config.provider === 'DISCORD' ? 'https://discord.com/api/webhooks/...' : 'https://hooks.slack.com/services/...'}
+                placeholder={
+                  config.provider === 'DISCORD'
+                    ? 'https://discord.com/api/webhooks/...'
+                    : 'https://hooks.slack.com/services/...'
+                }
                 value={config.webhookUrl}
                 onChange={e => setConfig(prev => ({ ...prev, webhookUrl: e.target.value }))}
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 font-mono text-xs focus:outline-none focus:border-indigo-500"
+                className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
               />
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-200 block">
+                <label className="block font-bold text-slate-200">
                   {isAr ? 'رمز بوت Telegram (Bot Token):' : 'Telegram Bot Token:'}
                 </label>
                 <input
@@ -174,11 +178,11 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
                   placeholder="123456789:ABCdef..."
                   value={config.telegramBotToken || ''}
                   onChange={e => setConfig(prev => ({ ...prev, telegramBotToken: e.target.value }))}
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 font-mono text-xs focus:outline-none focus:border-indigo-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-200 block">
+                <label className="block font-bold text-slate-200">
                   {isAr ? 'معرف الدردشة (Chat ID):' : 'Chat ID:'}
                 </label>
                 <input
@@ -186,7 +190,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
                   placeholder="-1001234567890"
                   value={config.telegramChatId || ''}
                   onChange={e => setConfig(prev => ({ ...prev, telegramChatId: e.target.value }))}
-                  className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 font-mono text-xs focus:outline-none focus:border-indigo-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -194,23 +198,31 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
 
           {/* Severity Threshold */}
           <div className="space-y-2">
-            <label className="font-bold text-slate-200 block">
+            <label className="block font-bold text-slate-200">
               {isAr ? 'الحد الأدنى لدرجة الخطورة للإرسال:' : 'Minimum Severity Threshold:'}
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { key: 'ALL', labelAr: 'كافة التهديدات (>= 50%)', labelEn: 'All Threats (>= 50%)' },
-                { key: 'HIGH', labelAr: 'عالية وحرجة (>= 70%)', labelEn: 'High & Critical (>= 70%)' },
-                { key: 'CRITICAL', labelAr: 'الحرجة فقط (>= 90%)', labelEn: 'Critical Only (>= 90%)' }
+                {
+                  key: 'HIGH',
+                  labelAr: 'عالية وحرجة (>= 70%)',
+                  labelEn: 'High & Critical (>= 70%)'
+                },
+                {
+                  key: 'CRITICAL',
+                  labelAr: 'الحرجة فقط (>= 90%)',
+                  labelEn: 'Critical Only (>= 90%)'
+                }
               ].map(item => (
                 <button
                   key={item.key}
                   type="button"
                   onClick={() => setConfig(prev => ({ ...prev, minSeverity: item.key as any }))}
-                  className={`p-2 rounded-lg border text-center font-medium transition ${
+                  className={`rounded-lg border p-2 text-center font-medium transition ${
                     config.minSeverity === item.key
-                      ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300 font-bold'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'border-indigo-500 bg-indigo-600/20 font-bold text-indigo-300'
+                      : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
                   }`}
                 >
                   {isAr ? item.labelAr : item.labelEn}
@@ -220,56 +232,71 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
           </div>
 
           {/* Active Switch */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
+          <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
             <div>
-              <span className="font-bold text-slate-200 block">
+              <span className="block font-bold text-slate-200">
                 {isAr ? 'تفعيل الإرسال التلقائي للويب هوك' : 'Enable Automatic Webhook Dispatch'}
               </span>
               <span className="text-[11px] text-slate-500">
-                {isAr ? 'إرسال إشعار فوري عند رصد الهجمات وتطبيق قواعد النواة' : 'Instantly trigger alerts on autonomous kernel defense actions'}
+                {isAr
+                  ? 'إرسال إشعار فوري عند رصد الهجمات وتطبيق قواعد النواة'
+                  : 'Instantly trigger alerts on autonomous kernel defense actions'}
               </span>
             </div>
             <button
               type="button"
               onClick={() => setConfig(prev => ({ ...prev, enabled: !prev.enabled }))}
-              className={`w-12 h-6 flex items-center rounded-full p-1 transition ${
-                config.enabled ? 'bg-indigo-600 justify-end' : 'bg-slate-800 justify-start'
+              className={`flex h-6 w-12 items-center rounded-full p-1 transition ${
+                config.enabled ? 'justify-end bg-indigo-600' : 'justify-start bg-slate-800'
               }`}
             >
-              <span className="w-4 h-4 rounded-full bg-white shadow-md transform transition" />
+              <span className="h-4 w-4 transform rounded-full bg-white shadow-md transition" />
             </button>
           </div>
 
           {/* Feedback Test Alert result */}
           {testResult && (
-            <div className={`p-3 rounded-xl border text-xs flex items-center gap-2 ${
-              testResult.success 
-                ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' 
-                : 'bg-rose-950/40 border-rose-500/40 text-rose-300'
-            }`}>
-              {testResult.success ? <Check className="w-4 h-4 flex-shrink-0" /> : <ShieldAlert className="w-4 h-4 flex-shrink-0" />}
+            <div
+              className={`flex items-center gap-2 rounded-xl border p-3 text-xs ${
+                testResult.success
+                  ? 'border-emerald-500/40 bg-emerald-950/40 text-emerald-300'
+                  : 'border-rose-500/40 bg-rose-950/40 text-rose-300'
+              }`}
+            >
+              {testResult.success ? (
+                <Check className="h-4 w-4 flex-shrink-0" />
+              ) : (
+                <ShieldAlert className="h-4 w-4 flex-shrink-0" />
+              )}
               <span>{testResult.message}</span>
             </div>
           )}
 
           {savedSuccess && (
-            <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2">
-              <Check className="w-4 h-4" />
-              <span>{isAr ? 'تم حفظ إعدادات التنبيهات بنجاح!' : 'Alert configuration saved successfully!'}</span>
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-2.5 text-xs text-emerald-300">
+              <Check className="h-4 w-4" />
+              <span>
+                {isAr
+                  ? 'تم حفظ إعدادات التنبيهات بنجاح!'
+                  : 'Alert configuration saved successfully!'}
+              </span>
             </div>
           )}
-
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-between border-t border-slate-800 pt-4">
           <button
             type="button"
             onClick={handleTestAlert}
             disabled={isTesting}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-200 transition hover:bg-slate-700 disabled:opacity-50"
           >
-            {isTesting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+            {isTesting ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="h-3.5 w-3.5" />
+            )}
             <span>{isAr ? 'إرسال إشعار تجريبي' : 'Dispatch Test Alert'}</span>
           </button>
 
@@ -277,7 +304,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 text-xs font-bold transition"
+              className="rounded-xl px-4 py-2 text-xs font-bold text-slate-400 transition hover:text-slate-200"
             >
               {isAr ? 'إلغاء' : 'Cancel'}
             </button>
@@ -285,14 +312,17 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-950 transition disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-950 transition hover:bg-indigo-500 disabled:opacity-50"
             >
-              {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+              {isSaving ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Check className="h-3.5 w-3.5" />
+              )}
               <span>{isAr ? 'حفظ الإعدادات' : 'Save Config'}</span>
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );

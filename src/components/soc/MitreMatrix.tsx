@@ -25,17 +25,17 @@ interface TelemetryEvent {
 
 /** The tactic columns we track, in kill-chain order. */
 const TACTICS = [
-  { key: 'Reconnaissance',  ar: 'الاستطلاع',       en: 'Recon' },
-  { key: 'Initial Access',  ar: 'الوصول الأولي',   en: 'Initial Access' },
-  { key: 'Execution',       ar: 'التنفيذ',          en: 'Execution' },
-  { key: 'Persistence',     ar: 'ترسيخ الوجود',    en: 'Persistence' },
+  { key: 'Reconnaissance', ar: 'الاستطلاع', en: 'Recon' },
+  { key: 'Initial Access', ar: 'الوصول الأولي', en: 'Initial Access' },
+  { key: 'Execution', ar: 'التنفيذ', en: 'Execution' },
+  { key: 'Persistence', ar: 'ترسيخ الوجود', en: 'Persistence' },
   { key: 'Privilege Escalation', ar: 'رفع الصلاحيات', en: 'Priv. Esc' },
-  { key: 'Defense Evasion', ar: 'تفادي الدفاعات',  en: 'Evasion' },
+  { key: 'Defense Evasion', ar: 'تفادي الدفاعات', en: 'Evasion' },
   { key: 'Credential Access', ar: 'سرقة الاعتماد', en: 'Cred. Access' },
-  { key: 'Lateral Movement', ar: 'حركة جانبية',    en: 'Lateral' },
+  { key: 'Lateral Movement', ar: 'حركة جانبية', en: 'Lateral' },
   { key: 'Command and Control', ar: 'القيادة والسيطرة', en: 'C2' },
-  { key: 'Exfiltration',    ar: 'سحب البيانات',    en: 'Exfiltration' },
-  { key: 'Impact',          ar: 'الأثر',            en: 'Impact' }
+  { key: 'Exfiltration', ar: 'سحب البيانات', en: 'Exfiltration' },
+  { key: 'Impact', ar: 'الأثر', en: 'Impact' }
 ];
 
 /** Normalises the various tactic spellings the backend emits. */
@@ -56,12 +56,16 @@ function normaliseTactic(raw?: string): string | null {
   return null;
 }
 
-interface Props { lang?: 'ar' | 'en'; }
+interface Props {
+  lang?: 'ar' | 'en';
+}
 
 export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
   const isAr = lang === 'ar';
   const [events, setEvents] = useState<TelemetryEvent[]>([]);
-  const [hover, setHover] = useState<{ tactic: string; technique: string; count: number } | null>(null);
+  const [hover, setHover] = useState<{ tactic: string; technique: string; count: number } | null>(
+    null
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -70,7 +74,9 @@ export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
         if (!res.ok) return;
         const d = await res.json();
         if (Array.isArray(d?.events)) setEvents(d.events);
-      } catch { /* keep last known */ }
+      } catch {
+        /* keep last known */
+      }
     };
     load();
     const t = setInterval(load, 8000);
@@ -93,7 +99,11 @@ export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
 
   const maxCount = useMemo(() => {
     let mx = 0;
-    grid.forEach(inner => inner.forEach(v => { if (v > mx) mx = v; }));
+    grid.forEach(inner =>
+      inner.forEach(v => {
+        if (v > mx) mx = v;
+      })
+    );
     return mx || 1;
   }, [grid]);
 
@@ -108,28 +118,31 @@ export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
 
   return (
     <section className="soc-panel p-5" dir={isAr ? 'rtl' : 'ltr'}>
-      <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-            <Grid3x3 className="w-4 h-4 text-slate-400" />
+          <h3 className="flex items-center gap-2 text-sm font-bold text-slate-100">
+            <Grid3x3 className="h-4 w-4 text-slate-400" />
             {isAr ? 'مصفوفة تغطية MITRE ATT&CK' : 'MITRE ATT&CK coverage matrix'}
           </h3>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="mt-0.5 text-[11px] text-slate-500">
             {isAr
               ? 'التكتيكات أفقياً والتقنيات المرصودة تحتها — درجة اللون تعكس كثافة النشاط.'
               : 'Tactics across, observed techniques beneath — shade reflects activity volume.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-4 shrink-0">
+        <div className="flex shrink-0 items-center gap-4">
           <div className="text-end">
-            <div className="font-mono text-lg font-bold text-slate-100 tabular-nums leading-none">
-              {observedTactics}<span className="text-slate-500 text-sm">/{TACTICS.length}</span>
+            <div className="font-mono text-lg leading-none font-bold text-slate-100 tabular-nums">
+              {observedTactics}
+              <span className="text-sm text-slate-500">/{TACTICS.length}</span>
             </div>
             <div className="soc-label mt-1">{isAr ? 'تكتيكات مرصودة' : 'tactics seen'}</div>
           </div>
           <div className="text-end">
-            <div className="font-mono text-lg font-bold text-slate-100 tabular-nums leading-none">{totalTechniques}</div>
+            <div className="font-mono text-lg leading-none font-bold text-slate-100 tabular-nums">
+              {totalTechniques}
+            </div>
             <div className="soc-label mt-1">{isAr ? 'تقنيات' : 'techniques'}</div>
           </div>
         </div>
@@ -139,14 +152,16 @@ export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
       <div className="overflow-x-auto pb-1">
         <div className="min-w-[860px]" dir="ltr">
           {/* tactic headers */}
-          <div className="grid gap-1.5 mb-1.5" style={{ gridTemplateColumns: `repeat(${TACTICS.length}, minmax(0, 1fr))` }}>
+          <div
+            className="mb-1.5 grid gap-1.5"
+            style={{ gridTemplateColumns: `repeat(${TACTICS.length}, minmax(0, 1fr))` }}
+          >
             {TACTICS.map(t => {
               const has = grid.has(t.key);
               return (
                 <div
                   key={t.key}
-                  className={`text-[10px] font-semibold leading-tight px-1 py-1.5 rounded text-center truncate
-                    ${has ? 'text-slate-200 bg-slate-800/70' : 'text-slate-600 bg-slate-900/50'}`}
+                  className={`truncate rounded px-1 py-1.5 text-center text-[10px] leading-tight font-semibold ${has ? 'bg-slate-800/70 text-slate-200' : 'bg-slate-900/50 text-slate-600'}`}
                   title={isAr ? t.ar : t.en}
                 >
                   {isAr ? t.ar : t.en}
@@ -156,7 +171,10 @@ export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
           </div>
 
           {/* technique cells */}
-          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${TACTICS.length}, minmax(0, 1fr))` }}>
+          <div
+            className="grid gap-1.5"
+            style={{ gridTemplateColumns: `repeat(${TACTICS.length}, minmax(0, 1fr))` }}
+          >
             {TACTICS.map(t => {
               const inner = grid.get(t.key);
               const techs: Array<[string, number]> = [];
@@ -167,21 +185,30 @@ export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
                   {Array.from({ length: maxRows }).map((_, r) => {
                     const entry = techs[r];
                     if (!entry) {
-                      return <div key={r} className="h-8 rounded border border-slate-800/60 bg-slate-900/30" />;
+                      return (
+                        <div
+                          key={r}
+                          className="h-8 rounded border border-slate-800/60 bg-slate-900/30"
+                        />
+                      );
                     }
                     const [tech, count] = entry;
                     const t01 = count / maxCount;
                     return (
                       <div
                         key={r}
-                        onMouseEnter={() => setHover({ tactic: isAr ? t.ar : t.en, technique: tech, count })}
+                        onMouseEnter={() =>
+                          setHover({ tactic: isAr ? t.ar : t.en, technique: tech, count })
+                        }
                         onMouseLeave={() => setHover(null)}
-                        className="h-8 rounded border border-slate-700/50 flex items-center justify-center cursor-default transition-transform hover:scale-[1.04]"
+                        className="flex h-8 cursor-default items-center justify-center rounded border border-slate-700/50 transition-transform hover:scale-[1.04]"
                         style={{ background: heatStep(t01) }}
                         title={`${tech} · ${count}`}
                       >
                         {/* count printed: magnitude never relies on hue alone */}
-                        <span className="font-mono text-[10px] font-bold text-white/90 tabular-nums">{count}</span>
+                        <span className="font-mono text-[10px] font-bold text-white/90 tabular-nums">
+                          {count}
+                        </span>
                       </div>
                     );
                   })}
@@ -193,24 +220,29 @@ export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
       </div>
 
       {/* ramp legend + hover readout */}
-      <div className="flex items-center justify-between gap-4 mt-4 pt-3 border-t border-slate-800 flex-wrap">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-slate-800 pt-3">
         <div className="flex items-center gap-2">
           <span className="text-[10px] text-slate-500">{isAr ? 'أقل' : 'Low'}</span>
           <div className="flex gap-0.5">
             {[0.2, 0.4, 0.6, 0.8, 1].map(t => (
-              <span key={t} className="w-6 h-2.5 rounded-[2px]" style={{ background: heatStep(t) }} />
+              <span
+                key={t}
+                className="h-2.5 w-6 rounded-[2px]"
+                style={{ background: heatStep(t) }}
+              />
             ))}
           </div>
           <span className="text-[10px] text-slate-500">{isAr ? 'أكثر' : 'High'}</span>
         </div>
 
         {hover ? (
-          <div className="text-[11px] text-slate-300 font-mono truncate">
-            {hover.tactic} · {hover.technique} · <span className="text-slate-100 font-bold">{hover.count}</span>
+          <div className="truncate font-mono text-[11px] text-slate-300">
+            {hover.tactic} · {hover.technique} ·{' '}
+            <span className="font-bold text-slate-100">{hover.count}</span>
           </div>
         ) : (
           <div className="flex items-center gap-1.5 text-[11px] text-emerald-400">
-            <ShieldCheck className="w-3.5 h-3.5" />
+            <ShieldCheck className="h-3.5 w-3.5" />
             {isAr ? 'كل التقنيات المرصودة جرى احتواؤها' : 'All observed techniques contained'}
           </div>
         )}

@@ -33,7 +33,9 @@ function emit() {
 
 function start() {
   if (timer !== null) return;
-  timer = setInterval(() => { if (isVisible()) emit(); }, BEAT_MS);
+  timer = setInterval(() => {
+    if (isVisible()) emit();
+  }, BEAT_MS);
 }
 
 function stop() {
@@ -43,8 +45,12 @@ function stop() {
 }
 
 function ensureRunning() {
-  if (listeners.size === 0) { stop(); return; }
-  if (isVisible()) start(); else stop();
+  if (listeners.size === 0) {
+    stop();
+    return;
+  }
+  if (isVisible()) start();
+  else stop();
 }
 
 if (typeof document !== 'undefined') {
@@ -67,7 +73,11 @@ function subscribe(l: Listener): () => void {
 
 /** Re-renders on the shared beat. Use when a component polls on its own. */
 export function useRefreshTick(): number {
-  return useSyncExternalStore(subscribe, () => tick, () => tick);
+  return useSyncExternalStore(
+    subscribe,
+    () => tick,
+    () => tick
+  );
 }
 
 /**
@@ -100,7 +110,9 @@ export function useLiveJson<T>(url: string, select?: (raw: any) => T | null) {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [url, beat]);
 
   return { data, loading };
@@ -120,7 +132,10 @@ export function usePrefersCalm(): boolean {
     mq.addEventListener('change', update);
     const obs = new MutationObserver(update);
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion'] });
-    return () => { mq.removeEventListener('change', update); obs.disconnect(); };
+    return () => {
+      mq.removeEventListener('change', update);
+      obs.disconnect();
+    };
   }, []);
 
   return calm;
@@ -135,7 +150,11 @@ function readCalm(): boolean {
 /** Flips the in-app calm toggle and remembers it for next visit. */
 export function setCalmMode(on: boolean) {
   document.documentElement.dataset.motion = on ? 'calm' : 'full';
-  try { localStorage.setItem('sd-motion', on ? 'calm' : 'full'); } catch { /* private mode */ }
+  try {
+    localStorage.setItem('sd-motion', on ? 'calm' : 'full');
+  } catch {
+    /* private mode */
+  }
 }
 
 /** Restores the saved preference. Call once at startup. */
@@ -143,7 +162,9 @@ export function initCalmMode() {
   try {
     const saved = localStorage.getItem('sd-motion');
     if (saved === 'calm' || saved === 'full') document.documentElement.dataset.motion = saved;
-  } catch { /* private mode */ }
+  } catch {
+    /* private mode */
+  }
 }
 
 /**
@@ -151,7 +172,10 @@ export function initCalmMode() {
  * for a globe that has been scrolled past — it keeps a GPU busy for nothing and
  * keeps motion in peripheral vision.
  */
-export function useOnScreen<T extends Element>(ref: React.RefObject<T | null>, rootMargin = '120px'): boolean {
+export function useOnScreen<T extends Element>(
+  ref: React.RefObject<T | null>,
+  rootMargin = '120px'
+): boolean {
   const [onScreen, setOnScreen] = useState(true);
   useEffect(() => {
     const el = ref.current;

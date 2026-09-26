@@ -7,7 +7,10 @@
     "dev": "tsx server.ts",
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:fast": "vitest run --passWithNoTests",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "audit:suite": "tsx audit/audit_suite.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -15,6 +18,8 @@
     "@types/three": "^0.185.4",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^5.0.4",
+    "@xyflow/react": "^12.12.0",
+    "clsx": "^2.1.1",
     "cors": "^2.8.6",
     "d3": "^7.9.0",
     "dotenv": "^17.2.3",
@@ -24,9 +29,11 @@
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "recharts": "^3.10.1",
+    "tailwind-merge": "^3.7.0",
     "three": "^0.185.1",
     "vite": "^6.2.3",
-    "ws": "^8.21.3"
+    "ws": "^8.21.3",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -37,9 +44,12 @@
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
+    "prettier": "^3.9.9",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.2.3",
+    "vitest": "^5.0.2"
   }
 }

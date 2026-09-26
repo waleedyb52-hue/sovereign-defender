@@ -85,7 +85,9 @@ interface SiteTrafficSecurityInspectorProps {
   lang: 'ar' | 'en';
 }
 
-export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspectorProps> = ({ lang }) => {
+export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspectorProps> = ({
+  lang
+}) => {
   const isAr = lang === 'ar';
 
   // Live state
@@ -115,11 +117,16 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
   const [lastSyncTime, setLastSyncTime] = useState<string>(new Date().toLocaleTimeString());
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
-  const [selectedVerdict, setSelectedVerdict] = useState<'ALL' | 'SAFE_ONLY' | 'MALICIOUS_ONLY'>('ALL');
+  const [selectedVerdict, setSelectedVerdict] = useState<'ALL' | 'SAFE_ONLY' | 'MALICIOUS_ONLY'>(
+    'ALL'
+  );
   const [selectedFrame, setSelectedFrame] = useState<HttpRequestFrame | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isHardeningInProgress, setIsHardeningInProgress] = useState<boolean>(false);
-  const [hardeningFeedback, setHardeningFeedback] = useState<{ msgEn: string; msgAr: string } | null>(null);
+  const [hardeningFeedback, setHardeningFeedback] = useState<{
+    msgEn: string;
+    msgAr: string;
+  } | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isLockdownActive, setIsLockdownActive] = useState<boolean>(false);
 
@@ -132,7 +139,16 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
   const [soarAutoRollback, setSoarAutoRollback] = useState<boolean>(true);
   const [soarAutoIsolate, setSoarAutoIsolate] = useState<boolean>(true);
   const [soarExecutionCount, setSoarExecutionCount] = useState<number>(14);
-  const [soarLogs, setSoarLogs] = useState<Array<{ id: string; time: string; playbook: string; target: string; action: string; status: 'SUCCESS' | 'EXECUTING' }>>([
+  const [soarLogs, setSoarLogs] = useState<
+    Array<{
+      id: string;
+      time: string;
+      playbook: string;
+      target: string;
+      action: string;
+      status: 'SUCCESS' | 'EXECUTING';
+    }>
+  >([
     {
       id: 'soar-1',
       time: '12:04:12',
@@ -191,9 +207,21 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
   // AMBER: Under Recon (probes/scanners detected)
   // RED: Under Attack (active SQLi, RCE, XSS, honeytoken trips)
   const siteSafetyStatus = useMemo(() => {
-    if (frames.length === 0) return { level: 'GREEN', labelEn: 'SECURE', labelAr: 'مؤمن بالكامل', bgClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+    if (frames.length === 0)
+      return {
+        level: 'GREEN',
+        labelEn: 'SECURE',
+        labelAr: 'مؤمن بالكامل',
+        bgClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+      };
     const recent = frames.slice(0, 25);
-    const criticalThreats = recent.filter(f => f.threatScore >= 80 || f.category === 'RCE_ATTEMPT' || f.category === 'SQLI_ATTEMPT' || f.category === 'HONEYTOKEN_HIT').length;
+    const criticalThreats = recent.filter(
+      f =>
+        f.threatScore >= 80 ||
+        f.category === 'RCE_ATTEMPT' ||
+        f.category === 'SQLI_ATTEMPT' ||
+        f.category === 'HONEYTOKEN_HIT'
+    ).length;
     const suspiciousThreats = recent.filter(f => f.threatScore >= 40 && f.threatScore < 80).length;
 
     if (criticalThreats >= 2) {
@@ -359,7 +387,9 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
         const matchesPath = f.uriPath.toLowerCase().includes(q);
         const matchesQuery = f.queryString ? f.queryString.toLowerCase().includes(q) : false;
         const matchesCat = f.category.toLowerCase().includes(q);
-        const matchesPayload = f.rawPayloadSnippet ? f.rawPayloadSnippet.toLowerCase().includes(q) : false;
+        const matchesPayload = f.rawPayloadSnippet
+          ? f.rawPayloadSnippet.toLowerCase().includes(q)
+          : false;
         if (!matchesIp && !matchesPath && !matchesQuery && !matchesCat && !matchesPayload) {
           return false;
         }
@@ -371,10 +401,23 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
         if (selectedCategory === 'SAFE' && (f.isBlocked || f.threatScore >= 40)) return false;
         if (selectedCategory === 'SQLI_ATTEMPT' && f.category !== 'SQLI_ATTEMPT') return false;
         if (selectedCategory === 'XSS_ATTEMPT' && f.category !== 'XSS_ATTEMPT') return false;
-        if (selectedCategory === 'COMMAND_INJECTION' && f.category !== 'COMMAND_INJECTION') return false;
+        if (selectedCategory === 'COMMAND_INJECTION' && f.category !== 'COMMAND_INJECTION')
+          return false;
         if (selectedCategory === 'PATH_TRAVERSAL' && f.category !== 'PATH_TRAVERSAL') return false;
         if (selectedCategory === 'HONEYTOKEN_HIT' && f.category !== 'HONEYTOKEN_HIT') return false;
-        if (!['BLOCKED', 'SAFE', 'SQLI_ATTEMPT', 'XSS_ATTEMPT', 'COMMAND_INJECTION', 'PATH_TRAVERSAL', 'HONEYTOKEN_HIT'].includes(selectedCategory) && f.category !== selectedCategory) return false;
+        if (
+          ![
+            'BLOCKED',
+            'SAFE',
+            'SQLI_ATTEMPT',
+            'XSS_ATTEMPT',
+            'COMMAND_INJECTION',
+            'PATH_TRAVERSAL',
+            'HONEYTOKEN_HIT'
+          ].includes(selectedCategory) &&
+          f.category !== selectedCategory
+        )
+          return false;
       }
 
       // Verdict filter
@@ -387,17 +430,20 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
   // Aggregate frames by Actor IP
   const actorGroups = useMemo(() => {
-    const groupsMap = new Map<string, {
-      clientIp: string;
-      frames: HttpRequestFrame[];
-      totalCount: number;
-      threatCount: number;
-      maxThreatScore: number;
-      primaryVector: string;
-      latestTimestamp: string;
-      isBlocked: boolean;
-      methods: Set<string>;
-    }>();
+    const groupsMap = new Map<
+      string,
+      {
+        clientIp: string;
+        frames: HttpRequestFrame[];
+        totalCount: number;
+        threatCount: number;
+        maxThreatScore: number;
+        primaryVector: string;
+        latestTimestamp: string;
+        isBlocked: boolean;
+        methods: Set<string>;
+      }
+    >();
 
     filteredFrames.forEach(frame => {
       let group = groupsMap.get(frame.clientIp);
@@ -430,7 +476,9 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
       }
     });
 
-    return Array.from(groupsMap.values()).sort((a, b) => b.maxThreatScore - a.maxThreatScore || b.totalCount - a.totalCount);
+    return Array.from(groupsMap.values()).sort(
+      (a, b) => b.maxThreatScore - a.maxThreatScore || b.totalCount - a.totalCount
+    );
   }, [filteredFrames]);
 
   const toggleExpandActor = (ip: string) => {
@@ -448,30 +496,30 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
   return (
     <div className="space-y-5" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Top Header & Tactical Action Bar */}
-      <div className="relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800 p-5 sm:p-6 shadow-xl">
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl sm:p-6">
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           {/* Title & Description */}
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-600 to-emerald-700 text-white shadow-lg shadow-cyan-950/60 border border-cyan-400/30 shrink-0">
-              <Activity className="w-6 h-6 animate-pulse" />
+            <div className="shrink-0 rounded-xl border border-cyan-400/30 bg-gradient-to-br from-cyan-600 to-emerald-700 p-3 text-white shadow-lg shadow-cyan-950/60">
+              <Activity className="h-6 w-6 animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="text-xl font-black tracking-tight text-white sm:text-2xl">
                   {isAr ? 'فاحص ومراقب حركة مرور الموقع' : 'Site Traffic & Security Inspector'}
                 </h1>
-                <span className="px-2.5 py-0.5 text-xs font-mono font-bold rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5">
-                  <Radio className="w-3 h-3 text-cyan-400 animate-ping" />
+                <span className="flex items-center gap-1.5 rounded-full border border-cyan-500/40 bg-cyan-500/20 px-2.5 py-0.5 font-mono text-xs font-bold text-cyan-300">
+                  <Radio className="h-3 w-3 animate-ping text-cyan-400" />
                   {isAr ? 'مباشر' : 'LIVE'}
                 </span>
                 {isLockdownActive && (
-                  <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-600/30 text-rose-300 border border-rose-500 animate-pulse flex items-center gap-1.5">
-                    <Lock className="w-3 h-3 text-rose-400" />
+                  <span className="flex animate-pulse items-center gap-1.5 rounded-full border border-rose-500 bg-rose-600/30 px-2.5 py-0.5 text-xs font-bold text-rose-300">
+                    <Lock className="h-3 w-3 text-rose-400" />
                     {isAr ? 'حظر الصفر مفعّل' : 'ZERO-TRUST ACTIVE'}
                   </span>
                 )}
               </div>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+              <p className="mt-1 max-w-2xl text-xs text-slate-400 sm:text-sm">
                 {isAr
                   ? 'مراقبة حركة طلبات الموقع وفحص التهديدات بالزمن الحقيقي مع التحكم التكتيكي الفوري.'
                   : 'Real-time ingress traffic monitoring, autonomous payload inspection, and one-click mitigation.'}
@@ -480,26 +528,40 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
           </div>
 
           {/* Top Tactical Action Buttons */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setIsLiveStreaming(!isLiveStreaming)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition border ${
+              className={`flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition ${
                 isLiveStreaming
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
-                  : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                  ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'
+                  : 'border-slate-700 bg-slate-800 text-slate-400 hover:text-white'
               }`}
             >
-              {isLiveStreaming ? <Pause className="w-3.5 h-3.5 text-emerald-400" /> : <Play className="w-3.5 h-3.5 text-slate-300" />}
-              <span>{isLiveStreaming ? (isAr ? 'إيقاف البث' : 'Pause Feed') : (isAr ? 'استئناف' : 'Resume')}</span>
+              {isLiveStreaming ? (
+                <Pause className="h-3.5 w-3.5 text-emerald-400" />
+              ) : (
+                <Play className="h-3.5 w-3.5 text-slate-300" />
+              )}
+              <span>
+                {isLiveStreaming
+                  ? isAr
+                    ? 'إيقاف البث'
+                    : 'Pause Feed'
+                  : isAr
+                    ? 'استئناف'
+                    : 'Resume'}
+              </span>
             </button>
 
             <button
               onClick={() => fetchTelemetry()}
               disabled={isLoading}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-200 transition hover:bg-slate-700"
               title={isAr ? 'تحديث السجلات' : 'Refresh Telemetry'}
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-3.5 w-3.5 text-cyan-400 ${isLoading ? 'animate-spin' : ''}`}
+              />
               <span className="font-mono text-[11px]">{lastSyncTime}</span>
             </button>
 
@@ -507,22 +569,37 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             <button
               onClick={handleEnforceSiteHardening}
               disabled={isHardeningInProgress}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-lg shadow-emerald-950/60 border border-emerald-400/40 transition active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-xl border border-emerald-400/40 bg-gradient-to-r from-emerald-600 to-teal-600 px-3.5 py-2 text-xs font-black text-white shadow-lg shadow-emerald-950/60 transition hover:from-emerald-500 hover:to-teal-500 active:scale-95 disabled:opacity-50"
             >
-              <ShieldCheck className={`w-3.5 h-3.5 text-white ${isHardeningInProgress ? 'animate-spin' : ''}`} />
-              <span>{isHardeningInProgress ? (isAr ? 'جاري التعزيز...' : 'Enforcing...') : (isAr ? '⚡ تعزيز أمان OWASP' : '⚡ One-Click OWASP')}</span>
+              <ShieldCheck
+                className={`h-3.5 w-3.5 text-white ${isHardeningInProgress ? 'animate-spin' : ''}`}
+              />
+              <span>
+                {isHardeningInProgress
+                  ? isAr
+                    ? 'جاري التعزيز...'
+                    : 'Enforcing...'
+                  : isAr
+                    ? '⚡ تعزيز أمان OWASP'
+                    : '⚡ One-Click OWASP'}
+              </span>
             </button>
           </div>
         </div>
 
         {/* Hardening Feedback Notification */}
         {hardeningFeedback && (
-          <div className="mt-3 p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 flex items-center justify-between gap-3 text-xs text-emerald-200">
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-emerald-500/50 bg-emerald-950/60 p-3 text-xs text-emerald-200">
             <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              <Check className="h-4 w-4 shrink-0 text-emerald-400" />
               <span>{isAr ? hardeningFeedback.msgAr : hardeningFeedback.msgEn}</span>
             </div>
-            <button onClick={() => setHardeningFeedback(null)} className="text-slate-400 hover:text-white">✕</button>
+            <button
+              onClick={() => setHardeningFeedback(null)}
+              className="text-slate-400 hover:text-white"
+            >
+              ✕
+            </button>
           </div>
         )}
       </div>
@@ -530,90 +607,100 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
       {/* ========================================================================= */}
       {/* 1. UNIFIED SYSTEM HEALTH BANNER (EXACTLY 4 HERO METRICS)                   */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {/* Metric 1: Site Security Status */}
-        <div className={`rounded-2xl p-4 sm:p-5 border relative overflow-hidden transition-all duration-300 ${
-          siteSafetyStatus.level === 'GREEN'
-            ? 'bg-emerald-950/25 border-emerald-500/40 shadow-lg shadow-emerald-950/20'
-            : siteSafetyStatus.level === 'AMBER'
-            ? 'bg-amber-950/25 border-amber-500/40 shadow-lg shadow-amber-950/20'
-            : 'bg-rose-950/35 border-rose-500/60 shadow-lg shadow-rose-950/40 animate-pulse'
-        }`}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div
+          className={`relative overflow-hidden rounded-2xl border p-4 transition-all duration-300 sm:p-5 ${
+            siteSafetyStatus.level === 'GREEN'
+              ? 'border-emerald-500/40 bg-emerald-950/25 shadow-lg shadow-emerald-950/20'
+              : siteSafetyStatus.level === 'AMBER'
+                ? 'border-amber-500/40 bg-amber-950/25 shadow-lg shadow-amber-950/20'
+                : 'animate-pulse border-rose-500/60 bg-rose-950/35 shadow-lg shadow-rose-950/40'
+          }`}
+        >
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               {isAr ? 'حالة أمان الموقع' : 'Site Security Status'}
             </span>
             {siteSafetyStatus.level === 'GREEN' ? (
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
             ) : siteSafetyStatus.level === 'AMBER' ? (
-              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <AlertTriangle className="h-4 w-4 text-amber-400" />
             ) : (
-              <Flame className="w-4 h-4 text-rose-400" />
+              <Flame className="h-4 w-4 text-rose-400" />
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-black border font-mono ${siteSafetyStatus.bgClass}`}>
-              <span className={`w-2 h-2 rounded-full ${siteSafetyStatus.level === 'GREEN' ? 'bg-emerald-400' : siteSafetyStatus.level === 'AMBER' ? 'bg-amber-400' : 'bg-rose-400'}`} />
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs font-black ${siteSafetyStatus.bgClass}`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${siteSafetyStatus.level === 'GREEN' ? 'bg-emerald-400' : siteSafetyStatus.level === 'AMBER' ? 'bg-amber-400' : 'bg-rose-400'}`}
+              />
               {siteSafetyStatus.labelEn}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-2 truncate">
+          <p className="mt-2 truncate text-[11px] text-slate-400">
             {isAr ? siteSafetyStatus.detailAr : siteSafetyStatus.detailEn}
           </p>
         </div>
 
         {/* Metric 2: Traffic Volume (RPS) */}
-        <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-4 sm:p-5 shadow-lg relative overflow-hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               {isAr ? 'حجم حركة المرور (RPS)' : 'Traffic Volume'}
             </span>
-            <Activity className="w-4 h-4 text-cyan-400" />
+            <Activity className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-white font-mono">{metrics.rps}</span>
-            <span className="text-xs text-cyan-400 font-bold font-mono">RPS</span>
+            <span className="font-mono text-2xl font-black text-white sm:text-3xl">
+              {metrics.rps}
+            </span>
+            <span className="font-mono text-xs font-bold text-cyan-400">RPS</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-2">
+          <p className="mt-2 text-[11px] text-slate-400">
             {isAr ? 'الطلبات المباشرة في الثانية' : 'Requests per second'}
           </p>
         </div>
 
         {/* Metric 3: Active Blocked Threats */}
-        <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-4 sm:p-5 shadow-lg relative overflow-hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               {isAr ? 'التهديدات المحجوبة' : 'Active Blocked Threats'}
             </span>
-            <Ban className="w-4 h-4 text-rose-400" />
+            <Ban className="h-4 w-4 text-rose-400" />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-rose-400 font-mono">
+            <span className="font-mono text-2xl font-black text-rose-400 sm:text-3xl">
               {metrics.droppedPackets.toLocaleString()}
             </span>
-            <span className="text-xs text-rose-300 font-bold font-mono">{isAr ? 'محظور' : 'dropped'}</span>
+            <span className="font-mono text-xs font-bold text-rose-300">
+              {isAr ? 'محظور' : 'dropped'}
+            </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-2">
+          <p className="mt-2 text-[11px] text-slate-400">
             {isAr ? 'إجمالي الحزم المعترضة' : 'Total threats neutralized'}
           </p>
         </div>
 
         {/* Metric 4: eBPF Filter Status */}
-        <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-4 sm:p-5 shadow-lg relative overflow-hidden">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               {isAr ? 'مرشح النواة (eBPF)' : 'eBPF Filter Status'}
             </span>
-            <Zap className="w-4 h-4 text-emerald-400" />
+            <Zap className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">
+            <span className="font-mono text-2xl font-black text-emerald-400 sm:text-3xl">
               {metrics.ebpfLatencyUs}
             </span>
-            <span className="text-xs text-emerald-300 font-bold font-mono">µs latency</span>
+            <span className="font-mono text-xs font-bold text-emerald-300">µs latency</span>
           </div>
-          <p className="text-[11px] text-emerald-400 font-mono flex items-center gap-1 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+          <p className="mt-2 flex items-center gap-1 font-mono text-[11px] text-emerald-400">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
             {isAr ? 'نشط في النواة (Sub-µs)' : 'Active (XDP Driver Hook)'}
           </p>
         </div>
@@ -623,13 +710,21 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
       <div className="flex items-center justify-between pt-1">
         <button
           onClick={() => setShowAdvancedMetrics(!showAdvancedMetrics)}
-          className="text-xs text-slate-400 hover:text-cyan-300 flex items-center gap-1.5 font-medium transition"
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-400 transition hover:text-cyan-300"
         >
-          {showAdvancedMetrics ? <ChevronUp className="w-3.5 h-3.5 text-cyan-400" /> : <ChevronDown className="w-3.5 h-3.5 text-cyan-400" />}
+          {showAdvancedMetrics ? (
+            <ChevronUp className="h-3.5 w-3.5 text-cyan-400" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5 text-cyan-400" />
+          )}
           <span>
             {showAdvancedMetrics
-              ? (isAr ? 'إخفاء المقاييس التفصيلية' : 'Hide Secondary Metrics')
-              : (isAr ? 'عرض المقاييس الإضافية (Secondary Metrics)' : 'Show Secondary Metrics & WAF Diagnostics')}
+              ? isAr
+                ? 'إخفاء المقاييس التفصيلية'
+                : 'Hide Secondary Metrics'
+              : isAr
+                ? 'عرض المقاييس الإضافية (Secondary Metrics)'
+                : 'Show Secondary Metrics & WAF Diagnostics'}
           </span>
         </button>
 
@@ -637,22 +732,26 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
           {/* Toggle Simulator Drawer */}
           <button
             onClick={() => setIsSimulatorExpanded(!isSimulatorExpanded)}
-            className={`text-xs px-2.5 py-1 rounded-lg border font-medium flex items-center gap-1 transition ${
-              isSimulatorExpanded ? 'bg-purple-950/60 border-purple-500/40 text-purple-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+            className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
+              isSimulatorExpanded
+                ? 'border-purple-500/40 bg-purple-950/60 text-purple-300'
+                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Crosshair className="w-3 h-3 text-purple-400" />
+            <Crosshair className="h-3 w-3 text-purple-400" />
             <span>{isAr ? 'مختبر المحاكاة' : 'Attack Simulator Lab'}</span>
           </button>
 
           {/* Toggle OWASP Matrix */}
           <button
             onClick={() => setIsOwaspMatrixExpanded(!isOwaspMatrixExpanded)}
-            className={`text-xs px-2.5 py-1 rounded-lg border font-medium flex items-center gap-1 transition ${
-              isOwaspMatrixExpanded ? 'bg-cyan-950/60 border-cyan-500/40 text-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+            className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
+              isOwaspMatrixExpanded
+                ? 'border-cyan-500/40 bg-cyan-950/60 text-cyan-300'
+                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Layers className="w-3 h-3 text-cyan-400" />
+            <Layers className="h-3 w-3 text-cyan-400" />
             <span>{isAr ? 'قواعد OWASP' : 'OWASP Rules'}</span>
           </button>
         </div>
@@ -660,71 +759,90 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
       {/* Advanced Secondary Metrics Collapsible Section */}
       {showAdvancedMetrics && (
-        <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs animate-fadeIn">
+        <div className="animate-fadeIn grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-xs sm:grid-cols-4">
           <div className="space-y-1">
-            <span className="text-slate-500 block text-[10px] uppercase font-bold">{isAr ? 'إجمالي الطلبات' : 'Total Ingested'}</span>
-            <span className="font-mono text-slate-200 font-bold">{metrics.totalRequests.toLocaleString()} reqs</span>
+            <span className="block text-[10px] font-bold text-slate-500 uppercase">
+              {isAr ? 'إجمالي الطلبات' : 'Total Ingested'}
+            </span>
+            <span className="font-mono font-bold text-slate-200">
+              {metrics.totalRequests.toLocaleString()} reqs
+            </span>
           </div>
           <div className="space-y-1">
-            <span className="text-slate-500 block text-[10px] uppercase font-bold">{isAr ? 'النطاقات المحظورة' : 'Blocked Subnets'}</span>
-            <span className="font-mono text-rose-300 font-bold">{metrics.activeBlockedSubnetsCount} CIDRs</span>
+            <span className="block text-[10px] font-bold text-slate-500 uppercase">
+              {isAr ? 'النطاقات المحظورة' : 'Blocked Subnets'}
+            </span>
+            <span className="font-mono font-bold text-rose-300">
+              {metrics.activeBlockedSubnetsCount} CIDRs
+            </span>
           </div>
           <div className="space-y-1">
-            <span className="text-slate-500 block text-[10px] uppercase font-bold">{isAr ? 'حد معدل الطلبات' : 'Rate Limiter'}</span>
-            <span className="font-mono text-emerald-300 font-bold">{metrics.wafConfig?.rateLimitThresholdRpm || 60} RPM / IP</span>
+            <span className="block text-[10px] font-bold text-slate-500 uppercase">
+              {isAr ? 'حد معدل الطلبات' : 'Rate Limiter'}
+            </span>
+            <span className="font-mono font-bold text-emerald-300">
+              {metrics.wafConfig?.rateLimitThresholdRpm || 60} RPM / IP
+            </span>
           </div>
           <div className="space-y-1">
-            <span className="text-slate-500 block text-[10px] uppercase font-bold">{isAr ? 'حمل المعالج' : 'Kernel CPU Overhead'}</span>
-            <span className="font-mono text-cyan-300 font-bold">&lt; 0.01%</span>
+            <span className="block text-[10px] font-bold text-slate-500 uppercase">
+              {isAr ? 'حمل المعالج' : 'Kernel CPU Overhead'}
+            </span>
+            <span className="font-mono font-bold text-cyan-300">&lt; 0.01%</span>
           </div>
         </div>
       )}
 
       {/* MODULAR COLLAPSIBLE SECTION: ATTACK SIMULATOR */}
       {isSimulatorExpanded && (
-        <div className="rounded-2xl bg-slate-900/90 border border-purple-500/30 p-4 shadow-lg space-y-3 animate-fadeIn">
+        <div className="animate-fadeIn space-y-3 rounded-2xl border border-purple-500/30 bg-slate-900/90 p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Crosshair className="w-4 h-4 text-purple-400" />
-              <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+              <Crosshair className="h-4 w-4 text-purple-400" />
+              <h2 className="text-xs font-bold tracking-wider text-white uppercase">
                 {isAr ? 'مختبر محاكاة الهجمات وحقن الحزم' : 'Live Attack Simulation Lab'}
               </h2>
             </div>
-            <button onClick={() => setIsSimulatorExpanded(false)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            <button
+              onClick={() => setIsSimulatorExpanded(false)}
+              className="text-xs text-slate-400 hover:text-white"
+            >
+              ✕
+            </button>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => handleSimulateAttack('SQLI_ATTEMPT')}
               disabled={isLoading}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition"
+              className="rounded-lg border border-rose-500/40 bg-rose-500/20 px-3 py-1.5 text-xs font-bold text-rose-300 transition hover:bg-rose-500/30"
             >
               {isAr ? 'اختبار حقن SQLi' : 'Test SQL Injection'}
             </button>
             <button
               onClick={() => handleSimulateAttack('XSS_ATTEMPT')}
               disabled={isLoading}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition"
+              className="rounded-lg border border-amber-500/40 bg-amber-500/20 px-3 py-1.5 text-xs font-bold text-amber-300 transition hover:bg-amber-500/30"
             >
               {isAr ? 'اختبار هجوم XSS' : 'Test XSS Attack'}
             </button>
             <button
               onClick={() => handleSimulateAttack('COMMAND_INJECTION')}
               disabled={isLoading}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 transition"
+              className="rounded-lg border border-purple-500/40 bg-purple-500/20 px-3 py-1.5 text-xs font-bold text-purple-300 transition hover:bg-purple-500/30"
             >
               {isAr ? 'اختبار حقن الأوامر RCE' : 'Test RCE Command'}
             </button>
             <button
               onClick={() => handleSimulateAttack('HONEYTOKEN_HIT')}
               disabled={isLoading}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 transition"
+              className="rounded-lg border border-amber-500/40 bg-amber-600/20 px-3 py-1.5 text-xs font-bold text-amber-300 transition hover:bg-amber-600/30"
             >
               {isAr ? 'لمس فخ Honeytoken' : 'Trip Honeytoken'}
             </button>
             <button
               onClick={() => handleSimulateAttack('PATH_TRAVERSAL')}
               disabled={isLoading}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 transition"
+              className="rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold text-cyan-300 transition hover:bg-cyan-500/30"
             >
               {isAr ? 'طلب طبيعي / مسار' : 'Test Safe Traffic'}
             </button>
@@ -734,40 +852,59 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
       {/* MODULAR COLLAPSIBLE SECTION: OWASP ENFORCEMENT MATRIX */}
       {isOwaspMatrixExpanded && (
-        <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-4 shadow-lg space-y-3 animate-fadeIn">
+        <div className="animate-fadeIn space-y-3 rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-cyan-400" />
-              <h2 className="text-xs font-bold text-white uppercase tracking-wider">
-                {isAr ? 'مصفوفة قواعد OWASP Top 10 النشطة' : 'OWASP Top 10 Security Enforcement Matrix'}
+              <Layers className="h-4 w-4 text-cyan-400" />
+              <h2 className="text-xs font-bold tracking-wider text-white uppercase">
+                {isAr
+                  ? 'مصفوفة قواعد OWASP Top 10 النشطة'
+                  : 'OWASP Top 10 Security Enforcement Matrix'}
               </h2>
             </div>
-            <button onClick={() => setIsOwaspMatrixExpanded(false)} className="text-slate-400 hover:text-white text-xs">✕</button>
+            <button
+              onClick={() => setIsOwaspMatrixExpanded(false)}
+              className="text-xs text-slate-400 hover:text-white"
+            >
+              ✕
+            </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300 font-bold">SQL Injection (A03)</span>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">ACTIVE</span>
+          <div className="grid grid-cols-1 gap-2.5 text-xs sm:grid-cols-3">
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+              <span className="font-bold text-slate-300">SQL Injection (A03)</span>
+              <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                ACTIVE
+              </span>
             </div>
-            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300 font-bold">XSS Filter (A03)</span>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">ACTIVE</span>
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+              <span className="font-bold text-slate-300">XSS Filter (A03)</span>
+              <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                ACTIVE
+              </span>
             </div>
-            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300 font-bold">RCE Command Shield</span>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">ACTIVE</span>
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+              <span className="font-bold text-slate-300">RCE Command Shield</span>
+              <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                ACTIVE
+              </span>
             </div>
-            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300 font-bold">Path Traversal / LFI</span>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">ACTIVE</span>
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+              <span className="font-bold text-slate-300">Path Traversal / LFI</span>
+              <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                ACTIVE
+              </span>
             </div>
-            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300 font-bold">Honeytoken Decoys (6)</span>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">ARMED</span>
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+              <span className="font-bold text-slate-300">Honeytoken Decoys (6)</span>
+              <span className="rounded border border-amber-500/40 bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                ARMED
+              </span>
             </div>
-            <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-300 font-bold">Rate Limiter (60 RPM)</span>
-              <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">ENFORCING</span>
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+              <span className="font-bold text-slate-300">Rate Limiter (60 RPM)</span>
+              <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                ENFORCING
+              </span>
             </div>
           </div>
         </div>
@@ -776,18 +913,20 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
       {/* ========================================================================= */}
       {/* 2. SOAR AUTOMATED PLAYBOOKS & THREAT CONTAINMENT PANEL                     */}
       {/* ========================================================================= */}
-      <div className="rounded-2xl bg-slate-900 border border-slate-800 p-4 sm:p-5 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-800">
+      <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl sm:p-5">
+        <div className="flex flex-col gap-3 border-b border-slate-800 pb-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
-              <Workflow className="w-5 h-5 text-indigo-400" />
+            <div className="rounded-lg border border-indigo-500/40 bg-indigo-500/20 p-2 text-indigo-300">
+              <Workflow className="h-5 w-5 text-indigo-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-bold text-white tracking-wide">
-                  {isAr ? 'محرك الاستجابة التلقائية المتقدم (SOAR Playbooks)' : 'SOAR Autonomous Defense Playbooks'}
+                <h2 className="text-sm font-bold tracking-wide text-white">
+                  {isAr
+                    ? 'محرك الاستجابة التلقائية المتقدم (SOAR Playbooks)'
+                    : 'SOAR Autonomous Defense Playbooks'}
                 </h2>
-                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                <span className="rounded border border-indigo-500/40 bg-indigo-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-300">
                   {soarExecutionCount} {isAr ? 'إجراء مُنفّذ' : 'Executed'}
                 </span>
               </div>
@@ -800,117 +939,140 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/30 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 font-mono text-[11px] text-emerald-400">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
               {isAr ? 'المحرك الآلي: يعمل' : 'SOAR Engine: Active'}
             </span>
           </div>
         </div>
 
         {/* Playbook Toggles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {/* Playbook 1: Auto-Ban IP */}
           <div
             onClick={() => setSoarAutoBan(!soarAutoBan)}
-            className={`p-3.5 rounded-xl border cursor-pointer transition flex items-center justify-between gap-3 select-none ${
+            className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3.5 transition select-none ${
               soarAutoBan
-                ? 'bg-indigo-950/40 border-indigo-500/50 shadow-lg shadow-indigo-950/40'
-                : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                ? 'border-indigo-500/50 bg-indigo-950/40 shadow-lg shadow-indigo-950/40'
+                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
             }`}
           >
             <div className="flex items-start gap-2.5">
-              <Ban className={`w-4 h-4 mt-0.5 shrink-0 ${soarAutoBan ? 'text-indigo-400' : 'text-slate-500'}`} />
+              <Ban
+                className={`mt-0.5 h-4 w-4 shrink-0 ${soarAutoBan ? 'text-indigo-400' : 'text-slate-500'}`}
+              />
               <div>
                 <div className="text-xs font-bold text-slate-200">
-                  {isAr ? 'حظر تلقائي للـ IP عند درجة خطر > 85%' : 'Auto-Ban IP if Threat Score > 85%'}
+                  {isAr
+                    ? 'حظر تلقائي للـ IP عند درجة خطر > 85%'
+                    : 'Auto-Ban IP if Threat Score > 85%'}
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
+                <div className="mt-0.5 text-[10px] text-slate-400">
                   {isAr ? 'تطبيق إسقاط فوري بنواة eBPF' : 'Instant kernel eBPF packet drop'}
                 </div>
               </div>
             </div>
-            <span className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
-              soarAutoBan ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
-            }`}>
-              {soarAutoBan ? (isAr ? 'مُفعّل' : 'ON') : (isAr ? 'معطل' : 'OFF')}
+            <span
+              className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
+                soarAutoBan ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
+              }`}
+            >
+              {soarAutoBan ? (isAr ? 'مُفعّل' : 'ON') : isAr ? 'معطل' : 'OFF'}
             </span>
           </div>
 
           {/* Playbook 2: Auto-Rollback FIM */}
           <div
             onClick={() => setSoarAutoRollback(!soarAutoRollback)}
-            className={`p-3.5 rounded-xl border cursor-pointer transition flex items-center justify-between gap-3 select-none ${
+            className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3.5 transition select-none ${
               soarAutoRollback
-                ? 'bg-cyan-950/40 border-cyan-500/50 shadow-lg shadow-cyan-950/40'
-                : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                ? 'border-cyan-500/50 bg-cyan-950/40 shadow-lg shadow-cyan-950/40'
+                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
             }`}
           >
             <div className="flex items-start gap-2.5">
-              <RotateCcw className={`w-4 h-4 mt-0.5 shrink-0 ${soarAutoRollback ? 'text-cyan-400' : 'text-slate-500'}`} />
+              <RotateCcw
+                className={`mt-0.5 h-4 w-4 shrink-0 ${soarAutoRollback ? 'text-cyan-400' : 'text-slate-500'}`}
+              />
               <div>
                 <div className="text-xs font-bold text-slate-200">
-                  {isAr ? 'استعادة فورية للملفات عند التلاعب (FIM)' : 'Auto-Rollback Files on FIM Mutation'}
+                  {isAr
+                    ? 'استعادة فورية للملفات عند التلاعب (FIM)'
+                    : 'Auto-Rollback Files on FIM Mutation'}
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
+                <div className="mt-0.5 text-[10px] text-slate-400">
                   {isAr ? 'مزامنة النسخة التشفيرية المعتمدة' : 'Restore trusted Merkle baseline'}
                 </div>
               </div>
             </div>
-            <span className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
-              soarAutoRollback ? 'bg-cyan-500 text-white' : 'bg-slate-800 text-slate-400'
-            }`}>
-              {soarAutoRollback ? (isAr ? 'مُفعّل' : 'ON') : (isAr ? 'معطل' : 'OFF')}
+            <span
+              className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
+                soarAutoRollback ? 'bg-cyan-500 text-white' : 'bg-slate-800 text-slate-400'
+              }`}
+            >
+              {soarAutoRollback ? (isAr ? 'مُفعّل' : 'ON') : isAr ? 'معطل' : 'OFF'}
             </span>
           </div>
 
           {/* Playbook 3: Zero-Trust Auto Quarantine */}
           <div
             onClick={() => setSoarAutoIsolate(!soarAutoIsolate)}
-            className={`p-3.5 rounded-xl border cursor-pointer transition flex items-center justify-between gap-3 select-none ${
+            className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3.5 transition select-none ${
               soarAutoIsolate
-                ? 'bg-purple-950/40 border-purple-500/50 shadow-lg shadow-purple-950/40'
-                : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                ? 'border-purple-500/50 bg-purple-950/40 shadow-lg shadow-purple-950/40'
+                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
             }`}
           >
             <div className="flex items-start gap-2.5">
-              <Lock className={`w-4 h-4 mt-0.5 shrink-0 ${soarAutoIsolate ? 'text-purple-400' : 'text-slate-500'}`} />
+              <Lock
+                className={`mt-0.5 h-4 w-4 shrink-0 ${soarAutoIsolate ? 'text-purple-400' : 'text-slate-500'}`}
+              />
               <div>
                 <div className="text-xs font-bold text-slate-200">
                   {isAr ? 'تحويل البوتات لفخ Honeypot Decoy' : 'Divert Scanners to Honeypot Decoy'}
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5">
+                <div className="mt-0.5 text-[10px] text-slate-400">
                   {isAr ? 'تضليل المهاجم واستنزاف موارده' : 'Autonomous cyber deception'}
                 </div>
               </div>
             </div>
-            <span className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
-              soarAutoIsolate ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'
-            }`}>
-              {soarAutoIsolate ? (isAr ? 'مُفعّل' : 'ON') : (isAr ? 'معطل' : 'OFF')}
+            <span
+              className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
+                soarAutoIsolate ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'
+              }`}
+            >
+              {soarAutoIsolate ? (isAr ? 'مُفعّل' : 'ON') : isAr ? 'معطل' : 'OFF'}
             </span>
           </div>
         </div>
 
         {/* Live SOAR Execution Log Strip */}
-        <div className="bg-slate-950/80 rounded-xl p-3 border border-slate-800/80">
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono mb-2">
-            <span className="flex items-center gap-1.5 text-slate-300 font-bold">
-              <History className="w-3.5 h-3.5 text-indigo-400" />
-              {isAr ? 'أحدث الإجراءات المنفذة ذاتياً بواسطة SOAR:' : 'Recent Autonomous SOAR Triggers:'}
+        <div className="rounded-xl border border-slate-800/80 bg-slate-950/80 p-3">
+          <div className="mb-2 flex items-center justify-between font-mono text-[11px] text-slate-400">
+            <span className="flex items-center gap-1.5 font-bold text-slate-300">
+              <History className="h-3.5 w-3.5 text-indigo-400" />
+              {isAr
+                ? 'أحدث الإجراءات المنفذة ذاتياً بواسطة SOAR:'
+                : 'Recent Autonomous SOAR Triggers:'}
             </span>
             <span>{isAr ? 'زمن الاستجابة: 0.18ms' : 'Avg Reaction Latency: 0.18ms'}</span>
           </div>
-          <div className="space-y-1.5 text-[11px] font-mono">
+          <div className="space-y-1.5 font-mono text-[11px]">
             {soarLogs.map(log => (
-              <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 rounded-lg bg-slate-900/60 border border-slate-800">
+              <div
+                key={log.id}
+                className="flex flex-col justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-2 sm:flex-row sm:items-center"
+              >
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500 text-[10px]">{log.time}</span>
+                  <span className="text-[10px] text-slate-500">{log.time}</span>
                   <span className="font-bold text-indigo-300">{log.playbook}</span>
-                  <span className="text-slate-400">→ Target: <strong className="text-cyan-300">{log.target}</strong></span>
+                  <span className="text-slate-400">
+                    → Target: <strong className="text-cyan-300">{log.target}</strong>
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400 text-[10px] truncate max-w-xs">{log.action}</span>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  <span className="max-w-xs truncate text-[10px] text-slate-400">{log.action}</span>
+                  <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-300">
                     {log.status}
                   </span>
                 </div>
@@ -928,78 +1090,92 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
       {/* ========================================================================= */}
       {/* 3. CLEAN & STREAMLINED TELEMETRY STREAM & ACTOR IP GROUPING               */}
       {/* ========================================================================= */}
-      <div className="rounded-2xl bg-slate-900 border border-slate-800 shadow-xl overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
         {/* Table Header: Filters, View Mode Toggle, and Fast Category Chips */}
-        <div className="p-3.5 sm:p-4 border-b border-slate-800 space-y-3 bg-slate-950/60">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 w-full md:w-auto">
+        <div className="space-y-3 border-b border-slate-800 bg-slate-950/60 p-3.5 sm:p-4">
+          <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
+            <div className="flex w-full items-center gap-2.5 md:w-auto">
               {/* Search Bar */}
               <div className="relative flex-1 md:w-72">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  placeholder={isAr ? 'بحث بالـ IP أو المسار أو الحمولة...' : 'Search IP, endpoint, or payload...'}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+                  placeholder={
+                    isAr
+                      ? 'بحث بالـ IP أو المسار أو الحمولة...'
+                      : 'Search IP, endpoint, or payload...'
+                  }
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900 py-1.5 pr-3 pl-8 text-xs text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none"
                 />
               </div>
 
               {/* View Mode Toggle: Flat Stream vs Group by Actor IP */}
-              <div className="flex items-center gap-1 p-1 bg-slate-900 border border-slate-800 rounded-xl text-xs shrink-0">
+              <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1 text-xs">
                 <button
                   onClick={() => setViewMode('FLAT')}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-bold transition ${
-                    viewMode === 'FLAT' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-bold transition ${
+                    viewMode === 'FLAT'
+                      ? 'bg-cyan-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
                   title={isAr ? 'عرض السجل المتتابع' : 'Flat Telemetry Stream'}
                 >
-                  <List className="w-3.5 h-3.5" />
+                  <List className="h-3.5 w-3.5" />
                   <span>{isAr ? 'السجل المباشر' : 'Live Stream'}</span>
                 </button>
                 <button
                   onClick={() => setViewMode('GROUP_BY_IP')}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-bold transition ${
-                    viewMode === 'GROUP_BY_IP' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
+                  className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-bold transition ${
+                    viewMode === 'GROUP_BY_IP'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
                   title={isAr ? 'تجميع الهجمات حسب عنوان IP المهاجم' : 'Group by Actor IP'}
                 >
-                  <Users className="w-3.5 h-3.5" />
+                  <Users className="h-3.5 w-3.5" />
                   <span>{isAr ? 'تجميع حسب IP' : 'Group by IP'}</span>
                 </button>
               </div>
             </div>
 
             {/* Verdict Filter Buttons & Total Count */}
-            <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end text-xs">
-              <div className="flex items-center gap-1 p-1 bg-slate-900 border border-slate-800 rounded-xl text-xs shrink-0">
+            <div className="flex w-full items-center justify-between gap-2 text-xs md:w-auto md:justify-end">
+              <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1 text-xs">
                 <button
                   onClick={() => setSelectedVerdict('ALL')}
-                  className={`px-2 py-0.5 rounded-lg font-bold transition ${
-                    selectedVerdict === 'ALL' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                  className={`rounded-lg px-2 py-0.5 font-bold transition ${
+                    selectedVerdict === 'ALL'
+                      ? 'bg-cyan-600 text-white'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
                   {isAr ? 'الكل' : 'All'}
                 </button>
                 <button
                   onClick={() => setSelectedVerdict('SAFE_ONLY')}
-                  className={`px-2 py-0.5 rounded-lg font-bold transition ${
-                    selectedVerdict === 'SAFE_ONLY' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                  className={`rounded-lg px-2 py-0.5 font-bold transition ${
+                    selectedVerdict === 'SAFE_ONLY'
+                      ? 'bg-emerald-600 text-white'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
                   {isAr ? 'الآمن' : 'Safe'}
                 </button>
                 <button
                   onClick={() => setSelectedVerdict('MALICIOUS_ONLY')}
-                  className={`px-2 py-0.5 rounded-lg font-bold transition ${
-                    selectedVerdict === 'MALICIOUS_ONLY' ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                  className={`rounded-lg px-2 py-0.5 font-bold transition ${
+                    selectedVerdict === 'MALICIOUS_ONLY'
+                      ? 'bg-rose-600 text-white'
+                      : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
                   {isAr ? 'التهديدات' : 'Blocked'}
                 </button>
               </div>
 
-              <span className="text-slate-400 font-mono text-[11px] whitespace-nowrap">
+              <span className="font-mono text-[11px] whitespace-nowrap text-slate-400">
                 {viewMode === 'FLAT'
                   ? `${filteredFrames.length} ${isAr ? 'سجل' : 'logs'}`
                   : `${actorGroups.length} ${isAr ? 'عناوين فريدة' : 'actors'}`}
@@ -1008,7 +1184,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
           </div>
 
           {/* High-Speed Category Filter Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono scrollbar-none">
+          <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto pb-1 font-mono text-[11px]">
             {[
               { id: 'ALL', label: isAr ? 'جميع الفئات' : 'ALL CATEGORIES' },
               { id: 'SQLI_ATTEMPT', label: 'SQLi (A03)' },
@@ -1022,10 +1198,10 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
               <button
                 key={chip.id}
                 onClick={() => setSelectedCategory(chip.id)}
-                className={`px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition border ${
+                className={`rounded-lg border px-2.5 py-1 font-bold whitespace-nowrap transition ${
                   selectedCategory === chip.id
-                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400/60 shadow-sm'
-                    : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                    ? 'border-cyan-400/60 bg-cyan-500/20 text-cyan-300 shadow-sm'
+                    : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                 }`}
               >
                 {chip.label}
@@ -1036,26 +1212,34 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
         {/* Dynamic Table Body: FLAT STREAM or GROUP BY ACTOR IP */}
         {viewMode === 'FLAT' ? (
-          <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider z-10 font-mono">
+          <div className="max-h-[500px] overflow-x-auto overflow-y-auto">
+            <table className="w-full border-collapse text-left">
+              <thead className="sticky top-0 z-10 border-b border-slate-800 bg-slate-950/95 font-mono text-[11px] font-bold tracking-wider text-slate-400 uppercase backdrop-blur-md">
                 <tr>
-                  <th className="py-2.5 px-4 w-28">{isAr ? 'الوقت' : 'Time'}</th>
-                  <th className="py-2.5 px-4 w-44">{isAr ? 'عنوان IP العميل' : 'Client IP'}</th>
-                  <th className="py-2.5 px-4">{isAr ? 'نقطة النهاية المستهدفة' : 'Target Endpoint'}</th>
-                  <th className="py-2.5 px-4 text-right w-36">{isAr ? 'قرار الأمان' : 'Verdict'}</th>
+                  <th className="w-28 px-4 py-2.5">{isAr ? 'الوقت' : 'Time'}</th>
+                  <th className="w-44 px-4 py-2.5">{isAr ? 'عنوان IP العميل' : 'Client IP'}</th>
+                  <th className="px-4 py-2.5">
+                    {isAr ? 'نقطة النهاية المستهدفة' : 'Target Endpoint'}
+                  </th>
+                  <th className="w-36 px-4 py-2.5 text-right">
+                    {isAr ? 'قرار الأمان' : 'Verdict'}
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50 text-xs font-mono">
+              <tbody className="divide-y divide-slate-800/50 font-mono text-xs">
                 {filteredFrames.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-12 text-center text-slate-500">
-                      <Shield className="w-7 h-7 mx-auto mb-2 text-slate-600 opacity-60" />
-                      <p>{isAr ? 'لا توجد سجلات مطابقة لمعايير البحث' : 'No traffic logs matching search filter'}</p>
+                      <Shield className="mx-auto mb-2 h-7 w-7 text-slate-600 opacity-60" />
+                      <p>
+                        {isAr
+                          ? 'لا توجد سجلات مطابقة لمعايير البحث'
+                          : 'No traffic logs matching search filter'}
+                      </p>
                     </td>
                   </tr>
                 ) : (
-                  filteredFrames.map((frame) => {
+                  filteredFrames.map(frame => {
                     const isBlocked = frame.isBlocked || frame.threatScore >= 80;
                     const isSuspicious = !isBlocked && frame.threatScore >= 40;
                     const isSafe = !isBlocked && !isSuspicious;
@@ -1064,38 +1248,43 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                       <tr
                         key={frame.id}
                         onClick={() => handleOpenInspector(frame)}
-                        className={`hover:bg-slate-800/60 cursor-pointer transition-colors group ${
+                        className={`group cursor-pointer transition-colors hover:bg-slate-800/60 ${
                           isBlocked ? 'bg-rose-950/15' : isSuspicious ? 'bg-amber-950/15' : ''
                         }`}
                       >
                         {/* Column 1: Time */}
-                        <td className="py-2.5 px-4 text-slate-400 whitespace-nowrap text-[11px]">
+                        <td className="px-4 py-2.5 text-[11px] whitespace-nowrap text-slate-400">
                           {new Date(frame.timestamp).toLocaleTimeString()}
                         </td>
 
                         {/* Column 2: Client IP */}
-                        <td className="py-2.5 px-4 whitespace-nowrap">
-                          <span className="font-bold text-slate-200 group-hover:text-cyan-300 transition">
+                        <td className="px-4 py-2.5 whitespace-nowrap">
+                          <span className="font-bold text-slate-200 transition group-hover:text-cyan-300">
                             {frame.clientIp}
                           </span>
                         </td>
 
                         {/* Column 3: Target Endpoint */}
-                        <td className="py-2.5 px-4">
-                          <div className="flex items-center gap-2 truncate max-w-md lg:max-w-xl">
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-black shrink-0 ${
-                              frame.method === 'GET' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' :
-                              frame.method === 'POST' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                              frame.method === 'PUT' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                              'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                            }`}>
+                        <td className="px-4 py-2.5">
+                          <div className="flex max-w-md items-center gap-2 truncate lg:max-w-xl">
+                            <span
+                              className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-black ${
+                                frame.method === 'GET'
+                                  ? 'border border-blue-500/30 bg-blue-500/20 text-blue-300'
+                                  : frame.method === 'POST'
+                                    ? 'border border-emerald-500/30 bg-emerald-500/20 text-emerald-300'
+                                    : frame.method === 'PUT'
+                                      ? 'border border-amber-500/30 bg-amber-500/20 text-amber-300'
+                                      : 'border border-rose-500/30 bg-rose-500/20 text-rose-300'
+                              }`}
+                            >
                               {frame.method}
                             </span>
-                            <span className="text-slate-300 truncate" title={frame.uriPath}>
+                            <span className="truncate text-slate-300" title={frame.uriPath}>
                               {frame.uriPath}
                             </span>
                             {frame.queryString && (
-                              <span className="text-slate-500 text-[10px] truncate max-w-[140px]">
+                              <span className="max-w-[140px] truncate text-[10px] text-slate-500">
                                 ?{frame.queryString}
                               </span>
                             )}
@@ -1103,21 +1292,21 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                         </td>
 
                         {/* Column 4: Verdict Badge & Inspect Action Button */}
-                        <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                        <td className="px-4 py-2.5 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-2">
                             {isSafe ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
-                                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                              <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                                <ShieldCheck className="h-3 w-3 text-emerald-400" />
                                 SAFE
                               </span>
                             ) : isBlocked ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-600/30 text-rose-300 border border-rose-500 text-[10px] font-extrabold shadow-sm shadow-rose-950">
-                                <ShieldAlert className="w-3 h-3 text-rose-400 animate-pulse" />
+                              <span className="inline-flex items-center gap-1 rounded-md border border-rose-500 bg-rose-600/30 px-2 py-0.5 text-[10px] font-extrabold text-rose-300 shadow-sm shadow-rose-950">
+                                <ShieldAlert className="h-3 w-3 animate-pulse text-rose-400" />
                                 BLOCKED
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
-                                <AlertTriangle className="w-3 h-3 text-amber-400" />
+                              <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                                <AlertTriangle className="h-3 w-3 text-amber-400" />
                                 SUSPICIOUS
                               </span>
                             )}
@@ -1125,14 +1314,14 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                             {/* Explicit Manual Inspect Button */}
                             <button
                               type="button"
-                              onClick={(e) => {
+                              onClick={e => {
                                 e.stopPropagation();
                                 handleOpenInspector(frame);
                               }}
-                              className="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-cyan-950/80 text-slate-300 hover:text-cyan-300 border border-slate-700 hover:border-cyan-500/40 text-[10px] font-sans font-bold flex items-center gap-1 transition"
+                              className="flex items-center gap-1 rounded-md border border-slate-700 bg-slate-800 px-2 py-0.5 font-sans text-[10px] font-bold text-slate-300 transition hover:border-cyan-500/40 hover:bg-cyan-950/80 hover:text-cyan-300"
                               title={isAr ? 'فحص تفصيلي للحزمة' : 'Inspect Packet'}
                             >
-                              <Eye className="w-3 h-3 text-cyan-400" />
+                              <Eye className="h-3 w-3 text-cyan-400" />
                               <span>{isAr ? 'فحص' : 'Inspect'}</span>
                             </button>
                           </div>
@@ -1146,82 +1335,102 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
           </div>
         ) : (
           /* GROUP BY ACTOR IP ACCORDION VIEW */
-          <div className="overflow-x-auto max-h-[550px] overflow-y-auto divide-y divide-slate-800/60 font-mono text-xs">
+          <div className="max-h-[550px] divide-y divide-slate-800/60 overflow-x-auto overflow-y-auto font-mono text-xs">
             {actorGroups.length === 0 ? (
               <div className="py-12 text-center text-slate-500">
-                <Users className="w-7 h-7 mx-auto mb-2 text-slate-600 opacity-60" />
-                <p>{isAr ? 'لا توجد مجموعات مهاجمين مطابقة' : 'No threat actors matching filter'}</p>
+                <Users className="mx-auto mb-2 h-7 w-7 text-slate-600 opacity-60" />
+                <p>
+                  {isAr ? 'لا توجد مجموعات مهاجمين مطابقة' : 'No threat actors matching filter'}
+                </p>
               </div>
             ) : (
-              actorGroups.map((actor) => {
+              actorGroups.map(actor => {
                 const isExpanded = expandedActorIps.has(actor.clientIp);
                 const isCritical = actor.maxThreatScore >= 80 || actor.isBlocked;
                 const isSuspicious = !isCritical && actor.threatCount > 0;
 
                 return (
-                  <div key={actor.clientIp} className="bg-slate-950/40 hover:bg-slate-900/40 transition">
+                  <div
+                    key={actor.clientIp}
+                    className="bg-slate-950/40 transition hover:bg-slate-900/40"
+                  >
                     {/* Actor Incident Summary Row */}
                     <div
                       onClick={() => toggleExpandActor(actor.clientIp)}
-                      className="p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer select-none"
+                      className="flex cursor-pointer flex-col justify-between gap-3 p-3.5 select-none md:flex-row md:items-center"
                     >
                       <div className="flex items-center gap-3">
-                        <button className="p-1 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hover:text-white">
-                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        <button className="rounded-md border border-slate-800 bg-slate-900 p-1 text-slate-400 hover:text-white">
+                          {isExpanded ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
                         </button>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-white text-sm">{actor.clientIp}</span>
-                            <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+                            <span className="text-sm font-bold text-white">{actor.clientIp}</span>
+                            <span className="rounded-md border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] font-bold text-slate-300">
                               {actor.totalCount} {isAr ? 'طلبات' : 'requests'}
                             </span>
                             {actor.threatCount > 0 && (
-                              <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-rose-950/80 text-rose-300 border border-rose-500/40">
+                              <span className="rounded-md border border-rose-500/40 bg-rose-950/80 px-2 py-0.5 text-[10px] font-bold text-rose-300">
                                 {actor.threatCount} {isAr ? 'هجمات مرصودة' : 'attacks'}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-1">
-                            <span>{isAr ? 'المتجه الرئيسي:' : 'Primary Vector:'} <strong className="text-cyan-300">{actor.primaryVector}</strong></span>
+                          <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
+                            <span>
+                              {isAr ? 'المتجه الرئيسي:' : 'Primary Vector:'}{' '}
+                              <strong className="text-cyan-300">{actor.primaryVector}</strong>
+                            </span>
                             <span>•</span>
-                            <span>{isAr ? 'آخر نشاط:' : 'Latest:'} {new Date(actor.latestTimestamp).toLocaleTimeString()}</span>
+                            <span>
+                              {isAr ? 'آخر نشاط:' : 'Latest:'}{' '}
+                              {new Date(actor.latestTimestamp).toLocaleTimeString()}
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       {/* Right Threat Badge & Action Buttons */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
-                          isCritical
-                            ? 'bg-rose-500/20 text-rose-300 border-rose-500/50'
-                            : isSuspicious
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                            : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                        }`}>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span
+                          className={`rounded-lg border px-2.5 py-1 text-xs font-bold ${
+                            isCritical
+                              ? 'border-rose-500/50 bg-rose-500/20 text-rose-300'
+                              : isSuspicious
+                                ? 'border-amber-500/40 bg-amber-500/20 text-amber-300'
+                                : 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
+                          }`}
+                        >
                           Score: {actor.maxThreatScore}/100
                         </span>
 
                         <button
                           type="button"
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
-                            handleBanIp(actor.clientIp, `Instant drop for actor: ${actor.primaryVector}`);
+                            handleBanIp(
+                              actor.clientIp,
+                              `Instant drop for actor: ${actor.primaryVector}`
+                            );
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-rose-600/30 hover:bg-rose-600/50 text-rose-200 border border-rose-500/50 text-xs font-bold flex items-center gap-1.5 transition"
+                          className="flex items-center gap-1.5 rounded-lg border border-rose-500/50 bg-rose-600/30 px-2.5 py-1 text-xs font-bold text-rose-200 transition hover:bg-rose-600/50"
                         >
-                          <Ban className="w-3.5 h-3.5" />
+                          <Ban className="h-3.5 w-3.5" />
                           <span>{isAr ? 'حظر المهاجم' : 'Ban Actor'}</span>
                         </button>
 
                         <button
                           type="button"
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             if (actor.frames[0]) handleOpenInspector(actor.frames[0]);
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-cyan-950 text-slate-200 hover:text-cyan-300 border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition"
+                          className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-200 transition hover:bg-cyan-950 hover:text-cyan-300"
                         >
-                          <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                          <Eye className="h-3.5 w-3.5 text-cyan-400" />
                           <span>{isAr ? 'فحص الأحدث' : 'Inspect'}</span>
                         </button>
                       </div>
@@ -1229,41 +1438,55 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
                     {/* Expandable Nested Child Logs */}
                     {isExpanded && (
-                      <div className="bg-slate-950/90 border-t border-slate-800 p-3 space-y-1.5 pl-10 pr-4">
-                        <div className="text-[11px] font-bold text-slate-400 mb-2 flex items-center justify-between">
-                          <span>{isAr ? `السجلات المنفردة للعنوان ${actor.clientIp}:` : `Individual Request History for ${actor.clientIp}:`}</span>
+                      <div className="space-y-1.5 border-t border-slate-800 bg-slate-950/90 p-3 pr-4 pl-10">
+                        <div className="mb-2 flex items-center justify-between text-[11px] font-bold text-slate-400">
+                          <span>
+                            {isAr
+                              ? `السجلات المنفردة للعنوان ${actor.clientIp}:`
+                              : `Individual Request History for ${actor.clientIp}:`}
+                          </span>
                         </div>
-                        {actor.frames.map((subFrame) => (
+                        {actor.frames.map(subFrame => (
                           <div
                             key={subFrame.id}
                             onClick={() => handleOpenInspector(subFrame)}
-                            className="p-2 rounded-lg bg-slate-900/70 border border-slate-800/80 hover:bg-slate-800/80 flex items-center justify-between gap-3 cursor-pointer transition"
+                            className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-800/80 bg-slate-900/70 p-2 transition hover:bg-slate-800/80"
                           >
                             <div className="flex items-center gap-2.5 truncate">
-                              <span className="text-slate-500 text-[10px]">{new Date(subFrame.timestamp).toLocaleTimeString()}</span>
-                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
-                                subFrame.method === 'GET' ? 'bg-blue-500/20 text-blue-300' : 'bg-emerald-500/20 text-emerald-300'
-                              }`}>{subFrame.method}</span>
-                              <span className="text-slate-200 truncate">{subFrame.uriPath}</span>
+                              <span className="text-[10px] text-slate-500">
+                                {new Date(subFrame.timestamp).toLocaleTimeString()}
+                              </span>
+                              <span
+                                className={`py-0.2 rounded px-1.5 text-[9px] font-bold ${
+                                  subFrame.method === 'GET'
+                                    ? 'bg-blue-500/20 text-blue-300'
+                                    : 'bg-emerald-500/20 text-emerald-300'
+                                }`}
+                              >
+                                {subFrame.method}
+                              </span>
+                              <span className="truncate text-slate-200">{subFrame.uriPath}</span>
                               {subFrame.category !== 'NORMAL_TRAFFIC' && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-950 text-rose-300 border border-rose-500/40">
+                                <span className="py-0.2 rounded border border-rose-500/40 bg-rose-950 px-1.5 text-[9px] font-bold text-rose-300">
                                   {subFrame.category}
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className={`text-[10px] font-bold ${subFrame.threatScore >= 50 ? 'text-rose-400' : 'text-slate-400'}`}>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <span
+                                className={`text-[10px] font-bold ${subFrame.threatScore >= 50 ? 'text-rose-400' : 'text-slate-400'}`}
+                              >
                                 {subFrame.threatScore}/100
                               </span>
                               <button
                                 type="button"
-                                onClick={(e) => {
+                                onClick={e => {
                                   e.stopPropagation();
                                   handleOpenInspector(subFrame);
                                 }}
-                                className="text-cyan-400 hover:text-cyan-300 p-1"
+                                className="p-1 text-cyan-400 hover:text-cyan-300"
                               >
-                                <Eye className="w-3.5 h-3.5" />
+                                <Eye className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           </div>
@@ -1283,72 +1506,90 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
       {/* ========================================================================= */}
       {isModalOpen && selectedFrame && (
         <div
-          onClick={(e) => {
+          onClick={e => {
             if (e.target === e.currentTarget) handleCloseInspector();
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn"
+          className="animate-fadeIn fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
         >
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             {/* Modal Header */}
             <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-3">
               <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl ${
-                  selectedFrame.threatScore >= 80 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
-                }`}>
-                  <Terminal className="w-5 h-5" />
+                <div
+                  className={`rounded-xl p-2.5 ${
+                    selectedFrame.threatScore >= 80
+                      ? 'border border-rose-500/40 bg-rose-500/20 text-rose-400'
+                      : 'border border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
+                  }`}
+                >
+                  <Terminal className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <h3 className="flex items-center gap-2 text-base font-bold text-white">
                     {isAr ? 'فحص تفصيلي للطلب والحمولة' : 'Deep Request & Payload Dissection'}
                   </h3>
-                  <p className="text-xs text-slate-400 font-mono">
+                  <p className="font-mono text-xs text-slate-400">
                     {selectedFrame.clientIp} • {selectedFrame.method} {selectedFrame.uriPath}
                   </p>
                 </div>
               </div>
               <button
                 onClick={handleCloseInspector}
-                className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition text-xs"
+                className="rounded-lg bg-slate-800 p-1 text-xs text-slate-400 transition hover:bg-slate-700 hover:text-white"
               >
                 ✕
               </button>
             </div>
 
             {/* Verdict & Threat Category */}
-            <div className={`p-3.5 rounded-xl border ${
-              selectedFrame.threatScore >= 80
-                ? 'bg-rose-950/30 border-rose-500/40 text-rose-200'
-                : 'bg-slate-950 border-slate-800 text-slate-300'
-            }`}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-bold uppercase tracking-wider font-mono">
+            <div
+              className={`rounded-xl border p-3.5 ${
+                selectedFrame.threatScore >= 80
+                  ? 'border-rose-500/40 bg-rose-950/30 text-rose-200'
+                  : 'border-slate-800 bg-slate-950 text-slate-300'
+              }`}
+            >
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="font-mono text-[11px] font-bold tracking-wider uppercase">
                   {isAr ? 'القرار والتقييم الأمني' : 'Threat Intelligence Verdict'}
                 </span>
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700">
+                <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-xs font-bold">
                   Threat Score: {selectedFrame.threatScore}/100
                 </span>
               </div>
               <p className="text-xs leading-relaxed">
                 {isAr
-                  ? selectedFrame.blockReasonAr || 'الطلب اجتاز فحوصات الأمان بنجاح ولا يحتوي على حمولات خبيثة معروفة.'
-                  : selectedFrame.blockReasonEn || 'Request successfully passed WAF inspection with zero malicious pattern matches.'}
+                  ? selectedFrame.blockReasonAr ||
+                    'الطلب اجتاز فحوصات الأمان بنجاح ولا يحتوي على حمولات خبيثة معروفة.'
+                  : selectedFrame.blockReasonEn ||
+                    'Request successfully passed WAF inspection with zero malicious pattern matches.'}
               </p>
             </div>
 
             {/* Raw HTTP Payload Hex/ASCII */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-400">{isAr ? 'الحمولة وسياق الطلب الخام (Hex/ASCII)' : 'Raw Payload & Request Context'}</span>
+                <span className="text-xs font-bold text-slate-400">
+                  {isAr ? 'الحمولة وسياق الطلب الخام (Hex/ASCII)' : 'Raw Payload & Request Context'}
+                </span>
                 <button
-                  onClick={() => copyToClipboard(selectedFrame.rawPayloadSnippet || selectedFrame.queryString || selectedFrame.uriPath)}
-                  className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-mono"
+                  onClick={() =>
+                    copyToClipboard(
+                      selectedFrame.rawPayloadSnippet ||
+                        selectedFrame.queryString ||
+                        selectedFrame.uriPath
+                    )
+                  }
+                  className="flex items-center gap-1 font-mono text-xs text-cyan-400 hover:text-cyan-300"
                 >
-                  {copiedText ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                  <span>{copiedText ? (isAr ? 'تم النسخ' : 'Copied') : (isAr ? 'نسخ' : 'Copy Payload')}</span>
+                  {copiedText ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  <span>
+                    {copiedText ? (isAr ? 'تم النسخ' : 'Copied') : isAr ? 'نسخ' : 'Copy Payload'}
+                  </span>
                 </button>
               </div>
-              <pre className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-300 overflow-x-auto max-h-40 leading-relaxed select-all">
-{`METHOD: ${selectedFrame.method}
+              <pre className="max-h-40 overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-relaxed text-emerald-300 select-all">
+                {`METHOD: ${selectedFrame.method}
 ENDPOINT: ${selectedFrame.uriPath}
 QUERY: ${selectedFrame.queryString || 'NONE'}
 USER-AGENT: ${selectedFrame.userAgent}
@@ -1360,12 +1601,21 @@ PAYLOAD_SNIPPET: ${selectedFrame.rawPayloadSnippet || 'N/A'}`}
 
             {/* Synthesized eBPF Drop Rule */}
             <div className="space-y-1.5">
-              <span className="text-xs font-bold text-slate-400">{isAr ? 'قاعدة الإسقاط السريعة في النواة (eBPF / XDP)' : 'Synthesized Kernel eBPF Drop Rule'}</span>
-              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-cyan-300 flex items-center justify-between gap-2">
-                <code className="truncate">{`bpf_xdp_drop_src_ip(0x${selectedFrame.clientIp.split('.').map(n => parseInt(n).toString(16).padStart(2, '0')).join('')}); /* DROP ${selectedFrame.clientIp} */`}</code>
+              <span className="text-xs font-bold text-slate-400">
+                {isAr
+                  ? 'قاعدة الإسقاط السريعة في النواة (eBPF / XDP)'
+                  : 'Synthesized Kernel eBPF Drop Rule'}
+              </span>
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-cyan-300">
+                <code className="truncate">{`bpf_xdp_drop_src_ip(0x${selectedFrame.clientIp
+                  .split('.')
+                  .map(n => parseInt(n).toString(16).padStart(2, '0'))
+                  .join('')}); /* DROP ${selectedFrame.clientIp} */`}</code>
                 <button
-                  onClick={() => copyToClipboard(`iptables -I INPUT -s ${selectedFrame.clientIp} -j DROP`)}
-                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold shrink-0 font-mono"
+                  onClick={() =>
+                    copyToClipboard(`iptables -I INPUT -s ${selectedFrame.clientIp} -j DROP`)
+                  }
+                  className="shrink-0 rounded bg-slate-800 px-2 py-1 font-mono text-[10px] font-bold text-slate-300 hover:bg-slate-700"
                 >
                   Copy Rule
                 </button>
@@ -1373,10 +1623,10 @@ PAYLOAD_SNIPPET: ${selectedFrame.rawPayloadSnippet || 'N/A'}`}
             </div>
 
             {/* Modal Footer Actions */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-between border-t border-slate-800 pt-2">
               <button
                 onClick={handleCloseInspector}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition"
+                className="rounded-xl bg-slate-800 px-4 py-2 text-xs font-bold text-slate-300 transition hover:bg-slate-700"
               >
                 {isAr ? 'إغلاق' : 'Close'}
               </button>
@@ -1386,9 +1636,9 @@ PAYLOAD_SNIPPET: ${selectedFrame.rawPayloadSnippet || 'N/A'}`}
                     handleBanIp(selectedFrame.clientIp, `Manual drop from Deep Inspector`);
                     handleCloseInspector();
                   }}
-                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-rose-950/50"
+                  className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-rose-950/50 transition hover:bg-rose-500"
                 >
-                  <Ban className="w-3.5 h-3.5" />
+                  <Ban className="h-3.5 w-3.5" />
                   <span>{isAr ? 'حظر هذا العنوان فوراً' : 'Enforce Immediate IP Drop'}</span>
                 </button>
               )}

@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { BehavioralBaseline } from '../types';
-import { 
-  Activity, 
-  Sliders, 
-  Sparkles, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Zap, 
-  RotateCcw, 
-  TrendingUp, 
-  Cpu, 
-  Radio, 
-  ShieldCheck, 
-  BarChart3 
+import {
+  Activity,
+  Sliders,
+  Sparkles,
+  AlertTriangle,
+  CheckCircle2,
+  Zap,
+  RotateCcw,
+  TrendingUp,
+  Cpu,
+  Radio,
+  ShieldCheck,
+  BarChart3
 } from 'lucide-react';
 
 interface BehavioralAnomalyStudioProps {
@@ -80,7 +80,11 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
         const data = await res.json();
         setBaseline(data.baseline);
         setZThreshold(3.0);
-        setTuneMessage(isAr ? 'تمت إعادة ضبط وتدريب النموذج السلوكي بنجاح' : 'Behavioral baseline recalibrated with 20,000 samples.');
+        setTuneMessage(
+          isAr
+            ? 'تمت إعادة ضبط وتدريب النموذج السلوكي بنجاح'
+            : 'Behavioral baseline recalibrated with 20,000 samples.'
+        );
         setTimeout(() => setTuneMessage(null), 5000);
       }
     } catch (err) {
@@ -116,22 +120,24 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
   return (
     <div className="space-y-6">
       {/* Top Banner: Behavioral Anomaly Header */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-950/80 via-slate-900 to-indigo-950/80 border border-blue-500/40 shadow-2xl">
+      <div className="rounded-2xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-indigo-950/80 p-6 shadow-2xl">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="p-4 rounded-2xl bg-blue-500/20 border border-blue-500/40 text-blue-300 shadow-inner">
-              <Activity className="w-8 h-8 animate-pulse text-blue-400" />
+            <div className="rounded-2xl border border-blue-500/40 bg-blue-500/20 p-4 text-blue-300 shadow-inner">
+              <Activity className="h-8 w-8 animate-pulse text-blue-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-black text-white">
-                  {isAr ? 'محرك كشف الشذوذ السلوكي وضبط الحساسية (Behavioral Anomaly & Baseline Tuning)' : 'Behavioral Anomaly & Gaussian Baseline Engine'}
+                  {isAr
+                    ? 'محرك كشف الشذوذ السلوكي وضبط الحساسية (Behavioral Anomaly & Baseline Tuning)'
+                    : 'Behavioral Anomaly & Gaussian Baseline Engine'}
                 </h2>
-                <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 font-mono">
+                <span className="rounded-full border border-blue-500/40 bg-blue-500/20 px-2.5 py-0.5 font-mono text-xs font-bold text-blue-300">
                   Z-Score Heuristics
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1 max-w-2xl">
+              <p className="mt-1 max-w-2xl text-xs text-slate-300">
                 {isAr
                   ? 'بناء نموذج سلوكي مستمر لحركة المرور الطبيعية (Gaussian Distribution) ورصد التسلل الخفي عبر الانحراف المعياري لإنتروبيا البيانات وتوزيع الحزم'
                   : 'Real-time statistical anomaly detection mapping traffic against learned Gaussian baselines using multi-variable Z-score deviation'}
@@ -139,78 +145,110 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
             </div>
           </div>
 
-          <div className="flex items-center gap-4 bg-slate-950/90 p-3.5 rounded-2xl border border-blue-500/30 font-mono text-center">
+          <div className="flex items-center gap-4 rounded-2xl border border-blue-500/30 bg-slate-950/90 p-3.5 text-center font-mono">
             <div>
-              <span className="text-[10px] text-slate-400 block font-sans">{isAr ? 'العينات المتعلمة:' : 'Learned Samples:'}</span>
-              <span className="text-2xl font-black text-cyan-400">{baseline?.sampleCount.toLocaleString() || '20,000'}</span>
-              <span className="text-[9px] text-emerald-400 block font-bold">ONLINE LEARNING</span>
+              <span className="block font-sans text-[10px] text-slate-400">
+                {isAr ? 'العينات المتعلمة:' : 'Learned Samples:'}
+              </span>
+              <span className="text-2xl font-black text-cyan-400">
+                {baseline?.sampleCount.toLocaleString() || '20,000'}
+              </span>
+              <span className="block text-[9px] font-bold text-emerald-400">ONLINE LEARNING</span>
             </div>
             <div className="h-10 w-px bg-slate-800"></div>
             <div>
-              <span className="text-[10px] text-slate-400 block font-sans">{isAr ? 'حد الانحراف المعياري:' : 'Anomaly Cutoff:'}</span>
+              <span className="block font-sans text-[10px] text-slate-400">
+                {isAr ? 'حد الانحراف المعياري:' : 'Anomaly Cutoff:'}
+              </span>
               <span className="text-2xl font-black text-blue-400">{zThreshold.toFixed(1)}σ</span>
-              <span className="text-[9px] text-slate-400 block">Z-Score Deviation</span>
+              <span className="block text-[9px] text-slate-400">Z-Score Deviation</span>
             </div>
           </div>
         </div>
       </div>
 
       {tuneMessage && (
-        <div className="p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/60 text-emerald-300 text-xs font-bold flex items-center gap-2 shadow-lg">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/60 bg-emerald-950/80 p-3.5 text-xs font-bold text-emerald-300 shadow-lg">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
           <span>{tuneMessage}</span>
         </div>
       )}
 
       {/* Main Grid: Baseline & Tuning (Left) + Live Evaluator & Drift Flags (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left Column: Baseline Statistical Profile & Threshold Tuner (6 Cols) */}
-        <div className="lg:col-span-6 space-y-5">
+        <div className="space-y-5 lg:col-span-6">
           {/* Baseline Metric Cards */}
-          <div className="p-5 rounded-2xl bg-slate-900/95 border border-slate-800 shadow-xl space-y-4">
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-blue-400" />
-                <span>{isAr ? 'المؤشرات الإحصائية للمرور الطبيعي (Gaussian Baseline):' : 'Baseline Statistical Profile:'}</span>
+              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <BarChart3 className="h-4 w-4 text-blue-400" />
+                <span>
+                  {isAr
+                    ? 'المؤشرات الإحصائية للمرور الطبيعي (Gaussian Baseline):'
+                    : 'Baseline Statistical Profile:'}
+                </span>
               </h3>
               <button
                 type="button"
                 onClick={handleRecalibrateBaseline}
-                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition flex items-center gap-1 border border-slate-700"
+                className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-300 transition hover:bg-slate-700"
               >
-                <RotateCcw className="w-3 h-3" />
+                <RotateCcw className="h-3 w-3" />
                 <span>{isAr ? 'إعادة ضبط النموذج' : 'Recalibrate'}</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 font-mono text-center">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block font-sans">{isAr ? 'معدل الطلبات/ث:' : 'Mean Req Rate (μ):'}</span>
-                <span className="text-lg font-bold text-cyan-300">{baseline?.meanReqRate || 5.0} pkts/s</span>
-                <span className="text-[9px] text-slate-500 block">σ = ±{baseline?.stdDevReqRate || 1.2}</span>
+            <div className="grid grid-cols-3 gap-3 text-center font-mono">
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <span className="block font-sans text-[10px] text-slate-400">
+                  {isAr ? 'معدل الطلبات/ث:' : 'Mean Req Rate (μ):'}
+                </span>
+                <span className="text-lg font-bold text-cyan-300">
+                  {baseline?.meanReqRate || 5.0} pkts/s
+                </span>
+                <span className="block text-[9px] text-slate-500">
+                  σ = ±{baseline?.stdDevReqRate || 1.2}
+                </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block font-sans">{isAr ? 'إنتروبيا شانون:' : 'Mean Entropy (μ):'}</span>
-                <span className="text-lg font-bold text-purple-300">{baseline?.meanEntropy || 3.8} bits</span>
-                <span className="text-[9px] text-slate-500 block">σ = ±{baseline?.stdDevEntropy || 0.4}</span>
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <span className="block font-sans text-[10px] text-slate-400">
+                  {isAr ? 'إنتروبيا شانون:' : 'Mean Entropy (μ):'}
+                </span>
+                <span className="text-lg font-bold text-purple-300">
+                  {baseline?.meanEntropy || 3.8} bits
+                </span>
+                <span className="block text-[9px] text-slate-500">
+                  σ = ±{baseline?.stdDevEntropy || 0.4}
+                </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block font-sans">{isAr ? 'حجم الحزم الطبيعي:' : 'Mean Pkt Size (μ):'}</span>
-                <span className="text-lg font-bold text-emerald-300">{baseline?.meanPacketSize || 640} B</span>
-                <span className="text-[9px] text-slate-500 block">σ = ±{baseline?.stdDevPacketSize || 120}</span>
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <span className="block font-sans text-[10px] text-slate-400">
+                  {isAr ? 'حجم الحزم الطبيعي:' : 'Mean Pkt Size (μ):'}
+                </span>
+                <span className="text-lg font-bold text-emerald-300">
+                  {baseline?.meanPacketSize || 640} B
+                </span>
+                <span className="block text-[9px] text-slate-500">
+                  σ = ±{baseline?.stdDevPacketSize || 120}
+                </span>
               </div>
             </div>
 
             {/* Threshold Slider */}
-            <div className="p-4 rounded-xl bg-slate-950 border border-blue-500/30 space-y-3">
+            <div className="space-y-3 rounded-xl border border-blue-500/30 bg-slate-950 p-4">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-blue-400" />
-                  <span>{isAr ? 'حساسية كشف الشذوذ (Anomaly Z-Score Threshold):' : 'Anomaly Threshold (Z-Score):'}</span>
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
+                  <Sliders className="h-3.5 w-3.5 text-blue-400" />
+                  <span>
+                    {isAr
+                      ? 'حساسية كشف الشذوذ (Anomaly Z-Score Threshold):'
+                      : 'Anomaly Threshold (Z-Score):'}
+                  </span>
                 </label>
-                <span className="px-2.5 py-0.5 rounded bg-blue-950 border border-blue-500/40 text-blue-300 text-xs font-mono font-bold">
+                <span className="rounded border border-blue-500/40 bg-blue-950 px-2.5 py-0.5 font-mono text-xs font-bold text-blue-300">
                   {zThreshold.toFixed(1)} σ
                 </span>
               </div>
@@ -222,10 +260,10 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                 step="0.1"
                 value={zThreshold}
                 onChange={e => handleTuneThreshold(parseFloat(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-blue-500"
               />
 
-              <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+              <div className="flex items-center justify-between font-mono text-[10px] text-slate-400">
                 <span>1.5σ ({isAr ? 'حساسية فائقة / تنبيهات أكثر' : 'Ultra Sensitive'})</span>
                 <span>3.0σ ({isAr ? 'المستوى الإنتاجي المثالي' : 'Recommended'})</span>
                 <span>5.0σ ({isAr ? 'تسامح عالي / للهجمات الكبرى' : 'High Tolerance'})</span>
@@ -234,31 +272,44 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
           </div>
 
           {/* Active Drift Flags Log */}
-          <div className="p-5 rounded-2xl bg-slate-900/95 border border-slate-800 shadow-xl space-y-3">
+          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-400" />
-                <span>{isAr ? 'سجل انحرافات حركة المرور الحية (Active Drift Flags):' : 'Active Behavioral Drift Flags:'}</span>
+              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <AlertTriangle className="h-4 w-4 text-amber-400" />
+                <span>
+                  {isAr
+                    ? 'سجل انحرافات حركة المرور الحية (Active Drift Flags):'
+                    : 'Active Behavioral Drift Flags:'}
+                </span>
               </h3>
-              <span className="text-[10px] text-slate-400 font-mono">{baseline?.activeDriftFlags?.length || 0} Events</span>
+              <span className="font-mono text-[10px] text-slate-400">
+                {baseline?.activeDriftFlags?.length || 0} Events
+              </span>
             </div>
 
-            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+            <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
               {(baseline?.activeDriftFlags || []).map((flag: any) => (
-                <div key={flag.id} className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs font-mono">
+                <div
+                  key={flag.id}
+                  className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs"
+                >
                   <div>
                     <div className="flex items-center gap-2 font-bold text-white">
-                      <span className="px-1.5 py-0.5 rounded bg-amber-950 border border-amber-500/40 text-amber-300 text-[10px]">
+                      <span className="rounded border border-amber-500/40 bg-amber-950 px-1.5 py-0.5 text-[10px] text-amber-300">
                         {flag.flag}
                       </span>
-                      <span className="text-[11px] text-slate-300">{isAr ? flag.flagAr : flag.flag}</span>
+                      <span className="text-[11px] text-slate-300">
+                        {isAr ? flag.flagAr : flag.flag}
+                      </span>
                     </div>
-                    <div className="text-[10px] text-slate-400 mt-1">{flag.sampleMetric}</div>
+                    <div className="mt-1 text-[10px] text-slate-400">{flag.sampleMetric}</div>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-rose-400 font-bold text-xs">{flag.deviationZScore}σ</span>
-                    <span className="text-[9px] text-slate-500 block">{new Date(flag.triggeredAt).toLocaleTimeString()}</span>
+                    <span className="text-xs font-bold text-rose-400">{flag.deviationZScore}σ</span>
+                    <span className="block text-[9px] text-slate-500">
+                      {new Date(flag.triggeredAt).toLocaleTimeString()}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -267,49 +318,60 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
         </div>
 
         {/* Right Column: Live Telemetry Anomaly Evaluator (6 Cols) */}
-        <div className="lg:col-span-6 space-y-5">
-          <form onSubmit={handleEvaluateTelemetry} className="p-5 rounded-2xl bg-slate-900/95 border border-blue-500/40 shadow-2xl space-y-4">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <span>{isAr ? 'اختبار وتقييم بيانات حية فوراً (Live Telemetry Evaluator):' : 'Live Telemetry Deviation Evaluator:'}</span>
+        <div className="space-y-5 lg:col-span-6">
+          <form
+            onSubmit={handleEvaluateTelemetry}
+            className="space-y-4 rounded-2xl border border-blue-500/40 bg-slate-900/95 p-5 shadow-2xl"
+          >
+            <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+              <Sparkles className="h-4 w-4 text-blue-400" />
+              <span>
+                {isAr
+                  ? 'اختبار وتقييم بيانات حية فوراً (Live Telemetry Evaluator):'
+                  : 'Live Telemetry Deviation Evaluator:'}
+              </span>
             </h3>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  {isAr ? 'معدل الطلبات اللحظي (Requests / Sec):' : 'Incoming Request Rate (pkts/s):'}
+                <label className="mb-1 block text-xs font-semibold text-slate-300">
+                  {isAr
+                    ? 'معدل الطلبات اللحظي (Requests / Sec):'
+                    : 'Incoming Request Rate (pkts/s):'}
                 </label>
                 <input
                   type="number"
                   step="0.1"
                   value={testReqRate}
                   onChange={e => setTestReqRate(parseFloat(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  {isAr ? 'إنتروبيا الحمولة (Shannon Payload Entropy: 0-8 bits):' : 'Payload Shannon Entropy (0-8 bits):'}
+                <label className="mb-1 block text-xs font-semibold text-slate-300">
+                  {isAr
+                    ? 'إنتروبيا الحمولة (Shannon Payload Entropy: 0-8 bits):'
+                    : 'Payload Shannon Entropy (0-8 bits):'}
                 </label>
                 <input
                   type="number"
                   step="0.01"
                   value={testEntropy}
                   onChange={e => setTestEntropy(parseFloat(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="mb-1 block text-xs font-semibold text-slate-300">
                   {isAr ? 'حجم الحزمة (Packet Size in Bytes):' : 'Packet Size (Bytes):'}
                 </label>
                 <input
                   type="number"
                   value={testPacketSize}
                   onChange={e => setTestPacketSize(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -317,42 +379,66 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
             <button
               type="submit"
               disabled={isEvaluating}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-blue-950/50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-950/50 transition hover:from-blue-500 hover:to-indigo-500"
             >
-              <Zap className="w-3.5 h-3.5" />
-              <span>{isEvaluating ? 'Evaluating...' : (isAr ? 'حساب الانحراف المعياري ورصد الشذوذ (Calculate Z-Score)' : 'Calculate Multi-Variable Deviation')}</span>
+              <Zap className="h-3.5 w-3.5" />
+              <span>
+                {isEvaluating
+                  ? 'Evaluating...'
+                  : isAr
+                    ? 'حساب الانحراف المعياري ورصد الشذوذ (Calculate Z-Score)'
+                    : 'Calculate Multi-Variable Deviation'}
+              </span>
             </button>
           </form>
 
           {/* Evaluator Live Verdict */}
           {evalResult && (
-            <div className={`p-5 rounded-2xl border shadow-xl space-y-3 ${
-              evalResult.isAnomalous
-                ? 'bg-rose-950/40 border-rose-500/60 text-rose-200'
-                : 'bg-emerald-950/40 border-emerald-500/60 text-emerald-200'
-            }`}>
+            <div
+              className={`space-y-3 rounded-2xl border p-5 shadow-xl ${
+                evalResult.isAnomalous
+                  ? 'border-rose-500/60 bg-rose-950/40 text-rose-200'
+                  : 'border-emerald-500/60 bg-emerald-950/40 text-emerald-200'
+              }`}
+            >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-xs flex items-center gap-2">
-                  {evalResult.isAnomalous ? <AlertTriangle className="w-4 h-4 text-rose-400" /> : <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                  <span>{evalResult.isAnomalous ? (isAr ? 'تم رصد شذوذ سلوكي حاد (ANOMALOUS)' : 'ANOMALY DETECTED') : (isAr ? 'المرور ضمن المعدل الطبيعي (BENIGN)' : 'TRAFFIC WITHIN NORMAL GAUSSIAN BOUNDS')}</span>
+                <span className="flex items-center gap-2 text-xs font-bold">
+                  {evalResult.isAnomalous ? (
+                    <AlertTriangle className="h-4 w-4 text-rose-400" />
+                  ) : (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  )}
+                  <span>
+                    {evalResult.isAnomalous
+                      ? isAr
+                        ? 'تم رصد شذوذ سلوكي حاد (ANOMALOUS)'
+                        : 'ANOMALY DETECTED'
+                      : isAr
+                        ? 'المرور ضمن المعدل الطبيعي (BENIGN)'
+                        : 'TRAFFIC WITHIN NORMAL GAUSSIAN BOUNDS'}
+                  </span>
                 </span>
                 <span className="font-mono text-xs font-black">
                   Max Z: {evalResult.maxZScore}σ (Cutoff: {evalResult.thresholdZScore}σ)
                 </span>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 font-mono text-[11px] pt-2 border-t border-slate-800">
-                <div className="p-2 rounded bg-slate-950/80">
-                  <span className="text-slate-400 block text-[10px]">Δ Z(ReqRate):</span>
+              <div className="grid grid-cols-3 gap-2 border-t border-slate-800 pt-2 font-mono text-[11px]">
+                <div className="rounded bg-slate-950/80 p-2">
+                  <span className="block text-[10px] text-slate-400">Δ Z(ReqRate):</span>
                   <span className="font-bold text-cyan-300">{evalResult.deviations.zReqRate}σ</span>
                 </div>
-                <div className="p-2 rounded bg-slate-950/80">
-                  <span className="text-slate-400 block text-[10px]">Δ Z(Entropy):</span>
-                  <span className="font-bold text-purple-300">{evalResult.deviations.zEntropy}σ</span>
+                <div className="rounded bg-slate-950/80 p-2">
+                  <span className="block text-[10px] text-slate-400">Δ Z(Entropy):</span>
+                  <span className="font-bold text-purple-300">
+                    {evalResult.deviations.zEntropy}σ
+                  </span>
                 </div>
-                <div className="p-2 rounded bg-slate-950/80">
-                  <span className="text-slate-400 block text-[10px]">Δ Z(Size):</span>
-                  <span className="font-bold text-emerald-300">{evalResult.deviations.zPacketSize}σ</span>
+                <div className="rounded bg-slate-950/80 p-2">
+                  <span className="block text-[10px] text-slate-400">Δ Z(Size):</span>
+                  <span className="font-bold text-emerald-300">
+                    {evalResult.deviations.zPacketSize}σ
+                  </span>
                 </div>
               </div>
             </div>

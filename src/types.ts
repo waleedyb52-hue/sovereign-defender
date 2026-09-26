@@ -24,7 +24,7 @@ export type AppTab =
   // Knowledge base
   | 'threat_corpus';
 
-export type AttackVectorType = 
+export type AttackVectorType =
   | 'SSH_BRUTE_FORCE'
   | 'DNS_EXFILTRATION'
   | 'SQL_INJECTION'
@@ -216,11 +216,8 @@ export interface SimulatorControls {
   isContinuous: boolean;
 }
 
-export type TopologyViewMode = 
-  | 'ARCHITECTURE' 
-  | 'MITRE_KILL_CHAIN' 
-  | 'GEO_THREAT_MAP' 
-  | 'BLAST_RADIUS_RADAR';
+export type TopologyViewMode =
+  'ARCHITECTURE' | 'MITRE_KILL_CHAIN' | 'GEO_THREAT_MAP' | 'BLAST_RADIUS_RADAR';
 
 export interface GeoThreatNode {
   id: string;
@@ -260,7 +257,15 @@ export interface PcapDissectionResult {
   entropyLevel: string;
   headers: {
     ethernet: { srcMac: string; dstMac: string; etherType: string };
-    ip: { version: number; ihl: number; ttl: number; protocol: string; src: string; dst: string; checksum: string };
+    ip: {
+      version: number;
+      ihl: number;
+      ttl: number;
+      protocol: string;
+      src: string;
+      dst: string;
+      checksum: string;
+    };
     transport: {
       srcPort: number;
       dstPort: number;
@@ -359,7 +364,7 @@ export interface AlertWebhookConfig {
 
 export interface ProgressiveMitigationMetrics {
   tier1RateLimitedCount: number; // 429
-  tier2ChallengedCount: number;  // Captcha / verification
+  tier2ChallengedCount: number; // Captcha / verification
   tier3CriticalBlockedCount: number; // 403 / iptables
   activeTier1Sessions: number;
   activeTier2Challenges: number;
@@ -434,7 +439,13 @@ export interface BreachSimulationScenario {
   id: string;
   nameEn: string;
   nameAr: string;
-  category: 'XSS_CSP' | 'RCE_SHELL' | 'EBPF_HEAP_SPRAY' | 'ZERO_DAY_DESERIALIZATION' | 'API_TOKEN_EXFIL' | 'SSH_BRUTE_FORCE';
+  category:
+    | 'XSS_CSP'
+    | 'RCE_SHELL'
+    | 'EBPF_HEAP_SPRAY'
+    | 'ZERO_DAY_DESERIALIZATION'
+    | 'API_TOKEN_EXFIL'
+    | 'SSH_BRUTE_FORCE';
   descriptionEn: string;
   descriptionAr: string;
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
@@ -644,7 +655,13 @@ export interface AttackChainSession {
   lastSeen: string;
   threatScore: number;
   stagesCompleted: Array<{
-    stage: 'Reconnaissance' | 'Initial Access' | 'Execution' | 'Exploitation' | 'Persistence' | 'Exfiltration';
+    stage:
+      | 'Reconnaissance'
+      | 'Initial Access'
+      | 'Execution'
+      | 'Exploitation'
+      | 'Persistence'
+      | 'Exfiltration';
     timestamp: string;
     description: string;
     technique: string;
@@ -764,6 +781,3 @@ export interface TargetScanReport {
     details: string;
   };
 }
-
-
-

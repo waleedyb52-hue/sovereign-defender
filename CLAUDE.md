@@ -22,3 +22,17 @@ You are an elite Cyber Defense AI Engineer and a SOC (Security Operations Center
 2. **Resilience & Graceful Degradation:** Services must fail gracefully. Ensure `server.ts` handles missing modules or WebSocket crashes without bringing down the entire Node process.
 3. **Actionable UI:** Maintain a dark, tactical SOC aesthetic (high-contrast, monospace typography, glowing particles, 60 FPS performance even under heavy log loads).
 4. **Verification:** After editing, stubbing, or generating code, ensure changes will pass `npm run dev` cleanly without build errors.
+
+## Binding UI & Workflow Rules
+
+Read [`.clauderules`](.clauderules) before writing or changing any frontend code.
+It holds the design tokens, typography split, motion budget, accessibility floor,
+MITRE mapping requirement, isolation-protocol contract, and the hook/component
+separation this project requires.
+
+Its first rule outranks the rest and applies to the whole codebase: **a number
+shown on screen must be real, or declared unavailable.** A sparkline with invented
+points or a hardcoded confidence figure is a defect of the same class as a false
+negative, because it tells the operator something untrue about their own network.
+Where a data source does not exist, render an explicit empty state naming the
+missing endpoint.

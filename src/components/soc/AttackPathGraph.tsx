@@ -23,12 +23,40 @@ interface Node {
 }
 
 const PATH: Node[] = [
-  { id: 'actor',  ar: 'مصدر خارجي', en: 'External actor', icon: Globe2,   kind: 'actor' },
-  { id: 'xdp',    ar: 'فلتر النواة', en: 'Kernel filter',  sub: 'eBPF/XDP', icon: Cpu,      kind: 'control' },
-  { id: 'waf',    ar: 'جدار التطبيقات', en: 'App firewall', sub: 'WAF/L7', icon: Shield,   kind: 'control' },
-  { id: 'app',    ar: 'خادم التطبيق', en: 'App server',    sub: '10.0.1.10', icon: Server,   kind: 'asset' },
-  { id: 'fim',    ar: 'حارس الملفات', en: 'File guard',    sub: 'FIM',     icon: FileLock2, kind: 'control' },
-  { id: 'db',     ar: 'قاعدة البيانات', en: 'Database',    sub: '10.0.2.20', icon: Database, kind: 'asset' }
+  { id: 'actor', ar: 'مصدر خارجي', en: 'External actor', icon: Globe2, kind: 'actor' },
+  {
+    id: 'xdp',
+    ar: 'فلتر النواة',
+    en: 'Kernel filter',
+    sub: 'eBPF/XDP',
+    icon: Cpu,
+    kind: 'control'
+  },
+  {
+    id: 'waf',
+    ar: 'جدار التطبيقات',
+    en: 'App firewall',
+    sub: 'WAF/L7',
+    icon: Shield,
+    kind: 'control'
+  },
+  {
+    id: 'app',
+    ar: 'خادم التطبيق',
+    en: 'App server',
+    sub: '10.0.1.10',
+    icon: Server,
+    kind: 'asset'
+  },
+  { id: 'fim', ar: 'حارس الملفات', en: 'File guard', sub: 'FIM', icon: FileLock2, kind: 'control' },
+  {
+    id: 'db',
+    ar: 'قاعدة البيانات',
+    en: 'Database',
+    sub: '10.0.2.20',
+    icon: Database,
+    kind: 'asset'
+  }
 ];
 
 interface Props {
@@ -47,7 +75,7 @@ export const AttackPathGraph: React.FC<Props> = ({ lang = 'ar', stoppedAt = 1, a
         <h3 className="text-sm font-bold text-slate-100">
           {isAr ? 'مسار الهجوم نحو الأصول' : 'Attack path to assets'}
         </h3>
-        <p className="text-[11px] text-slate-500 mt-0.5">
+        <p className="mt-0.5 text-[11px] text-slate-500">
           {isAr
             ? 'العلاقة بين المصدر والضوابط والأصول — وأين انقطع المسار.'
             : 'How the actor, the controls and the assets connect — and where the path broke.'}
@@ -55,7 +83,7 @@ export const AttackPathGraph: React.FC<Props> = ({ lang = 'ar', stoppedAt = 1, a
       </div>
 
       <div className="overflow-x-auto pb-2">
-        <div className="flex items-stretch gap-0 min-w-[760px]">
+        <div className="flex min-w-[760px] items-stretch gap-0">
           {PATH.map((n, i) => {
             const Icon = n.icon;
             const blocked = i === stoppedAt;
@@ -65,33 +93,36 @@ export const AttackPathGraph: React.FC<Props> = ({ lang = 'ar', stoppedAt = 1, a
             return (
               <React.Fragment key={n.id}>
                 {/* node */}
-                <div className="flex flex-col items-center gap-2 w-[120px] shrink-0">
+                <div className="flex w-[120px] shrink-0 flex-col items-center gap-2">
                   <div
-                    className={`w-14 h-14 rounded-xl border flex items-center justify-center transition-colors
-                      ${blocked
+                    className={`flex h-14 w-14 items-center justify-center rounded-xl border transition-colors ${
+                      blocked
                         ? 'border-emerald-500/60 bg-emerald-500/10'
                         : reached
                           ? 'border-rose-500/50 bg-rose-500/10'
-                          : 'border-slate-800 bg-slate-900/60'}`}
+                          : 'border-slate-800 bg-slate-900/60'
+                    }`}
                   >
                     <Icon
-                      className={`w-6 h-6 ${
+                      className={`h-6 w-6 ${
                         blocked ? 'text-emerald-400' : reached ? 'text-rose-400' : 'text-slate-600'
                       }`}
                     />
                   </div>
                   <div className="text-center">
-                    <div className={`text-[12px] font-semibold leading-tight ${unreached ? 'text-slate-500' : 'text-slate-100'}`}>
+                    <div
+                      className={`text-[12px] leading-tight font-semibold ${unreached ? 'text-slate-500' : 'text-slate-100'}`}
+                    >
                       {isAr ? n.ar : n.en}
                     </div>
-                    {(n.id === 'actor' && actorIp) ? (
-                      <div className="font-mono text-[10px] text-slate-400 mt-0.5">{actorIp}</div>
+                    {n.id === 'actor' && actorIp ? (
+                      <div className="mt-0.5 font-mono text-[10px] text-slate-400">{actorIp}</div>
                     ) : n.sub ? (
-                      <div className="font-mono text-[10px] text-slate-500 mt-0.5">{n.sub}</div>
+                      <div className="mt-0.5 font-mono text-[10px] text-slate-500">{n.sub}</div>
                     ) : null}
                     {blocked && (
                       <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300">
-                        <Ban className="w-3 h-3" />
+                        <Ban className="h-3 w-3" />
                         {isAr ? 'توقف هنا' : 'Stopped'}
                       </div>
                     )}
@@ -100,22 +131,27 @@ export const AttackPathGraph: React.FC<Props> = ({ lang = 'ar', stoppedAt = 1, a
 
                 {/* edge */}
                 {i < PATH.length - 1 && (
-                  <div className="flex-1 flex items-start pt-7 min-w-[40px]">
-                    <div className="w-full relative">
+                  <div className="flex min-w-[40px] flex-1 items-start pt-7">
+                    <div className="relative w-full">
                       <div
                         className={`h-[2px] w-full rounded ${
-                          i < stoppedAt
-                            ? 'bg-rose-500/70'
-                            : 'bg-slate-800'
+                          i < stoppedAt ? 'bg-rose-500/70' : 'bg-slate-800'
                         }`}
-                        style={i >= stoppedAt ? {
-                          backgroundImage: 'repeating-linear-gradient(90deg,#2d3948 0 6px,transparent 6px 12px)',
-                          backgroundColor: 'transparent'
-                        } : undefined}
+                        style={
+                          i >= stoppedAt
+                            ? {
+                                backgroundImage:
+                                  'repeating-linear-gradient(90deg,#2d3948 0 6px,transparent 6px 12px)',
+                                backgroundColor: 'transparent'
+                              }
+                            : undefined
+                        }
                       />
                       {i === stoppedAt && (
                         <span className="absolute inset-x-0 -top-2 flex justify-center">
-                          <span className="px-1.5 text-[16px] leading-none text-emerald-400 bg-[var(--surface-panel)]">×</span>
+                          <span className="bg-[var(--surface-panel)] px-1.5 text-[16px] leading-none text-emerald-400">
+                            ×
+                          </span>
                         </span>
                       )}
                     </div>
@@ -128,17 +164,17 @@ export const AttackPathGraph: React.FC<Props> = ({ lang = 'ar', stoppedAt = 1, a
       </div>
 
       {/* legend — identity never by colour alone */}
-      <div className="flex items-center gap-x-5 gap-y-2 flex-wrap mt-4 pt-3 border-t border-slate-800">
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-slate-800 pt-3">
         <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
-          <span className="w-2.5 h-2.5 rounded-[3px] bg-rose-500" />
+          <span className="h-2.5 w-2.5 rounded-[3px] bg-rose-500" />
           {isAr ? 'مسار جرى بلوغه' : 'Path traversed'}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
-          <span className="w-2.5 h-2.5 rounded-[3px] bg-emerald-500" />
+          <span className="h-2.5 w-2.5 rounded-[3px] bg-emerald-500" />
           {isAr ? 'نقطة الإيقاف' : 'Stop point'}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
-          <span className="w-2.5 h-2.5 rounded-[3px] border border-slate-700 bg-slate-900" />
+          <span className="h-2.5 w-2.5 rounded-[3px] border border-slate-700 bg-slate-900" />
           {isAr ? 'لم يُبلَغ' : 'Never reached'}
         </span>
       </div>

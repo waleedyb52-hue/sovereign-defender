@@ -23,7 +23,14 @@ interface FreqPoint {
   blockedSec: number;
   rateLimitedSec: number;
 }
-interface GeoRow { country: string; code: string; flag: string; attackCount: number; topVector: string; threatTier: string; }
+interface GeoRow {
+  country: string;
+  code: string;
+  flag: string;
+  attackCount: number;
+  topVector: string;
+  threatTier: string;
+}
 interface Analytics {
   frequencyGraph: FreqPoint[];
   geoThreatDistribution: GeoRow[];
@@ -37,7 +44,9 @@ interface Analytics {
   };
 }
 
-interface Props { lang?: 'ar' | 'en'; }
+interface Props {
+  lang?: 'ar' | 'en';
+}
 
 export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
   const isAr = lang === 'ar';
@@ -51,7 +60,9 @@ export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
         if (!res.ok) return;
         const d = await res.json();
         if (d?.success) setData(d);
-      } catch { /* keep last known */ }
+      } catch {
+        /* keep last known */
+      }
     };
     load();
     const t = setInterval(load, 5000);
@@ -63,8 +74,18 @@ export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
     return data.frequencyGraph.map(p => ({
       label: p.time,
       segments: [
-        { key: 'blocked', value: p.blockedSec, color: SEV_COLOR.CRITICAL, label: isAr ? 'محظورة' : 'Blocked' },
-        { key: 'limited', value: p.rateLimitedSec, color: SEV_COLOR.HIGH, label: isAr ? 'مُقيّدة' : 'Rate-limited' },
+        {
+          key: 'blocked',
+          value: p.blockedSec,
+          color: SEV_COLOR.CRITICAL,
+          label: isAr ? 'محظورة' : 'Blocked'
+        },
+        {
+          key: 'limited',
+          value: p.rateLimitedSec,
+          color: SEV_COLOR.HIGH,
+          label: isAr ? 'مُقيّدة' : 'Rate-limited'
+        },
         { key: 'clean', value: p.cleanSec, color: SEV_COLOR.LOW, label: isAr ? 'سليمة' : 'Clean' }
       ]
     }));
@@ -73,10 +94,15 @@ export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
   const totals = useMemo(() => {
     const g = data?.frequencyGraph ?? [];
     const sum = (k: keyof FreqPoint) => g.reduce((s, p) => s + (Number(p[k]) || 0), 0);
-    const blocked = sum('blockedSec'), limited = sum('rateLimitedSec'), clean = sum('cleanSec');
+    const blocked = sum('blockedSec'),
+      limited = sum('rateLimitedSec'),
+      clean = sum('cleanSec');
     const all = blocked + limited + clean || 1;
     return {
-      blocked, limited, clean, all,
+      blocked,
+      limited,
+      clean,
+      all,
       hostilePct: (((blocked + limited) / all) * 100).toFixed(1)
     };
   }, [data]);
@@ -85,11 +111,34 @@ export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
   const geoMax = Math.max(1, ...geo.map(g => g.attackCount));
 
   const funnel = data?.progressiveMitigation;
-  const funnelRows = funnel ? [
-    { k: 't1', ar: 'المستوى 1 — تقييد المعدل', en: 'Tier 1 — rate limit', v: funnel.tier1RateLimitedCount, live: funnel.activeTier1Sessions, color: SEV_COLOR.LOW },
-    { k: 't2', ar: 'المستوى 2 — تحدٍّ تفاعلي', en: 'Tier 2 — challenge',  v: funnel.tier2ChallengedCount,  live: funnel.activeTier2Challenges, color: SEV_COLOR.HIGH },
-    { k: 't3', ar: 'المستوى 3 — حظر جذري',    en: 'Tier 3 — hard block', v: funnel.tier3CriticalBlockedCount, live: funnel.activeTier3HardBans, color: SEV_COLOR.CRITICAL }
-  ] : [];
+  const funnelRows = funnel
+    ? [
+        {
+          k: 't1',
+          ar: 'المستوى 1 — تقييد المعدل',
+          en: 'Tier 1 — rate limit',
+          v: funnel.tier1RateLimitedCount,
+          live: funnel.activeTier1Sessions,
+          color: SEV_COLOR.LOW
+        },
+        {
+          k: 't2',
+          ar: 'المستوى 2 — تحدٍّ تفاعلي',
+          en: 'Tier 2 — challenge',
+          v: funnel.tier2ChallengedCount,
+          live: funnel.activeTier2Challenges,
+          color: SEV_COLOR.HIGH
+        },
+        {
+          k: 't3',
+          ar: 'المستوى 3 — حظر جذري',
+          en: 'Tier 3 — hard block',
+          v: funnel.tier3CriticalBlockedCount,
+          live: funnel.activeTier3HardBans,
+          color: SEV_COLOR.CRITICAL
+        }
+      ]
+    : [];
   const funnelMax = Math.max(1, ...funnelRows.map(r => r.v));
 
   const legendItems = [
@@ -99,41 +148,48 @@ export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)] gap-5" dir={isAr ? 'rtl' : 'ltr'}>
+    <div
+      className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)]"
+      dir={isAr ? 'rtl' : 'ltr'}
+    >
       {/* ---------- 1. traffic over time ---------- */}
       <section className="soc-panel p-5">
-        <div className="flex items-start justify-between gap-3 mb-1">
+        <div className="mb-1 flex items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-slate-100">
               {isAr ? 'حركة المرور والحظر عبر الزمن' : 'Traffic & blocking over time'}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="mt-0.5 text-[11px] text-slate-500">
               {isAr ? 'طلبات/ثانية — مقسّمة حسب القرار' : 'Requests per second, split by verdict'}
             </p>
           </div>
           <button
             onClick={() => setShowTable(v => !v)}
             title={isAr ? 'عرض كجدول' : 'Table view'}
-            className="shrink-0 p-1.5 rounded-md border border-slate-800 text-slate-500 hover:text-slate-200 hover:border-slate-700 transition-colors"
+            className="shrink-0 rounded-md border border-slate-800 p-1.5 text-slate-500 transition-colors hover:border-slate-700 hover:text-slate-200"
           >
-            <Table2 className="w-3.5 h-3.5" />
+            <Table2 className="h-3.5 w-3.5" />
           </button>
         </div>
 
         {/* headline: how much of the stream is hostile */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span className="font-mono text-2xl font-bold text-slate-100 tabular-nums">{totals.hostilePct}%</span>
-          <span className="text-[11px] text-slate-400">{isAr ? 'من الحركة عدائية ومُعالَجة' : 'of traffic hostile & handled'}</span>
+        <div className="mb-4 flex items-baseline gap-2">
+          <span className="font-mono text-2xl font-bold text-slate-100 tabular-nums">
+            {totals.hostilePct}%
+          </span>
+          <span className="text-[11px] text-slate-400">
+            {isAr ? 'من الحركة عدائية ومُعالَجة' : 'of traffic hostile & handled'}
+          </span>
         </div>
 
         {buckets.length === 0 ? (
-          <div className="h-[130px] rounded-lg bg-slate-800/40 animate-pulse" />
+          <div className="h-[130px] animate-pulse rounded-lg bg-slate-800/40" />
         ) : showTable ? (
           <div className="max-h-[150px] overflow-y-auto">
             <table className="w-full text-[11px]">
               <thead className="text-slate-500">
                 <tr className="text-start">
-                  <th className="text-start font-medium py-1">{isAr ? 'الوقت' : 'Time'}</th>
+                  <th className="py-1 text-start font-medium">{isAr ? 'الوقت' : 'Time'}</th>
                   <th className="text-end font-medium">{isAr ? 'سليمة' : 'Clean'}</th>
                   <th className="text-end font-medium">{isAr ? 'مُقيّدة' : 'Limited'}</th>
                   <th className="text-end font-medium">{isAr ? 'محظورة' : 'Blocked'}</th>
@@ -155,7 +211,7 @@ export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
           <StackedBars buckets={buckets} height={130} isAr={isAr} />
         )}
 
-        <div className="mt-3 pt-3 border-t border-slate-800">
+        <div className="mt-3 border-t border-slate-800 pt-3">
           <Legend items={legendItems} />
         </div>
       </section>
@@ -165,29 +221,35 @@ export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
         <h3 className="text-sm font-bold text-slate-100">
           {isAr ? 'أعلى مصادر الهجوم' : 'Top attack origins'}
         </h3>
-        <p className="text-[11px] text-slate-500 mt-0.5 mb-4">
+        <p className="mt-0.5 mb-4 text-[11px] text-slate-500">
           {isAr ? 'حسب عدد المحاولات المرصودة' : 'By observed attempts'}
         </p>
 
         {geo.length === 0 ? (
           <div className="space-y-3">
-            {[0, 1, 2, 3].map(i => <div key={i} className="h-8 rounded bg-slate-800/40 animate-pulse" />)}
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="h-8 animate-pulse rounded bg-slate-800/40" />
+            ))}
           </div>
         ) : (
           <div className="space-y-3">
             {geo.map(g => (
               <div key={g.code}>
-                <div className="flex items-center gap-2 mb-1.5">
+                <div className="mb-1.5 flex items-center gap-2">
                   <span aria-hidden="true">{g.flag}</span>
-                  <span className="text-[12px] text-slate-200 truncate">{g.country}</span>
-                  <span className="font-mono text-[11px] text-slate-300 ms-auto tabular-nums">{g.attackCount}</span>
+                  <span className="truncate text-[12px] text-slate-200">{g.country}</span>
+                  <span className="ms-auto font-mono text-[11px] text-slate-300 tabular-nums">
+                    {g.attackCount}
+                  </span>
                 </div>
                 <RankedBar
                   value={g.attackCount}
                   max={geoMax}
                   color={g.threatTier === 'CRITICAL' ? SEV_COLOR.CRITICAL : SEV_COLOR.HIGH}
                 />
-                <div className="font-mono text-[10px] text-slate-600 mt-1 truncate">{g.topVector}</div>
+                <div className="mt-1 truncate font-mono text-[10px] text-slate-600">
+                  {g.topVector}
+                </div>
               </div>
             ))}
           </div>
@@ -199,26 +261,35 @@ export const SecurityAnalyticsRow: React.FC<Props> = ({ lang = 'ar' }) => {
         <h3 className="text-sm font-bold text-slate-100">
           {isAr ? 'تدرّج الاستجابة' : 'Progressive response'}
         </h3>
-        <p className="text-[11px] text-slate-500 mt-0.5 mb-4">
-          {isAr ? 'الرد يتصاعد بحسب الخطورة، لا حظر فوري للجميع' : 'Response escalates with severity — not a blanket block'}
+        <p className="mt-0.5 mb-4 text-[11px] text-slate-500">
+          {isAr
+            ? 'الرد يتصاعد بحسب الخطورة، لا حظر فوري للجميع'
+            : 'Response escalates with severity — not a blanket block'}
         </p>
 
         {funnelRows.length === 0 ? (
           <div className="space-y-3">
-            {[0, 1, 2].map(i => <div key={i} className="h-10 rounded bg-slate-800/40 animate-pulse" />)}
+            {[0, 1, 2].map(i => (
+              <div key={i} className="h-10 animate-pulse rounded bg-slate-800/40" />
+            ))}
           </div>
         ) : (
           <div className="space-y-4">
             {funnelRows.map(r => (
               <div key={r.k}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="w-2.5 h-2.5 rounded-[3px] shrink-0" style={{ background: r.color }} />
+                <div className="mb-1.5 flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-[3px]"
+                    style={{ background: r.color }}
+                  />
                   <span className="text-[12px] text-slate-200">{isAr ? r.ar : r.en}</span>
-                  <span className="font-mono text-[11px] text-slate-300 ms-auto tabular-nums">{r.v}</span>
+                  <span className="ms-auto font-mono text-[11px] text-slate-300 tabular-nums">
+                    {r.v}
+                  </span>
                 </div>
                 <RankedBar value={r.v} max={funnelMax} color={r.color} />
-                <div className="flex items-center gap-1.5 mt-1">
-                  <Activity className="w-3 h-3 text-slate-600" />
+                <div className="mt-1 flex items-center gap-1.5">
+                  <Activity className="h-3 w-3 text-slate-600" />
                   <span className="font-mono text-[10px] text-slate-500">
                     {r.live} {isAr ? 'نشطة الآن' : 'active now'}
                   </span>

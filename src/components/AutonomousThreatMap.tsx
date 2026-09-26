@@ -1,15 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
-import {
-  Globe,
-  Radio,
-  Crosshair,
-  Maximize2,
-  Minimize2,
-  Eye,
-  EyeOff,
-  Layers
-} from 'lucide-react';
+import { Globe, Radio, Crosshair, Maximize2, Minimize2, Eye, EyeOff, Layers } from 'lucide-react';
 import {
   computeGreatCircleTrajectory,
   latLonToCartesian,
@@ -95,7 +86,9 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
   const globeGroupRef = useRef<THREE.Group | null>(null);
   const vectorsGroupRef = useRef<THREE.Group | null>(null);
   const clustersGroupRef = useRef<THREE.Group | null>(null);
-  const laserPulsesRef = useRef<Array<{ mesh: THREE.Mesh; points: THREE.Vector3[]; speed: number; progress: number }>>([]);
+  const laserPulsesRef = useRef<
+    Array<{ mesh: THREE.Mesh; points: THREE.Vector3[]; speed: number; progress: number }>
+  >([]);
   const animFrameIdRef = useRef<number | null>(null);
 
   // Camera Target Interpolation Ref
@@ -110,8 +103,12 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
   const onScreen = useOnScreen(mountRef);
   const calmRef = useRef(prefersCalm);
   const onScreenRef = useRef(onScreen);
-  useEffect(() => { calmRef.current = prefersCalm; }, [prefersCalm]);
-  useEffect(() => { onScreenRef.current = onScreen; }, [onScreen]);
+  useEffect(() => {
+    calmRef.current = prefersCalm;
+  }, [prefersCalm]);
+  useEffect(() => {
+    onScreenRef.current = onScreen;
+  }, [onScreen]);
 
   const isDraggingRef = useRef(false);
   const previousMousePositionRef = useRef({ x: 0, y: 0 });
@@ -188,7 +185,11 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
     cameraRef.current = camera;
 
     // 2. WebGL Renderer with High Precision
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: false,
+      powerPreference: 'high-performance'
+    });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -249,7 +250,11 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
     globeGroup.add(glowMesh);
 
     // Sovereign Datacenter Node Marker (Riyadh)
-    const sovPos = latLonToCartesian(SOVEREIGN_NODE_COORDINATES.lat, SOVEREIGN_NODE_COORDINATES.lon, GLOBE_RADIUS_3D);
+    const sovPos = latLonToCartesian(
+      SOVEREIGN_NODE_COORDINATES.lat,
+      SOVEREIGN_NODE_COORDINATES.lon,
+      GLOBE_RADIUS_3D
+    );
     const sovGroup = new THREE.Group();
     sovGroup.position.set(sovPos.x, sovPos.y, sovPos.z);
 
@@ -267,8 +272,13 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
       opacity: 0.85
     });
     const beaconMesh = new THREE.Mesh(beaconGeo, beaconMat);
-    beaconMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(sovPos.x, sovPos.y, sovPos.z).normalize());
-    beaconMesh.position.copy(new THREE.Vector3(sovPos.x, sovPos.y, sovPos.z).normalize().multiplyScalar(14));
+    beaconMesh.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(sovPos.x, sovPos.y, sovPos.z).normalize()
+    );
+    beaconMesh.position.copy(
+      new THREE.Vector3(sovPos.x, sovPos.y, sovPos.z).normalize().multiplyScalar(14)
+    );
     globeGroup.add(beaconMesh);
 
     // Concentric Radar Rings at Sovereign Node
@@ -309,7 +319,10 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
       globeGroupRef.current.rotation.x += deltaY * 0.005;
 
       // Clamp vertical rotation to avoid flip
-      globeGroupRef.current.rotation.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, globeGroupRef.current.rotation.x));
+      globeGroupRef.current.rotation.x = Math.max(
+        -Math.PI / 2.5,
+        Math.min(Math.PI / 2.5, globeGroupRef.current.rotation.x)
+      );
 
       previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
     };
@@ -393,7 +406,11 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
           const index = Math.floor(laser.progress * (laser.points.length - 1));
           const currentPoint = laser.points[index];
           const nextPoint = laser.points[Math.min(index + 1, laser.points.length - 1)];
-          laser.mesh.position.lerpVectors(currentPoint, nextPoint, (laser.progress * (laser.points.length - 1)) % 1);
+          laser.mesh.position.lerpVectors(
+            currentPoint,
+            nextPoint,
+            (laser.progress * (laser.points.length - 1)) % 1
+          );
         }
       });
 
@@ -471,7 +488,7 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
 
     // 2. High-Density Level-Of-Detail (LOD) & Batching Engine (Supports 10,000+ Vectors at 60 FPS)
     const isUltraHighDensity = displayedVectors.length > 150;
-    
+
     // Sort vectors so critical and high threats get prioritized trajectory arcs
     const sortedVectors = [...displayedVectors].sort((a, b) => {
       return (b.triage?.threatScore || 0) - (a.triage?.threatScore || 0);
@@ -490,9 +507,10 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
       const colorHex = isCritical ? 0xff003c : isHigh ? 0xffb000 : 0x39ff14;
 
       // Trajectory Points
-      const rawPoints = v.triage.trajectoryPoints && v.triage.trajectoryPoints.length > 0
-        ? v.triage.trajectoryPoints
-        : computeGreatCircleTrajectory(v.sourceGeo, SOVEREIGN_NODE_COORDINATES);
+      const rawPoints =
+        v.triage.trajectoryPoints && v.triage.trajectoryPoints.length > 0
+          ? v.triage.trajectoryPoints
+          : computeGreatCircleTrajectory(v.sourceGeo, SOVEREIGN_NODE_COORDINATES);
 
       const threePoints = rawPoints.map(p => new THREE.Vector3(p.x, p.y, p.z));
 
@@ -530,7 +548,7 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
         laserPulsesRef.current.push({
           mesh: pulseMesh,
           points: curvePoints,
-          speed: 0.35 + (v.requestFrequencyHz / 120),
+          speed: 0.35 + v.requestFrequencyHz / 120,
           progress: (idx * 0.17) % 1.0
         });
       }
@@ -549,7 +567,7 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
 
         const isCrit = pv.triage.classification === 'CRITICAL';
         if (isCrit) {
-          pointColors[pIdx * 3] = 1.0;     // R
+          pointColors[pIdx * 3] = 1.0; // R
           pointColors[pIdx * 3 + 1] = 0.0; // G
           pointColors[pIdx * 3 + 2] = 0.23; // B
         } else {
@@ -578,7 +596,11 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
     if (showClusterOverlays && clusters.length > 0) {
       clusters.forEach((cluster, cIdx) => {
         const isTargetCluster = activeHighestCluster && activeHighestCluster.id === cluster.id;
-        const clusterPos = latLonToCartesian(cluster.centroid.lat, cluster.centroid.lon, GLOBE_RADIUS_3D + 0.8);
+        const clusterPos = latLonToCartesian(
+          cluster.centroid.lat,
+          cluster.centroid.lon,
+          GLOBE_RADIUS_3D + 0.8
+        );
 
         // Cluster Centroid Halo Ring
         const ringRadius = Math.max(Math.min(cluster.radiusKm / 120, 18), 5);
@@ -591,12 +613,16 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
         });
         const clusterRingMesh = new THREE.Mesh(clusterRingGeo, clusterRingMat);
         clusterRingMesh.position.set(clusterPos.x, clusterPos.y, clusterPos.z);
-        clusterRingMesh.lookAt(new THREE.Vector3(clusterPos.x * 2, clusterPos.y * 2, clusterPos.z * 2));
+        clusterRingMesh.lookAt(
+          new THREE.Vector3(clusterPos.x * 2, clusterPos.y * 2, clusterPos.z * 2)
+        );
         clustersGroupRef.current?.add(clusterRingMesh);
 
         // Cluster Center Crosshair Core
         const coreGeo = new THREE.SphereGeometry(2.2, 14, 14);
-        const coreMat = new THREE.MeshBasicMaterial({ color: isTargetCluster ? 0xff003c : 0xffb000 });
+        const coreMat = new THREE.MeshBasicMaterial({
+          color: isTargetCluster ? 0xff003c : 0xffb000
+        });
         const coreMesh = new THREE.Mesh(coreGeo, coreMat);
         coreMesh.position.set(clusterPos.x, clusterPos.y, clusterPos.z);
         clustersGroupRef.current?.add(coreMesh);
@@ -617,39 +643,62 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
         const normal = new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z).normalize();
         const camPos = normal.clone().multiplyScalar(225);
         targetCamPosRef.current = camPos;
-        targetLookAtRef.current = new THREE.Vector3(targetPos.x * 0.2, targetPos.y * 0.2, targetPos.z * 0.2);
+        targetLookAtRef.current = new THREE.Vector3(
+          targetPos.x * 0.2,
+          targetPos.y * 0.2,
+          targetPos.z * 0.2
+        );
       } else if (displayedVectors.length > 0) {
         const topThreat = displayedVectors[0];
-        const targetPos = latLonToCartesian(topThreat.sourceGeo.lat, topThreat.sourceGeo.lon, GLOBE_RADIUS_3D);
+        const targetPos = latLonToCartesian(
+          topThreat.sourceGeo.lat,
+          topThreat.sourceGeo.lon,
+          GLOBE_RADIUS_3D
+        );
         const normal = new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z).normalize();
         targetCamPosRef.current = normal.clone().multiplyScalar(230);
         targetLookAtRef.current = new THREE.Vector3(0, 0, 0);
       }
     }
-  }, [displayedVectors, clusters, activeHighestCluster, showClusterOverlays, showLaserBeams, autoCameraEnabled]);
+  }, [
+    displayedVectors,
+    clusters,
+    activeHighestCluster,
+    showClusterOverlays,
+    showLaserBeams,
+    autoCameraEnabled
+  ]);
 
   return (
-    <div className={`relative w-full ${isKioskMode ? 'h-screen fixed inset-0 z-50' : 'h-[780px] rounded-xl'} bg-[#0d1117] overflow-hidden border border-[#1e2733] select-none font-mono text-[#e6edf3]`}>
+    <div
+      className={`relative w-full ${isKioskMode ? 'fixed inset-0 z-50 h-screen' : 'h-[780px] rounded-xl'} overflow-hidden border border-[#1e2733] bg-[#0d1117] font-mono text-[#e6edf3] select-none`}
+    >
       {/* 3D WebGL Canvas Mount */}
-      <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+      <div ref={mountRef} className="h-full w-full cursor-grab active:cursor-grabbing" />
 
       {/* Top Tactical HUD Overlay */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-20">
+      <div className="pointer-events-none absolute top-4 right-4 left-4 z-20 flex items-center justify-between">
         {/* Left Badge: Sovereign Defense Status */}
-        <div className="flex items-center gap-3 pointer-events-auto bg-[#131a24]/90 backdrop-blur-md px-4 py-2.5 rounded-lg border border-[#1e2733] shadow-2xl">
+        <div className="pointer-events-auto flex items-center gap-3 rounded-lg border border-[#1e2733] bg-[#131a24]/90 px-4 py-2.5 shadow-2xl backdrop-blur-md">
           <div className="relative">
-            <Radio className="w-5 h-5 text-[#3fb950] animate-pulse" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#3fb950] animate-ping" />
+            <Radio className="h-5 w-5 animate-pulse text-[#3fb950]" />
+            <span className="absolute -top-1 -right-1 h-2 w-2 animate-ping rounded-full bg-[#3fb950]" />
           </div>
           <div>
-            <div className="text-xs font-bold tracking-wider text-[#e6edf3] flex items-center gap-2">
-              <span>{isAr ? 'خريطة التهديدات السيادية ثلاثية الأبعاد' : 'SOVEREIGN GLOBAL THREAT HEATMAP'}</span>
-              <span className="text-[10px] px-2 py-0.2 rounded bg-[#3fb950]/20 text-[#3fb950] border border-[#3fb950]/40 font-mono">
+            <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#e6edf3]">
+              <span>
+                {isAr
+                  ? 'خريطة التهديدات السيادية ثلاثية الأبعاد'
+                  : 'SOVEREIGN GLOBAL THREAT HEATMAP'}
+              </span>
+              <span className="py-0.2 rounded border border-[#3fb950]/40 bg-[#3fb950]/20 px-2 font-mono text-[10px] text-[#3fb950]">
                 {isAr ? 'عقدة الرياض نشطة' : 'RIYADH CORE ACTIVE'}
               </span>
             </div>
-            <div className="text-[10px] text-[#93a1b3] flex items-center gap-2">
-              <span>{SOVEREIGN_NODE_COORDINATES.lat}°N, {SOVEREIGN_NODE_COORDINATES.lon}°E</span>
+            <div className="flex items-center gap-2 text-[10px] text-[#93a1b3]">
+              <span>
+                {SOVEREIGN_NODE_COORDINATES.lat}°N, {SOVEREIGN_NODE_COORDINATES.lon}°E
+              </span>
               <span>•</span>
               <span>eBPF XDP Layer 1 Drop</span>
             </div>
@@ -657,66 +706,92 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
         </div>
 
         {/* Center: Live Algorithmic Auto-Triage Metrics */}
-        <div className="hidden lg:flex items-center gap-3 pointer-events-auto bg-[#131a24]/90 backdrop-blur-md px-4 py-2 rounded-lg border border-[#1e2733]">
-          <div className="text-center px-3 border-r border-[#1e2733]">
-            <span className="text-[9px] uppercase tracking-wider text-[#93a1b3] block">{isAr ? 'الناقلات النشطة' : 'ACTIVE VECTORS'}</span>
+        <div className="pointer-events-auto hidden items-center gap-3 rounded-lg border border-[#1e2733] bg-[#131a24]/90 px-4 py-2 backdrop-blur-md lg:flex">
+          <div className="border-r border-[#1e2733] px-3 text-center">
+            <span className="block text-[9px] tracking-wider text-[#93a1b3] uppercase">
+              {isAr ? 'الناقلات النشطة' : 'ACTIVE VECTORS'}
+            </span>
             <span className="text-sm font-bold text-[#e6edf3]">{metrics.totalActiveVectors}</span>
           </div>
-          <div className="text-center px-3 border-r border-[#1e2733]">
-            <span className="text-[9px] uppercase tracking-wider text-[#f85149] block">{isAr ? 'حظر eBPF التلقائي' : 'eBPF DROPPED'}</span>
+          <div className="border-r border-[#1e2733] px-3 text-center">
+            <span className="block text-[9px] tracking-wider text-[#f85149] uppercase">
+              {isAr ? 'حظر eBPF التلقائي' : 'eBPF DROPPED'}
+            </span>
             <span className="text-sm font-bold text-[#f85149]">{metrics.autoDroppedCount}</span>
           </div>
-          <div className="text-center px-3 border-r border-[#1e2733]">
-            <span className="text-[9px] uppercase tracking-wider text-[#fab219] block">{isAr ? 'فحص متقدم' : 'INSPECTING'}</span>
+          <div className="border-r border-[#1e2733] px-3 text-center">
+            <span className="block text-[9px] tracking-wider text-[#fab219] uppercase">
+              {isAr ? 'فحص متقدم' : 'INSPECTING'}
+            </span>
             <span className="text-sm font-bold text-[#fab219]">{metrics.highCount}</span>
           </div>
-          <div className="text-center px-3">
-            <span className="text-[9px] uppercase tracking-wider text-[#3fb950] block">{isAr ? 'متوسط درجة الخطر' : 'AVG THREAT SCORE'}</span>
+          <div className="px-3 text-center">
+            <span className="block text-[9px] tracking-wider text-[#3fb950] uppercase">
+              {isAr ? 'متوسط درجة الخطر' : 'AVG THREAT SCORE'}
+            </span>
             <span className="text-sm font-bold text-[#3fb950]">{metrics.averageThreatScore}%</span>
           </div>
         </div>
 
         {/* Right: Controls & Kiosk Toggle */}
-        <div className="flex items-center gap-2 pointer-events-auto">
+        <div className="pointer-events-auto flex items-center gap-2">
           {/* Autonomous Camera Auto-Pilot Toggle */}
           <button
             onClick={() => setAutoCameraEnabled(prev => !prev)}
-            title={isAr ? 'تفعيل/تعطيل التوجيه الذاتي للكاميرا' : 'Toggle Autonomous Camera Panning'}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-bold flex items-center gap-1.5 transition ${
+            title={
+              isAr ? 'تفعيل/تعطيل التوجيه الذاتي للكاميرا' : 'Toggle Autonomous Camera Panning'
+            }
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-xs font-bold transition ${
               autoCameraEnabled
-                ? 'bg-[#3fb950]/15 border-[#3fb950]/50 text-[#3fb950]'
-                : 'bg-[#1a2230] border-[#1e2733] text-[#93a1b3] hover:text-[#e6edf3]'
+                ? 'border-[#3fb950]/50 bg-[#3fb950]/15 text-[#3fb950]'
+                : 'border-[#1e2733] bg-[#1a2230] text-[#93a1b3] hover:text-[#e6edf3]'
             }`}
           >
-            <Crosshair className={`w-3.5 h-3.5 ${autoCameraEnabled ? 'animate-spin' : ''}`} />
-            <span>{isAr ? (autoCameraEnabled ? 'توجيه آلي' : 'توجيه يدوي') : (autoCameraEnabled ? 'AUTO-PILOT' : 'MANUAL CAM')}</span>
+            <Crosshair className={`h-3.5 w-3.5 ${autoCameraEnabled ? 'animate-spin' : ''}`} />
+            <span>
+              {isAr
+                ? autoCameraEnabled
+                  ? 'توجيه آلي'
+                  : 'توجيه يدوي'
+                : autoCameraEnabled
+                  ? 'AUTO-PILOT'
+                  : 'MANUAL CAM'}
+            </span>
           </button>
 
           {/* K-Means Clusters Overlay Toggle */}
           <button
             onClick={() => setShowClusterOverlays(prev => !prev)}
             title={isAr ? 'عرض/إخفاء التجميع المكاني K-Means' : 'Toggle K-Means Cluster Overlays'}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-mono flex items-center gap-1.5 transition ${
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-xs transition ${
               showClusterOverlays
-                ? 'bg-[#00f3ff]/15 border-[#00f3ff]/50 text-[#00f3ff]'
-                : 'bg-[#1a2230] border-[#1e2733] text-[#93a1b3]'
+                ? 'border-[#00f3ff]/50 bg-[#00f3ff]/15 text-[#00f3ff]'
+                : 'border-[#1e2733] bg-[#1a2230] text-[#93a1b3]'
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
+            <Layers className="h-3.5 w-3.5" />
             <span>K-MEANS</span>
           </button>
 
           {/* Noise Filter Toggle */}
           <button
             onClick={() => setNoiseFilterEnabled(prev => !prev)}
-            title={isAr ? 'فلتر الضوضاء الخوارزمي لمنع الإجهاد التنبيهي' : 'Algorithmic Noise Filter (Suppresses low-level scans)'}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-mono flex items-center gap-1.5 transition ${
+            title={
+              isAr
+                ? 'فلتر الضوضاء الخوارزمي لمنع الإجهاد التنبيهي'
+                : 'Algorithmic Noise Filter (Suppresses low-level scans)'
+            }
+            className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-xs transition ${
               noiseFilterEnabled
-                ? 'bg-[#fab219]/15 border-[#fab219]/50 text-[#fab219]'
-                : 'bg-[#1a2230] border-[#1e2733] text-[#93a1b3]'
+                ? 'border-[#fab219]/50 bg-[#fab219]/15 text-[#fab219]'
+                : 'border-[#1e2733] bg-[#1a2230] text-[#93a1b3]'
             }`}
           >
-            {noiseFilterEnabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+            {noiseFilterEnabled ? (
+              <Eye className="h-3.5 w-3.5" />
+            ) : (
+              <EyeOff className="h-3.5 w-3.5" />
+            )}
             <span>{isAr ? 'فلتر الضوضاء' : 'NOISE FILTER'}</span>
           </button>
 
@@ -724,10 +799,18 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
           {onToggleKiosk && (
             <button
               onClick={onToggleKiosk}
-              className="p-2 rounded-lg bg-[#131a24] border border-[#1e2733] text-[#93a1b3] hover:text-[#e6edf3] hover:border-[#3fb950] transition shadow-lg"
-              title={isKioskMode ? (isAr ? 'إلغاء وضع الجدار' : 'Exit Kiosk Mode') : (isAr ? 'شاشة جدارية كاملة (Kiosk SOC Wall)' : 'SOC Wall Kiosk Display')}
+              className="rounded-lg border border-[#1e2733] bg-[#131a24] p-2 text-[#93a1b3] shadow-lg transition hover:border-[#3fb950] hover:text-[#e6edf3]"
+              title={
+                isKioskMode
+                  ? isAr
+                    ? 'إلغاء وضع الجدار'
+                    : 'Exit Kiosk Mode'
+                  : isAr
+                    ? 'شاشة جدارية كاملة (Kiosk SOC Wall)'
+                    : 'SOC Wall Kiosk Display'
+              }
             >
-              {isKioskMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              {isKioskMode ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </button>
           )}
         </div>
@@ -735,20 +818,22 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
 
       {/* Floating Active Cluster Focus Badge (Phase 3 Intelligent K-Means Clustering) */}
       {activeHighestCluster && (
-        <div className="absolute top-20 left-4 z-20 pointer-events-auto bg-[#131a24]/90 backdrop-blur-md p-3.5 rounded-xl border border-[#f85149]/40 shadow-2xl max-w-xs animate-in fade-in">
-          <div className="flex items-center justify-between pb-2 border-b border-[#1e2733] mb-2">
-            <span className="text-[10px] text-[#f85149] font-bold uppercase tracking-wider flex items-center gap-1">
-              <Crosshair className="w-3.5 h-3.5 text-[#f85149]" />
+        <div className="animate-in fade-in pointer-events-auto absolute top-20 left-4 z-20 max-w-xs rounded-xl border border-[#f85149]/40 bg-[#131a24]/90 p-3.5 shadow-2xl backdrop-blur-md">
+          <div className="mb-2 flex items-center justify-between border-b border-[#1e2733] pb-2">
+            <span className="flex items-center gap-1 text-[10px] font-bold tracking-wider text-[#f85149] uppercase">
+              <Crosshair className="h-3.5 w-3.5 text-[#f85149]" />
               {isAr ? 'بؤرة التهديد الحرجة ذات الكثافة القصوى' : 'PEAK CRITICAL THREAT CLUSTER'}
             </span>
-            <span className="px-1.5 py-0.2 rounded text-[9px] bg-[#f85149]/20 text-[#f85149] font-bold">
+            <span className="py-0.2 rounded bg-[#f85149]/20 px-1.5 text-[9px] font-bold text-[#f85149]">
               {activeHighestCluster.criticalCount} CRITICAL
             </span>
           </div>
           <div className="space-y-1 text-xs">
             <div className="flex justify-between text-[#93a1b3]">
               <span>{isAr ? 'إحداثيات المركز' : 'Centroid'}:</span>
-              <span className="text-[#e6edf3]">{activeHighestCluster.centroid.lat}°N, {activeHighestCluster.centroid.lon}°E</span>
+              <span className="text-[#e6edf3]">
+                {activeHighestCluster.centroid.lat}°N, {activeHighestCluster.centroid.lon}°E
+              </span>
             </div>
             <div className="flex justify-between text-[#93a1b3]">
               <span>{isAr ? 'نصف القطر المكاني' : 'Radius'}:</span>
@@ -756,36 +841,36 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
             </div>
             <div className="flex justify-between text-[#93a1b3]">
               <span>{isAr ? 'كثافة الهجوم الخوارزمية' : 'Density Score'}:</span>
-              <span className="text-[#f85149] font-bold">{activeHighestCluster.density}</span>
+              <span className="font-bold text-[#f85149]">{activeHighestCluster.density}</span>
             </div>
           </div>
         </div>
       )}
 
       {/* Synthetic Swarm Simulation Quick Bar */}
-      <div className="absolute top-20 right-4 z-20 pointer-events-auto bg-[#131a24]/90 backdrop-blur-md p-2.5 rounded-xl border border-[#1e2733] shadow-2xl space-y-2">
-        <span className="text-[10px] text-[#93a1b3] font-bold uppercase block tracking-wider">
+      <div className="pointer-events-auto absolute top-20 right-4 z-20 space-y-2 rounded-xl border border-[#1e2733] bg-[#131a24]/90 p-2.5 shadow-2xl backdrop-blur-md">
+        <span className="block text-[10px] font-bold tracking-wider text-[#93a1b3] uppercase">
           {isAr ? 'حقن أسراب محاكاة خوارزمية' : 'INJECT ALGORITHMIC SWARM'}
         </span>
         <div className="flex items-center gap-1.5">
           <button
             disabled={isSwarmLoading}
             onClick={() => handleSimulateSwarm('EAST_EUROPE')}
-            className="px-2.5 py-1 text-[10px] rounded bg-[#1a2230] hover:bg-[#1e2733] border border-[#1e2733] text-[#e6edf3] hover:border-[#f85149] transition font-bold disabled:opacity-50"
+            className="rounded border border-[#1e2733] bg-[#1a2230] px-2.5 py-1 text-[10px] font-bold text-[#e6edf3] transition hover:border-[#f85149] hover:bg-[#1e2733] disabled:opacity-50"
           >
             {isAr ? 'سرب أوروبا الشرقية' : 'East Europe'}
           </button>
           <button
             disabled={isSwarmLoading}
             onClick={() => handleSimulateSwarm('ASIA_PACIFIC')}
-            className="px-2.5 py-1 text-[10px] rounded bg-[#1a2230] hover:bg-[#1e2733] border border-[#1e2733] text-[#e6edf3] hover:border-[#fab219] transition font-bold disabled:opacity-50"
+            className="rounded border border-[#1e2733] bg-[#1a2230] px-2.5 py-1 text-[10px] font-bold text-[#e6edf3] transition hover:border-[#fab219] hover:bg-[#1e2733] disabled:opacity-50"
           >
             {isAr ? 'سرب شرق آسيا' : 'East Asia'}
           </button>
           <button
             disabled={isSwarmLoading}
             onClick={() => handleSimulateSwarm('NORTH_AMERICA')}
-            className="px-2.5 py-1 text-[10px] rounded bg-[#1a2230] hover:bg-[#1e2733] border border-[#1e2733] text-[#e6edf3] hover:border-[#3fb950] transition font-bold disabled:opacity-50"
+            className="rounded border border-[#1e2733] bg-[#1a2230] px-2.5 py-1 text-[10px] font-bold text-[#e6edf3] transition hover:border-[#3fb950] hover:bg-[#1e2733] disabled:opacity-50"
           >
             {isAr ? 'أمريكا الشمالية' : 'North America'}
           </button>
@@ -794,18 +879,23 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
 
       {/* Threat Detail Interactive Drilldown Drawer (if selected) */}
       {selectedThreat && (
-        <div className="absolute bottom-16 right-4 z-30 pointer-events-auto bg-[#131a24]/95 backdrop-blur-md p-4 rounded-xl border border-[#1e2733] shadow-2xl w-80 space-y-3 animate-in slide-in-from-bottom">
-          <div className="flex items-center justify-between pb-2 border-b border-[#1e2733]">
+        <div className="animate-in slide-in-from-bottom pointer-events-auto absolute right-4 bottom-16 z-30 w-80 space-y-3 rounded-xl border border-[#1e2733] bg-[#131a24]/95 p-4 shadow-2xl backdrop-blur-md">
+          <div className="flex items-center justify-between border-b border-[#1e2733] pb-2">
             <div className="flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-full ${
-                selectedThreat.triage.classification === 'CRITICAL' ? 'bg-[#f85149]' :
-                selectedThreat.triage.classification === 'HIGH' ? 'bg-[#fab219]' : 'bg-[#3fb950]'
-              }`} />
-              <span className="font-bold text-xs text-[#e6edf3]">{selectedThreat.ip}</span>
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${
+                  selectedThreat.triage.classification === 'CRITICAL'
+                    ? 'bg-[#f85149]'
+                    : selectedThreat.triage.classification === 'HIGH'
+                      ? 'bg-[#fab219]'
+                      : 'bg-[#3fb950]'
+                }`}
+              />
+              <span className="text-xs font-bold text-[#e6edf3]">{selectedThreat.ip}</span>
             </div>
             <button
               onClick={() => setSelectedThreat(null)}
-              className="text-[#93a1b3] hover:text-[#e6edf3] text-xs font-bold px-1.5 py-0.5 rounded"
+              className="rounded px-1.5 py-0.5 text-xs font-bold text-[#93a1b3] hover:text-[#e6edf3]"
             >
               ✕
             </button>
@@ -813,37 +903,61 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
 
           <div className="space-y-1.5 text-xs">
             <div className="flex justify-between">
-              <span className="text-[#93a1b3]">{isAr ? 'الدرجة الخوارزمية (ThreatScore)' : 'Bayesian ThreatScore'}:</span>
-              <span className={`font-bold ${selectedThreat.triage.threatScore > 85 ? 'text-[#f85149]' : 'text-[#fab219]'}`}>
+              <span className="text-[#93a1b3]">
+                {isAr ? 'الدرجة الخوارزمية (ThreatScore)' : 'Bayesian ThreatScore'}:
+              </span>
+              <span
+                className={`font-bold ${selectedThreat.triage.threatScore > 85 ? 'text-[#f85149]' : 'text-[#fab219]'}`}
+              >
                 {selectedThreat.triage.threatScore}%
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#93a1b3]">{isAr ? 'إنتروبيا شانون (Shannon Entropy)' : 'Shannon Entropy'}:</span>
-              <span className="text-[#3fb950]">{selectedThreat.triage.shannonEntropy} bits/byte</span>
+              <span className="text-[#93a1b3]">
+                {isAr ? 'إنتروبيا شانون (Shannon Entropy)' : 'Shannon Entropy'}:
+              </span>
+              <span className="text-[#3fb950]">
+                {selectedThreat.triage.shannonEntropy} bits/byte
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#93a1b3]">{isAr ? 'سمعة الـ IP المصدر' : 'Source IP Reputation'}:</span>
+              <span className="text-[#93a1b3]">
+                {isAr ? 'سمعة الـ IP المصدر' : 'Source IP Reputation'}:
+              </span>
               <span className="text-[#e6edf3]">{selectedThreat.ipReputationScore}/100</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#93a1b3]">{isAr ? 'معدل التدفق (DDoS Frequency)' : 'Request Frequency'}:</span>
+              <span className="text-[#93a1b3]">
+                {isAr ? 'معدل التدفق (DDoS Frequency)' : 'Request Frequency'}:
+              </span>
               <span className="text-[#e6edf3]">{selectedThreat.requestFrequencyHz} Hz</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#93a1b3]">{isAr ? 'المسافة الجغرافية العظمى' : 'Great-Circle Distance'}:</span>
-              <span className="text-[#e6edf3]">{selectedThreat.triage.greatCircleDistanceKm} km</span>
+              <span className="text-[#93a1b3]">
+                {isAr ? 'المسافة الجغرافية العظمى' : 'Great-Circle Distance'}:
+              </span>
+              <span className="text-[#e6edf3]">
+                {selectedThreat.triage.greatCircleDistanceKm} km
+              </span>
             </div>
-            <div className="pt-2 border-t border-[#1e2733]">
-              <span className="text-[10px] text-[#93a1b3] block mb-1 uppercase tracking-wider">{isAr ? 'إجراء النواة الفوري' : 'Kernel Action'}:</span>
-              <span className={`text-[10px] font-bold px-2 py-1 rounded block ${
-                selectedThreat.triage.ebpfAutoDropped
-                  ? 'bg-[#f85149]/20 text-[#f85149] border border-[#f85149]/40'
-                  : 'bg-[#fab219]/20 text-[#fab219] border border-[#fab219]/40'
-              }`}>
+            <div className="border-t border-[#1e2733] pt-2">
+              <span className="mb-1 block text-[10px] tracking-wider text-[#93a1b3] uppercase">
+                {isAr ? 'إجراء النواة الفوري' : 'Kernel Action'}:
+              </span>
+              <span
+                className={`block rounded px-2 py-1 text-[10px] font-bold ${
+                  selectedThreat.triage.ebpfAutoDropped
+                    ? 'border border-[#f85149]/40 bg-[#f85149]/20 text-[#f85149]'
+                    : 'border border-[#fab219]/40 bg-[#fab219]/20 text-[#fab219]'
+                }`}
+              >
                 {selectedThreat.triage.ebpfAutoDropped
-                  ? (isAr ? 'تم إسقاط الحزم بنواة eBPF XDP فورياً' : 'eBPF Auto-Drop Triggered (Score > 85%)')
-                  : (isAr ? 'تحت فحص حمولة TLS المشدد' : 'Under High Stateful Inspection')}
+                  ? isAr
+                    ? 'تم إسقاط الحزم بنواة eBPF XDP فورياً'
+                    : 'eBPF Auto-Drop Triggered (Score > 85%)'
+                  : isAr
+                    ? 'تحت فحص حمولة TLS المشدد'
+                    : 'Under High Stateful Inspection'}
               </span>
             </div>
           </div>
@@ -851,22 +965,24 @@ export const AutonomousThreatMap: React.FC<AutonomousThreatMapProps> = ({
       )}
 
       {/* Vector Click Selector Chips (Bottom Left) */}
-      <div className="absolute bottom-16 left-4 z-20 pointer-events-auto max-w-md hidden sm:block">
-        <div className="bg-[#131a24]/90 backdrop-blur-md p-2.5 rounded-xl border border-[#1e2733] shadow-xl space-y-2">
-          <span className="text-[9px] text-[#93a1b3] uppercase tracking-wider block font-bold">
-            {isAr ? 'أحدث النواقل الخوارزمية المفحوصة (انقر للفحص)' : 'RECENT TRIAGED ATTACK VECTORS'}
+      <div className="pointer-events-auto absolute bottom-16 left-4 z-20 hidden max-w-md sm:block">
+        <div className="space-y-2 rounded-xl border border-[#1e2733] bg-[#131a24]/90 p-2.5 shadow-xl backdrop-blur-md">
+          <span className="block text-[9px] font-bold tracking-wider text-[#93a1b3] uppercase">
+            {isAr
+              ? 'أحدث النواقل الخوارزمية المفحوصة (انقر للفحص)'
+              : 'RECENT TRIAGED ATTACK VECTORS'}
           </span>
-          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+          <div className="flex max-h-24 flex-wrap gap-1.5 overflow-y-auto pr-1">
             {displayedVectors.slice(0, 8).map(v => (
               <button
                 key={v.uuid || `threat-vector-${v.id}-${v.ip.replace(/[^a-zA-Z0-9]/g, '_')}`}
                 onClick={() => setSelectedThreat(v)}
-                className={`px-2 py-1 rounded text-[10px] font-mono flex items-center gap-1.5 border transition ${
+                className={`flex items-center gap-1.5 rounded border px-2 py-1 font-mono text-[10px] transition ${
                   selectedThreat?.id === v.id
                     ? 'border-[#3fb950] bg-[#3fb950]/20 text-[#3fb950]'
                     : v.triage.classification === 'CRITICAL'
-                    ? 'border-[#f85149]/50 bg-[#f85149]/10 text-[#f85149] hover:bg-[#f85149]/20'
-                    : 'border-[#1e2733] bg-[#1a2230] text-[#93a1b3] hover:text-[#e6edf3]'
+                      ? 'border-[#f85149]/50 bg-[#f85149]/10 text-[#f85149] hover:bg-[#f85149]/20'
+                      : 'border-[#1e2733] bg-[#1a2230] text-[#93a1b3] hover:text-[#e6edf3]'
                 }`}
               >
                 <span>{v.ip}</span>

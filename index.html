@@ -43,9 +43,11 @@
         };
       })();
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+      <!-- Fonts are self-hosted from /fonts and declared in src/fonts.css.
+         The Google Fonts stylesheet that used to sit here made every page
+         load of a "zero-cloud" console contact Google and disclose the
+         operator IP, which is a sovereignty defect rather than a
+         performance one. Re-vendor with: python scripts/vendor-fonts.py -->
   </head>
   <body class="bg-[#050505] text-[#EAEAEA] antialiased font-['Cairo',sans-serif]">
     <div id="root"></div>

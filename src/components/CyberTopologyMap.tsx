@@ -225,114 +225,246 @@ export const calculateNodeThroughputProfile = (
   attackArcs: AttackArcVector[],
   densityMetric?: SegmentDensityMetric
 ): NodeThroughputProfile => {
-  const node = nodes.find(n => n.id === nodeId) || nodes[0] || {
-    id: nodeId,
-    label: 'Node',
-    labelAr: 'عقدة',
-    type: 'APP_SERVER',
-    ipAddress: '10.0.0.1',
-    status: 'HEALTHY',
-    activeLoadPercent: 40,
-    blockedConnectionsCount: 10,
-    threatsMitigatedCount: 10,
-    lastPingMs: 1.0,
-    vlan: 'VLAN-10'
-  };
+  const node = nodes.find(n => n.id === nodeId) ||
+    nodes[0] || {
+      id: nodeId,
+      label: 'Node',
+      labelAr: 'عقدة',
+      type: 'APP_SERVER',
+      ipAddress: '10.0.0.1',
+      status: 'HEALTHY',
+      activeLoadPercent: 40,
+      blockedConnectionsCount: 10,
+      threatsMitigatedCount: 10,
+      lastPingMs: 1.0,
+      vlan: 'VLAN-10'
+    };
 
   const isUnderAttack = node.status === 'UNDER_ATTACK' || (densityMetric?.densityScore || 0) >= 0.7;
   const isIsolated = node.status === 'ISOLATED';
-  const density = densityMetric?.densityScore || (node.activeLoadPercent / 100);
+  const density = densityMetric?.densityScore || node.activeLoadPercent / 100;
 
   // Sockets matching this node
-  const nodeSockets = sockets.filter(s => s.targetNodeId === nodeId || s.dstIp === node.ipAddress || s.srcIp === node.ipAddress);
+  const nodeSockets = sockets.filter(
+    s => s.targetNodeId === nodeId || s.dstIp === node.ipAddress || s.srcIp === node.ipAddress
+  );
   const totalSocketBytes = nodeSockets.reduce((acc, s) => acc + s.bytesTransferred, 0);
 
   // Ingress Calculation
-  const baseIngressMbps = nodeId === 'node-ingress-waf' ? 1420 : nodeId === 'node-ai-filter' ? 920 : nodeId === 'node-app-core' ? 1150 : nodeId === 'node-database' ? 780 : nodeId === 'node-storage-fim' ? 640 : 120;
+  const baseIngressMbps =
+    nodeId === 'node-ingress-waf'
+      ? 1420
+      : nodeId === 'node-ai-filter'
+        ? 920
+        : nodeId === 'node-app-core'
+          ? 1150
+          : nodeId === 'node-database'
+            ? 780
+            : nodeId === 'node-storage-fim'
+              ? 640
+              : 120;
   const attackMultiplier = isUnderAttack ? 2.8 : 1.0;
   const isolationMultiplier = isIsolated ? 0.02 : 1.0;
 
-  const ingressBandwidthMbps = Math.round((baseIngressMbps * (0.6 + density * 0.8) * attackMultiplier * isolationMultiplier) * 10) / 10;
-  const ingressPeakMbps = Math.round(ingressBandwidthMbps * (isUnderAttack ? 1.65 : 1.28) * 10) / 10;
+  const ingressBandwidthMbps =
+    Math.round(
+      baseIngressMbps * (0.6 + density * 0.8) * attackMultiplier * isolationMultiplier * 10
+    ) / 10;
+  const ingressPeakMbps =
+    Math.round(ingressBandwidthMbps * (isUnderAttack ? 1.65 : 1.28) * 10) / 10;
   const ingressPps = Math.round(ingressBandwidthMbps * 1420 * (isUnderAttack ? 1.8 : 1.0));
-  const ingressBytesTotal = Math.max(1024 * 1024 * 50, totalSocketBytes * 45 + Math.round(ingressBandwidthMbps * 1024 * 1024 * 1.5));
-  const ingressDropRatePercent = isIsolated ? 100 : isUnderAttack ? 14.8 : Math.round((0.02 + density * 0.15) * 100) / 100;
-  const ingressBufferSaturationPercent = isIsolated ? 0 : Math.min(99, Math.round(node.activeLoadPercent * (isUnderAttack ? 1.4 : 0.85)));
+  const ingressBytesTotal = Math.max(
+    1024 * 1024 * 50,
+    totalSocketBytes * 45 + Math.round(ingressBandwidthMbps * 1024 * 1024 * 1.5)
+  );
+  const ingressDropRatePercent = isIsolated
+    ? 100
+    : isUnderAttack
+      ? 14.8
+      : Math.round((0.02 + density * 0.15) * 100) / 100;
+  const ingressBufferSaturationPercent = isIsolated
+    ? 0
+    : Math.min(99, Math.round(node.activeLoadPercent * (isUnderAttack ? 1.4 : 0.85)));
 
   // Egress Calculation
-  const baseEgressMbps = nodeId === 'node-ingress-waf' ? 1180 : nodeId === 'node-ai-filter' ? 840 : nodeId === 'node-app-core' ? 980 : nodeId === 'node-database' ? 920 : nodeId === 'node-storage-fim' ? 510 : 85;
-  const egressBandwidthMbps = Math.round((baseEgressMbps * (0.55 + density * 0.75) * isolationMultiplier) * 10) / 10;
+  const baseEgressMbps =
+    nodeId === 'node-ingress-waf'
+      ? 1180
+      : nodeId === 'node-ai-filter'
+        ? 840
+        : nodeId === 'node-app-core'
+          ? 980
+          : nodeId === 'node-database'
+            ? 920
+            : nodeId === 'node-storage-fim'
+              ? 510
+              : 85;
+  const egressBandwidthMbps =
+    Math.round(baseEgressMbps * (0.55 + density * 0.75) * isolationMultiplier * 10) / 10;
   const egressPeakMbps = Math.round(egressBandwidthMbps * 1.25 * 10) / 10;
   const egressPps = Math.round(egressBandwidthMbps * 1210);
-  const egressBytesTotal = Math.max(1024 * 1024 * 35, totalSocketBytes * 32 + Math.round(egressBandwidthMbps * 1024 * 1024 * 1.1));
+  const egressBytesTotal = Math.max(
+    1024 * 1024 * 35,
+    totalSocketBytes * 32 + Math.round(egressBandwidthMbps * 1024 * 1024 * 1.1)
+  );
   const egressRetransmitRatePercent = isIsolated ? 0 : isUnderAttack ? 2.4 : 0.04;
-  const egressQueueDepthPercent = isIsolated ? 0 : Math.min(95, Math.round((node.activeLoadPercent * 0.7) + (isUnderAttack ? 25 : 0)));
+  const egressQueueDepthPercent = isIsolated
+    ? 0
+    : Math.min(95, Math.round(node.activeLoadPercent * 0.7 + (isUnderAttack ? 25 : 0)));
 
   // Protocols Breakdown
-  const ingressProtocols = nodeId === 'node-ingress-waf'
-    ? [
-        { protocol: 'HTTPS / TLS 1.3', percent: 64, color: '#06b6d4' },
-        { protocol: 'HTTP/2 (gRPC Ingress)', percent: 22, color: '#8b5cf6' },
-        { protocol: 'WSS (WebSocket Stream)', percent: 10, color: '#10b981' },
-        { protocol: 'Raw TCP / eBPF Pass', percent: 4, color: '#f59e0b' }
-      ]
-    : nodeId === 'node-ai-filter'
-    ? [
-        { protocol: 'mTLS Internal gRPC', percent: 58, color: '#8b5cf6' },
-        { protocol: 'REST / JSON Ingress', percent: 26, color: '#06b6d4' },
-        { protocol: 'LLM Vector Stream', percent: 16, color: '#ec4899' }
-      ]
-    : nodeId === 'node-database'
-    ? [
-        { protocol: 'PostgreSQL / TLS Wire', percent: 74, color: '#10b981' },
-        { protocol: 'Distributed Spanner RPC', percent: 18, color: '#3b82f6' },
-        { protocol: 'WAL Replication Sync', percent: 8, color: '#f59e0b' }
-      ]
-    : nodeId === 'node-honeypot'
-    ? [
-        { protocol: 'Decoy SMBv2 / SMBv3', percent: 44, color: '#ef4444' },
-        { protocol: 'SSH Decoy Probe', percent: 32, color: '#f97316' },
-        { protocol: 'Decoy HTTP Admin', percent: 24, color: '#eab308' }
-      ]
-    : [
-        { protocol: 'HTTP/2 Microservices', percent: 60, color: '#3b82f6' },
-        { protocol: 'Internal gRPC / Protobuf', percent: 28, color: '#8b5cf6' },
-        { protocol: 'Health & IPC Signals', percent: 12, color: '#10b981' }
-      ];
+  const ingressProtocols =
+    nodeId === 'node-ingress-waf'
+      ? [
+          { protocol: 'HTTPS / TLS 1.3', percent: 64, color: '#06b6d4' },
+          { protocol: 'HTTP/2 (gRPC Ingress)', percent: 22, color: '#8b5cf6' },
+          { protocol: 'WSS (WebSocket Stream)', percent: 10, color: '#10b981' },
+          { protocol: 'Raw TCP / eBPF Pass', percent: 4, color: '#f59e0b' }
+        ]
+      : nodeId === 'node-ai-filter'
+        ? [
+            { protocol: 'mTLS Internal gRPC', percent: 58, color: '#8b5cf6' },
+            { protocol: 'REST / JSON Ingress', percent: 26, color: '#06b6d4' },
+            { protocol: 'LLM Vector Stream', percent: 16, color: '#ec4899' }
+          ]
+        : nodeId === 'node-database'
+          ? [
+              { protocol: 'PostgreSQL / TLS Wire', percent: 74, color: '#10b981' },
+              { protocol: 'Distributed Spanner RPC', percent: 18, color: '#3b82f6' },
+              { protocol: 'WAL Replication Sync', percent: 8, color: '#f59e0b' }
+            ]
+          : nodeId === 'node-honeypot'
+            ? [
+                { protocol: 'Decoy SMBv2 / SMBv3', percent: 44, color: '#ef4444' },
+                { protocol: 'SSH Decoy Probe', percent: 32, color: '#f97316' },
+                { protocol: 'Decoy HTTP Admin', percent: 24, color: '#eab308' }
+              ]
+            : [
+                { protocol: 'HTTP/2 Microservices', percent: 60, color: '#3b82f6' },
+                { protocol: 'Internal gRPC / Protobuf', percent: 28, color: '#8b5cf6' },
+                { protocol: 'Health & IPC Signals', percent: 12, color: '#10b981' }
+              ];
 
   // Connected Edges definitions for all nodes
-  const edgeMappings: Record<string, Array<{
-    neighborId: string;
-    direction: 'INGRESS' | 'EGRESS' | 'BIDIRECTIONAL';
-    capacityGbps: number;
-    protocol: string;
-    securityEncap: string;
-  }>> = {
+  const edgeMappings: Record<
+    string,
+    Array<{
+      neighborId: string;
+      direction: 'INGRESS' | 'EGRESS' | 'BIDIRECTIONAL';
+      capacityGbps: number;
+      protocol: string;
+      securityEncap: string;
+    }>
+  > = {
     'node-ingress-waf': [
-      { neighborId: 'node-ai-filter', direction: 'BIDIRECTIONAL', capacityGbps: 40, protocol: 'mTLS 1.3 / gRPC', securityEncap: 'Hardware WireGuard eBPF' },
-      { neighborId: 'node-app-core', direction: 'BIDIRECTIONAL', capacityGbps: 40, protocol: 'HTTP/2 over TLS', securityEncap: 'Direct Kernel Socket' },
-      { neighborId: 'node-honeypot', direction: 'EGRESS', capacityGbps: 10, protocol: 'Raw TCP Mirror', securityEncap: 'Isolated Deception Quarantine' }
+      {
+        neighborId: 'node-ai-filter',
+        direction: 'BIDIRECTIONAL',
+        capacityGbps: 40,
+        protocol: 'mTLS 1.3 / gRPC',
+        securityEncap: 'Hardware WireGuard eBPF'
+      },
+      {
+        neighborId: 'node-app-core',
+        direction: 'BIDIRECTIONAL',
+        capacityGbps: 40,
+        protocol: 'HTTP/2 over TLS',
+        securityEncap: 'Direct Kernel Socket'
+      },
+      {
+        neighborId: 'node-honeypot',
+        direction: 'EGRESS',
+        capacityGbps: 10,
+        protocol: 'Raw TCP Mirror',
+        securityEncap: 'Isolated Deception Quarantine'
+      }
     ],
     'node-ai-filter': [
-      { neighborId: 'node-ingress-waf', direction: 'INGRESS', capacityGbps: 40, protocol: 'mTLS 1.3 / gRPC', securityEncap: 'Hardware WireGuard eBPF' },
-      { neighborId: 'node-app-core', direction: 'EGRESS', capacityGbps: 40, protocol: 'Internal gRPC', securityEncap: 'Zero-Trust IPSec Mesh' },
-      { neighborId: 'node-storage-fim', direction: 'BIDIRECTIONAL', capacityGbps: 25, protocol: 'RoCE v2 RDMA', securityEncap: 'Encrypted NVMe-oF Tunnel' }
+      {
+        neighborId: 'node-ingress-waf',
+        direction: 'INGRESS',
+        capacityGbps: 40,
+        protocol: 'mTLS 1.3 / gRPC',
+        securityEncap: 'Hardware WireGuard eBPF'
+      },
+      {
+        neighborId: 'node-app-core',
+        direction: 'EGRESS',
+        capacityGbps: 40,
+        protocol: 'Internal gRPC',
+        securityEncap: 'Zero-Trust IPSec Mesh'
+      },
+      {
+        neighborId: 'node-storage-fim',
+        direction: 'BIDIRECTIONAL',
+        capacityGbps: 25,
+        protocol: 'RoCE v2 RDMA',
+        securityEncap: 'Encrypted NVMe-oF Tunnel'
+      }
     ],
     'node-app-core': [
-      { neighborId: 'node-ingress-waf', direction: 'INGRESS', capacityGbps: 40, protocol: 'HTTP/2 over TLS', securityEncap: 'Direct Kernel Socket' },
-      { neighborId: 'node-ai-filter', direction: 'INGRESS', capacityGbps: 40, protocol: 'Internal gRPC', securityEncap: 'Zero-Trust IPSec Mesh' },
-      { neighborId: 'node-database', direction: 'BIDIRECTIONAL', capacityGbps: 100, protocol: 'PostgreSQL TLS 1.3', securityEncap: 'PCIe Gen4 Direct Crypt' }
+      {
+        neighborId: 'node-ingress-waf',
+        direction: 'INGRESS',
+        capacityGbps: 40,
+        protocol: 'HTTP/2 over TLS',
+        securityEncap: 'Direct Kernel Socket'
+      },
+      {
+        neighborId: 'node-ai-filter',
+        direction: 'INGRESS',
+        capacityGbps: 40,
+        protocol: 'Internal gRPC',
+        securityEncap: 'Zero-Trust IPSec Mesh'
+      },
+      {
+        neighborId: 'node-database',
+        direction: 'BIDIRECTIONAL',
+        capacityGbps: 100,
+        protocol: 'PostgreSQL TLS 1.3',
+        securityEncap: 'PCIe Gen4 Direct Crypt'
+      }
     ],
     'node-storage-fim': [
-      { neighborId: 'node-ai-filter', direction: 'INGRESS', capacityGbps: 25, protocol: 'RoCE v2 RDMA', securityEncap: 'Encrypted NVMe-oF Tunnel' },
-      { neighborId: 'node-database', direction: 'BIDIRECTIONAL', capacityGbps: 40, protocol: 'Encrypted gRPC Sync', securityEncap: 'AES-256-GCM Hardware Tunnel' }
+      {
+        neighborId: 'node-ai-filter',
+        direction: 'INGRESS',
+        capacityGbps: 25,
+        protocol: 'RoCE v2 RDMA',
+        securityEncap: 'Encrypted NVMe-oF Tunnel'
+      },
+      {
+        neighborId: 'node-database',
+        direction: 'BIDIRECTIONAL',
+        capacityGbps: 40,
+        protocol: 'Encrypted gRPC Sync',
+        securityEncap: 'AES-256-GCM Hardware Tunnel'
+      }
     ],
     'node-database': [
-      { neighborId: 'node-app-core', direction: 'INGRESS', capacityGbps: 100, protocol: 'PostgreSQL TLS 1.3', securityEncap: 'PCIe Gen4 Direct Crypt' },
-      { neighborId: 'node-storage-fim', direction: 'BIDIRECTIONAL', capacityGbps: 40, protocol: 'Encrypted gRPC Sync', securityEncap: 'AES-256-GCM Hardware Tunnel' }
+      {
+        neighborId: 'node-app-core',
+        direction: 'INGRESS',
+        capacityGbps: 100,
+        protocol: 'PostgreSQL TLS 1.3',
+        securityEncap: 'PCIe Gen4 Direct Crypt'
+      },
+      {
+        neighborId: 'node-storage-fim',
+        direction: 'BIDIRECTIONAL',
+        capacityGbps: 40,
+        protocol: 'Encrypted gRPC Sync',
+        securityEncap: 'AES-256-GCM Hardware Tunnel'
+      }
     ],
     'node-honeypot': [
-      { neighborId: 'node-ingress-waf', direction: 'INGRESS', capacityGbps: 10, protocol: 'Raw TCP Mirror', securityEncap: 'Isolated Deception Quarantine' }
+      {
+        neighborId: 'node-ingress-waf',
+        direction: 'INGRESS',
+        capacityGbps: 10,
+        protocol: 'Raw TCP Mirror',
+        securityEncap: 'Isolated Deception Quarantine'
+      }
     ]
   };
 
@@ -348,18 +480,35 @@ export const calculateNodeThroughputProfile = (
   };
   const isEncrypted = (name: string) => {
     const n = name.toLowerCase();
-    return n.includes('tls') || n.includes('https') || n.includes('wss') || n.includes('ssl') || n.includes('mtls');
+    return (
+      n.includes('tls') ||
+      n.includes('https') ||
+      n.includes('wss') ||
+      n.includes('ssl') ||
+      n.includes('mtls')
+    );
   };
   const protoTotal = ingressProtocols.reduce((sum, p) => sum + p.percent, 0) || 1;
   const bucket = (kind: string) =>
-    Math.round((ingressProtocols.filter(p => classify(p.protocol) === kind)
-      .reduce((sum, p) => sum + p.percent, 0) / protoTotal) * 1000) / 10;
+    Math.round(
+      (ingressProtocols
+        .filter(p => classify(p.protocol) === kind)
+        .reduce((sum, p) => sum + p.percent, 0) /
+        protoTotal) *
+        1000
+    ) / 10;
   const protocolBreakdown = {
     tcpPercent: bucket('tcp'),
     udpPercent: bucket('udp'),
     icmpPercent: bucket('icmp'),
-    tlsEncryptedPercent: Math.round((ingressProtocols.filter(p => isEncrypted(p.protocol))
-      .reduce((sum, p) => sum + p.percent, 0) / protoTotal) * 1000) / 10
+    tlsEncryptedPercent:
+      Math.round(
+        (ingressProtocols
+          .filter(p => isEncrypted(p.protocol))
+          .reduce((sum, p) => sum + p.percent, 0) /
+          protoTotal) *
+          1000
+      ) / 10
   };
 
   const connectedEdges: ConnectedEdgeDetail[] = rawEdges.map((re, index) => {
@@ -374,9 +523,15 @@ export const calculateNodeThroughputProfile = (
       lastPingMs: 0.5
     };
 
-    const edgeThroughputMbps = Math.round((ingressBandwidthMbps / Math.max(1, rawEdges.length)) * (0.8 + (index * 0.15)) * 10) / 10;
+    const edgeThroughputMbps =
+      Math.round(
+        (ingressBandwidthMbps / Math.max(1, rawEdges.length)) * (0.8 + index * 0.15) * 10
+      ) / 10;
     const capacityMbps = re.capacityGbps * 1000;
-    const utilizationPercent = Math.min(100, Math.round((edgeThroughputMbps / capacityMbps) * 1000) / 10);
+    const utilizationPercent = Math.min(
+      100,
+      Math.round((edgeThroughputMbps / capacityMbps) * 1000) / 10
+    );
     const isEdgeCongested = utilizationPercent > 65 || isUnderAttack;
     const isEdgeQuarantined = isIsolated || neighborNode.status === 'ISOLATED';
 
@@ -394,8 +549,10 @@ export const calculateNodeThroughputProfile = (
       capacityGbps: re.capacityGbps,
       currentThroughputMbps: isEdgeQuarantined ? 0 : edgeThroughputMbps,
       utilizationPercent: isEdgeQuarantined ? 0 : utilizationPercent,
-      latencyMs: isEdgeQuarantined ? 999 : Math.round((neighborNode.lastPingMs + (isUnderAttack ? 1.4 : 0.2)) * 100) / 100,
-      jitterMs: isEdgeQuarantined ? 0 : Math.round((0.02 + ((index + 1) * 0.015)) * 100) / 100,
+      latencyMs: isEdgeQuarantined
+        ? 999
+        : Math.round((neighborNode.lastPingMs + (isUnderAttack ? 1.4 : 0.2)) * 100) / 100,
+      jitterMs: isEdgeQuarantined ? 0 : Math.round((0.02 + (index + 1) * 0.015) * 100) / 100,
       packetLossPercent: isEdgeQuarantined ? 100 : isUnderAttack ? 1.2 : 0.0,
       protocol: re.protocol,
       securityEncap: re.securityEncap,
@@ -408,8 +565,14 @@ export const calculateNodeThroughputProfile = (
     const tOffset = (15 - i) * 4;
     const timeLabel = `-${tOffset}s`;
     const variance = Math.sin(i * 0.6) * 0.12;
-    const histIngress = Math.max(10, Math.round(ingressBandwidthMbps * (0.88 + variance + (i * 0.008)) * 10) / 10);
-    const histEgress = Math.max(8, Math.round(egressBandwidthMbps * (0.85 - variance + (i * 0.008)) * 10) / 10);
+    const histIngress = Math.max(
+      10,
+      Math.round(ingressBandwidthMbps * (0.88 + variance + i * 0.008) * 10) / 10
+    );
+    const histEgress = Math.max(
+      8,
+      Math.round(egressBandwidthMbps * (0.85 - variance + i * 0.008) * 10) / 10
+    );
     return {
       time: timeLabel,
       ingressMbps: isIsolated ? 0 : histIngress,
@@ -435,7 +598,12 @@ export const calculateNodeThroughputProfile = (
     egressQueueDepthPercent,
     mtuBytes: 9000,
     egressEncryption: 'AES-256-GCM / WireGuard TLS 1.3',
-    nicInterface: nodeId === 'node-ingress-waf' ? 'eth0 (eBPF XDP_DRV)' : nodeId === 'node-database' ? 'bond0 (100GbE QSFP28)' : 'eth0 (VirtIO 40GbE)',
+    nicInterface:
+      nodeId === 'node-ingress-waf'
+        ? 'eth0 (eBPF XDP_DRV)'
+        : nodeId === 'node-database'
+          ? 'bond0 (100GbE QSFP28)'
+          : 'eth0 (VirtIO 40GbE)',
     macAddress: `02:42:0a:00:00:${nodeId === 'node-ingress-waf' ? '01' : nodeId === 'node-ai-filter' ? '02' : nodeId === 'node-app-core' ? '05' : nodeId === 'node-storage-fim' ? '07' : nodeId === 'node-database' ? '08' : '99'}`,
     driverMode: 'mlx5_core (Native eBPF Hook)',
     irqRatePerSec: Math.round(ingressPps * 0.08),
@@ -457,17 +625,26 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
   const [selectedSocket, setSelectedSocket] = useState<SocketConnection | null>(null);
   const [socketFilter, setSocketFilter] = useState<string>('');
   const [protocolFilter, setProtocolFilter] = useState<'ALL' | 'TCP' | 'UDP' | 'ICMP'>('ALL');
-  const [threatFilter, setThreatFilter] = useState<'ALL' | 'MALICIOUS' | 'SUSPICIOUS' | 'BENIGN'>('ALL');
+  const [threatFilter, setThreatFilter] = useState<'ALL' | 'MALICIOUS' | 'SUSPICIOUS' | 'BENIGN'>(
+    'ALL'
+  );
 
   // Core Topology State
   const [nodes, setNodes] = useState<TopologyNode[]>([]);
   const [attackArcs, setAttackArcs] = useState<AttackArcVector[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>('node-ingress-waf');
-  const [viewMode, setViewMode] = useState<'INFRASTRUCTURE_MESH' | 'GLOBAL_GEOGRAPHIC'>('INFRASTRUCTURE_MESH');
-  const [activeSubTab, setActiveSubTab] = useState<'SOCKET_MATRIX' | 'TOPOLOGY_OVERVIEW' | 'SITE_SURVEILLANCE_TREE' | 'HONEYTOKEN_TRAPS'>('SOCKET_MATRIX');
+  const [viewMode, setViewMode] = useState<'INFRASTRUCTURE_MESH' | 'GLOBAL_GEOGRAPHIC'>(
+    'INFRASTRUCTURE_MESH'
+  );
+  const [activeSubTab, setActiveSubTab] = useState<
+    'SOCKET_MATRIX' | 'TOPOLOGY_OVERVIEW' | 'SITE_SURVEILLANCE_TREE' | 'HONEYTOKEN_TRAPS'
+  >('SOCKET_MATRIX');
 
   // Traceroute State
-  const [activeTraceroute, setActiveTraceroute] = useState<{ targetIp: string; hops: TracerouteHop[] } | null>(null);
+  const [activeTraceroute, setActiveTraceroute] = useState<{
+    targetIp: string;
+    hops: TracerouteHop[];
+  } | null>(null);
   const [isTracingRoute, setIsTracingRoute] = useState<boolean>(false);
 
   // Site Route Tree & Deception Traps
@@ -480,8 +657,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
   // Interactive Intensity Heatmap Overlay State
   const [heatmapEnabled, setHeatmapEnabled] = useState<boolean>(true);
-  const [heatmapMetric, setHeatmapMetric] = useState<'THREAT_SEVERITY' | 'TRAFFIC_VOLUME' | 'LATENCY_CONGESTION' | 'ANOMALY_INDEX'>('THREAT_SEVERITY');
-  const [heatmapPalette, setHeatmapPalette] = useState<'PLASMA' | 'INFERNO' | 'TOXIC_RADAR'>('PLASMA');
+  const [heatmapMetric, setHeatmapMetric] = useState<
+    'THREAT_SEVERITY' | 'TRAFFIC_VOLUME' | 'LATENCY_CONGESTION' | 'ANOMALY_INDEX'
+  >('THREAT_SEVERITY');
+  const [heatmapPalette, setHeatmapPalette] = useState<'PLASMA' | 'INFERNO' | 'TOXIC_RADAR'>(
+    'PLASMA'
+  );
   const [heatmapRadius, setHeatmapRadius] = useState<number>(75);
   const [heatmapIntensity, setHeatmapIntensity] = useState<number>(0.85);
   const [heatmapBlur, setHeatmapBlur] = useState<number>(30);
@@ -510,9 +691,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
   // Expanded Node Deep Inspection Side-Panel State
   const [isNodeExpanded, setIsNodeExpanded] = useState<boolean>(false);
-  const [expandedNodeSubTab, setExpandedNodeSubTab] = useState<'THROUGHPUT' | 'EDGES' | 'SOCKETS' | 'TACTICAL'>('THROUGHPUT');
+  const [expandedNodeSubTab, setExpandedNodeSubTab] = useState<
+    'THROUGHPUT' | 'EDGES' | 'SOCKETS' | 'TACTICAL'
+  >('THROUGHPUT');
   const [pingTestingEdgeId, setPingTestingEdgeId] = useState<string | null>(null);
-  const [edgePingResults, setEdgePingResults] = useState<Record<string, { rttMs: number; jitterMs: number; timestamp: number }>>({});
+  const [edgePingResults, setEdgePingResults] = useState<
+    Record<string, { rttMs: number; jitterMs: number; timestamp: number }>
+  >({});
   const [edgeQoSThrottled, setEdgeQoSThrottled] = useState<Record<string, boolean>>({});
   const [edgeQuarantined, setEdgeQuarantined] = useState<Record<string, boolean>>({});
   const [quickLockedNodes, setQuickLockedNodes] = useState<Record<string, boolean>>({});
@@ -527,7 +712,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       if (res.ok) {
         const data = await res.json();
         setNodes(data.nodes || []);
-        setAttackArcs((prev) => {
+        setAttackArcs(prev => {
           const combined = data.attackArcs || [];
           return combined.slice(0, MAX_BUFFER_CAP);
         });
@@ -612,35 +797,56 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
     const metrics: Record<string, SegmentDensityMetric> = {};
 
     for (const node of nodes) {
-      const nodeSockets = sockets.filter((s) => s.targetNodeId === node.id || (node.id === 'node-ingress-waf' && s.isEbpfFiltered));
-      const maliciousCount = nodeSockets.filter((s) => s.threatLevel === 'MALICIOUS').length;
-      const suspiciousCount = nodeSockets.filter((s) => s.threatLevel === 'SUSPICIOUS').length;
-      const benignCount = nodeSockets.filter((s) => s.threatLevel === 'BENIGN').length;
+      const nodeSockets = sockets.filter(
+        s => s.targetNodeId === node.id || (node.id === 'node-ingress-waf' && s.isEbpfFiltered)
+      );
+      const maliciousCount = nodeSockets.filter(s => s.threatLevel === 'MALICIOUS').length;
+      const suspiciousCount = nodeSockets.filter(s => s.threatLevel === 'SUSPICIOUS').length;
+      const benignCount = nodeSockets.filter(s => s.threatLevel === 'BENIGN').length;
       const totalSockets = nodeSockets.length;
-      const maliciousPct = totalSockets > 0 ? Math.round(((maliciousCount + suspiciousCount) / totalSockets) * 100) : 0;
+      const maliciousPct =
+        totalSockets > 0
+          ? Math.round(((maliciousCount + suspiciousCount) / totalSockets) * 100)
+          : 0;
 
-      const nodeArcs = attackArcs.filter((a) => a.targetNodeId === node.id);
-      const critArcs = nodeArcs.filter((a) => a.severity === 'CRITICAL').length;
-      const highArcs = nodeArcs.filter((a) => a.severity === 'HIGH').length;
+      const nodeArcs = attackArcs.filter(a => a.targetNodeId === node.id);
+      const critArcs = nodeArcs.filter(a => a.severity === 'CRITICAL').length;
+      const highArcs = nodeArcs.filter(a => a.severity === 'HIGH').length;
       const totalThreats = maliciousCount + suspiciousCount + critArcs + highArcs;
 
       let score = 0.1;
       if (heatmapMetric === 'THREAT_SEVERITY') {
-        score = Math.min(1.0, maliciousCount * 0.22 + suspiciousCount * 0.1 + critArcs * 0.28 + highArcs * 0.14 + (node.status === 'UNDER_ATTACK' ? 0.35 : 0.05));
+        score = Math.min(
+          1.0,
+          maliciousCount * 0.22 +
+            suspiciousCount * 0.1 +
+            critArcs * 0.28 +
+            highArcs * 0.14 +
+            (node.status === 'UNDER_ATTACK' ? 0.35 : 0.05)
+        );
       } else if (heatmapMetric === 'TRAFFIC_VOLUME') {
         score = Math.min(1.0, (node.activeLoadPercent / 100) * 0.6 + (totalSockets / 15) * 0.4);
       } else if (heatmapMetric === 'LATENCY_CONGESTION') {
-        const avgLat = totalSockets > 0 ? nodeSockets.reduce((acc, s) => acc + s.latencyMs, 0) / totalSockets : 1;
+        const avgLat =
+          totalSockets > 0
+            ? nodeSockets.reduce((acc, s) => acc + s.latencyMs, 0) / totalSockets
+            : 1;
         score = Math.min(1.0, (node.lastPingMs / 5) * 0.5 + (avgLat / 80) * 0.5);
       } else if (heatmapMetric === 'ANOMALY_INDEX') {
-        score = Math.min(1.0, (maliciousCount * 0.2) + (node.blockedConnectionsCount / 1200) * 0.4 + (node.status === 'UNDER_ATTACK' ? 0.4 : 0.05));
+        score = Math.min(
+          1.0,
+          maliciousCount * 0.2 +
+            (node.blockedConnectionsCount / 1200) * 0.4 +
+            (node.status === 'UNDER_ATTACK' ? 0.4 : 0.05)
+        );
       }
 
       if (node.status === 'ISOLATED') {
         score = 0.02; // Isolated nodes are cooled down
       }
 
-      let thermalStatus: 'CRITICAL_OVERHEAT' | 'ELEVATED_HEAT' | 'TEMPERATE' | 'QUARANTINE_COLD' = 'TEMPERATE';
+      let thermalStatus: 'CRITICAL_OVERHEAT' | 'ELEVATED_HEAT' | 'TEMPERATE' | 'QUARANTINE_COLD' =
+        'TEMPERATE';
       if (node.status === 'ISOLATED') {
         thermalStatus = 'QUARANTINE_COLD';
       } else if (score >= 0.7) {
@@ -761,8 +967,8 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         if (metric) {
           setHoveredHeatPoint({
             ...metric,
-            x: (e.clientX - rect.left),
-            y: (e.clientY - rect.top)
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
           });
           return;
         }
@@ -787,9 +993,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
   const handleTestEdgePing = (edgeId: string, baseLatency: number) => {
     setPingTestingEdgeId(edgeId);
     setTimeout(() => {
-      const simulatedRtt = Math.max(0.12, Math.round((baseLatency + (Math.random() * 0.4 - 0.2)) * 100) / 100);
+      const simulatedRtt = Math.max(
+        0.12,
+        Math.round((baseLatency + (Math.random() * 0.4 - 0.2)) * 100) / 100
+      );
       const simulatedJitter = Math.round((0.01 + Math.random() * 0.04) * 100) / 100;
-      setEdgePingResults((prev) => ({
+      setEdgePingResults(prev => ({
         ...prev,
         [edgeId]: { rttMs: simulatedRtt, jitterMs: simulatedJitter, timestamp: Date.now() }
       }));
@@ -804,7 +1013,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
   };
 
   const handleToggleEdgeQoS = (edgeId: string) => {
-    setEdgeQoSThrottled((prev) => {
+    setEdgeQoSThrottled(prev => {
       const next = !prev[edgeId];
       setActionMessage(
         isAr
@@ -812,8 +1021,8 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             ? `🛡️ تم تفعيل تحديد النطاق وخنق الحركة (QoS Rate Limit) على الرابط ${edgeId}`
             : `⚡ تم إلغاء خنق الحركة على الرابط ${edgeId}`
           : next
-          ? `🛡️ QoS Bandwidth Cap & Token Throttling applied to ${edgeId}`
-          : `⚡ QoS Throttling lifted on ${edgeId}`
+            ? `🛡️ QoS Bandwidth Cap & Token Throttling applied to ${edgeId}`
+            : `⚡ QoS Throttling lifted on ${edgeId}`
       );
       setTimeout(() => setActionMessage(null), 4000);
       return { ...prev, [edgeId]: next };
@@ -821,7 +1030,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
   };
 
   const handleToggleEdgeQuarantine = (edgeId: string) => {
-    setEdgeQuarantined((prev) => {
+    setEdgeQuarantined(prev => {
       const next = !prev[edgeId];
       setActionMessage(
         isAr
@@ -829,8 +1038,8 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             ? `🚫 تم عزل الرابط الشبكي ${edgeId} فوراً وقطع المسار`
             : `✅ تم فك عزل الرابط الشبكي ${edgeId} واستعادة التوجيه`
           : next
-          ? `🚫 Edge Link ${edgeId} quarantined immediately. Traffic severed.`
-          : `✅ Edge Link ${edgeId} unquarantined and restored.`
+            ? `🚫 Edge Link ${edgeId} quarantined immediately. Traffic severed.`
+            : `✅ Edge Link ${edgeId} unquarantined and restored.`
       );
       setTimeout(() => setActionMessage(null), 4000);
       return { ...prev, [edgeId]: next };
@@ -847,7 +1056,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       });
       if (res.ok) {
         const data = await res.json();
-        setActionMessage(isAr ? `⚡ تم إسقاط الاتصال الشبكي ${socketId} وتطبيق حظر النواة` : data.message);
+        setActionMessage(
+          isAr ? `⚡ تم إسقاط الاتصال الشبكي ${socketId} وتطبيق حظر النواة` : data.message
+        );
         fetchSockets();
         if (selectedSocket?.id === socketId) {
           setSelectedSocket(data.socket || null);
@@ -865,7 +1076,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       const res = await fetch('/api/v1/topology/sockets/flush', { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        setActionMessage(isAr ? `⚡ تم تفريغ ${data.flushedCount} اتصال خارجي بنجاح` : data.message);
+        setActionMessage(
+          isAr ? `⚡ تم تفريغ ${data.flushedCount} اتصال خارجي بنجاح` : data.message
+        );
         fetchSockets();
         setTimeout(() => setActionMessage(null), 4000);
       }
@@ -911,7 +1124,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         });
         if (res.ok) {
           const data = await res.json();
-          setQuickLockedNodes((prev) => ({ ...prev, [node.id]: true }));
+          setQuickLockedNodes(prev => ({ ...prev, [node.id]: true }));
           setActionMessage(
             isAr
               ? `🔒 تم تفعيل القفل الأمني السريع (Security Quick-Lock) للعقدة ${node.labelAr || node.label} (${node.ipAddress}): تم تطبيق مرشح إسقاط فوري eBPF/XDP لجميع حزم النطاق.`
@@ -928,7 +1141,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ip: node.ipAddress })
         });
-        setQuickLockedNodes((prev) => ({ ...prev, [node.id]: false }));
+        setQuickLockedNodes(prev => ({ ...prev, [node.id]: false }));
         setActionMessage(
           isAr
             ? `🔓 تم إلغاء القفل الأمني السريع للعقدة ${node.labelAr || node.label} (${node.ipAddress}). تم استئناف التوجيه عبر النواة.`
@@ -979,8 +1192,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         setEmergencyLockdown(data.emergencyLockdownActive);
         setActionMessage(
           data.emergencyLockdownActive
-            ? (isAr ? '🚨 تم تفعيل الإغلاق التام للشبكة (Zero-Trust Lockdown)' : '🚨 Emergency Zero-Trust Network Lockdown Activated')
-            : (isAr ? '✅ تم استئناف التوجيه الطبيعي للشبكة' : '✅ Emergency Lockdown Deactivated')
+            ? isAr
+              ? '🚨 تم تفعيل الإغلاق التام للشبكة (Zero-Trust Lockdown)'
+              : '🚨 Emergency Zero-Trust Network Lockdown Activated'
+            : isAr
+              ? '✅ تم استئناف التوجيه الطبيعي للشبكة'
+              : '✅ Emergency Lockdown Deactivated'
         );
         setTimeout(() => setActionMessage(null), 5000);
       }
@@ -998,10 +1215,17 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       const res = await fetch('/api/v1/topology/subnet/quarantine', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subnet: subnetQuarantineInput, reason: 'Operator CIDR Lockdown from Topology Map' })
+        body: JSON.stringify({
+          subnet: subnetQuarantineInput,
+          reason: 'Operator CIDR Lockdown from Topology Map'
+        })
       });
       if (res.ok) {
-        setActionMessage(isAr ? `🛡️ تم حظر النطاق الشبكي ${subnetQuarantineInput} فوراً` : `🛡️ Subnet ${subnetQuarantineInput} Quarantined at Kernel Border`);
+        setActionMessage(
+          isAr
+            ? `🛡️ تم حظر النطاق الشبكي ${subnetQuarantineInput} فوراً`
+            : `🛡️ Subnet ${subnetQuarantineInput} Quarantined at Kernel Border`
+        );
         setShowSubnetModal(false);
         setTimeout(() => setActionMessage(null), 4000);
       }
@@ -1039,7 +1263,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       const res = await fetch('/api/v1/topology/pcap/export');
       if (res.ok) {
         const data = await res.json();
-        const jsonBlob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' });
+        const jsonBlob = new Blob([JSON.stringify(data.data, null, 2)], {
+          type: 'application/json'
+        });
         const url = URL.createObjectURL(jsonBlob);
         const a = document.createElement('a');
         a.href = url;
@@ -1048,7 +1274,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        setActionMessage(isAr ? '💾 تم تنزيل تقرير PCAP الجنائي بنجاح' : '💾 Forensic PCAP / Audit Stream Exported');
+        setActionMessage(
+          isAr ? '💾 تم تنزيل تقرير PCAP الجنائي بنجاح' : '💾 Forensic PCAP / Audit Stream Exported'
+        );
         setTimeout(() => setActionMessage(null), 4000);
       }
     } catch (err) {
@@ -1101,7 +1329,11 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
   };
 
   // Trigger Instant Attack Simulation
-  const handleSimulateAttackVector = async (targetNodeId: string, attackType: string, severity: 'CRITICAL' | 'HIGH') => {
+  const handleSimulateAttackVector = async (
+    targetNodeId: string,
+    attackType: string,
+    severity: 'CRITICAL' | 'HIGH'
+  ) => {
     try {
       const res = await fetch('/api/v1/topology/vector/simulate', {
         method: 'POST',
@@ -1119,7 +1351,11 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         })
       });
       if (res.ok) {
-        setActionMessage(isAr ? `⚡ تم إطلاق مسار هجوم محاكى نحو ${targetNodeId}` : `⚡ Injected attack vector against ${targetNodeId}`);
+        setActionMessage(
+          isAr
+            ? `⚡ تم إطلاق مسار هجوم محاكى نحو ${targetNodeId}`
+            : `⚡ Injected attack vector against ${targetNodeId}`
+        );
         fetchTopology();
         setTimeout(() => setActionMessage(null), 4000);
       }
@@ -1225,10 +1461,11 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
             const metric = segmentDensityMetrics[node.id];
             const density = metric ? metric.densityScore : 0.2;
-            const dynamicRadius = heatmapRadius * (0.65 + density * 0.7) + Math.sin(particleOffset * Math.PI * 2) * 3;
+            const dynamicRadius =
+              heatmapRadius * (0.65 + density * 0.7) + Math.sin(particleOffset * Math.PI * 2) * 3;
 
             const heatGrad = ctx.createRadialGradient(pos.x, pos.y, 2, pos.x, pos.y, dynamicRadius);
-            
+
             // Map color stops dynamically based on density
             if (density >= 0.7) {
               // Extreme Heat: Core to Crit to High
@@ -1306,9 +1543,10 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           const arc = attackArcs[i];
           const target = nodePositions[arc.targetNodeId] || nodePositions['node-ingress-waf'];
           const startX = 20;
-          const startY = height * 0.15 + (i * 70) % (height * 0.7);
+          const startY = height * 0.15 + ((i * 70) % (height * 0.7));
 
-          ctx.strokeStyle = arc.severity === 'CRITICAL' ? 'rgba(239, 68, 68, 0.7)' : 'rgba(245, 158, 11, 0.7)';
+          ctx.strokeStyle =
+            arc.severity === 'CRITICAL' ? 'rgba(239, 68, 68, 0.7)' : 'rgba(245, 158, 11, 0.7)';
           ctx.lineWidth = 2;
           ctx.setLineDash([4, 4]);
           ctx.beginPath();
@@ -1336,13 +1574,25 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           const isIsolated = node.status === 'ISOLATED';
           const isHovered = hoveredHeatPoint?.nodeId === node.id;
 
-          const glowColor = isIsolated ? 'rgba(239, 68, 68, 0.25)' : isUnderAttack ? 'rgba(245, 158, 11, 0.35)' : 'rgba(6, 182, 212, 0.25)';
+          const glowColor = isIsolated
+            ? 'rgba(239, 68, 68, 0.25)'
+            : isUnderAttack
+              ? 'rgba(245, 158, 11, 0.35)'
+              : 'rgba(6, 182, 212, 0.25)';
           ctx.fillStyle = glowColor;
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, isSelected || isHovered ? 38 : 28, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = isIsolated ? '#ef4444' : isUnderAttack ? '#f59e0b' : isSelected ? '#00f0ff' : isHovered ? '#38bdf8' : '#4d6fa0';
+          ctx.strokeStyle = isIsolated
+            ? '#ef4444'
+            : isUnderAttack
+              ? '#f59e0b'
+              : isSelected
+                ? '#00f0ff'
+                : isHovered
+                  ? '#38bdf8'
+                  : '#4d6fa0';
           ctx.lineWidth = isSelected ? 3.5 : isHovered ? 3 : 2;
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2);
@@ -1398,10 +1648,30 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         const targetY = centerY - radius * 0.35;
 
         const origins = [
-          { name: 'RU Threat Cluster (Moscow)', x: centerX + radius * 0.45, y: centerY - radius * 0.4, threatIntensity: 0.9 },
-          { name: 'DE Proxy Relay (Frankfurt)', x: centerX + radius * 0.22, y: centerY - radius * 0.28, threatIntensity: 0.6 },
-          { name: 'US Botnet Hive (California)', x: centerX - radius * 0.65, y: centerY - radius * 0.15, threatIntensity: 0.85 },
-          { name: 'NL Tor Gateway (Amsterdam)', x: centerX + radius * 0.15, y: centerY - radius * 0.32, threatIntensity: 0.75 }
+          {
+            name: 'RU Threat Cluster (Moscow)',
+            x: centerX + radius * 0.45,
+            y: centerY - radius * 0.4,
+            threatIntensity: 0.9
+          },
+          {
+            name: 'DE Proxy Relay (Frankfurt)',
+            x: centerX + radius * 0.22,
+            y: centerY - radius * 0.28,
+            threatIntensity: 0.6
+          },
+          {
+            name: 'US Botnet Hive (California)',
+            x: centerX - radius * 0.65,
+            y: centerY - radius * 0.15,
+            threatIntensity: 0.85
+          },
+          {
+            name: 'NL Tor Gateway (Amsterdam)',
+            x: centerX + radius * 0.15,
+            y: centerY - radius * 0.32,
+            threatIntensity: 0.75
+          }
         ];
 
         // Heatmap Overlays for Global Threat Origins
@@ -1466,8 +1736,14 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           ctx.stroke();
 
           const missileT = (particleOffset + i * 0.22) % 1;
-          const mx = (1 - missileT) * (1 - missileT) * org.x + 2 * (1 - missileT) * missileT * centerX + missileT * missileT * targetX;
-          const my = (1 - missileT) * (1 - missileT) * org.y + 2 * (1 - missileT) * missileT * (centerY - radius * 0.65) + missileT * missileT * targetY;
+          const mx =
+            (1 - missileT) * (1 - missileT) * org.x +
+            2 * (1 - missileT) * missileT * centerX +
+            missileT * missileT * targetX;
+          const my =
+            (1 - missileT) * (1 - missileT) * org.y +
+            2 * (1 - missileT) * missileT * (centerY - radius * 0.65) +
+            missileT * missileT * targetY;
 
           ctx.fillStyle = '#ff0055';
           ctx.beginPath();
@@ -1481,11 +1757,22 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
     render();
     return () => cancelAnimationFrame(animationFrameId);
-  }, [nodes, attackArcs, selectedNodeId, viewMode, heatmapEnabled, heatmapMetric, heatmapPalette, heatmapRadius, heatmapIntensity, segmentDensityMetrics]);
+  }, [
+    nodes,
+    attackArcs,
+    selectedNodeId,
+    viewMode,
+    heatmapEnabled,
+    heatmapMetric,
+    heatmapPalette,
+    heatmapRadius,
+    heatmapIntensity,
+    segmentDensityMetrics
+  ]);
 
   // Filtered Sockets List
   const filteredSockets = useMemo(() => {
-    return sockets.filter((s) => {
+    return sockets.filter(s => {
       if (protocolFilter !== 'ALL' && s.protocol !== protocolFilter) return false;
       if (threatFilter !== 'ALL' && s.threatLevel !== threatFilter) return false;
       if (socketFilter.trim()) {
@@ -1502,7 +1789,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
     });
   }, [sockets, protocolFilter, threatFilter, socketFilter]);
 
-  const selectedNode = nodes.find((n) => n.id === selectedNodeId) || nodes[0];
+  const selectedNode = nodes.find(n => n.id === selectedNodeId) || nodes[0];
   const selectedNodeMetric = selectedNode ? segmentDensityMetrics[selectedNode.id] : undefined;
 
   const selectedNodeThroughput = useMemo(() => {
@@ -1518,7 +1805,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
   // Helper to toggle tree route expansion
   const toggleRouteExpand = (routeId: string) => {
-    setExpandedRoutes((prev) => ({
+    setExpandedRoutes(prev => ({
       ...prev,
       [routeId]: !prev[routeId]
     }));
@@ -1533,18 +1820,18 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       node.status === 'UNDER_ATTACK'
         ? 'bg-rose-500/20 text-rose-300 border-rose-500/50'
         : node.status === 'EXPOSED'
-        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
-        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50';
+          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50';
 
     return (
       <div key={node.id} className="space-y-2">
         <div
-          className={`p-3.5 rounded-xl border transition flex flex-col md:flex-row items-start md:items-center justify-between gap-3 ${
+          className={`flex flex-col items-start justify-between gap-3 rounded-xl border p-3.5 transition md:flex-row md:items-center ${
             node.status === 'UNDER_ATTACK'
-              ? 'bg-rose-950/20 border-rose-900/60'
+              ? 'border-rose-900/60 bg-rose-950/20'
               : node.status === 'EXPOSED'
-              ? 'bg-amber-950/20 border-amber-900/60'
-              : 'bg-slate-900/80 border-slate-800'
+                ? 'border-amber-900/60 bg-amber-950/20'
+                : 'border-slate-800 bg-slate-900/80'
           }`}
           style={{ marginLeft: `${level * 20}px` }}
         >
@@ -1552,62 +1839,68 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             {hasChildren ? (
               <button
                 onClick={() => toggleRouteExpand(node.id)}
-                className="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold text-xs"
+                className="flex h-6 w-6 items-center justify-center rounded bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700"
               >
                 {isExpanded ? '−' : '+'}
               </button>
             ) : (
-              <div className="w-6 h-6 flex items-center justify-center text-slate-600">•</div>
+              <div className="flex h-6 w-6 items-center justify-center text-slate-600">•</div>
             )}
 
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <code className="text-xs font-mono font-bold text-cyan-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+              <div className="flex flex-wrap items-center gap-2">
+                <code className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-xs font-bold text-cyan-300">
                   {node.path}
                 </code>
-                <span className="text-xs text-slate-200 font-bold">
+                <span className="text-xs font-bold text-slate-200">
                   {isAr ? node.labelAr : node.label}
                 </span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border ${statusBadge}`}>
+                <span
+                  className={`rounded border px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${statusBadge}`}
+                >
                   {node.status}
                 </span>
               </div>
 
               {node.activePayloads && node.activePayloads.length > 0 && (
-                <div className="mt-1 flex items-center gap-1.5 text-[11px] text-slate-400 font-mono">
-                  <span className="text-rose-400 font-bold">Latest Ingress:</span>
-                  <span className="truncate max-w-md text-slate-300">{node.activePayloads[0]}</span>
+                <div className="mt-1 flex items-center gap-1.5 font-mono text-[11px] text-slate-400">
+                  <span className="font-bold text-rose-400">Latest Ingress:</span>
+                  <span className="max-w-md truncate text-slate-300">{node.activePayloads[0]}</span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono shrink-0">
+          <div className="flex shrink-0 items-center gap-4 font-mono text-xs">
             <div className="text-right">
-              <span className="text-slate-500 text-[10px] block">RPS</span>
-              <span className="text-slate-200 font-bold">{node.rps}</span>
+              <span className="block text-[10px] text-slate-500">RPS</span>
+              <span className="font-bold text-slate-200">{node.rps}</span>
             </div>
             <div className="text-right">
-              <span className="text-slate-500 text-[10px] block">Error Rate</span>
-              <span className={`font-bold ${node.errorRatePercent > 5 ? 'text-rose-400' : 'text-emerald-400'}`}>
+              <span className="block text-[10px] text-slate-500">Error Rate</span>
+              <span
+                className={`font-bold ${node.errorRatePercent > 5 ? 'text-rose-400' : 'text-emerald-400'}`}
+              >
                 {node.errorRatePercent}%
               </span>
             </div>
 
             <button
-              onClick={() => handleSimulateAttackVector('node-app-core', `Exploit on ${node.path}`, 'HIGH')}
-              className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-bold flex items-center gap-1"
+              onClick={() =>
+                handleSimulateAttackVector('node-app-core', `Exploit on ${node.path}`, 'HIGH')
+              }
+              className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-[11px] font-bold text-slate-300 hover:bg-slate-800 hover:text-white"
               title="Simulate Ingress Attack"
             >
-              <Zap className="w-3 h-3 text-amber-400" />
+              <Zap className="h-3 w-3 text-amber-400" />
               <span>Probe</span>
             </button>
           </div>
         </div>
 
         {hasChildren && isExpanded && (
-          <div className="space-y-2 border-l-2 border-slate-800 ml-4 pl-2">
-            {node.children!.map((child) => renderRouteTreeNode(child, level + 1))}
+          <div className="ml-4 space-y-2 border-l-2 border-slate-800 pl-2">
+            {node.children!.map(child => renderRouteTreeNode(child, level + 1))}
           </div>
         )}
       </div>
@@ -1617,27 +1910,29 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
   return (
     <div className="space-y-6">
       {/* 1. TOP-LEVEL COMBAT ACTION & INCIDENT CONTROL BAR */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-950 border border-slate-800 shadow-2xl space-y-4">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div className="space-y-4 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-950 p-5 shadow-2xl">
+        <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-cyan-950/80 border border-cyan-500/40 p-1 flex items-center justify-center shadow-lg shadow-cyan-950/50">
-              <Network className="w-6 h-6 text-cyan-400 animate-pulse" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-500/40 bg-cyan-950/80 p-1 shadow-lg shadow-cyan-950/50">
+              <Network className="h-6 w-6 animate-pulse text-cyan-400" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-black text-white tracking-wide">
-                  {isAr ? 'منظومة مراقبة الشبكة وتوبولوجيا المقابس الحية (V6.0 Combat Network)' : 'Real-Time Network Topology & Full Site Telemetry'}
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-black tracking-wide text-white">
+                  {isAr
+                    ? 'منظومة مراقبة الشبكة وتوبولوجيا المقابس الحية (V6.0 Combat Network)'
+                    : 'Real-Time Network Topology & Full Site Telemetry'}
                 </h2>
-                <span className="px-2 py-0.5 text-xs font-mono font-bold rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                <span className="rounded-full border border-cyan-500/40 bg-cyan-500/20 px-2 py-0.5 font-mono text-xs font-bold text-cyan-300">
                   V6.0 PRODUCTION SOC
                 </span>
                 {emergencyLockdown && (
-                  <span className="px-2 py-0.5 text-xs font-mono font-bold rounded-full bg-rose-500 text-white animate-pulse">
+                  <span className="animate-pulse rounded-full bg-rose-500 px-2 py-0.5 font-mono text-xs font-bold text-white">
                     ZERO-TRUST LOCKDOWN ACTIVE
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400 font-medium">
+              <p className="text-xs font-medium text-slate-400">
                 {isAr
                   ? 'مصفوفة المقابس اللحظية، فحص الإطارات العميقة (DPI & Hex Parser)، شجرة مسارات التطبيق وفخاخ الخداع الرقمي'
                   : 'Live socket connection matrix, deep packet hex inspection, hierarchical application surveillance, and honeytoken tripwires'}
@@ -1646,47 +1941,51 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           </div>
 
           {/* Action Directives Bar */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleToggleEmergencyLockdown}
               disabled={isLoading}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-lg ${
+              className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold shadow-lg transition ${
                 emergencyLockdown
-                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-950/50 ring-2 ring-emerald-400'
-                  : 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-950/50'
+                  ? 'bg-emerald-600 text-white ring-2 shadow-emerald-950/50 ring-emerald-400 hover:bg-emerald-500'
+                  : 'bg-rose-600 text-white shadow-rose-950/50 hover:bg-rose-500'
               }`}
             >
-              <AlertOctagon className="w-4 h-4" />
+              <AlertOctagon className="h-4 w-4" />
               <span>
                 {emergencyLockdown
-                  ? (isAr ? 'تعطيل وضع الإغلاق التام' : 'Deactivate Zero-Trust Lockdown')
-                  : (isAr ? '🚨 إغلاق تام فوري (Zero-Trust)' : '🚨 Zero-Trust Lockdown')}
+                  ? isAr
+                    ? 'تعطيل وضع الإغلاق التام'
+                    : 'Deactivate Zero-Trust Lockdown'
+                  : isAr
+                    ? '🚨 إغلاق تام فوري (Zero-Trust)'
+                    : '🚨 Zero-Trust Lockdown'}
               </span>
             </button>
 
             <button
               onClick={() => setShowSubnetModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-amber-300 border border-amber-500/40 text-xs font-bold transition flex items-center gap-2"
+              className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-slate-950 px-3.5 py-2 text-xs font-bold text-amber-300 transition hover:bg-slate-800"
             >
-              <Ban className="w-4 h-4" />
+              <Ban className="h-4 w-4" />
               <span>{isAr ? 'عزل نطاق CIDR' : 'Quarantine CIDR'}</span>
             </button>
 
             <button
               onClick={handleFlushSockets}
-              className="px-3.5 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold transition flex items-center gap-2"
+              className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-xs font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white"
               title="Flush Active Sockets"
             >
-              <Zap className="w-4 h-4 text-cyan-400" />
+              <Zap className="h-4 w-4 text-cyan-400" />
               <span>{isAr ? 'تفريغ المقابس' : 'Flush Sockets'}</span>
             </button>
 
             <button
               onClick={handleExportPcap}
-              className="px-3.5 py-2 rounded-xl bg-cyan-950/60 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/40 text-xs font-bold transition flex items-center gap-2"
+              className="flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-cyan-950/60 px-3.5 py-2 text-xs font-bold text-cyan-300 transition hover:bg-cyan-900"
               title="Export PCAP / Forensic Audit Log"
             >
-              <Download className="w-4 h-4" />
+              <Download className="h-4 w-4" />
               <span>{isAr ? 'تصدير PCAP' : 'Export PCAP'}</span>
             </button>
 
@@ -1697,66 +1996,78 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 fetchSiteTree();
                 fetchDeceptionTraps();
               }}
-              className="p-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 transition"
+              className="rounded-xl border border-slate-800 bg-slate-950 p-2 text-slate-300 transition hover:bg-slate-800"
               title="Refresh All Telemetry"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         {/* Sub-Tab Navigation Bar */}
-        <div className="flex items-center space-x-2 border-t border-slate-800/80 pt-3 overflow-x-auto scrollbar-none">
+        <div className="flex scrollbar-none items-center space-x-2 overflow-x-auto border-t border-slate-800/80 pt-3">
           <button
             onClick={() => setActiveSubTab('TOPOLOGY_OVERVIEW')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition ${
               activeSubTab === 'TOPOLOGY_OVERVIEW'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+                ? 'border border-cyan-500/50 bg-cyan-500/20 text-cyan-300 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Globe className="w-3.5 h-3.5" />
-            <span>{isAr ? 'خريطة التوبولوجيا والمشهد ثلاثي الأبعاد' : 'Topology Graph & Attack Vectors'}</span>
+            <Globe className="h-3.5 w-3.5" />
+            <span>
+              {isAr ? 'خريطة التوبولوجيا والمشهد ثلاثي الأبعاد' : 'Topology Graph & Attack Vectors'}
+            </span>
           </button>
 
           <button
             onClick={() => setActiveSubTab('SOCKET_MATRIX')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition ${
               activeSubTab === 'SOCKET_MATRIX'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+                ? 'border border-cyan-500/50 bg-cyan-500/20 text-cyan-300 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Binary className="w-3.5 h-3.5" />
-            <span>{isAr ? 'مصفوفة المقابس وفحص الإطارات (DPI & Hex)' : 'Socket Matrix & Deep Packet Inspection'}</span>
-            <span className="px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 font-mono text-[10px]">
+            <Binary className="h-3.5 w-3.5" />
+            <span>
+              {isAr
+                ? 'مصفوفة المقابس وفحص الإطارات (DPI & Hex)'
+                : 'Socket Matrix & Deep Packet Inspection'}
+            </span>
+            <span className="py-0.2 rounded bg-cyan-950 px-1.5 font-mono text-[10px] text-cyan-400">
               {sockets.length}
             </span>
           </button>
 
           <button
             onClick={() => setActiveSubTab('SITE_SURVEILLANCE_TREE')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition ${
               activeSubTab === 'SITE_SURVEILLANCE_TREE'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+                ? 'border border-cyan-500/50 bg-cyan-500/20 text-cyan-300 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <FolderTree className="w-3.5 h-3.5" />
-            <span>{isAr ? 'شجرة مسارات التطبيق والمراقبة اللحظية' : 'Hierarchical Site Surveillance Tree'}</span>
+            <FolderTree className="h-3.5 w-3.5" />
+            <span>
+              {isAr
+                ? 'شجرة مسارات التطبيق والمراقبة اللحظية'
+                : 'Hierarchical Site Surveillance Tree'}
+            </span>
           </button>
 
           <button
             onClick={() => setActiveSubTab('HONEYTOKEN_TRAPS')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
+            className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition ${
               activeSubTab === 'HONEYTOKEN_TRAPS'
-                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+                ? 'border border-cyan-500/50 bg-cyan-500/20 text-cyan-300 shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-            <span>{isAr ? 'فخاخ الخداع الرقمي (Honeytokens)' : 'Deception Traps & Honeytokens'}</span>
-            <span className="px-1.5 py-0.2 rounded bg-amber-950 text-amber-400 font-mono text-[10px]">
+            <ShieldAlert className="h-3.5 w-3.5 text-amber-400" />
+            <span>
+              {isAr ? 'فخاخ الخداع الرقمي (Honeytokens)' : 'Deception Traps & Honeytokens'}
+            </span>
+            <span className="py-0.2 rounded bg-amber-950 px-1.5 font-mono text-[10px] text-amber-400">
               {deceptionTraps.length}
             </span>
           </button>
@@ -1765,8 +2076,8 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
       {/* ACTION FLASH ALERT */}
       {actionMessage && (
-        <div className="p-3.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2.5 animate-fadeIn">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="animate-fadeIn flex items-center gap-2.5 rounded-xl border border-emerald-500/40 bg-emerald-500/20 p-3.5 text-xs font-bold text-emerald-300">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
           <span>{actionMessage}</span>
         </div>
       )}
@@ -1844,23 +2155,25 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {/* 2. TAB 1: VISUAL TOPOLOGY GRAPH & ATTACK VECTORS */}
       {activeSubTab === 'TOPOLOGY_OVERVIEW' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Visual Canvas Stage (2 cols) */}
-            <div className="lg:col-span-2 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl p-4 relative overflow-hidden flex flex-col justify-between">
-              <div className="flex flex-wrap items-center justify-between border-b border-slate-800/80 pb-3 mb-3 gap-2">
+            <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-2xl lg:col-span-2">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-mono font-bold text-slate-300 uppercase">
-                    {viewMode === 'INFRASTRUCTURE_MESH' ? 'Real-Time Dynamic Mesh (eBPF / Zero-Copy)' : 'Global Attack Arcs & Ingress Vectors'}
+                  <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400" />
+                  <span className="font-mono text-xs font-bold text-slate-300 uppercase">
+                    {viewMode === 'INFRASTRUCTURE_MESH'
+                      ? 'Real-Time Dynamic Mesh (eBPF / Zero-Copy)'
+                      : 'Global Attack Arcs & Ingress Vectors'}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setViewMode('INFRASTRUCTURE_MESH')}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
                       viewMode === 'INFRASTRUCTURE_MESH'
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm'
+                        ? 'border border-cyan-500/50 bg-cyan-500/20 text-cyan-300 shadow-sm'
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
@@ -1868,9 +2181,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   </button>
                   <button
                     onClick={() => setViewMode('GLOBAL_GEOGRAPHIC')}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition ${
                       viewMode === 'GLOBAL_GEOGRAPHIC'
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/50 shadow-sm'
+                        ? 'border border-rose-500/50 bg-rose-500/20 text-rose-300 shadow-sm'
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
@@ -1880,55 +2193,75 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               </div>
 
               {/* HEATMAP INTERACTIVE CONTROL TOOLBAR */}
-              <div className="p-2.5 mb-3 rounded-xl bg-slate-900/90 border border-slate-800/90 flex flex-wrap items-center justify-between gap-2.5 text-xs font-mono">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-slate-800/90 bg-slate-900/90 p-2.5 font-mono text-xs">
                 {/* Master Heatmap Switch */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setHeatmapEnabled(!heatmapEnabled)}
-                    className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition ${
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-bold transition ${
                       heatmapEnabled
-                        ? 'bg-gradient-to-r from-orange-600 to-rose-600 text-white shadow-lg shadow-orange-950/50 ring-1 ring-orange-400'
-                        : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                        ? 'bg-gradient-to-r from-orange-600 to-rose-600 text-white shadow-lg ring-1 shadow-orange-950/50 ring-orange-400'
+                        : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <Flame className={`w-3.5 h-3.5 ${heatmapEnabled ? 'text-amber-200 animate-pulse' : 'text-slate-500'}`} />
-                    <span>{heatmapEnabled ? (isAr ? 'الخريطة الحرارية: نشطة' : 'Heatmap: ACTIVE') : (isAr ? 'الخريطة الحرارية: معطلة' : 'Heatmap: OFF')}</span>
+                    <Flame
+                      className={`h-3.5 w-3.5 ${heatmapEnabled ? 'animate-pulse text-amber-200' : 'text-slate-500'}`}
+                    />
+                    <span>
+                      {heatmapEnabled
+                        ? isAr
+                          ? 'الخريطة الحرارية: نشطة'
+                          : 'Heatmap: ACTIVE'
+                        : isAr
+                          ? 'الخريطة الحرارية: معطلة'
+                          : 'Heatmap: OFF'}
+                    </span>
                   </button>
                 </div>
 
                 {heatmapEnabled && (
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex flex-wrap items-center gap-2">
                     {/* Metric Selector */}
-                    <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                      <span className="text-[10px] text-slate-500 px-1 font-sans">{isAr ? 'المعيار:' : 'Metric:'}</span>
+                    <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 p-1">
+                      <span className="px-1 font-sans text-[10px] text-slate-500">
+                        {isAr ? 'المعيار:' : 'Metric:'}
+                      </span>
                       <button
                         onClick={() => setHeatmapMetric('THREAT_SEVERITY')}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          heatmapMetric === 'THREAT_SEVERITY' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/50' : 'text-slate-400 hover:text-white'
+                        className={`rounded px-2 py-0.5 text-[11px] font-bold ${
+                          heatmapMetric === 'THREAT_SEVERITY'
+                            ? 'border border-rose-500/50 bg-rose-500/20 text-rose-300'
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         ⚡ {isAr ? 'خطورة التهديد' : 'Threat'}
                       </button>
                       <button
                         onClick={() => setHeatmapMetric('TRAFFIC_VOLUME')}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          heatmapMetric === 'TRAFFIC_VOLUME' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/50' : 'text-slate-400 hover:text-white'
+                        className={`rounded px-2 py-0.5 text-[11px] font-bold ${
+                          heatmapMetric === 'TRAFFIC_VOLUME'
+                            ? 'border border-cyan-500/50 bg-cyan-500/20 text-cyan-300'
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         📊 {isAr ? 'حجم المرور' : 'Traffic'}
                       </button>
                       <button
                         onClick={() => setHeatmapMetric('LATENCY_CONGESTION')}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          heatmapMetric === 'LATENCY_CONGESTION' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50' : 'text-slate-400 hover:text-white'
+                        className={`rounded px-2 py-0.5 text-[11px] font-bold ${
+                          heatmapMetric === 'LATENCY_CONGESTION'
+                            ? 'border border-amber-500/50 bg-amber-500/20 text-amber-300'
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         ⏱️ {isAr ? 'الاستجابة' : 'Latency'}
                       </button>
                       <button
                         onClick={() => setHeatmapMetric('ANOMALY_INDEX')}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          heatmapMetric === 'ANOMALY_INDEX' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/50' : 'text-slate-400 hover:text-white'
+                        className={`rounded px-2 py-0.5 text-[11px] font-bold ${
+                          heatmapMetric === 'ANOMALY_INDEX'
+                            ? 'border border-purple-500/50 bg-purple-500/20 text-purple-300'
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         🛡️ {isAr ? 'الشذوذ' : 'Anomaly'}
@@ -1936,28 +2269,36 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     {/* Palette Selector */}
-                    <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                      <span className="text-[10px] text-slate-500 px-1 font-sans">{isAr ? 'النمط:' : 'Palette:'}</span>
+                    <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 p-1">
+                      <span className="px-1 font-sans text-[10px] text-slate-500">
+                        {isAr ? 'النمط:' : 'Palette:'}
+                      </span>
                       <button
                         onClick={() => setHeatmapPalette('PLASMA')}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          heatmapPalette === 'PLASMA' ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400' : 'text-slate-400 hover:text-white'
+                        className={`rounded px-2 py-0.5 text-[11px] font-bold ${
+                          heatmapPalette === 'PLASMA'
+                            ? 'border border-cyan-400 bg-cyan-500/30 text-cyan-200'
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         Plasma
                       </button>
                       <button
                         onClick={() => setHeatmapPalette('INFERNO')}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          heatmapPalette === 'INFERNO' ? 'bg-orange-500/30 text-orange-200 border border-orange-400' : 'text-slate-400 hover:text-white'
+                        className={`rounded px-2 py-0.5 text-[11px] font-bold ${
+                          heatmapPalette === 'INFERNO'
+                            ? 'border border-orange-400 bg-orange-500/30 text-orange-200'
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         Inferno
                       </button>
                       <button
                         onClick={() => setHeatmapPalette('TOXIC_RADAR')}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          heatmapPalette === 'TOXIC_RADAR' ? 'bg-lime-500/30 text-lime-200 border border-lime-400' : 'text-slate-400 hover:text-white'
+                        className={`rounded px-2 py-0.5 text-[11px] font-bold ${
+                          heatmapPalette === 'TOXIC_RADAR'
+                            ? 'border border-lime-400 bg-lime-500/30 text-lime-200'
+                            : 'text-slate-400 hover:text-white'
                         }`}
                       >
                         FLIR
@@ -1967,25 +2308,27 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     {/* Settings / Tuners toggle */}
                     <button
                       onClick={() => setShowHeatmapSettings(!showHeatmapSettings)}
-                      className={`p-1.5 rounded-lg border transition ${
-                        showHeatmapSettings ? 'bg-slate-800 border-cyan-500 text-cyan-300' : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                      className={`rounded-lg border p-1.5 transition ${
+                        showHeatmapSettings
+                          ? 'border-cyan-500 bg-slate-800 text-cyan-300'
+                          : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white'
                       }`}
                       title="Adjust Heatmap Calibration"
                     >
-                      <Sliders className="w-3.5 h-3.5" />
+                      <Sliders className="h-3.5 w-3.5" />
                     </button>
 
                     {/* Heatmap Legend Toggle */}
                     <button
                       onClick={() => setShowHeatmapLegend(!showHeatmapLegend)}
-                      className={`px-2 py-1 rounded-lg border transition flex items-center gap-1.5 text-[11px] font-bold ${
+                      className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[11px] font-bold transition ${
                         showHeatmapLegend
-                          ? 'bg-orange-500/20 border-orange-500/50 text-orange-300 shadow-sm'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                          ? 'border-orange-500/50 bg-orange-500/20 text-orange-300 shadow-sm'
+                          : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white'
                       }`}
                       title={isAr ? 'تبديل دليل الشدة الحرارية' : 'Toggle Heatmap Intensity Legend'}
                     >
-                      <Info className="w-3.5 h-3.5 text-orange-400" />
+                      <Info className="h-3.5 w-3.5 text-orange-400" />
                       <span className="hidden sm:inline">{isAr ? 'دليل الشدة' : 'Legend'}</span>
                     </button>
                   </div>
@@ -1994,26 +2337,28 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
               {/* CALIBRATION SLIDERS PANEL (Collapsible) */}
               {heatmapEnabled && showHeatmapSettings && (
-                <div className="p-3 mb-3 rounded-xl bg-slate-900/95 border border-cyan-500/30 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono animate-fadeIn">
+                <div className="animate-fadeIn mb-3 grid grid-cols-1 gap-4 rounded-xl border border-cyan-500/30 bg-slate-900/95 p-3 font-mono text-xs sm:grid-cols-3">
                   <div>
-                    <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                    <div className="mb-1 flex justify-between text-[11px] text-slate-400">
                       <span>{isAr ? 'نصف القطر الحراري:' : 'Thermal Radius:'}</span>
-                      <span className="text-cyan-300 font-bold">{heatmapRadius}px</span>
+                      <span className="font-bold text-cyan-300">{heatmapRadius}px</span>
                     </div>
                     <input
                       type="range"
                       min={30}
                       max={120}
                       value={heatmapRadius}
-                      onChange={(e) => setHeatmapRadius(Number(e.target.value))}
-                      className="w-full h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                      onChange={e => setHeatmapRadius(Number(e.target.value))}
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-950 accent-cyan-400"
                     />
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                    <div className="mb-1 flex justify-between text-[11px] text-slate-400">
                       <span>{isAr ? 'كثافة الإشعاع:' : 'Heat Intensity:'}</span>
-                      <span className="text-orange-300 font-bold">{Math.round(heatmapIntensity * 100)}%</span>
+                      <span className="font-bold text-orange-300">
+                        {Math.round(heatmapIntensity * 100)}%
+                      </span>
                     </div>
                     <input
                       type="range"
@@ -2021,29 +2366,29 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       max={1.0}
                       step={0.05}
                       value={heatmapIntensity}
-                      onChange={(e) => setHeatmapIntensity(Number(e.target.value))}
-                      className="w-full h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-orange-400"
+                      onChange={e => setHeatmapIntensity(Number(e.target.value))}
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-950 accent-orange-400"
                     />
                   </div>
 
                   <div>
-                    <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                    <div className="mb-1 flex justify-between text-[11px] text-slate-400">
                       <span>{isAr ? 'نعومة التلاشي:' : 'Blur Gradient:'}</span>
-                      <span className="text-emerald-300 font-bold">{heatmapBlur}px</span>
+                      <span className="font-bold text-emerald-300">{heatmapBlur}px</span>
                     </div>
                     <input
                       type="range"
                       min={10}
                       max={50}
                       value={heatmapBlur}
-                      onChange={(e) => setHeatmapBlur(Number(e.target.value))}
-                      className="w-full h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                      onChange={e => setHeatmapBlur(Number(e.target.value))}
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-950 accent-emerald-400"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="w-full h-[440px] relative rounded-xl overflow-hidden bg-slate-950 border border-slate-900 flex items-center justify-center cursor-crosshair">
+              <div className="relative flex h-[440px] w-full cursor-crosshair items-center justify-center overflow-hidden rounded-xl border border-slate-900 bg-slate-950">
                 <canvas
                   ref={canvasRef}
                   width={800}
@@ -2051,13 +2396,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   onMouseMove={handleCanvasMouseMove}
                   onMouseLeave={handleCanvasMouseLeave}
                   onClick={handleCanvasClick}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
 
                 {/* CSS-DRIVEN PULSE ANIMATION & ACTIVE THREAT ALERT ZONES OVERLAY */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden z-10">
+                <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
                   {viewMode === 'INFRASTRUCTURE_MESH' &&
-                    nodes.map((node) => {
+                    nodes.map(node => {
                       const posRatioMap: Record<string, { left: string; top: string }> = {
                         'node-ingress-waf': { left: '18%', top: '50%' },
                         'node-ai-filter': { left: '42%', top: '28%' },
@@ -2069,8 +2414,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
                       const pos = posRatioMap[node.id] || { left: '50%', top: '50%' };
                       const metric = segmentDensityMetrics[node.id];
-                      const isOverheat = metric?.thermalStatus === 'CRITICAL_OVERHEAT' || node.status === 'UNDER_ATTACK' || (metric?.densityScore || 0) >= 0.7;
-                      const isElevated = metric?.thermalStatus === 'ELEVATED_HEAT' || ((metric?.densityScore || 0) >= 0.4 && !isOverheat);
+                      const isOverheat =
+                        metric?.thermalStatus === 'CRITICAL_OVERHEAT' ||
+                        node.status === 'UNDER_ATTACK' ||
+                        (metric?.densityScore || 0) >= 0.7;
+                      const isElevated =
+                        metric?.thermalStatus === 'ELEVATED_HEAT' ||
+                        ((metric?.densityScore || 0) >= 0.4 && !isOverheat);
                       const isHighThreat = isOverheat || isElevated;
 
                       if (!isHighThreat) return null;
@@ -2078,7 +2428,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       return (
                         <div
                           key={`threat-pulse-${node.id}`}
-                          className="absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none"
+                          className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
                           style={{ left: pos.left, top: pos.top }}
                         >
                           {/* CRITICAL OVERHEAT ZONE: Triple Sonar Pulse Shockwaves & Radial Flame Aura */}
@@ -2086,40 +2436,55 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             <>
                               {/* Ambient Danger Glow Breathing Aura */}
                               <div
-                                className="absolute w-32 h-32 rounded-full pointer-events-none bg-rose-600/35 blur-xl"
+                                className="pointer-events-none absolute h-32 w-32 rounded-full bg-rose-600/35 blur-xl"
                                 style={{ animation: 'cyberAlertAuraGlow 2s ease-in-out infinite' }}
                               />
 
                               {/* Concentric Sonar Pulse Rings */}
                               <div
-                                className="absolute w-16 h-16 rounded-full border-2 border-rose-500 pointer-events-none"
-                                style={{ animation: 'cyberAlertSonarRing 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite' }}
+                                className="pointer-events-none absolute h-16 w-16 rounded-full border-2 border-rose-500"
+                                style={{
+                                  animation:
+                                    'cyberAlertSonarRing 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite'
+                                }}
                               />
                               <div
-                                className="absolute w-16 h-16 rounded-full border-2 border-rose-400 pointer-events-none"
-                                style={{ animation: 'cyberAlertSonarRing 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite 0.8s' }}
+                                className="pointer-events-none absolute h-16 w-16 rounded-full border-2 border-rose-400"
+                                style={{
+                                  animation:
+                                    'cyberAlertSonarRing 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite 0.8s'
+                                }}
                               />
                               <div
-                                className="absolute w-16 h-16 rounded-full border border-orange-400 pointer-events-none"
-                                style={{ animation: 'cyberAlertSonarRing 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite 1.6s' }}
+                                className="pointer-events-none absolute h-16 w-16 rounded-full border border-orange-400"
+                                style={{
+                                  animation:
+                                    'cyberAlertSonarRing 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite 1.6s'
+                                }}
                               />
 
                               {/* Floating Alert Beacon Pill Badge */}
                               <button
-                                onClick={(e) => {
+                                onClick={e => {
                                   e.stopPropagation();
                                   setSelectedNodeId(node.id);
                                 }}
-                                className="absolute -top-11 z-30 px-2 py-0.5 rounded-full bg-rose-950/95 border border-rose-500 text-rose-200 text-[9px] font-mono font-bold tracking-wider uppercase flex items-center gap-1 shadow-xl shadow-rose-950/90 pointer-events-auto cursor-pointer hover:scale-105 transition-transform"
-                                style={{ animation: 'cyberAlertBeaconPulse 1.4s ease-in-out infinite' }}
-                                title={isAr ? 'انقر للتركيز على بؤرة الإنذار' : 'Click to lock onto Alert Zone'}
+                                className="pointer-events-auto absolute -top-11 z-30 flex cursor-pointer items-center gap-1 rounded-full border border-rose-500 bg-rose-950/95 px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider text-rose-200 uppercase shadow-xl shadow-rose-950/90 transition-transform hover:scale-105"
+                                style={{
+                                  animation: 'cyberAlertBeaconPulse 1.4s ease-in-out infinite'
+                                }}
+                                title={
+                                  isAr
+                                    ? 'انقر للتركيز على بؤرة الإنذار'
+                                    : 'Click to lock onto Alert Zone'
+                                }
                               >
                                 <span className="relative flex h-2 w-2">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-80"></span>
-                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-80"></span>
+                                  <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
                                 </span>
                                 <span>{isAr ? 'بؤرة إنذار حرجة' : 'CRITICAL ALERT'}</span>
-                                <span className="text-white font-bold bg-rose-900/80 px-1 py-0.2 rounded border border-rose-600/50">
+                                <span className="py-0.2 rounded border border-rose-600/50 bg-rose-900/80 px-1 font-bold text-white">
                                   {Math.round((metric?.densityScore || 0.85) * 100)}%
                                 </span>
                               </button>
@@ -2131,36 +2496,50 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             <>
                               {/* Ambient Amber Glow */}
                               <div
-                                className="absolute w-24 h-24 rounded-full pointer-events-none bg-amber-500/25 blur-lg"
-                                style={{ animation: 'cyberAlertAuraGlow 2.5s ease-in-out infinite' }}
+                                className="pointer-events-none absolute h-24 w-24 rounded-full bg-amber-500/25 blur-lg"
+                                style={{
+                                  animation: 'cyberAlertAuraGlow 2.5s ease-in-out infinite'
+                                }}
                               />
 
                               {/* Dual Concentric Elevated Pulse Rings */}
                               <div
-                                className="absolute w-14 h-14 rounded-full border-2 border-amber-500 pointer-events-none"
-                                style={{ animation: 'cyberElevatedSonarRing 2.6s cubic-bezier(0, 0.2, 0.8, 1) infinite' }}
+                                className="pointer-events-none absolute h-14 w-14 rounded-full border-2 border-amber-500"
+                                style={{
+                                  animation:
+                                    'cyberElevatedSonarRing 2.6s cubic-bezier(0, 0.2, 0.8, 1) infinite'
+                                }}
                               />
                               <div
-                                className="absolute w-14 h-14 rounded-full border border-yellow-400 pointer-events-none"
-                                style={{ animation: 'cyberElevatedSonarRing 2.6s cubic-bezier(0, 0.2, 0.8, 1) infinite 1.3s' }}
+                                className="pointer-events-none absolute h-14 w-14 rounded-full border border-yellow-400"
+                                style={{
+                                  animation:
+                                    'cyberElevatedSonarRing 2.6s cubic-bezier(0, 0.2, 0.8, 1) infinite 1.3s'
+                                }}
                               />
 
                               {/* Floating Surge Pill Badge */}
                               <button
-                                onClick={(e) => {
+                                onClick={e => {
                                   e.stopPropagation();
                                   setSelectedNodeId(node.id);
                                 }}
-                                className="absolute -top-11 z-30 px-2 py-0.5 rounded-full bg-amber-950/90 border border-amber-500 text-amber-200 text-[9px] font-mono font-bold tracking-wider uppercase flex items-center gap-1 shadow-lg shadow-amber-950/70 pointer-events-auto cursor-pointer hover:scale-105 transition-transform"
-                                style={{ animation: 'cyberAlertBeaconPulse 2s ease-in-out infinite' }}
-                                title={isAr ? 'انقر للتركيز على تدفق التهديد' : 'Click to inspect elevated surge'}
+                                className="pointer-events-auto absolute -top-11 z-30 flex cursor-pointer items-center gap-1 rounded-full border border-amber-500 bg-amber-950/90 px-2 py-0.5 font-mono text-[9px] font-bold tracking-wider text-amber-200 uppercase shadow-lg shadow-amber-950/70 transition-transform hover:scale-105"
+                                style={{
+                                  animation: 'cyberAlertBeaconPulse 2s ease-in-out infinite'
+                                }}
+                                title={
+                                  isAr
+                                    ? 'انقر للتركيز على تدفق التهديد'
+                                    : 'Click to inspect elevated surge'
+                                }
                               >
                                 <span className="relative flex h-2 w-2">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-80"></span>
-                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-80"></span>
+                                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500"></span>
                                 </span>
                                 <span>{isAr ? 'تدفق مرتفع' : 'ELEVATED SURGE'}</span>
-                                <span className="text-amber-100 font-bold bg-amber-900/80 px-1 py-0.2 rounded border border-amber-600/50">
+                                <span className="py-0.2 rounded border border-amber-600/50 bg-amber-900/80 px-1 font-bold text-amber-100">
                                   {Math.round((metric?.densityScore || 0.5) * 100)}%
                                 </span>
                               </button>
@@ -2175,22 +2554,28 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     <>
                       {/* Moscow Threat Cluster */}
                       <div
-                        className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                        className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
                         style={{ left: '72.5%', top: '33.2%' }}
                       >
                         <div
-                          className="w-12 h-12 rounded-full border-2 border-rose-500"
-                          style={{ animation: 'cyberAlertSonarRing 2.2s cubic-bezier(0, 0.2, 0.8, 1) infinite' }}
+                          className="h-12 w-12 rounded-full border-2 border-rose-500"
+                          style={{
+                            animation:
+                              'cyberAlertSonarRing 2.2s cubic-bezier(0, 0.2, 0.8, 1) infinite'
+                          }}
                         />
                       </div>
                       {/* California Botnet Hive */}
                       <div
-                        className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                        className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2"
                         style={{ left: '17.5%', top: '43.7%' }}
                       >
                         <div
-                          className="w-12 h-12 rounded-full border-2 border-rose-500"
-                          style={{ animation: 'cyberAlertSonarRing 2.2s cubic-bezier(0, 0.2, 0.8, 1) infinite 0.7s' }}
+                          className="h-12 w-12 rounded-full border-2 border-rose-500"
+                          style={{
+                            animation:
+                              'cyberAlertSonarRing 2.2s cubic-bezier(0, 0.2, 0.8, 1) infinite 0.7s'
+                          }}
                         />
                       </div>
                     </>
@@ -2200,45 +2585,62 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 {/* INTERACTIVE FLOATING HUD TOOLTIP ON HOVER */}
                 {hoveredHeatPoint && (
                   <div
-                    className="absolute z-20 pointer-events-none p-3 rounded-xl bg-slate-950/95 border border-cyan-500/50 shadow-2xl backdrop-blur-md text-xs font-mono min-w-[220px] transition-all transform -translate-x-1/2 -translate-y-full -top-3"
+                    className="pointer-events-none absolute -top-3 z-20 min-w-[220px] -translate-x-1/2 -translate-y-full transform rounded-xl border border-cyan-500/50 bg-slate-950/95 p-3 font-mono text-xs shadow-2xl backdrop-blur-md transition-all"
                     style={{
                       left: `${hoveredHeatPoint.x}px`,
                       top: `${hoveredHeatPoint.y - 12}px`
                     }}
                   >
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">
-                      <div className="font-bold text-white flex items-center gap-1.5">
-                        <Flame className="w-3.5 h-3.5 text-orange-400 animate-pulse" />
+                    <div className="mb-2 flex items-center justify-between border-b border-slate-800 pb-1.5">
+                      <div className="flex items-center gap-1.5 font-bold text-white">
+                        <Flame className="h-3.5 w-3.5 animate-pulse text-orange-400" />
                         <span>{isAr ? hoveredHeatPoint.labelAr : hoveredHeatPoint.label}</span>
                       </div>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+                      <span className="rounded border border-cyan-500/40 bg-cyan-950 px-1.5 py-0.5 text-[10px] font-bold text-cyan-300">
                         {hoveredHeatPoint.vlan}
                       </span>
                     </div>
 
                     <div className="space-y-1 text-[11px]">
                       <div className="flex justify-between">
-                        <span className="text-slate-400">{isAr ? 'كثافة التهديد:' : 'Thermal Density:'}</span>
-                        <span className={`font-bold ${hoveredHeatPoint.densityScore > 0.6 ? 'text-rose-400' : hoveredHeatPoint.densityScore > 0.3 ? 'text-amber-400' : 'text-emerald-400'}`}>
-                          {Math.round(hoveredHeatPoint.densityScore * 100)}% ({hoveredHeatPoint.thermalStatus})
+                        <span className="text-slate-400">
+                          {isAr ? 'كثافة التهديد:' : 'Thermal Density:'}
+                        </span>
+                        <span
+                          className={`font-bold ${hoveredHeatPoint.densityScore > 0.6 ? 'text-rose-400' : hoveredHeatPoint.densityScore > 0.3 ? 'text-amber-400' : 'text-emerald-400'}`}
+                        >
+                          {Math.round(hoveredHeatPoint.densityScore * 100)}% (
+                          {hoveredHeatPoint.thermalStatus})
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">{isAr ? 'المقابس النشطة:' : 'Active Sockets:'}</span>
-                        <span className="text-slate-200">{hoveredHeatPoint.activeSockets} ({hoveredHeatPoint.maliciousPct}% bad)</span>
+                        <span className="text-slate-400">
+                          {isAr ? 'المقابس النشطة:' : 'Active Sockets:'}
+                        </span>
+                        <span className="text-slate-200">
+                          {hoveredHeatPoint.activeSockets} ({hoveredHeatPoint.maliciousPct}% bad)
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">{isAr ? 'الحمل اللحظي:' : 'Active Load:'}</span>
-                        <span className="text-cyan-300 font-bold">{hoveredHeatPoint.activeLoad}%</span>
+                        <span className="text-slate-400">
+                          {isAr ? 'الحمل اللحظي:' : 'Active Load:'}
+                        </span>
+                        <span className="font-bold text-cyan-300">
+                          {hoveredHeatPoint.activeLoad}%
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">{isAr ? 'زمن الاستجابة:' : 'Ping / Latency:'}</span>
+                        <span className="text-slate-400">
+                          {isAr ? 'زمن الاستجابة:' : 'Ping / Latency:'}
+                        </span>
                         <span className="text-slate-300">{hoveredHeatPoint.latencyMs}ms</span>
                       </div>
                     </div>
 
-                    <div className="mt-2 pt-1.5 border-t border-slate-800/80 text-[10px] text-cyan-400 text-center">
-                      {isAr ? 'انقر للقفل على العقدة في لوحة التحكم' : 'Click to inspect & control node'}
+                    <div className="mt-2 border-t border-slate-800/80 pt-1.5 text-center text-[10px] text-cyan-400">
+                      {isAr
+                        ? 'انقر للقفل على العقدة في لوحة التحكم'
+                        : 'Click to inspect & control node'}
                     </div>
                   </div>
                 )}
@@ -2246,110 +2648,146 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 {/* FLOATING HEATMAP INTENSITY & PACKET DENSITY CORRELATION LEGEND */}
                 {heatmapEnabled && showHeatmapLegend && (
                   <div
-                    className={`absolute bottom-3 ${isAr ? 'right-3' : 'left-3'} z-20 transition-all duration-300 max-w-[340px] sm:max-w-[385px] rounded-xl bg-slate-950/95 border border-slate-700/80 shadow-2xl backdrop-blur-md text-xs font-mono select-none overflow-hidden`}
+                    className={`absolute bottom-3 ${isAr ? 'right-3' : 'left-3'} z-20 max-w-[340px] overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950/95 font-mono text-xs shadow-2xl backdrop-blur-md transition-all duration-300 select-none sm:max-w-[385px]`}
                   >
                     {/* Legend Header */}
-                    <div className="p-2.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-800 bg-slate-900/90 p-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-lg bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-300 shrink-0">
-                          <Flame className="w-3.5 h-3.5 animate-pulse" />
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border border-orange-500/40 bg-orange-500/20 text-orange-300">
+                          <Flame className="h-3.5 w-3.5 animate-pulse" />
                         </div>
                         <div>
-                          <div className="font-bold text-white text-[11px] leading-tight flex items-center gap-1.5">
-                            <span>{isAr ? 'مقياس الشدة والتشبع الحراري' : 'Threat Heatmap Intensity Scale'}</span>
+                          <div className="flex items-center gap-1.5 text-[11px] leading-tight font-bold text-white">
+                            <span>
+                              {isAr
+                                ? 'مقياس الشدة والتشبع الحراري'
+                                : 'Threat Heatmap Intensity Scale'}
+                            </span>
                           </div>
                           <div className="text-[9px] text-slate-400">
-                            {isAr ? 'علاقة كثافة الحزم/التهديدات بدرجة تشبع اللون' : 'Packet & Threat Density vs. Saturation'}
+                            {isAr
+                              ? 'علاقة كثافة الحزم/التهديدات بدرجة تشبع اللون'
+                              : 'Packet & Threat Density vs. Saturation'}
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             setLegendExpanded(!legendExpanded);
                           }}
-                          className="p-1 rounded-md bg-slate-800 text-slate-300 hover:text-white border border-slate-700 transition"
-                          title={legendExpanded ? (isAr ? 'طي التفاصيل' : 'Collapse details') : (isAr ? 'توسيع التفاصيل' : 'Expand details')}
+                          className="rounded-md border border-slate-700 bg-slate-800 p-1 text-slate-300 transition hover:text-white"
+                          title={
+                            legendExpanded
+                              ? isAr
+                                ? 'طي التفاصيل'
+                                : 'Collapse details'
+                              : isAr
+                                ? 'توسيع التفاصيل'
+                                : 'Expand details'
+                          }
                         >
-                          {legendExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          {legendExpanded ? (
+                            <ChevronUp className="h-3.5 w-3.5" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5" />
+                          )}
                         </button>
                         <button
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             setShowHeatmapLegend(false);
                           }}
-                          className="p-1 rounded-md bg-slate-800/60 text-slate-400 hover:text-rose-300 border border-slate-700 transition"
+                          className="rounded-md border border-slate-700 bg-slate-800/60 p-1 text-slate-400 transition hover:text-rose-300"
                           title={isAr ? 'إخفاء الدليل' : 'Hide Legend'}
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <X className="h-3.5 w-3.5" />
                         </button>
                       </div>
                     </div>
 
                     {/* Continuous Color Gradient Bar */}
-                    <div className="p-3 space-y-2.5">
+                    <div className="space-y-2.5 p-3">
                       {/* Palette info tag */}
                       <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-slate-400 font-sans">
+                        <span className="font-sans text-slate-400">
                           {isAr ? 'النمط اللوني الفعال:' : 'Active Thermal Palette:'}
                         </span>
-                        <span className="px-1.5 py-0.5 rounded font-bold text-cyan-300 bg-slate-900 border border-slate-800">
-                          {isAr ? getPaletteConfig(heatmapPalette).nameAr : getPaletteConfig(heatmapPalette).name}
+                        <span className="rounded border border-slate-800 bg-slate-900 px-1.5 py-0.5 font-bold text-cyan-300">
+                          {isAr
+                            ? getPaletteConfig(heatmapPalette).nameAr
+                            : getPaletteConfig(heatmapPalette).name}
                         </span>
                       </div>
 
                       {/* Gradient Bar with Ticks */}
                       <div className="space-y-1">
-                        <div className={`h-3.5 w-full rounded-md bg-gradient-to-r ${getPaletteConfig(heatmapPalette).gradientCss} shadow-inner border border-slate-700/60 relative overflow-hidden`}>
+                        <div
+                          className={`h-3.5 w-full rounded-md bg-gradient-to-r ${getPaletteConfig(heatmapPalette).gradientCss} relative overflow-hidden border border-slate-700/60 shadow-inner`}
+                        >
                           {/* Subtle Scanline Overlay */}
-                          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.2)_50%,transparent_100%)] opacity-40 animate-pulse" />
+                          <div className="absolute inset-0 animate-pulse bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.2)_50%,transparent_100%)] opacity-40" />
                         </div>
                         {/* Scale Percentage Markers */}
-                        <div className="flex justify-between text-[9px] text-slate-400 font-mono px-0.5">
+                        <div className="flex justify-between px-0.5 font-mono text-[9px] text-slate-400">
                           <span>0% (Cold)</span>
                           <span>25%</span>
                           <span>50%</span>
                           <span>75%</span>
-                          <span className="text-rose-400 font-bold">100% (Crit)</span>
+                          <span className="font-bold text-rose-400">100% (Crit)</span>
                         </div>
                       </div>
 
                       {/* 4-Tier Qualitative Range Spectrum */}
-                      <div className="grid grid-cols-4 gap-1 text-[9px] text-center pt-0.5">
-                        <div className="p-1 rounded bg-slate-900/80 border border-slate-800 flex flex-col">
-                          <span className="text-cyan-300 font-bold">{isAr ? 'طبيعي' : 'Nominal'}</span>
-                          <span className="text-[8px] text-slate-400 mt-0.5">&lt;25% Sat</span>
+                      <div className="grid grid-cols-4 gap-1 pt-0.5 text-center text-[9px]">
+                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1">
+                          <span className="font-bold text-cyan-300">
+                            {isAr ? 'طبيعي' : 'Nominal'}
+                          </span>
+                          <span className="mt-0.5 text-[8px] text-slate-400">&lt;25% Sat</span>
                         </div>
-                        <div className="p-1 rounded bg-slate-900/80 border border-slate-800 flex flex-col">
-                          <span className="text-amber-300 font-bold">{isAr ? 'مرتفع' : 'Elevated'}</span>
-                          <span className="text-[8px] text-slate-400 mt-0.5">25-50% Sat</span>
+                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1">
+                          <span className="font-bold text-amber-300">
+                            {isAr ? 'مرتفع' : 'Elevated'}
+                          </span>
+                          <span className="mt-0.5 text-[8px] text-slate-400">25-50% Sat</span>
                         </div>
-                        <div className="p-1 rounded bg-slate-900/80 border border-slate-800 flex flex-col">
-                          <span className="text-orange-400 font-bold">{isAr ? 'شديد' : 'Surge'}</span>
-                          <span className="text-[8px] text-slate-400 mt-0.5">50-75% Sat</span>
+                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1">
+                          <span className="font-bold text-orange-400">
+                            {isAr ? 'شديد' : 'Surge'}
+                          </span>
+                          <span className="mt-0.5 text-[8px] text-slate-400">50-75% Sat</span>
                         </div>
-                        <div className="p-1 rounded bg-slate-900/80 border border-rose-500/40 bg-rose-950/20 flex flex-col">
-                          <span className="text-rose-400 font-bold animate-pulse">{isAr ? 'حرج' : 'Critical'}</span>
-                          <span className="text-[8px] text-rose-300 mt-0.5">75-100% Sat</span>
+                        <div className="flex flex-col rounded border border-rose-500/40 bg-rose-950/20 bg-slate-900/80 p-1">
+                          <span className="animate-pulse font-bold text-rose-400">
+                            {isAr ? 'حرج' : 'Critical'}
+                          </span>
+                          <span className="mt-0.5 text-[8px] text-rose-300">75-100% Sat</span>
                         </div>
                       </div>
 
                       {/* Expanded Detailed Breakdown */}
                       {legendExpanded && (
-                        <div className="mt-2 pt-2.5 border-t border-slate-800/80 space-y-2 text-[10px] animate-fadeIn">
-                          <div className="text-slate-300 font-semibold flex items-center gap-1.5">
-                            <Activity className="w-3 h-3 text-cyan-400" />
-                            <span>{isAr ? 'تفسير الارتباط الرياضي والفيزيائي:' : 'Correlation Matrix & Physics:'}</span>
+                        <div className="animate-fadeIn mt-2 space-y-2 border-t border-slate-800/80 pt-2.5 text-[10px]">
+                          <div className="flex items-center gap-1.5 font-semibold text-slate-300">
+                            <Activity className="h-3 w-3 text-cyan-400" />
+                            <span>
+                              {isAr
+                                ? 'تفسير الارتباط الرياضي والفيزيائي:'
+                                : 'Correlation Matrix & Physics:'}
+                            </span>
                           </div>
 
-                          <div className="space-y-1.5 text-slate-400 text-[10px] leading-relaxed">
-                            <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
-                              <div className="flex items-center justify-between text-slate-200 font-bold">
+                          <div className="space-y-1.5 text-[10px] leading-relaxed text-slate-400">
+                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2">
+                              <div className="flex items-center justify-between font-bold text-slate-200">
                                 <span className="flex items-center gap-1">
-                                  <span className="w-2 h-2 rounded-full bg-cyan-400" />
-                                  {isAr ? 'درجة تشبع اللون (Saturation / α):' : 'Color Saturation (α Opacity):'}
+                                  <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                                  {isAr
+                                    ? 'درجة تشبع اللون (Saturation / α):'
+                                    : 'Color Saturation (α Opacity):'}
                                 </span>
                                 <span className="text-cyan-300">0.0 → 1.0</span>
                               </div>
@@ -2360,11 +2798,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               </p>
                             </div>
 
-                            <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
-                              <div className="flex items-center justify-between text-slate-200 font-bold">
+                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2">
+                              <div className="flex items-center justify-between font-bold text-slate-200">
                                 <span className="flex items-center gap-1">
-                                  <span className="w-2 h-2 rounded-full bg-orange-400" />
-                                  {isAr ? 'نصف القطر الحراري والتشتت:' : 'Thermal Radius & Dissipation:'}
+                                  <span className="h-2 w-2 rounded-full bg-orange-400" />
+                                  {isAr
+                                    ? 'نصف القطر الحراري والتشتت:'
+                                    : 'Thermal Radius & Dissipation:'}
                                 </span>
                                 <span className="text-orange-300">30px → 120px</span>
                               </div>
@@ -2375,11 +2815,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               </p>
                             </div>
 
-                            <div className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
-                              <div className="flex items-center justify-between text-slate-200 font-bold">
+                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2">
+                              <div className="flex items-center justify-between font-bold text-slate-200">
                                 <span className="flex items-center gap-1">
-                                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-                                  {isAr ? 'النواة البيضاء الساخنة (Hot Core):' : 'White-Hot Saturation Core:'}
+                                  <span className="h-2 w-2 animate-ping rounded-full bg-rose-500" />
+                                  {isAr
+                                    ? 'النواة البيضاء الساخنة (Hot Core):'
+                                    : 'White-Hot Saturation Core:'}
                                 </span>
                                 <span className="text-rose-300">100% Saturation</span>
                               </div>
@@ -2391,9 +2833,11 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             </div>
                           </div>
 
-                          <div className="pt-1 flex items-center justify-between text-[9px] text-slate-500 border-t border-slate-800/60 font-sans">
+                          <div className="flex items-center justify-between border-t border-slate-800/60 pt-1 font-sans text-[9px] text-slate-500">
                             <span>{isAr ? 'المعيار المقاس اللحظي:' : 'Current Live Metric:'}</span>
-                            <span className="text-cyan-400 font-mono font-bold">{heatmapMetric.replace('_', ' ')}</span>
+                            <span className="font-mono font-bold text-cyan-400">
+                              {heatmapMetric.replace('_', ' ')}
+                            </span>
                           </div>
                         </div>
                       )}
@@ -2405,462 +2849,538 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 {heatmapEnabled && !showHeatmapLegend && (
                   <button
                     onClick={() => setShowHeatmapLegend(true)}
-                    className={`absolute bottom-3 ${isAr ? 'right-3' : 'left-3'} z-20 px-2.5 py-1.5 rounded-lg bg-slate-950/90 border border-slate-700/80 shadow-lg text-xs font-mono text-slate-300 hover:text-white flex items-center gap-1.5 transition backdrop-blur-md`}
+                    className={`absolute bottom-3 ${isAr ? 'right-3' : 'left-3'} z-20 flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-950/90 px-2.5 py-1.5 font-mono text-xs text-slate-300 shadow-lg backdrop-blur-md transition hover:text-white`}
                   >
-                    <Flame className="w-3.5 h-3.5 text-orange-400" />
+                    <Flame className="h-3.5 w-3.5 text-orange-400" />
                     <span>{isAr ? 'إظهار دليل الشدة' : 'Show Intensity Legend'}</span>
                   </button>
                 )}
               </div>
 
-            {/* Fast Node Switcher Bar */}
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-4 pt-3 border-t border-slate-800/80">
-              {nodes.map((n) => {
-                const isSelected = selectedNodeId === n.id;
-                const isIso = n.status === 'ISOLATED';
-                const isAtk = n.status === 'UNDER_ATTACK';
-                const metric = segmentDensityMetrics[n.id];
-                const isOverheat = metric?.thermalStatus === 'CRITICAL_OVERHEAT' || isAtk;
-                const isElevated = metric?.thermalStatus === 'ELEVATED_HEAT';
+              {/* Fast Node Switcher Bar */}
+              <div className="mt-4 grid grid-cols-3 gap-2 border-t border-slate-800/80 pt-3 sm:grid-cols-6">
+                {nodes.map(n => {
+                  const isSelected = selectedNodeId === n.id;
+                  const isIso = n.status === 'ISOLATED';
+                  const isAtk = n.status === 'UNDER_ATTACK';
+                  const metric = segmentDensityMetrics[n.id];
+                  const isOverheat = metric?.thermalStatus === 'CRITICAL_OVERHEAT' || isAtk;
+                  const isElevated = metric?.thermalStatus === 'ELEVATED_HEAT';
 
-                return (
-                  <button
-                    key={n.id}
-                    onClick={() => setSelectedNodeId(n.id)}
-                    className={`p-2 rounded-xl text-left font-mono text-xs border transition relative overflow-hidden ${
-                      isSelected
-                        ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-sm'
-                        : isOverheat
-                        ? 'bg-rose-950/50 border-rose-500/80 text-rose-200 ring-1 ring-rose-500/60 shadow-lg shadow-rose-950/50 animate-pulse'
-                        : isElevated
-                        ? 'bg-amber-950/40 border-amber-500/60 text-amber-300 shadow-sm'
-                        : isIso
-                        ? 'bg-rose-950/30 border-rose-800 text-rose-300'
-                        : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {/* Active Alert Zone Ping Dot on High Threat */}
-                    {isOverheat && (
-                      <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-80"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                      </span>
-                    )}
-                    <div className="flex items-center justify-between pr-2">
-                      <span className="text-[10px] font-bold truncate">{n.id.replace('node-', '')}</span>
-                      {!isOverheat && (
-                        <span className={`w-1.5 h-1.5 rounded-full ${isIso ? 'bg-rose-500' : isElevated ? 'bg-amber-400' : 'bg-emerald-400'}`} />
-                      )}
-                    </div>
-                    <div className="text-[9px] text-slate-500 mt-1 truncate flex items-center justify-between">
-                      <span>{n.ipAddress}</span>
-                      {metric && (
-                        <span className={`text-[8px] font-bold ${isOverheat ? 'text-rose-400' : isElevated ? 'text-amber-400' : 'text-slate-500'}`}>
-                          {Math.round(metric.densityScore * 100)}%
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => setSelectedNodeId(n.id)}
+                      className={`relative overflow-hidden rounded-xl border p-2 text-left font-mono text-xs transition ${
+                        isSelected
+                          ? 'border-cyan-500 bg-cyan-500/20 text-cyan-300 shadow-sm'
+                          : isOverheat
+                            ? 'animate-pulse border-rose-500/80 bg-rose-950/50 text-rose-200 shadow-lg ring-1 shadow-rose-950/50 ring-rose-500/60'
+                            : isElevated
+                              ? 'border-amber-500/60 bg-amber-950/40 text-amber-300 shadow-sm'
+                              : isIso
+                                ? 'border-rose-800 bg-rose-950/30 text-rose-300'
+                                : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {/* Active Alert Zone Ping Dot on High Threat */}
+                      {isOverheat && (
+                        <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-80"></span>
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
                         </span>
                       )}
+                      <div className="flex items-center justify-between pr-2">
+                        <span className="truncate text-[10px] font-bold">
+                          {n.id.replace('node-', '')}
+                        </span>
+                        {!isOverheat && (
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${isIso ? 'bg-rose-500' : isElevated ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                          />
+                        )}
+                      </div>
+                      <div className="mt-1 flex items-center justify-between truncate text-[9px] text-slate-500">
+                        <span>{n.ipAddress}</span>
+                        {metric && (
+                          <span
+                            className={`text-[8px] font-bold ${isOverheat ? 'text-rose-400' : isElevated ? 'text-amber-400' : 'text-slate-500'}`}
+                          >
+                            {Math.round(metric.densityScore * 100)}%
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Node Telemetry & Defensive Controller Sidebar (1 col) */}
+            <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Server className="h-5 w-5 text-cyan-400" />
+                    <h3 className="text-sm font-bold text-white">
+                      {isAr ? 'تفاصيل وتحكم العقدة المحددة' : 'Selected Node Telemetry'}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase ${
+                        selectedNode?.status === 'ISOLATED'
+                          ? 'bg-rose-500 text-white'
+                          : selectedNode?.status === 'UNDER_ATTACK'
+                            ? 'animate-pulse bg-amber-500 text-slate-950'
+                            : 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
+                      }`}
+                    >
+                      {selectedNode?.status || 'UNKNOWN'}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setIsNodeExpanded(true);
+                        setExpandedNodeSubTab('THROUGHPUT');
+                      }}
+                      className="flex items-center gap-1 rounded-lg border border-cyan-500/50 bg-cyan-950/80 p-1.5 font-mono text-xs font-bold text-cyan-300 shadow-md shadow-cyan-950/40 transition hover:scale-105 hover:bg-cyan-900"
+                      title={isAr ? 'توسيع الفحص العميق للعقدة' : 'Expand Deep Inspector'}
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">{isAr ? 'توسيع' : 'Expand'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* HIGH INTENSITY ALERT ZONE WARNING BANNER (CSS PULSE DRIVEN) */}
+                {selectedNode &&
+                  segmentDensityMetrics[selectedNode.id] &&
+                  (segmentDensityMetrics[selectedNode.id].thermalStatus === 'CRITICAL_OVERHEAT' ||
+                    selectedNode.status === 'UNDER_ATTACK') && (
+                    <div
+                      className="flex items-center justify-between gap-2 rounded-xl border border-rose-500/80 bg-rose-950/80 p-3 font-mono text-xs text-rose-200 shadow-xl shadow-rose-950/70"
+                      style={{ animation: 'cyberAlertBeaconPulse 1.8s ease-in-out infinite' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="relative flex h-3 w-3 shrink-0">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-80"></span>
+                          <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-500"></span>
+                        </span>
+                        <div>
+                          <div className="text-[11px] leading-tight font-bold text-white">
+                            {isAr
+                              ? '🚨 بؤرة هجوم نشطة عالية الكثافة'
+                              : '🚨 ACTIVE THREAT ALERT ZONE'}
+                          </div>
+                          <div className="text-[9px] text-rose-300">
+                            {isAr
+                              ? 'تجاوزت كثافة الحزم الخبيثة عتبة الخطر'
+                              : 'Malicious packet velocity exceeds critical threshold'}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="shrink-0 rounded bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                        {Math.round(segmentDensityMetrics[selectedNode.id].densityScore * 100)}%
+                        HEAT
+                      </span>
                     </div>
-                  </button>
+                  )}
+
+                {selectedNode && (
+                  <div className="space-y-3 font-mono text-xs">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="block text-[10px] text-slate-400">Node Name:</span>
+                        <span className="text-sm font-bold text-slate-100">
+                          {isAr ? selectedNode.labelAr : selectedNode.label}
+                        </span>
+                      </div>
+                      <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-[10px] text-cyan-400">
+                        {selectedNode.id}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-slate-800 bg-slate-950 p-2.5">
+                      <div>
+                        <span className="block text-[10px] text-slate-500">Internal IP:</span>
+                        <span className="font-bold text-slate-200">{selectedNode.ipAddress}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-500">VLAN Zone:</span>
+                        <span className="font-bold text-cyan-400">{selectedNode.vlan}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-500">Active Load:</span>
+                        <span className="font-bold text-amber-400">
+                          {selectedNode.activeLoadPercent}%
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] text-slate-500">Kernel Latency:</span>
+                        <span className="font-bold text-emerald-400">
+                          {selectedNode.lastPingMs}ms
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Real-time Ingress & Egress Throughput Snapshot */}
+                    {selectedNodeThroughput && (
+                      <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-800 bg-slate-950/90 p-2.5">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-cyan-400">
+                            <ArrowDownLeft className="h-3.5 w-3.5" />
+                            <span>Ingress RX</span>
+                          </div>
+                          <div className="text-sm font-black text-white">
+                            {selectedNodeThroughput.ingressBandwidthMbps}{' '}
+                            <span className="text-[9px] font-normal text-slate-400">Mbps</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[9px] text-slate-400">
+                            <span>Peak: {selectedNodeThroughput.ingressPeakMbps}M</span>
+                            <span className="text-cyan-400">
+                              {selectedNodeThroughput.ingressPps.toLocaleString()} pps
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                            <ArrowUpRight className="h-3.5 w-3.5" />
+                            <span>Egress TX</span>
+                          </div>
+                          <div className="text-sm font-black text-white">
+                            {selectedNodeThroughput.egressBandwidthMbps}{' '}
+                            <span className="text-[9px] font-normal text-slate-400">Mbps</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[9px] text-slate-400">
+                            <span>Peak: {selectedNodeThroughput.egressPeakMbps}M</span>
+                            <span className="text-emerald-400">
+                              {selectedNodeThroughput.egressPps.toLocaleString()} pps
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Connected Edges Quick Summary */}
+                    {selectedNodeThroughput && selectedNodeThroughput.connectedEdges.length > 0 && (
+                      <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="flex items-center gap-1 font-bold tracking-wider text-slate-400 uppercase">
+                            <Cable className="h-3 w-3 text-cyan-400" />
+                            <span>
+                              {isAr ? 'الروابط الشبكية المتصلة:' : 'Connected Mesh Edges:'}
+                            </span>
+                          </span>
+                          <span className="rounded border border-cyan-500/30 bg-cyan-950 px-1.5 py-0.5 font-mono font-bold text-cyan-400">
+                            {selectedNodeThroughput.connectedEdges.length} Links
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedNodeThroughput.connectedEdges.map(edge => (
+                            <button
+                              key={edge.id}
+                              onClick={() => {
+                                setIsNodeExpanded(true);
+                                setExpandedNodeSubTab('EDGES');
+                              }}
+                              className="flex items-center gap-1.5 rounded border border-slate-700/80 bg-slate-900 px-2 py-0.5 font-mono text-[10px] text-slate-300 transition hover:bg-slate-800"
+                            >
+                              <span
+                                className={`h-1.5 w-1.5 rounded-full ${edgeQuarantined[edge.id] ? 'bg-rose-400' : edge.status === 'CONGESTED' ? 'bg-amber-400' : 'bg-emerald-400'}`}
+                              />
+                              <span className="max-w-[90px] truncate">
+                                {isAr ? edge.neighborLabelAr : edge.neighborLabel}
+                              </span>
+                              <span className="text-[9px] text-slate-500">
+                                ({edge.capacityGbps}G)
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Load Progress Bar */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px] text-slate-400">
+                        <span>CPU / Ingress Buffer Load</span>
+                        <span>{selectedNode.activeLoadPercent}%</span>
+                      </div>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            selectedNode.activeLoadPercent > 80
+                              ? 'bg-rose-500'
+                              : selectedNode.activeLoadPercent > 50
+                                ? 'bg-amber-400'
+                                : 'bg-cyan-400'
+                          }`}
+                          style={{ width: `${selectedNode.activeLoadPercent}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tactical Directives and Expand Side-Panel Trigger */}
+              <div className="space-y-2.5 border-t border-slate-800 pt-3">
+                <button
+                  onClick={() => {
+                    setIsNodeExpanded(true);
+                    setExpandedNodeSubTab('THROUGHPUT');
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600/90 to-blue-600/90 px-3 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-950/60 transition hover:scale-[1.01] hover:from-cyan-500 hover:to-blue-500"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                  <span>
+                    {isAr
+                      ? 'فتح لوحة الفحص الشاملة للعقدة والروابط'
+                      : 'Expand Node Metrics & Connected Edges'}
+                  </span>
+                </button>
+
+                <div className="space-y-2">
+                  {selectedNode?.status === 'ISOLATED' ? (
+                    <button
+                      onClick={() => handleRestoreNode(selectedNode.id)}
+                      disabled={isLoading}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-lg shadow-emerald-950/50 transition hover:bg-emerald-500"
+                    >
+                      <Unlock className="h-4 w-4" />
+                      <span>{isAr ? 'إعادة العقدة للشبكة' : 'Restore Node to Production'}</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleIsolateNode(selectedNode.id)}
+                      disabled={isLoading}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600/90 px-3 py-2 text-xs font-bold text-white shadow-lg shadow-rose-950/50 transition hover:bg-rose-600"
+                    >
+                      <Ban className="h-4 w-4" />
+                      <span>{isAr ? 'عزل العقدة فوراً' : 'Isolate Subnet (Quarantine)'}</span>
+                    </button>
+                  )}
+
+                  {/* Simulation buttons */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() =>
+                        handleSimulateAttackVector(
+                          selectedNode.id,
+                          'SYN Flood / L4 Amp',
+                          'CRITICAL'
+                        )
+                      }
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-2 py-1.5 text-[11px] font-bold text-slate-200 transition hover:bg-slate-800"
+                    >
+                      <Flame className="h-3.5 w-3.5 text-rose-400" />
+                      <span>Simulate DDoS</span>
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        handleSimulateAttackVector(
+                          selectedNode.id,
+                          'Prompt Injection / SQLi',
+                          'HIGH'
+                        )
+                      }
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-2 py-1.5 text-[11px] font-bold text-slate-200 transition hover:bg-slate-800"
+                    >
+                      <Zap className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Inject Exploit</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. SEGMENT THREAT DENSITY & THERMAL TELEMETRY MATRIX */}
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl">
+            <div className="flex flex-col items-start justify-between gap-3 border-b border-slate-800 pb-3 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-2.5">
+                <Flame className="h-5 w-5 animate-pulse text-orange-400" />
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                    <span>
+                      {isAr
+                        ? 'مصفوفة كثافة التهديدات الحرارية عبر قطاعات الشبكة'
+                        : 'Real-Time Threat Traffic Density Matrix Across Network Segments'}
+                    </span>
+                    <span className="rounded border border-orange-500/40 bg-orange-500/20 px-2 py-0.5 font-mono text-[10px] text-orange-300">
+                      LIVE RADAR
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    {isAr
+                      ? 'تحليل حراري لحظي يربط بين خطورة التهديدات، حمولة المقابس النشطة، وزمن استجابة النواة عبر القطاعات المعزولة'
+                      : 'Thermal telemetry correlating MITRE ATT&CK severity, active socket payload ratios, and kernel latencies'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 font-mono text-xs">
+                <span className="text-slate-500">
+                  {isAr ? 'مقياس الخريطة:' : 'Active Heat Metric:'}
+                </span>
+                <span className="rounded-lg border border-cyan-500/40 bg-slate-950 px-2.5 py-1 font-bold text-cyan-300">
+                  {heatmapMetric.replace('_', ' ')}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 lg:grid-cols-3">
+              {(Object.values(segmentDensityMetrics) as SegmentDensityMetric[]).map(metric => {
+                const isOverheat = metric.thermalStatus === 'CRITICAL_OVERHEAT';
+                const isElevated = metric.thermalStatus === 'ELEVATED_HEAT';
+                const isCold = metric.thermalStatus === 'QUARANTINE_COLD';
+
+                return (
+                  <div
+                    key={metric.nodeId}
+                    onClick={() => setSelectedNodeId(metric.nodeId)}
+                    className={`relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-xl border p-4 transition ${
+                      selectedNodeId === metric.nodeId
+                        ? 'border-cyan-400 bg-slate-950 shadow-lg ring-1 shadow-cyan-950/40 ring-cyan-400/50'
+                        : isOverheat
+                          ? 'border-rose-500/60 bg-rose-950/30 shadow-lg ring-1 shadow-rose-950/40 ring-rose-500/40 hover:border-rose-400'
+                          : isElevated
+                            ? 'border-amber-500/40 bg-amber-950/20 hover:border-amber-400'
+                            : isCold
+                              ? 'border-slate-800 bg-slate-950/80 opacity-60'
+                              : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                    }`}
+                  >
+                    {/* Thermal background glow indicator with CSS pulse for Overheat */}
+                    <div
+                      className={`pointer-events-none absolute top-0 right-0 h-28 w-28 rounded-full blur-2xl ${
+                        isOverheat
+                          ? 'animate-pulse bg-rose-500 opacity-30'
+                          : isElevated
+                            ? 'bg-orange-500 opacity-20'
+                            : 'bg-cyan-500 opacity-20'
+                      }`}
+                    />
+
+                    <div className="relative z-10 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                            {isOverheat && (
+                              <span className="relative flex h-2 w-2">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+                                <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
+                              </span>
+                            )}
+                            <span>{isAr ? metric.labelAr : metric.label}</span>
+                          </div>
+                          <div className="mt-0.5 font-mono text-[10px] text-slate-400">
+                            {metric.ipAddress} • {metric.vlan}
+                          </div>
+                        </div>
+                        <span
+                          className={`shrink-0 rounded px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${
+                            isOverheat
+                              ? 'animate-pulse border border-rose-500 bg-rose-500/30 text-rose-300 shadow-sm shadow-rose-950'
+                              : isElevated
+                                ? 'border border-amber-500 bg-amber-500/30 text-amber-300'
+                                : isCold
+                                  ? 'bg-slate-800 text-slate-400'
+                                  : 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
+                          }`}
+                        >
+                          {metric.thermalStatus.replace('_', ' ')}
+                        </span>
+                      </div>
+
+                      {/* Density Progress Bar */}
+                      <div>
+                        <div className="mb-1 flex justify-between font-mono text-[10px]">
+                          <span className="text-slate-400">
+                            {isAr ? 'كثافة التهديد:' : 'Threat Density:'}
+                          </span>
+                          <span
+                            className={`font-bold ${isOverheat ? 'text-rose-400' : isElevated ? 'text-amber-400' : 'text-cyan-400'}`}
+                          >
+                            {Math.round(metric.densityScore * 100)}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded-full border border-slate-800 bg-slate-900">
+                          <div
+                            className={`h-full transition-all duration-500 ${
+                              isOverheat
+                                ? 'bg-gradient-to-r from-orange-500 to-rose-600'
+                                : isElevated
+                                  ? 'bg-gradient-to-r from-yellow-400 to-amber-500'
+                                  : 'bg-gradient-to-r from-cyan-400 to-blue-500'
+                            }`}
+                            style={{ width: `${Math.round(metric.densityScore * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Stats Grid */}
+                      <div className="grid grid-cols-3 gap-1.5 pt-1 text-center font-mono text-[10px]">
+                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5">
+                          <div className="text-slate-500">{isAr ? 'المقابس' : 'Sockets'}</div>
+                          <div className="mt-0.5 font-bold text-white">{metric.activeSockets}</div>
+                        </div>
+                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5">
+                          <div className="text-slate-500">{isAr ? 'التهديدات' : 'Threats'}</div>
+                          <div
+                            className={`mt-0.5 font-bold ${metric.threatCount > 0 ? 'text-rose-400' : 'text-slate-300'}`}
+                          >
+                            {metric.threatCount}
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5">
+                          <div className="text-slate-500">{isAr ? 'الاستجابة' : 'Latency'}</div>
+                          <div className="mt-0.5 font-bold text-emerald-400">
+                            {metric.latencyMs}ms
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
           </div>
-
-          {/* Node Telemetry & Defensive Controller Sidebar (1 col) */}
-          <div className="rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl p-5 space-y-4 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <Server className="w-5 h-5 text-cyan-400" />
-                  <h3 className="font-bold text-white text-sm">
-                    {isAr ? 'تفاصيل وتحكم العقدة المحددة' : 'Selected Node Telemetry'}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
-                      selectedNode?.status === 'ISOLATED'
-                        ? 'bg-rose-500 text-white'
-                        : selectedNode?.status === 'UNDER_ATTACK'
-                        ? 'bg-amber-500 text-slate-950 animate-pulse'
-                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                    }`}
-                  >
-                    {selectedNode?.status || 'UNKNOWN'}
-                  </span>
-                  <button
-                    onClick={() => {
-                      setIsNodeExpanded(true);
-                      setExpandedNodeSubTab('THROUGHPUT');
-                    }}
-                    className="p-1.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 flex items-center gap-1 text-xs font-mono font-bold transition hover:scale-105 shadow-md shadow-cyan-950/40"
-                    title={isAr ? 'توسيع الفحص العميق للعقدة' : 'Expand Deep Inspector'}
-                  >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{isAr ? 'توسيع' : 'Expand'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* HIGH INTENSITY ALERT ZONE WARNING BANNER (CSS PULSE DRIVEN) */}
-              {selectedNode && segmentDensityMetrics[selectedNode.id] && (segmentDensityMetrics[selectedNode.id].thermalStatus === 'CRITICAL_OVERHEAT' || selectedNode.status === 'UNDER_ATTACK') && (
-                <div
-                  className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/80 text-rose-200 text-xs font-mono flex items-center justify-between gap-2 shadow-xl shadow-rose-950/70"
-                  style={{ animation: 'cyberAlertBeaconPulse 1.8s ease-in-out infinite' }}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-3 w-3 shrink-0">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-80"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
-                    </span>
-                    <div>
-                      <div className="font-bold text-white text-[11px] leading-tight">
-                        {isAr ? '🚨 بؤرة هجوم نشطة عالية الكثافة' : '🚨 ACTIVE THREAT ALERT ZONE'}
-                      </div>
-                      <div className="text-[9px] text-rose-300">
-                        {isAr ? 'تجاوزت كثافة الحزم الخبيثة عتبة الخطر' : 'Malicious packet velocity exceeds critical threshold'}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded bg-rose-600 text-white font-bold text-[10px] shrink-0">
-                    {Math.round(segmentDensityMetrics[selectedNode.id].densityScore * 100)}% HEAT
-                  </span>
-                </div>
-              )}
-
-              {selectedNode && (
-                <div className="space-y-3 text-xs font-mono">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Node Name:</span>
-                      <span className="text-sm font-bold text-slate-100">{isAr ? selectedNode.labelAr : selectedNode.label}</span>
-                    </div>
-                    <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[10px] text-cyan-400 font-mono">
-                      {selectedNode.id}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2.5 bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">Internal IP:</span>
-                      <span className="text-slate-200 font-bold">{selectedNode.ipAddress}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">VLAN Zone:</span>
-                      <span className="text-cyan-400 font-bold">{selectedNode.vlan}</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">Active Load:</span>
-                      <span className="text-amber-400 font-bold">{selectedNode.activeLoadPercent}%</span>
-                    </div>
-                    <div>
-                      <span className="text-slate-500 block text-[10px]">Kernel Latency:</span>
-                      <span className="text-emerald-400 font-bold">{selectedNode.lastPingMs}ms</span>
-                    </div>
-                  </div>
-
-                  {/* Real-time Ingress & Egress Throughput Snapshot */}
-                  {selectedNodeThroughput && (
-                    <div className="grid grid-cols-2 gap-2 bg-slate-950/90 p-2.5 rounded-xl border border-slate-800">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1 text-[10px] text-cyan-400 font-bold">
-                          <ArrowDownLeft className="w-3.5 h-3.5" />
-                          <span>Ingress RX</span>
-                        </div>
-                        <div className="text-sm font-black text-white">
-                          {selectedNodeThroughput.ingressBandwidthMbps} <span className="text-[9px] font-normal text-slate-400">Mbps</span>
-                        </div>
-                        <div className="text-[9px] text-slate-400 flex items-center justify-between">
-                          <span>Peak: {selectedNodeThroughput.ingressPeakMbps}M</span>
-                          <span className="text-cyan-400">{selectedNodeThroughput.ingressPps.toLocaleString()} pps</span>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                          <span>Egress TX</span>
-                        </div>
-                        <div className="text-sm font-black text-white">
-                          {selectedNodeThroughput.egressBandwidthMbps} <span className="text-[9px] font-normal text-slate-400">Mbps</span>
-                        </div>
-                        <div className="text-[9px] text-slate-400 flex items-center justify-between">
-                          <span>Peak: {selectedNodeThroughput.egressPeakMbps}M</span>
-                          <span className="text-emerald-400">{selectedNodeThroughput.egressPps.toLocaleString()} pps</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Connected Edges Quick Summary */}
-                  {selectedNodeThroughput && selectedNodeThroughput.connectedEdges.length > 0 && (
-                    <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-1.5">
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                          <Cable className="w-3 h-3 text-cyan-400" />
-                          <span>{isAr ? 'الروابط الشبكية المتصلة:' : 'Connected Mesh Edges:'}</span>
-                        </span>
-                        <span className="font-mono font-bold text-cyan-400 bg-cyan-950 px-1.5 py-0.5 rounded border border-cyan-500/30">
-                          {selectedNodeThroughput.connectedEdges.length} Links
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {selectedNodeThroughput.connectedEdges.map((edge) => (
-                          <button
-                            key={edge.id}
-                            onClick={() => {
-                              setIsNodeExpanded(true);
-                              setExpandedNodeSubTab('EDGES');
-                            }}
-                            className="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-[10px] font-mono text-slate-300 flex items-center gap-1.5 transition"
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${edgeQuarantined[edge.id] ? 'bg-rose-400' : edge.status === 'CONGESTED' ? 'bg-amber-400' : 'bg-emerald-400'}`} />
-                            <span className="truncate max-w-[90px]">{isAr ? edge.neighborLabelAr : edge.neighborLabel}</span>
-                            <span className="text-slate-500 text-[9px]">({edge.capacityGbps}G)</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Load Progress Bar */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] text-slate-400">
-                      <span>CPU / Ingress Buffer Load</span>
-                      <span>{selectedNode.activeLoadPercent}%</span>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${
-                          selectedNode.activeLoadPercent > 80
-                            ? 'bg-rose-500'
-                            : selectedNode.activeLoadPercent > 50
-                            ? 'bg-amber-400'
-                            : 'bg-cyan-400'
-                        }`}
-                        style={{ width: `${selectedNode.activeLoadPercent}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Tactical Directives and Expand Side-Panel Trigger */}
-            <div className="space-y-2.5 pt-3 border-t border-slate-800">
-              <button
-                onClick={() => {
-                  setIsNodeExpanded(true);
-                  setExpandedNodeSubTab('THROUGHPUT');
-                }}
-                className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-600/90 to-blue-600/90 hover:from-cyan-500 hover:to-blue-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-950/60 transition hover:scale-[1.01]"
-              >
-                <Maximize2 className="w-4 h-4" />
-                <span>{isAr ? 'فتح لوحة الفحص الشاملة للعقدة والروابط' : 'Expand Node Metrics & Connected Edges'}</span>
-              </button>
-
-              <div className="space-y-2">
-                {selectedNode?.status === 'ISOLATED' ? (
-                  <button
-                    onClick={() => handleRestoreNode(selectedNode.id)}
-                    disabled={isLoading}
-                    className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50 transition"
-                  >
-                    <Unlock className="w-4 h-4" />
-                    <span>{isAr ? 'إعادة العقدة للشبكة' : 'Restore Node to Production'}</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleIsolateNode(selectedNode.id)}
-                    disabled={isLoading}
-                    className="w-full py-2 px-3 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-950/50 transition"
-                  >
-                    <Ban className="w-4 h-4" />
-                    <span>{isAr ? 'عزل العقدة فوراً' : 'Isolate Subnet (Quarantine)'}</span>
-                  </button>
-                )}
-
-                {/* Simulation buttons */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handleSimulateAttackVector(selectedNode.id, 'SYN Flood / L4 Amp', 'CRITICAL')}
-                    className="py-1.5 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-bold flex items-center justify-center gap-1.5 transition"
-                  >
-                    <Flame className="w-3.5 h-3.5 text-rose-400" />
-                    <span>Simulate DDoS</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleSimulateAttackVector(selectedNode.id, 'Prompt Injection / SQLi', 'HIGH')}
-                    className="py-1.5 px-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-bold flex items-center justify-center gap-1.5 transition"
-                  >
-                    <Zap className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Inject Exploit</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-
-        {/* 3. SEGMENT THREAT DENSITY & THERMAL TELEMETRY MATRIX */}
-        <div className="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
-            <div className="flex items-center gap-2.5">
-              <Flame className="w-5 h-5 text-orange-400 animate-pulse" />
-              <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <span>{isAr ? 'مصفوفة كثافة التهديدات الحرارية عبر قطاعات الشبكة' : 'Real-Time Threat Traffic Density Matrix Across Network Segments'}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-orange-500/20 text-orange-300 border border-orange-500/40">
-                    LIVE RADAR
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-400">
-                  {isAr
-                    ? 'تحليل حراري لحظي يربط بين خطورة التهديدات، حمولة المقابس النشطة، وزمن استجابة النواة عبر القطاعات المعزولة'
-                    : 'Thermal telemetry correlating MITRE ATT&CK severity, active socket payload ratios, and kernel latencies'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs font-mono">
-              <span className="text-slate-500">{isAr ? 'مقياس الخريطة:' : 'Active Heat Metric:'}</span>
-              <span className="px-2.5 py-1 rounded-lg bg-slate-950 border border-cyan-500/40 text-cyan-300 font-bold">
-                {heatmapMetric.replace('_', ' ')}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {(Object.values(segmentDensityMetrics) as SegmentDensityMetric[]).map((metric) => {
-              const isOverheat = metric.thermalStatus === 'CRITICAL_OVERHEAT';
-              const isElevated = metric.thermalStatus === 'ELEVATED_HEAT';
-              const isCold = metric.thermalStatus === 'QUARANTINE_COLD';
-
-              return (
-                <div
-                  key={metric.nodeId}
-                  onClick={() => setSelectedNodeId(metric.nodeId)}
-                  className={`p-4 rounded-xl border transition cursor-pointer relative overflow-hidden flex flex-col justify-between ${
-                    selectedNodeId === metric.nodeId
-                      ? 'bg-slate-950 border-cyan-400 ring-1 ring-cyan-400/50 shadow-lg shadow-cyan-950/40'
-                      : isOverheat
-                      ? 'bg-rose-950/30 border-rose-500/60 hover:border-rose-400 ring-1 ring-rose-500/40 shadow-lg shadow-rose-950/40'
-                      : isElevated
-                      ? 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400'
-                      : isCold
-                      ? 'bg-slate-950/80 border-slate-800 opacity-60'
-                      : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  {/* Thermal background glow indicator with CSS pulse for Overheat */}
-                  <div
-                    className={`absolute top-0 right-0 w-28 h-28 rounded-full blur-2xl pointer-events-none ${
-                      isOverheat ? 'bg-rose-500 opacity-30 animate-pulse' : isElevated ? 'bg-orange-500 opacity-20' : 'bg-cyan-500 opacity-20'
-                    }`}
-                  />
-
-                  <div className="space-y-3 relative z-10">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="font-bold text-white text-xs flex items-center gap-1.5">
-                          {isOverheat && (
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                            </span>
-                          )}
-                          <span>{isAr ? metric.labelAr : metric.label}</span>
-                        </div>
-                        <div className="text-[10px] font-mono text-slate-400 mt-0.5">{metric.ipAddress} • {metric.vlan}</div>
-                      </div>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase shrink-0 ${
-                          isOverheat
-                            ? 'bg-rose-500/30 text-rose-300 border border-rose-500 animate-pulse shadow-sm shadow-rose-950'
-                            : isElevated
-                            ? 'bg-amber-500/30 text-amber-300 border border-amber-500'
-                            : isCold
-                            ? 'bg-slate-800 text-slate-400'
-                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        }`}
-                      >
-                        {metric.thermalStatus.replace('_', ' ')}
-                      </span>
-                    </div>
-
-                    {/* Density Progress Bar */}
-                    <div>
-                      <div className="flex justify-between text-[10px] font-mono mb-1">
-                        <span className="text-slate-400">{isAr ? 'كثافة التهديد:' : 'Threat Density:'}</span>
-                        <span className={`font-bold ${isOverheat ? 'text-rose-400' : isElevated ? 'text-amber-400' : 'text-cyan-400'}`}>
-                          {Math.round(metric.densityScore * 100)}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden border border-slate-800">
-                        <div
-                          className={`h-full transition-all duration-500 ${
-                            isOverheat
-                              ? 'bg-gradient-to-r from-orange-500 to-rose-600'
-                              : isElevated
-                              ? 'bg-gradient-to-r from-yellow-400 to-amber-500'
-                              : 'bg-gradient-to-r from-cyan-400 to-blue-500'
-                          }`}
-                          style={{ width: `${Math.round(metric.densityScore * 100)}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-3 gap-1.5 pt-1 text-[10px] font-mono text-center">
-                      <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800">
-                        <div className="text-slate-500">{isAr ? 'المقابس' : 'Sockets'}</div>
-                        <div className="text-white font-bold mt-0.5">{metric.activeSockets}</div>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800">
-                        <div className="text-slate-500">{isAr ? 'التهديدات' : 'Threats'}</div>
-                        <div className={`font-bold mt-0.5 ${metric.threatCount > 0 ? 'text-rose-400' : 'text-slate-300'}`}>
-                          {metric.threatCount}
-                        </div>
-                      </div>
-                      <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800">
-                        <div className="text-slate-500">{isAr ? 'الاستجابة' : 'Latency'}</div>
-                        <div className="text-emerald-400 font-bold mt-0.5">{metric.latencyMs}ms</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    )}
+      )}
 
       {/* 3. TAB 2: DYNAMIC SOCKET & CONNECTION MATRIX + DPI & HEX PARSER */}
       {activeSubTab === 'SOCKET_MATRIX' && (
         <div className="space-y-5">
           {/* Controls Bar */}
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center">
+            <div className="flex w-full items-center gap-3 md:w-auto">
               <div className="relative flex-1 md:w-72">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+                <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-500" />
                 <input
                   type="text"
-                  placeholder={isAr ? 'بحث بالعنوان IP، المنفذ، العملية أو الحمولة...' : 'Search IP, port, process, payload...'}
+                  placeholder={
+                    isAr
+                      ? 'بحث بالعنوان IP، المنفذ، العملية أو الحمولة...'
+                      : 'Search IP, port, process, payload...'
+                  }
                   value={socketFilter}
-                  onChange={(e) => setSocketFilter(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                  onChange={e => setSocketFilter(e.target.value)}
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pr-3 pl-9 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
                 />
               </div>
 
               {/* Protocol Filter */}
-              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-                {(['ALL', 'TCP', 'UDP', 'ICMP'] as const).map((p) => (
+              <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs">
+                {(['ALL', 'TCP', 'UDP', 'ICMP'] as const).map(p => (
                   <button
                     key={p}
                     onClick={() => setProtocolFilter(p)}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition ${
-                      protocolFilter === p ? 'bg-cyan-500 text-slate-950' : 'text-slate-400 hover:text-white'
+                    className={`rounded-lg px-2.5 py-1 font-bold transition ${
+                      protocolFilter === p
+                        ? 'bg-cyan-500 text-slate-950'
+                        : 'text-slate-400 hover:text-white'
                     }`}
                   >
                     {p}
@@ -2870,21 +3390,21 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400 font-mono">Threat Verdict:</span>
-              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-                {(['ALL', 'MALICIOUS', 'SUSPICIOUS', 'BENIGN'] as const).map((t) => (
+              <span className="font-mono text-xs text-slate-400">Threat Verdict:</span>
+              <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs">
+                {(['ALL', 'MALICIOUS', 'SUSPICIOUS', 'BENIGN'] as const).map(t => (
                   <button
                     key={t}
                     onClick={() => setThreatFilter(t)}
-                    className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    className={`rounded-lg px-2.5 py-1 font-bold transition ${
                       threatFilter === t
                         ? t === 'MALICIOUS'
                           ? 'bg-rose-600 text-white'
                           : t === 'SUSPICIOUS'
-                          ? 'bg-amber-500 text-slate-950'
-                          : t === 'BENIGN'
-                          ? 'bg-emerald-500 text-slate-950'
-                          : 'bg-cyan-500 text-slate-950'
+                            ? 'bg-amber-500 text-slate-950'
+                            : t === 'BENIGN'
+                              ? 'bg-emerald-500 text-slate-950'
+                              : 'bg-cyan-500 text-slate-950'
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
@@ -2896,10 +3416,10 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           </div>
 
           {/* Socket Matrix Table */}
-          <div className="rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl overflow-hidden">
+          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-900/90 text-slate-400 border-b border-slate-800 uppercase text-[11px]">
+              <table className="w-full text-left font-mono text-xs">
+                <thead className="border-b border-slate-800 bg-slate-900/90 text-[11px] text-slate-400 uppercase">
                   <tr>
                     <th className="p-3.5">Socket ID & Protocol</th>
                     <th className="p-3.5">Source IP : Port</th>
@@ -2914,11 +3434,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   {filteredSockets.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="p-8 text-center text-slate-500">
-                        {isAr ? 'لا توجد مقابس شبكية تطابق معايير الفلترة الحالية' : 'No active socket streams match current filter'}
+                        {isAr
+                          ? 'لا توجد مقابس شبكية تطابق معايير الفلترة الحالية'
+                          : 'No active socket streams match current filter'}
                       </td>
                     </tr>
                   ) : (
-                    filteredSockets.map((s) => {
+                    filteredSockets.map(s => {
                       const isMal = s.threatLevel === 'MALICIOUS';
                       const isSusp = s.threatLevel === 'SUSPICIOUS';
                       const isDropped = s.state === 'DROPPED';
@@ -2926,65 +3448,71 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       return (
                         <tr
                           key={s.id}
-                          className={`hover:bg-slate-900/50 transition cursor-pointer ${
-                            isDropped ? 'opacity-50 bg-slate-950' : isMal ? 'bg-rose-950/10' : ''
+                          className={`cursor-pointer transition hover:bg-slate-900/50 ${
+                            isDropped ? 'bg-slate-950 opacity-50' : isMal ? 'bg-rose-950/10' : ''
                           }`}
                           onClick={() => setSelectedSocket(s)}
                         >
                           <td className="p-3.5 font-bold">
                             <div className="flex items-center gap-2">
                               <span className="text-cyan-400">{s.id}</span>
-                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">
+                              <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300">
                                 {s.protocol}
                               </span>
                             </div>
-                            <span className="text-[10px] text-slate-500 block">{s.processName} (PID: {s.pid})</span>
+                            <span className="block text-[10px] text-slate-500">
+                              {s.processName} (PID: {s.pid})
+                            </span>
                           </td>
 
                           <td className="p-3.5">
-                            <span className="text-slate-200 font-bold">{s.srcIp}</span>
+                            <span className="font-bold text-slate-200">{s.srcIp}</span>
                             <span className="text-cyan-400">:{s.srcPort}</span>
                           </td>
 
                           <td className="p-3.5">
-                            <span className="text-slate-200 font-bold">{s.dstIp}</span>
+                            <span className="font-bold text-slate-200">{s.dstIp}</span>
                             <span className="text-emerald-400">:{s.dstPort}</span>
                           </td>
 
                           <td className="p-3.5">
                             <div className="flex items-center gap-1.5">
                               <span
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                className={`rounded px-2 py-0.5 text-[10px] font-bold ${
                                   isDropped
                                     ? 'bg-slate-800 text-slate-400 line-through'
                                     : s.state === 'ESTABLISHED'
-                                    ? 'bg-emerald-500/20 text-emerald-300'
-                                    : 'bg-amber-500/20 text-amber-300'
+                                      ? 'bg-emerald-500/20 text-emerald-300'
+                                      : 'bg-amber-500/20 text-amber-300'
                                 }`}
                               >
                                 {s.state}
                               </span>
                             </div>
-                            <div className="text-[10px] text-slate-500 mt-0.5 flex gap-1">
-                              {s.tcpFlags.map((f) => (
-                                <span key={f} className="text-cyan-400 font-bold">[{f}]</span>
+                            <div className="mt-0.5 flex gap-1 text-[10px] text-slate-500">
+                              {s.tcpFlags.map(f => (
+                                <span key={f} className="font-bold text-cyan-400">
+                                  [{f}]
+                                </span>
                               ))}
                             </div>
                           </td>
 
                           <td className="p-3.5 text-slate-300">
                             <div>{s.latencyMs} ms</div>
-                            <div className="text-[10px] text-slate-500">{(s.bytesTransferred / 1024).toFixed(1)} KB</div>
+                            <div className="text-[10px] text-slate-500">
+                              {(s.bytesTransferred / 1024).toFixed(1)} KB
+                            </div>
                           </td>
 
                           <td className="p-3.5">
                             <span
-                              className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                              className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${
                                 isMal
-                                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                                  ? 'border border-rose-500/40 bg-rose-500/20 text-rose-300'
                                   : isSusp
-                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                                    ? 'border border-amber-500/40 bg-amber-500/20 text-amber-300'
+                                    : 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
                               }`}
                             >
                               {s.threatLevel}
@@ -2992,46 +3520,49 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           </td>
 
                           <td className="p-3.5 text-right">
-                            <div className="flex items-center justify-end gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                            <div
+                              className="flex flex-wrap items-center justify-end gap-1.5"
+                              onClick={e => e.stopPropagation()}
+                            >
                               <button
                                 onClick={() => setSelectedSocket(s)}
-                                className="px-2 py-1 rounded-lg bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-[11px] font-bold flex items-center gap-1 transition"
+                                className="flex items-center gap-1 rounded-lg border border-cyan-500/40 bg-cyan-950/70 px-2 py-1 text-[11px] font-bold text-cyan-300 transition hover:bg-cyan-900"
                                 title="Deep Packet Inspection & Hex Dump"
                               >
-                                <Binary className="w-3 h-3 text-cyan-400" />
+                                <Binary className="h-3 w-3 text-cyan-400" />
                                 <span>DPI</span>
                               </button>
 
                               <button
                                 onClick={() => handleTraceRoute(s.srcIp)}
                                 disabled={isTracingRoute}
-                                className="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-bold flex items-center gap-1 transition"
+                                className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white"
                                 title="Trace Hop-by-Hop Route"
                               >
-                                <Route className="w-3 h-3 text-cyan-400" />
+                                <Route className="h-3 w-3 text-cyan-400" />
                                 <span>Trace</span>
                               </button>
 
                               <button
                                 onClick={() => handlePushEbpfRule(s.id)}
-                                className="px-2 py-1 rounded-lg bg-amber-950/60 hover:bg-amber-900 border border-amber-500/40 text-amber-300 text-[11px] font-bold flex items-center gap-1 transition"
+                                className="flex items-center gap-1 rounded-lg border border-amber-500/40 bg-amber-950/60 px-2 py-1 text-[11px] font-bold text-amber-300 transition hover:bg-amber-900"
                                 title="Push eBPF XDP Drop Rule to Kernel"
                               >
-                                <ShieldCheck className="w-3 h-3 text-amber-400" />
+                                <ShieldCheck className="h-3 w-3 text-amber-400" />
                                 <span>eBPF</span>
                               </button>
 
                               {!isDropped ? (
                                 <button
                                   onClick={() => handleDropSocket(s.id)}
-                                  className="px-2 py-1 rounded-lg bg-rose-950/70 hover:bg-rose-900 border border-rose-600/50 text-rose-300 text-[11px] font-bold flex items-center gap-1 transition shadow-sm"
+                                  className="flex items-center gap-1 rounded-lg border border-rose-600/50 bg-rose-950/70 px-2 py-1 text-[11px] font-bold text-rose-300 shadow-sm transition hover:bg-rose-900"
                                   title="Reset Socket (TCP RST / Instant Drop)"
                                 >
-                                  <Zap className="w-3 h-3 text-rose-400" />
+                                  <Zap className="h-3 w-3 text-rose-400" />
                                   <span>TCP RST</span>
                                 </button>
                               ) : (
-                                <span className="px-2 py-1 rounded text-[10px] bg-slate-900 text-slate-500 font-mono">
+                                <span className="rounded bg-slate-900 px-2 py-1 font-mono text-[10px] text-slate-500">
                                   DROPPED
                                 </span>
                               )}
@@ -3051,11 +3582,15 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {/* 4. TAB 3: HIERARCHICAL SITE SURVEILLANCE TREE */}
       {activeSubTab === 'SITE_SURVEILLANCE_TREE' && (
         <div className="space-y-5">
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center">
             <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <FolderTree className="w-4 h-4 text-cyan-400" />
-                <span>{isAr ? 'شجرة التوجيه الحية ومراقبة ثغرات المسارات' : 'Application Route Security & Ingress Flow Hierarchy'}</span>
+              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <FolderTree className="h-4 w-4 text-cyan-400" />
+                <span>
+                  {isAr
+                    ? 'شجرة التوجيه الحية ومراقبة ثغرات المسارات'
+                    : 'Application Route Security & Ingress Flow Hierarchy'}
+                </span>
               </h3>
               <p className="text-xs text-slate-400">
                 {isAr
@@ -3067,20 +3602,20 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             <div className="flex items-center gap-2">
               <button
                 onClick={fetchSiteTree}
-                className="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold flex items-center gap-1.5"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
+                <RefreshCw className="h-3.5 w-3.5" />
                 <span>Refresh Map</span>
               </button>
             </div>
           </div>
 
           {/* Tree View Container */}
-          <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl space-y-3">
+          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-2xl">
             {siteTree ? (
               renderRouteTreeNode(siteTree)
             ) : (
-              <div className="p-8 text-center text-slate-500 font-mono text-xs">
+              <div className="p-8 text-center font-mono text-xs text-slate-500">
                 {isAr ? 'جاري جلب خريطة مسارات التطبيق...' : 'Loading site route tree...'}
               </div>
             )}
@@ -3091,11 +3626,15 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {/* 5. TAB 4: DECEPTION TRAPS & HONEYTOKEN MATRIX */}
       {activeSubTab === 'HONEYTOKEN_TRAPS' && (
         <div className="space-y-5">
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center">
             <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-amber-400" />
-                <span>{isAr ? 'مصفوفة فخاخ الخداع الرقمي (Honeytoken Tripwire Matrix)' : 'Deception Honeytokens & Active Tripwire Monitors'}</span>
+              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <ShieldAlert className="h-4 w-4 text-amber-400" />
+                <span>
+                  {isAr
+                    ? 'مصفوفة فخاخ الخداع الرقمي (Honeytoken Tripwire Matrix)'
+                    : 'Deception Honeytokens & Active Tripwire Monitors'}
+                </span>
               </h3>
               <p className="text-xs text-slate-400">
                 {isAr
@@ -3106,57 +3645,62 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
             <button
               onClick={fetchDeceptionTraps}
-              className="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold flex items-center gap-1.5"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw className="h-3.5 w-3.5" />
               <span>Refresh Traps</span>
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {deceptionTraps.map((trap) => (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {deceptionTraps.map(trap => (
               <div
                 key={trap.id}
-                className="p-5 rounded-2xl bg-slate-950 border border-slate-800 shadow-xl space-y-4 hover:border-amber-500/40 transition"
+                className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-xl transition hover:border-amber-500/40"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/60 border border-amber-500/40 px-2 py-0.5 rounded">
+                  <span className="rounded border border-amber-500/40 bg-amber-950/60 px-2 py-0.5 font-mono text-xs font-bold text-amber-400">
                     {trap.id}
                   </span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" title="Trap Armed" />
+                  <span
+                    className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400"
+                    title="Trap Armed"
+                  />
                 </div>
 
                 <div>
-                  <code className="text-sm font-mono font-bold text-cyan-300 block truncate">
+                  <code className="block truncate font-mono text-sm font-bold text-cyan-300">
                     {trap.path}
                   </code>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="mt-1 text-xs text-slate-400">
                     {isAr ? trap.descriptionAr : trap.descriptionEn}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 bg-slate-900/80 p-3 rounded-xl border border-slate-800 font-mono text-xs">
+                <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-800 bg-slate-900/80 p-3 font-mono text-xs">
                   <div>
-                    <span className="text-slate-500 text-[10px] block">Tripwire Hits:</span>
-                    <span className="text-rose-400 font-black text-sm">{trap.hitsCount}</span>
+                    <span className="block text-[10px] text-slate-500">Tripwire Hits:</span>
+                    <span className="text-sm font-black text-rose-400">{trap.hitsCount}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 text-[10px] block">Auto Quarantine:</span>
-                    <span className="text-emerald-400 font-bold">KERNEL ACTIVE</span>
+                    <span className="block text-[10px] text-slate-500">Auto Quarantine:</span>
+                    <span className="font-bold text-emerald-400">KERNEL ACTIVE</span>
                   </div>
                   {trap.lastAttackerIp && (
                     <div className="col-span-2 mt-1">
-                      <span className="text-slate-500 text-[10px] block">Last Attacker:</span>
-                      <span className="text-slate-300 font-bold truncate block">{trap.lastAttackerIp}</span>
+                      <span className="block text-[10px] text-slate-500">Last Attacker:</span>
+                      <span className="block truncate font-bold text-slate-300">
+                        {trap.lastAttackerIp}
+                      </span>
                     </div>
                   )}
                 </div>
 
                 <button
                   onClick={() => handleTriggerHoneytoken(trap.path)}
-                  className="w-full py-2 px-3 rounded-xl bg-amber-600/90 hover:bg-amber-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-950/40 transition"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600/90 px-3 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-amber-950/40 transition hover:bg-amber-600"
                 >
-                  <Zap className="w-4 h-4" />
+                  <Zap className="h-4 w-4" />
                   <span>{isAr ? 'محاكاة تفجير الفخ' : 'Trigger Tripwire Simulator'}</span>
                 </button>
               </div>
@@ -3167,48 +3711,59 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
       {/* 6. MODAL: DEEP PACKET INSPECTION (DPI) & HEX PARSER */}
       {selectedSocket && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
+          <div className="max-h-[90vh] w-full max-w-4xl space-y-6 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-950 border border-cyan-500/40 flex items-center justify-center">
-                  <Binary className="w-5 h-5 text-cyan-400" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-500/40 bg-cyan-950">
+                  <Binary className="h-5 w-5 text-cyan-400" />
                 </div>
                 <div>
                   <h3 className="text-base font-black text-white">
-                    {isAr ? 'فحص الإطار العميق ومحلل الـ Hex (DPI & Hex Parser)' : 'Deep Packet Inspection & Hex Frame Parser'}
+                    {isAr
+                      ? 'فحص الإطار العميق ومحلل الـ Hex (DPI & Hex Parser)'
+                      : 'Deep Packet Inspection & Hex Frame Parser'}
                   </h3>
-                  <p className="text-xs text-slate-400 font-mono">
-                    Stream ID: {selectedSocket.id} • Protocol: {selectedSocket.protocol} • Process: {selectedSocket.processName}
+                  <p className="font-mono text-xs text-slate-400">
+                    Stream ID: {selectedSocket.id} • Protocol: {selectedSocket.protocol} • Process:{' '}
+                    {selectedSocket.processName}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => setSelectedSocket(null)}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+                className="rounded-xl bg-slate-800 p-2 text-slate-300 transition hover:bg-slate-700"
               >
-                <X className="w-5 h-5" />
+                <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Socket Header Metadata */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs bg-slate-950 p-4 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs sm:grid-cols-4">
               <div>
-                <span className="text-slate-500 text-[10px] block">Source IP:Port</span>
-                <span className="text-cyan-400 font-bold">{selectedSocket.srcIp}:{selectedSocket.srcPort}</span>
+                <span className="block text-[10px] text-slate-500">Source IP:Port</span>
+                <span className="font-bold text-cyan-400">
+                  {selectedSocket.srcIp}:{selectedSocket.srcPort}
+                </span>
               </div>
               <div>
-                <span className="text-slate-500 text-[10px] block">Destination IP:Port</span>
-                <span className="text-emerald-400 font-bold">{selectedSocket.dstIp}:{selectedSocket.dstPort}</span>
+                <span className="block text-[10px] text-slate-500">Destination IP:Port</span>
+                <span className="font-bold text-emerald-400">
+                  {selectedSocket.dstIp}:{selectedSocket.dstPort}
+                </span>
               </div>
               <div>
-                <span className="text-slate-500 text-[10px] block">TCP Flags</span>
-                <span className="text-slate-200 font-bold">{selectedSocket.tcpFlags.join(', ')}</span>
+                <span className="block text-[10px] text-slate-500">TCP Flags</span>
+                <span className="font-bold text-slate-200">
+                  {selectedSocket.tcpFlags.join(', ')}
+                </span>
               </div>
               <div>
-                <span className="text-slate-500 text-[10px] block">Threat Level</span>
-                <span className={`font-bold ${selectedSocket.threatLevel === 'MALICIOUS' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                <span className="block text-[10px] text-slate-500">Threat Level</span>
+                <span
+                  className={`font-bold ${selectedSocket.threatLevel === 'MALICIOUS' ? 'text-rose-400' : 'text-emerald-400'}`}
+                >
                   {selectedSocket.threatLevel}
                 </span>
               </div>
@@ -3236,13 +3791,21 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   type: 'SQLI',
                   name: 'SQL Injection Signature Trigger',
                   nameAr: 'اكتشاف توقيع هجوم حقن قواعد البيانات (SQLi)',
-                  pattern: pLower.includes('union select') ? 'UNION SELECT' : pLower.includes('or 1=1') ? "' OR 1=1--" : 'SQL Injection Heuristic',
+                  pattern: pLower.includes('union select')
+                    ? 'UNION SELECT'
+                    : pLower.includes('or 1=1')
+                      ? "' OR 1=1--"
+                      : 'SQL Injection Heuristic',
                   severity: 'CRITICAL',
                   mitre: 'MITRE ATT&CK: T1190 - Exploit Public-Facing Application'
                 });
               }
 
-              if (pLower.includes('<script>') || pLower.includes('document.cookie') || pLower.includes('onerror=')) {
+              if (
+                pLower.includes('<script>') ||
+                pLower.includes('document.cookie') ||
+                pLower.includes('onerror=')
+              ) {
                 detectedSignatures.push({
                   type: 'XSS',
                   name: 'Cross-Site Scripting (XSS) Trigger',
@@ -3253,7 +3816,11 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 });
               }
 
-              if (pLower.includes('etc/passwd') || pLower.includes('../') || pLower.includes('..\\')) {
+              if (
+                pLower.includes('etc/passwd') ||
+                pLower.includes('../') ||
+                pLower.includes('..\\')
+              ) {
                 detectedSignatures.push({
                   type: 'PATH_TRAVERSAL',
                   name: 'Path Traversal / Local File Inclusion (LFI)',
@@ -3280,7 +3847,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 });
               }
 
-              if (pLower.includes('db_backup.sql') || pLower.includes('.env') || pLower.includes('.git') || pLower.includes('smb2')) {
+              if (
+                pLower.includes('db_backup.sql') ||
+                pLower.includes('.env') ||
+                pLower.includes('.git') ||
+                pLower.includes('smb2')
+              ) {
                 detectedSignatures.push({
                   type: 'HONEYTOKEN',
                   name: 'Deception Honeytoken Touch Trigger',
@@ -3294,31 +3866,40 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               if (detectedSignatures.length === 0) return null;
 
               return (
-                <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/50 space-y-3 shadow-lg shadow-rose-950/30">
+                <div className="space-y-3 rounded-xl border border-rose-500/50 bg-rose-950/40 p-4 shadow-lg shadow-rose-950/30">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold font-mono text-rose-300 flex items-center gap-2 uppercase tracking-wide">
-                      <ShieldAlert className="w-4 h-4 text-rose-400 animate-pulse" />
-                      <span>{isAr ? 'تنبيه مطابقة التواقيع الهجومية (Active Signature Triggers):' : 'Active Signature Triggers Detected in Frame:'}</span>
+                    <span className="flex items-center gap-2 font-mono text-xs font-bold tracking-wide text-rose-300 uppercase">
+                      <ShieldAlert className="h-4 w-4 animate-pulse text-rose-400" />
+                      <span>
+                        {isAr
+                          ? 'تنبيه مطابقة التواقيع الهجومية (Active Signature Triggers):'
+                          : 'Active Signature Triggers Detected in Frame:'}
+                      </span>
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500 text-white">
+                    <span className="rounded bg-rose-500 px-2 py-0.5 font-mono text-[10px] font-bold text-white">
                       {detectedSignatures.length} MATCH{detectedSignatures.length > 1 ? 'ES' : ''}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {detectedSignatures.map((sig) => (
-                      <div key={`sig-${sig.name.replace(/[^a-zA-Z0-9]/g, '_')}-${sig.severity}-${sig.mitre}`} className="p-2.5 rounded-lg bg-slate-950/80 border border-rose-900/60 font-mono text-xs">
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    {detectedSignatures.map(sig => (
+                      <div
+                        key={`sig-${sig.name.replace(/[^a-zA-Z0-9]/g, '_')}-${sig.severity}-${sig.mitre}`}
+                        className="rounded-lg border border-rose-900/60 bg-slate-950/80 p-2.5 font-mono text-xs"
+                      >
                         <div className="flex items-center justify-between text-[11px] font-bold text-rose-300">
                           <span>{isAr ? sig.nameAr : sig.name}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-rose-950 text-rose-400 text-[9px] uppercase border border-rose-800">
+                          <span className="rounded border border-rose-800 bg-rose-950 px-1.5 py-0.5 text-[9px] text-rose-400 uppercase">
                             {sig.severity}
                           </span>
                         </div>
-                        <div className="text-[10px] text-amber-300 mt-1">
+                        <div className="mt-1 text-[10px] text-amber-300">
                           <span className="text-slate-500">Pattern: </span>
-                          <code className="bg-slate-900 px-1 py-0.5 rounded text-amber-200">{sig.pattern}</code>
+                          <code className="rounded bg-slate-900 px-1 py-0.5 text-amber-200">
+                            {sig.pattern}
+                          </code>
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{sig.mitre}</div>
+                        <div className="mt-0.5 text-[10px] text-slate-400">{sig.mitre}</div>
                       </div>
                     ))}
                   </div>
@@ -3328,10 +3909,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
             {/* Hex Dump Parser View */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-mono">
+              <div className="flex items-center justify-between font-mono text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400 font-bold uppercase">Raw Packet Frame Hex Dump:</span>
-                  <span className="text-[10px] text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-500/30">
+                  <span className="font-bold text-slate-400 uppercase">
+                    Raw Packet Frame Hex Dump:
+                  </span>
+                  <span className="rounded border border-cyan-500/30 bg-cyan-950 px-2 py-0.5 text-[10px] text-cyan-400">
                     16-Byte Offset Matrix
                   </span>
                 </div>
@@ -3341,46 +3924,52 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     setCopiedCode(true);
                     setTimeout(() => setCopiedCode(false), 2000);
                   }}
-                  className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1 font-mono text-xs"
+                  className="flex items-center gap-1 rounded bg-slate-800 px-2.5 py-1 font-mono text-xs text-slate-300 hover:bg-slate-700"
                 >
-                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedCode ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                   <span>{copiedCode ? 'Copied' : 'Copy Hex Matrix'}</span>
                 </button>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-cyan-300 overflow-x-auto whitespace-pre leading-relaxed shadow-inner">
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-[11px] leading-relaxed whitespace-pre text-cyan-300 shadow-inner">
                 {selectedSocket.hexDump}
               </div>
             </div>
 
             {/* ASCII Payload Translation */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-mono">
-                <span className="text-slate-400 font-bold uppercase">ASCII Decoded Ingress Payload:</span>
+              <div className="flex items-center justify-between font-mono text-xs">
+                <span className="font-bold text-slate-400 uppercase">
+                  ASCII Decoded Ingress Payload:
+                </span>
                 <span className="text-[10px] text-slate-500">UTF-8 / ISO-8859-1 Sanitized</span>
               </div>
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200 overflow-x-auto whitespace-pre-wrap leading-relaxed">
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3.5 font-mono text-xs leading-relaxed whitespace-pre-wrap text-slate-200">
                 {selectedSocket.asciiPayload}
               </div>
             </div>
 
             {/* Tactical Action Directives */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-800 flex-wrap gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-4">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleTraceRoute(selectedSocket.srcIp)}
                   disabled={isTracingRoute}
-                  className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-cyan-950/50 transition"
+                  className="flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-950/50 transition hover:bg-cyan-500"
                 >
-                  <Route className="w-4 h-4" />
+                  <Route className="h-4 w-4" />
                   <span>{isTracingRoute ? 'Tracing Route...' : 'Trace Route'}</span>
                 </button>
 
                 <button
                   onClick={() => handlePushEbpfRule(selectedSocket.id)}
-                  className="px-4 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 font-bold text-xs flex items-center gap-2 transition"
+                  className="flex items-center gap-2 rounded-xl border border-cyan-500/40 bg-slate-950 px-4 py-2 text-xs font-bold text-cyan-300 transition hover:bg-slate-800"
                 >
-                  <ShieldCheck className="w-4 h-4" />
+                  <ShieldCheck className="h-4 w-4" />
                   <span>Push eBPF Rule</span>
                 </button>
               </div>
@@ -3388,9 +3977,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               {selectedSocket.state !== 'DROPPED' && (
                 <button
                   onClick={() => handleDropSocket(selectedSocket.id)}
-                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-950/50 transition"
+                  className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-rose-950/50 transition hover:bg-rose-500"
                 >
-                  <Ban className="w-4 h-4" />
+                  <Ban className="h-4 w-4" />
                   <span>Drop Socket Connection</span>
                 </button>
               )}
@@ -3401,42 +3990,46 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
       {/* 7. MODAL: TRACEROUTE HOP-BY-HOP VISUALIZER */}
       {activeTraceroute && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
+          <div className="w-full max-w-2xl space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-3">
-                <Route className="w-5 h-5 text-cyan-400" />
+                <Route className="h-5 w-5 text-cyan-400" />
                 <h3 className="text-base font-bold text-white">
-                  {isAr ? 'مسار التوجيه الشبكي (Traceroute)' : `Traceroute Path to ${activeTraceroute.targetIp}`}
+                  {isAr
+                    ? 'مسار التوجيه الشبكي (Traceroute)'
+                    : `Traceroute Path to ${activeTraceroute.targetIp}`}
                 </h3>
               </div>
               <button
                 onClick={() => setActiveTraceroute(null)}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
+                className="rounded-xl bg-slate-800 p-2 text-slate-300 hover:bg-slate-700"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="space-y-2 font-mono text-xs">
-              {activeTraceroute.hops.map((hop) => (
+              {activeTraceroute.hops.map(hop => (
                 <div
                   key={hop.hop}
-                  className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950 p-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded bg-cyan-950 text-cyan-400 border border-cyan-500/40 flex items-center justify-center font-bold">
+                    <span className="flex h-6 w-6 items-center justify-center rounded border border-cyan-500/40 bg-cyan-950 font-bold text-cyan-400">
                       {hop.hop}
                     </span>
                     <div>
-                      <span className="text-slate-100 font-bold">{hop.ip}</span>
-                      <span className="text-slate-500 text-[11px] block">{hop.hostname} ({hop.asn})</span>
+                      <span className="font-bold text-slate-100">{hop.ip}</span>
+                      <span className="block text-[11px] text-slate-500">
+                        {hop.hostname} ({hop.asn})
+                      </span>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-emerald-400 font-bold">{hop.rttMs} ms</span>
-                    <span className="text-slate-500 text-[10px] block">{hop.country}</span>
+                    <span className="font-bold text-emerald-400">{hop.rttMs} ms</span>
+                    <span className="block text-[10px] text-slate-500">{hop.country}</span>
                   </div>
                 </div>
               ))}
@@ -3447,39 +4040,42 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
       {/* 8. MODAL: SUBNECT / CIDR QUARANTINE */}
       {showSubnetModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
+          <div className="w-full max-w-md space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Ban className="w-4 h-4 text-rose-400" />
+              <h3 className="flex items-center gap-2 text-base font-bold text-white">
+                <Ban className="h-4 w-4 text-rose-400" />
                 <span>{isAr ? 'حظر وعزل نطاق CIDR' : 'Quarantine Subnet / CIDR'}</span>
               </h3>
-              <button onClick={() => setShowSubnetModal(false)} className="text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
+              <button
+                onClick={() => setShowSubnetModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs text-slate-400 block font-mono">CIDR Subnet Range:</label>
+              <label className="block font-mono text-xs text-slate-400">CIDR Subnet Range:</label>
               <input
                 type="text"
                 value={subnetQuarantineInput}
-                onChange={(e) => setSubnetQuarantineInput(e.target.value)}
+                onChange={e => setSubnetQuarantineInput(e.target.value)}
                 placeholder="e.g. 194.26.29.0/24"
-                className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-white focus:outline-none focus:border-rose-500"
+                className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-rose-500 focus:outline-none"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 border-t border-slate-800 pt-3">
               <button
                 onClick={() => setShowSubnetModal(false)}
-                className="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                className="rounded-xl bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-300"
               >
                 Cancel
               </button>
               <button
                 onClick={handleQuarantineSubnet}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-950/50"
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-rose-950/50 hover:bg-rose-500"
               >
                 Enforce Subnet Quarantine
               </button>
@@ -3490,43 +4086,55 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
       {/* 9. MODAL: EXPANDED NODE THROUGHPUT, TELEMETRY & CONNECTED EDGES INSPECTOR */}
       {isNodeExpanded && selectedNode && selectedNodeThroughput && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-hidden">
-          <div className="w-full max-w-6xl max-h-[94vh] rounded-3xl bg-slate-900/95 border border-cyan-500/40 shadow-2xl shadow-cyan-950/60 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-slate-950/85 p-2 backdrop-blur-md sm:p-4 md:p-6">
+          <div className="animate-in fade-in zoom-in-95 flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-cyan-500/40 bg-slate-900/95 shadow-2xl shadow-cyan-950/60 duration-200">
             {/* Header with Node Metadata, Switcher, and Controls */}
-            <div className="p-5 border-b border-slate-800 bg-slate-950/90 flex flex-col gap-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex flex-col gap-4 border-b border-slate-800 bg-slate-950/90 p-5">
+              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-cyan-950 border border-cyan-500/50 flex items-center justify-center shadow-lg shadow-cyan-950/50">
-                    <Server className="w-6 h-6 text-cyan-400" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-500/50 bg-cyan-950 shadow-lg shadow-cyan-950/50">
+                    <Server className="h-6 w-6 text-cyan-400" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-base sm:text-lg font-black text-white">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-base font-black text-white sm:text-lg">
                         {isAr ? selectedNode.labelAr : selectedNode.label}
                       </h2>
-                      <span className="px-2 py-0.5 rounded font-mono text-[11px] font-bold bg-slate-900 border border-slate-700 text-cyan-300">
+                      <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-[11px] font-bold text-cyan-300">
                         {selectedNode.id}
                       </span>
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                        className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase ${
                           selectedNode.status === 'ISOLATED'
                             ? 'bg-rose-500 text-white'
                             : selectedNode.status === 'UNDER_ATTACK'
-                            ? 'bg-amber-500 text-slate-950 animate-pulse'
-                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              ? 'animate-pulse bg-amber-500 text-slate-950'
+                              : 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
                         }`}
                       >
                         {selectedNode.status}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 font-mono flex items-center gap-3 flex-wrap mt-0.5">
-                      <span>IP: <strong className="text-slate-200">{selectedNode.ipAddress}</strong></span>
+                    <p className="mt-0.5 flex flex-wrap items-center gap-3 font-mono text-xs text-slate-400">
+                      <span>
+                        IP: <strong className="text-slate-200">{selectedNode.ipAddress}</strong>
+                      </span>
                       <span>•</span>
-                      <span>VLAN: <strong className="text-cyan-300">{selectedNode.vlan}</strong></span>
+                      <span>
+                        VLAN: <strong className="text-cyan-300">{selectedNode.vlan}</strong>
+                      </span>
                       <span>•</span>
-                      <span>Kernel Latency: <strong className="text-emerald-400">{selectedNode.lastPingMs} ms</strong></span>
+                      <span>
+                        Kernel Latency:{' '}
+                        <strong className="text-emerald-400">{selectedNode.lastPingMs} ms</strong>
+                      </span>
                       <span>•</span>
-                      <span>NIC: <strong className="text-slate-300">{selectedNodeThroughput.nicInterface}</strong></span>
+                      <span>
+                        NIC:{' '}
+                        <strong className="text-slate-300">
+                          {selectedNodeThroughput.nicInterface}
+                        </strong>
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -3535,43 +4143,55 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   <button
                     onClick={() => handleToggleQuickLock(selectedNode)}
                     disabled={isLoading}
-                    className={`px-3 py-1.5 rounded-xl border text-xs font-mono font-bold flex items-center gap-1.5 transition ${
+                    className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 font-mono text-xs font-bold transition ${
                       quickLockedNodes[selectedNode.id]
-                        ? 'bg-rose-600 hover:bg-rose-500 border-rose-400 text-white shadow-lg shadow-rose-950/60 animate-pulse'
-                        : 'bg-slate-950 hover:bg-rose-950/40 border-rose-500/40 hover:border-rose-400 text-rose-300'
+                        ? 'animate-pulse border-rose-400 bg-rose-600 text-white shadow-lg shadow-rose-950/60 hover:bg-rose-500'
+                        : 'border-rose-500/40 bg-slate-950 text-rose-300 hover:border-rose-400 hover:bg-rose-950/40'
                     }`}
-                    title={quickLockedNodes[selectedNode.id] ? 'Quick-Lock Active: eBPF drop-rule enforced for segment' : 'Instantly apply eBPF drop-rule for this segment'}
+                    title={
+                      quickLockedNodes[selectedNode.id]
+                        ? 'Quick-Lock Active: eBPF drop-rule enforced for segment'
+                        : 'Instantly apply eBPF drop-rule for this segment'
+                    }
                   >
-                    {quickLockedNodes[selectedNode.id] ? <Lock className="w-3.5 h-3.5 text-white" /> : <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />}
+                    {quickLockedNodes[selectedNode.id] ? (
+                      <Lock className="h-3.5 w-3.5 text-white" />
+                    ) : (
+                      <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />
+                    )}
                     <span className="font-bold">
                       {quickLockedNodes[selectedNode.id]
-                        ? (isAr ? 'القفل الأمني نشط (eBPF)' : 'Quick-Lock: LOCKED')
-                        : (isAr ? 'قفل أمني سريع (Quick-Lock)' : 'Security Quick-Lock')}
+                        ? isAr
+                          ? 'القفل الأمني نشط (eBPF)'
+                          : 'Quick-Lock: LOCKED'
+                        : isAr
+                          ? 'قفل أمني سريع (Quick-Lock)'
+                          : 'Security Quick-Lock'}
                     </span>
                   </button>
                   <button
                     onClick={() => handleTraceRoute(selectedNode.ipAddress)}
-                    className="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-cyan-300 text-xs font-mono font-bold flex items-center gap-1.5 transition"
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs font-bold text-cyan-300 transition hover:bg-slate-800"
                   >
-                    <Route className="w-3.5 h-3.5" />
+                    <Route className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Trace Route</span>
                   </button>
                   <button
                     onClick={() => setIsNodeExpanded(false)}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+                    className="rounded-xl bg-slate-800 p-2 text-slate-300 transition hover:bg-slate-700"
                     title="Close Inspector"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
               </div>
 
               {/* Node Switcher Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
-                <span className="text-[10px] text-slate-500 font-mono uppercase tracking-wider shrink-0 mr-1">
+              <div className="flex scrollbar-thin items-center gap-2 overflow-x-auto pb-1">
+                <span className="mr-1 shrink-0 font-mono text-[10px] tracking-wider text-slate-500 uppercase">
                   {isAr ? 'تبديل العقدة:' : 'Inspect Node:'}
                 </span>
-                {nodes.map((n) => {
+                {nodes.map(n => {
                   const isActive = n.id === selectedNode.id;
                   const isThreat = n.status === 'UNDER_ATTACK';
                   const isIso = n.status === 'ISOLATED';
@@ -3579,19 +4199,23 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     <button
                       key={n.id}
                       onClick={() => setSelectedNodeId(n.id)}
-                      className={`px-3 py-1 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 shrink-0 ${
+                      className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-1 font-mono text-xs font-bold transition ${
                         isActive
                           ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
-                          : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800 hover:border-slate-700'
+                          : 'border border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                       }`}
                     >
                       <span
-                        className={`w-2 h-2 rounded-full ${
+                        className={`h-2 w-2 rounded-full ${
                           isThreat
-                            ? isActive ? 'bg-slate-950 animate-ping' : 'bg-amber-400 animate-pulse'
+                            ? isActive
+                              ? 'animate-ping bg-slate-950'
+                              : 'animate-pulse bg-amber-400'
                             : isIso
-                            ? 'bg-rose-400'
-                            : isActive ? 'bg-slate-950' : 'bg-emerald-400'
+                              ? 'bg-rose-400'
+                              : isActive
+                                ? 'bg-slate-950'
+                                : 'bg-emerald-400'
                         }`}
                       />
                       <span>{isAr ? n.labelAr : n.label}</span>
@@ -3604,137 +4228,167 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               <div className="flex items-center gap-2 border-t border-slate-800/80 pt-3">
                 <button
                   onClick={() => setExpandedNodeSubTab('THROUGHPUT')}
-                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 transition ${
+                  className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
                     expandedNodeSubTab === 'THROUGHPUT'
-                      ? 'bg-cyan-950 border border-cyan-500 text-cyan-300 shadow-lg shadow-cyan-950/60'
-                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                      ? 'border border-cyan-500 bg-cyan-950 text-cyan-300 shadow-lg shadow-cyan-950/60'
+                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <Activity className="w-3.5 h-3.5" />
-                  <span>{isAr ? 'حركة المرور والتدفق (Throughput)' : 'Ingress & Egress Throughput'}</span>
+                  <Activity className="h-3.5 w-3.5" />
+                  <span>
+                    {isAr ? 'حركة المرور والتدفق (Throughput)' : 'Ingress & Egress Throughput'}
+                  </span>
                 </button>
 
                 <button
                   onClick={() => setExpandedNodeSubTab('EDGES')}
-                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 transition ${
+                  className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
                     expandedNodeSubTab === 'EDGES'
-                      ? 'bg-cyan-950 border border-cyan-500 text-cyan-300 shadow-lg shadow-cyan-950/60'
-                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                      ? 'border border-cyan-500 bg-cyan-950 text-cyan-300 shadow-lg shadow-cyan-950/60'
+                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <Cable className="w-3.5 h-3.5" />
-                  <span>{isAr ? `الروابط المتصلة (${selectedNodeThroughput.connectedEdges.length})` : `Connected Edges (${selectedNodeThroughput.connectedEdges.length})`}</span>
+                  <Cable className="h-3.5 w-3.5" />
+                  <span>
+                    {isAr
+                      ? `الروابط المتصلة (${selectedNodeThroughput.connectedEdges.length})`
+                      : `Connected Edges (${selectedNodeThroughput.connectedEdges.length})`}
+                  </span>
                 </button>
 
                 <button
                   onClick={() => setExpandedNodeSubTab('SOCKETS')}
-                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 transition ${
+                  className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
                     expandedNodeSubTab === 'SOCKETS'
-                      ? 'bg-cyan-950 border border-cyan-500 text-cyan-300 shadow-lg shadow-cyan-950/60'
-                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                      ? 'border border-cyan-500 bg-cyan-950 text-cyan-300 shadow-lg shadow-cyan-950/60'
+                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <Binary className="w-3.5 h-3.5" />
+                  <Binary className="h-3.5 w-3.5" />
                   <span>
                     {isAr
-                      ? `المقابس النشطة (${sockets.filter((s) => s.srcIp === selectedNode.ipAddress || s.dstIp === selectedNode.ipAddress).length})`
-                      : `Node Sockets (${sockets.filter((s) => s.srcIp === selectedNode.ipAddress || s.dstIp === selectedNode.ipAddress).length})`}
+                      ? `المقابس النشطة (${sockets.filter(s => s.srcIp === selectedNode.ipAddress || s.dstIp === selectedNode.ipAddress).length})`
+                      : `Node Sockets (${sockets.filter(s => s.srcIp === selectedNode.ipAddress || s.dstIp === selectedNode.ipAddress).length})`}
                   </span>
                 </button>
 
                 <button
                   onClick={() => setExpandedNodeSubTab('TACTICAL')}
-                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-2 transition ${
+                  className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
                     expandedNodeSubTab === 'TACTICAL'
-                      ? 'bg-cyan-950 border border-cyan-500 text-cyan-300 shadow-lg shadow-cyan-950/60'
-                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                      ? 'border border-cyan-500 bg-cyan-950 text-cyan-300 shadow-lg shadow-cyan-950/60'
+                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <ShieldAlert className="h-3.5 w-3.5" />
                   <span>{isAr ? 'التحكم الدفاعي والنواة' : 'Kernel Defense & Actions'}</span>
                 </button>
               </div>
             </div>
 
             {/* Scrollable Content Body */}
-            <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+            <div className="flex-1 space-y-6 overflow-y-auto p-5 sm:p-6">
               {/* TAB 1: THROUGHPUT METRICS & WAVEFORM */}
               {expandedNodeSubTab === 'THROUGHPUT' && (
                 <div className="space-y-6">
                   {/* Hero Metric Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
+                  <div className="grid grid-cols-1 gap-4 font-mono sm:grid-cols-2 lg:grid-cols-4">
                     {/* Ingress RX */}
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-cyan-500/30 shadow-xl space-y-3">
+                    <div className="space-y-3 rounded-2xl border border-cyan-500/30 bg-slate-950 p-4 shadow-xl">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
-                          <ArrowDownLeft className="w-4 h-4" />
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-cyan-400">
+                          <ArrowDownLeft className="h-4 w-4" />
                           <span>INGRESS THROUGHPUT (RX)</span>
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
+                        <span className="rounded border border-cyan-500/30 bg-cyan-950 px-2 py-0.5 text-[10px] text-cyan-300">
                           LIVE RX
                         </span>
                       </div>
                       <div>
-                        <div className="text-2xl sm:text-3xl font-black text-white">
+                        <div className="text-2xl font-black text-white sm:text-3xl">
                           {selectedNodeThroughput.ingressBandwidthMbps}{' '}
                           <span className="text-xs font-normal text-cyan-400">Mbps</span>
                         </div>
-                        <div className="text-xs text-slate-400 mt-1 flex items-center justify-between">
-                          <span>Peak: <strong className="text-slate-200">{selectedNodeThroughput.ingressPeakMbps} Mbps</strong></span>
+                        <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
+                          <span>
+                            Peak:{' '}
+                            <strong className="text-slate-200">
+                              {selectedNodeThroughput.ingressPeakMbps} Mbps
+                            </strong>
+                          </span>
                           <span>{selectedNodeThroughput.ingressPps.toLocaleString()} pps</span>
                         </div>
                       </div>
                       <div className="space-y-1 pt-1">
                         <div className="flex justify-between text-[10px] text-slate-400">
                           <span>Buffer Saturation</span>
-                          <span className={selectedNodeThroughput.ingressBufferSaturationPercent > 75 ? 'text-rose-400 font-bold' : 'text-cyan-400'}>
+                          <span
+                            className={
+                              selectedNodeThroughput.ingressBufferSaturationPercent > 75
+                                ? 'font-bold text-rose-400'
+                                : 'text-cyan-400'
+                            }
+                          >
                             {selectedNodeThroughput.ingressBufferSaturationPercent}%
                           </span>
                         </div>
-                        <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                           <div
                             className={`h-full rounded-full ${
                               selectedNodeThroughput.ingressBufferSaturationPercent > 75
                                 ? 'bg-rose-500'
                                 : selectedNodeThroughput.ingressBufferSaturationPercent > 50
-                                ? 'bg-amber-400'
-                                : 'bg-cyan-400'
+                                  ? 'bg-amber-400'
+                                  : 'bg-cyan-400'
                             }`}
-                            style={{ width: `${selectedNodeThroughput.ingressBufferSaturationPercent}%` }}
+                            style={{
+                              width: `${selectedNodeThroughput.ingressBufferSaturationPercent}%`
+                            }}
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Egress TX */}
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-emerald-500/30 shadow-xl space-y-3">
+                    <div className="space-y-3 rounded-2xl border border-emerald-500/30 bg-slate-950 p-4 shadow-xl">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                          <ArrowUpRight className="w-4 h-4" />
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                          <ArrowUpRight className="h-4 w-4" />
                           <span>EGRESS THROUGHPUT (TX)</span>
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/30">
+                        <span className="rounded border border-emerald-500/30 bg-emerald-950 px-2 py-0.5 text-[10px] text-emerald-300">
                           LIVE TX
                         </span>
                       </div>
                       <div>
-                        <div className="text-2xl sm:text-3xl font-black text-white">
+                        <div className="text-2xl font-black text-white sm:text-3xl">
                           {selectedNodeThroughput.egressBandwidthMbps}{' '}
                           <span className="text-xs font-normal text-emerald-400">Mbps</span>
                         </div>
-                        <div className="text-xs text-slate-400 mt-1 flex items-center justify-between">
-                          <span>Peak: <strong className="text-slate-200">{selectedNodeThroughput.egressPeakMbps} Mbps</strong></span>
+                        <div className="mt-1 flex items-center justify-between text-xs text-slate-400">
+                          <span>
+                            Peak:{' '}
+                            <strong className="text-slate-200">
+                              {selectedNodeThroughput.egressPeakMbps} Mbps
+                            </strong>
+                          </span>
                           <span>{selectedNodeThroughput.egressPps.toLocaleString()} pps</span>
                         </div>
                       </div>
                       <div className="space-y-1 pt-1">
                         <div className="flex justify-between text-[10px] text-slate-400">
                           <span>Queue Depth Saturation</span>
-                          <span className={selectedNodeThroughput.egressQueueDepthPercent > 70 ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+                          <span
+                            className={
+                              selectedNodeThroughput.egressQueueDepthPercent > 70
+                                ? 'font-bold text-amber-400'
+                                : 'text-emerald-400'
+                            }
+                          >
                             {selectedNodeThroughput.egressQueueDepthPercent}%
                           </span>
                         </div>
-                        <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                           <div
                             className={`h-full rounded-full ${
                               selectedNodeThroughput.egressQueueDepthPercent > 70
@@ -3748,34 +4402,50 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     {/* Cumulative Volume */}
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 shadow-xl space-y-3">
+                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-xl">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
-                          <HardDrive className="w-4 h-4" />
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-indigo-400">
+                          <HardDrive className="h-4 w-4" />
                           <span>DATA TRANSFERRED</span>
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30">
+                        <span className="rounded border border-indigo-500/30 bg-indigo-950 px-2 py-0.5 text-[10px] text-indigo-300">
                           TOTAL
                         </span>
                       </div>
                       <div className="space-y-1.5 text-xs">
                         <div className="flex justify-between">
                           <span className="text-slate-400">RX Total:</span>
-                          <span className="text-white font-bold">{selectedNodeThroughput.ingressBytesTotal}</span>
+                          <span className="font-bold text-white">
+                            {selectedNodeThroughput.ingressBytesTotal}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-400">TX Total:</span>
-                          <span className="text-white font-bold">{selectedNodeThroughput.egressBytesTotal}</span>
+                          <span className="font-bold text-white">
+                            {selectedNodeThroughput.egressBytesTotal}
+                          </span>
                         </div>
                         <div className="flex justify-between border-t border-slate-800 pt-1 text-[11px]">
                           <span className="text-slate-400">RX Drops:</span>
-                          <span className={selectedNodeThroughput.ingressDropRatePercent > 1 ? 'text-rose-400 font-bold' : 'text-emerald-400'}>
+                          <span
+                            className={
+                              selectedNodeThroughput.ingressDropRatePercent > 1
+                                ? 'font-bold text-rose-400'
+                                : 'text-emerald-400'
+                            }
+                          >
                             {selectedNodeThroughput.ingressDropRatePercent}%
                           </span>
                         </div>
                         <div className="flex justify-between text-[11px]">
                           <span className="text-slate-400">TX Retransmit:</span>
-                          <span className={selectedNodeThroughput.egressRetransmitRatePercent > 1 ? 'text-amber-400 font-bold' : 'text-emerald-400'}>
+                          <span
+                            className={
+                              selectedNodeThroughput.egressRetransmitRatePercent > 1
+                                ? 'font-bold text-amber-400'
+                                : 'text-emerald-400'
+                            }
+                          >
                             {selectedNodeThroughput.egressRetransmitRatePercent}%
                           </span>
                         </div>
@@ -3783,44 +4453,56 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     {/* Hardware NIC & eBPF Telemetry */}
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 shadow-xl space-y-3">
+                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-xl">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                          <Cpu className="w-4 h-4" />
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+                          <Cpu className="h-4 w-4" />
                           <span>NIC & HARDWARE HOOK</span>
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-500/30">
+                        <span className="rounded border border-amber-500/30 bg-amber-950 px-2 py-0.5 text-[10px] text-amber-300">
                           eBPF XDP
                         </span>
                       </div>
                       <div className="space-y-1 text-xs">
                         <div>
-                          <span className="text-slate-500 text-[10px] block">Driver Hook:</span>
-                          <span className="text-slate-200 font-bold truncate block">{selectedNodeThroughput.driverMode}</span>
+                          <span className="block text-[10px] text-slate-500">Driver Hook:</span>
+                          <span className="block truncate font-bold text-slate-200">
+                            {selectedNodeThroughput.driverMode}
+                          </span>
                         </div>
                         <div>
-                          <span className="text-slate-500 text-[10px] block">MAC Address:</span>
-                          <span className="text-cyan-300 font-bold">{selectedNodeThroughput.macAddress}</span>
+                          <span className="block text-[10px] text-slate-500">MAC Address:</span>
+                          <span className="font-bold text-cyan-300">
+                            {selectedNodeThroughput.macAddress}
+                          </span>
                         </div>
                         <div className="flex justify-between border-t border-slate-800 pt-1 text-[11px]">
                           <span className="text-slate-400">Jumbo MTU:</span>
-                          <span className="text-emerald-400 font-bold">{selectedNodeThroughput.mtuBytes} B</span>
+                          <span className="font-bold text-emerald-400">
+                            {selectedNodeThroughput.mtuBytes} B
+                          </span>
                         </div>
                         <div className="flex justify-between text-[11px]">
                           <span className="text-slate-400">IRQ Interrupts:</span>
-                          <span className="text-cyan-400 font-bold">{selectedNodeThroughput.irqRatePerSec} /sec</span>
+                          <span className="font-bold text-cyan-400">
+                            {selectedNodeThroughput.irqRatePerSec} /sec
+                          </span>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Dynamic Throughput Waveform (SVG Sparkline & Chart) */}
-                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl space-y-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                  <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-2xl">
+                    <div className="flex flex-col items-start justify-between gap-2 border-b border-slate-800 pb-3 sm:flex-row sm:items-center">
                       <div>
-                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-cyan-400" />
-                          <span>{isAr ? 'مخطط تدفق البيانات الحي (Throughput Timeline Waveform)' : 'Real-Time Ingress vs Egress Waveform'}</span>
+                        <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                          <Activity className="h-4 w-4 text-cyan-400" />
+                          <span>
+                            {isAr
+                              ? 'مخطط تدفق البيانات الحي (Throughput Timeline Waveform)'
+                              : 'Real-Time Ingress vs Egress Waveform'}
+                          </span>
                         </h3>
                         <p className="text-xs text-slate-400">
                           {isAr
@@ -3828,25 +4510,25 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             : 'Continuous comparison of RX vs TX bandwidth saturation (Mbps) sampled every 500ms'}
                         </p>
                       </div>
-                      <div className="flex items-center gap-4 text-xs font-mono">
+                      <div className="flex items-center gap-4 font-mono text-xs">
                         <div className="flex items-center gap-1.5">
-                          <span className="w-3 h-3 rounded bg-cyan-400 shadow-sm shadow-cyan-400" />
+                          <span className="h-3 w-3 rounded bg-cyan-400 shadow-sm shadow-cyan-400" />
                           <span className="text-slate-300">Ingress (RX)</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="w-3 h-3 rounded bg-emerald-400 shadow-sm shadow-emerald-400" />
+                          <span className="h-3 w-3 rounded bg-emerald-400 shadow-sm shadow-emerald-400" />
                           <span className="text-slate-300">Egress (TX)</span>
                         </div>
                       </div>
                     </div>
 
                     {/* SVG Waveform Visualizer */}
-                    <div className="w-full h-44 sm:h-52 bg-slate-900/60 rounded-xl p-3 border border-slate-800/80 relative overflow-hidden flex flex-col justify-end">
+                    <div className="relative flex h-44 w-full flex-col justify-end overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 sm:h-52">
                       {/* Grid guidelines */}
-                      <div className="absolute inset-0 flex flex-col justify-between p-3 pointer-events-none opacity-20">
-                        <div className="w-full border-b border-slate-400 border-dashed" />
-                        <div className="w-full border-b border-slate-400 border-dashed" />
-                        <div className="w-full border-b border-slate-400 border-dashed" />
+                      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3 opacity-20">
+                        <div className="w-full border-b border-dashed border-slate-400" />
+                        <div className="w-full border-b border-dashed border-slate-400" />
+                        <div className="w-full border-b border-dashed border-slate-400" />
                         <div className="w-full border-b border-slate-400" />
                       </div>
 
@@ -3854,17 +4536,22 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       {(() => {
                         const history = selectedNodeThroughput.history;
                         const maxVal = Math.max(
-                          ...history.map((h) => Math.max(h.ingressMbps, h.egressMbps)),
+                          ...history.map(h => Math.max(h.ingressMbps, h.egressMbps)),
                           100
                         );
                         const svgWidth = 800;
                         const svgHeight = 150;
 
                         const getX = (idx: number) => (idx / (history.length - 1)) * svgWidth;
-                        const getY = (val: number) => svgHeight - (val / maxVal) * (svgHeight - 20) - 10;
+                        const getY = (val: number) =>
+                          svgHeight - (val / maxVal) * (svgHeight - 20) - 10;
 
-                        const ingressPoints = history.map((h, i) => `${getX(i)},${getY(h.ingressMbps)}`).join(' ');
-                        const egressPoints = history.map((h, i) => `${getX(i)},${getY(h.egressMbps)}`).join(' ');
+                        const ingressPoints = history
+                          .map((h, i) => `${getX(i)},${getY(h.ingressMbps)}`)
+                          .join(' ');
+                        const egressPoints = history
+                          .map((h, i) => `${getX(i)},${getY(h.egressMbps)}`)
+                          .join(' ');
 
                         const ingressArea = `${getX(0)},${svgHeight} ${ingressPoints} ${getX(history.length - 1)},${svgHeight}`;
                         const egressArea = `${getX(0)},${svgHeight} ${egressPoints} ${getX(history.length - 1)},${svgHeight}`;
@@ -3872,7 +4559,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                         return (
                           <svg
                             viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-                            className="w-full h-full overflow-visible z-10"
+                            className="z-10 h-full w-full overflow-visible"
                             preserveAspectRatio="none"
                           >
                             <defs>
@@ -3934,91 +4621,137 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       })()}
 
                       {/* Time labels below chart */}
-                      <div className="flex justify-between text-[9px] font-mono text-slate-500 mt-2 z-10">
+                      <div className="z-10 mt-2 flex justify-between font-mono text-[9px] text-slate-500">
                         <span>-12s</span>
                         <span>-9s</span>
                         <span>-6s</span>
                         <span>-3s</span>
-                        <span className="text-cyan-400 font-bold">LIVE (NOW)</span>
+                        <span className="font-bold text-cyan-400">LIVE (NOW)</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Protocol Breakdown and Encryption Matrix */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {/* Protocol Breakdown */}
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                      <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                        <Binary className="w-4 h-4 text-cyan-400" />
-                        <span>{isAr ? 'توزيع البروتوكولات عبر حركة العقدة' : 'Ingress Protocol Distribution'}</span>
+                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                      <h4 className="flex items-center gap-2 text-xs font-bold tracking-wider text-white uppercase">
+                        <Binary className="h-4 w-4 text-cyan-400" />
+                        <span>
+                          {isAr
+                            ? 'توزيع البروتوكولات عبر حركة العقدة'
+                            : 'Ingress Protocol Distribution'}
+                        </span>
                       </h4>
                       <div className="space-y-2 font-mono text-xs">
                         <div>
-                          <div className="flex justify-between text-[11px] mb-1">
+                          <div className="mb-1 flex justify-between text-[11px]">
                             <span className="text-cyan-300">TCP (HTTP/2 / TLS 1.3 / gRPC)</span>
-                            <span className="font-bold text-white">{selectedNodeThroughput.protocolBreakdown.tcpPercent}%</span>
+                            <span className="font-bold text-white">
+                              {selectedNodeThroughput.protocolBreakdown.tcpPercent}%
+                            </span>
                           </div>
-                          <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                            <div className="h-full bg-cyan-400" style={{ width: `${selectedNodeThroughput.protocolBreakdown.tcpPercent}%` }} />
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                            <div
+                              className="h-full bg-cyan-400"
+                              style={{
+                                width: `${selectedNodeThroughput.protocolBreakdown.tcpPercent}%`
+                              }}
+                            />
                           </div>
                         </div>
 
                         <div>
-                          <div className="flex justify-between text-[11px] mb-1">
+                          <div className="mb-1 flex justify-between text-[11px]">
                             <span className="text-indigo-300">UDP (QUIC / DNS / RoCE)</span>
-                            <span className="font-bold text-white">{selectedNodeThroughput.protocolBreakdown.udpPercent}%</span>
+                            <span className="font-bold text-white">
+                              {selectedNodeThroughput.protocolBreakdown.udpPercent}%
+                            </span>
                           </div>
-                          <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                            <div className="h-full bg-indigo-400" style={{ width: `${selectedNodeThroughput.protocolBreakdown.udpPercent}%` }} />
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                            <div
+                              className="h-full bg-indigo-400"
+                              style={{
+                                width: `${selectedNodeThroughput.protocolBreakdown.udpPercent}%`
+                              }}
+                            />
                           </div>
                         </div>
 
                         <div>
-                          <div className="flex justify-between text-[11px] mb-1">
+                          <div className="mb-1 flex justify-between text-[11px]">
                             <span className="text-amber-300">ICMP / Diagnostic Radar</span>
-                            <span className="font-bold text-white">{selectedNodeThroughput.protocolBreakdown.icmpPercent}%</span>
+                            <span className="font-bold text-white">
+                              {selectedNodeThroughput.protocolBreakdown.icmpPercent}%
+                            </span>
                           </div>
-                          <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                            <div className="h-full bg-amber-400" style={{ width: `${selectedNodeThroughput.protocolBreakdown.icmpPercent}%` }} />
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                            <div
+                              className="h-full bg-amber-400"
+                              style={{
+                                width: `${selectedNodeThroughput.protocolBreakdown.icmpPercent}%`
+                              }}
+                            />
                           </div>
                         </div>
 
                         <div>
-                          <div className="flex justify-between text-[11px] mb-1">
+                          <div className="mb-1 flex justify-between text-[11px]">
                             <span className="text-emerald-300">Encrypted Payload Ratio</span>
-                            <span className="font-bold text-white">{selectedNodeThroughput.protocolBreakdown.tlsEncryptedPercent}%</span>
+                            <span className="font-bold text-white">
+                              {selectedNodeThroughput.protocolBreakdown.tlsEncryptedPercent}%
+                            </span>
                           </div>
-                          <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                            <div className="h-full bg-emerald-400" style={{ width: `${selectedNodeThroughput.protocolBreakdown.tlsEncryptedPercent}%` }} />
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+                            <div
+                              className="h-full bg-emerald-400"
+                              style={{
+                                width: `${selectedNodeThroughput.protocolBreakdown.tlsEncryptedPercent}%`
+                              }}
+                            />
                           </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Encryption & Security Pipeline */}
-                    <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
-                      <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-emerald-400" />
-                        <span>{isAr ? 'تشفير وحماية القنوات الخارجة' : 'Egress Security & Cryptographic Tunnel'}</span>
+                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs">
+                      <h4 className="flex items-center gap-2 text-xs font-bold tracking-wider text-white uppercase">
+                        <Lock className="h-4 w-4 text-emerald-400" />
+                        <span>
+                          {isAr
+                            ? 'تشفير وحماية القنوات الخارجة'
+                            : 'Egress Security & Cryptographic Tunnel'}
+                        </span>
                       </h4>
                       <div className="space-y-2.5">
-                        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                          <span className="text-slate-500 text-[10px] block">Cryptographic Standard:</span>
-                          <span className="text-emerald-300 font-bold">{selectedNodeThroughput.egressEncryption}</span>
+                        <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5">
+                          <span className="block text-[10px] text-slate-500">
+                            Cryptographic Standard:
+                          </span>
+                          <span className="font-bold text-emerald-300">
+                            {selectedNodeThroughput.egressEncryption}
+                          </span>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                            <span className="text-slate-500 text-[10px] block">MTU Size:</span>
-                            <span className="text-white font-bold">{selectedNodeThroughput.mtuBytes} Bytes</span>
+                          <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5">
+                            <span className="block text-[10px] text-slate-500">MTU Size:</span>
+                            <span className="font-bold text-white">
+                              {selectedNodeThroughput.mtuBytes} Bytes
+                            </span>
                           </div>
-                          <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                            <span className="text-slate-500 text-[10px] block">Packet Retransmit:</span>
-                            <span className="text-cyan-400 font-bold">{selectedNodeThroughput.egressRetransmitRatePercent}%</span>
+                          <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5">
+                            <span className="block text-[10px] text-slate-500">
+                              Packet Retransmit:
+                            </span>
+                            <span className="font-bold text-cyan-400">
+                              {selectedNodeThroughput.egressRetransmitRatePercent}%
+                            </span>
                           </div>
                         </div>
-                        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                        <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-2.5">
                           <span className="text-slate-400">Zero-Copy Direct Socket:</span>
-                          <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px] border border-emerald-500/40">
+                          <span className="rounded border border-emerald-500/40 bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                             ENABLED (vmsplice)
                           </span>
                         </div>
@@ -4031,10 +4764,10 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               {/* TAB 2: CONNECTED EDGES & NEIGHBOR LINKS */}
               {expandedNodeSubTab === 'EDGES' && (
                 <div className="space-y-5">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                  <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 sm:flex-row sm:items-center">
                     <div>
-                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                        <Cable className="w-4 h-4 text-cyan-400" />
+                      <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                        <Cable className="h-4 w-4 text-cyan-400" />
                         <span>
                           {isAr
                             ? `روابط الشبكة المباشرة للعقدة (${selectedNodeThroughput.connectedEdges.length} روابط)`
@@ -4049,90 +4782,122 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 rounded-xl bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-bold">
-                        Aggregate Capacity: {selectedNodeThroughput.connectedEdges.reduce((acc, e) => acc + e.capacityGbps, 0)} Gbps
+                      <span className="rounded-xl border border-cyan-500/40 bg-cyan-950 px-3 py-1 font-mono text-xs font-bold text-cyan-300">
+                        Aggregate Capacity:{' '}
+                        {selectedNodeThroughput.connectedEdges.reduce(
+                          (acc, e) => acc + e.capacityGbps,
+                          0
+                        )}{' '}
+                        Gbps
                       </span>
                     </div>
                   </div>
 
                   {/* Connected Edges Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {selectedNodeThroughput.connectedEdges.map((edge) => {
-                      const isQuarantined = edgeQuarantined[edge.id] || edge.status === 'QUARANTINED';
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {selectedNodeThroughput.connectedEdges.map(edge => {
+                      const isQuarantined =
+                        edgeQuarantined[edge.id] || edge.status === 'QUARANTINED';
                       const isQoSLimited = edgeQoSThrottled[edge.id];
                       const pingResult = edgePingResults[edge.id];
                       const isPingTesting = pingTestingEdgeId === edge.id;
 
                       const saturationPercent = Math.min(
                         100,
-                        Math.round((edge.currentThroughputMbps / (edge.capacityGbps * 1000)) * 100 * 12)
+                        Math.round(
+                          (edge.currentThroughputMbps / (edge.capacityGbps * 1000)) * 100 * 12
+                        )
                       );
 
                       return (
                         <div
                           key={edge.id}
-                          className={`p-5 rounded-2xl border transition space-y-4 shadow-xl ${
+                          className={`space-y-4 rounded-2xl border p-5 shadow-xl transition ${
                             isQuarantined
-                              ? 'bg-rose-950/30 border-rose-600/70 shadow-rose-950/40'
+                              ? 'border-rose-600/70 bg-rose-950/30 shadow-rose-950/40'
                               : isQoSLimited
-                              ? 'bg-amber-950/30 border-amber-500/60 shadow-amber-950/30'
-                              : 'bg-slate-950 border-slate-800 hover:border-cyan-500/50'
+                                ? 'border-amber-500/60 bg-amber-950/30 shadow-amber-950/30'
+                                : 'border-slate-800 bg-slate-950 hover:border-cyan-500/50'
                           }`}
                         >
                           {/* Edge Header */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2.5">
                               <div
-                                className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs font-mono ${
+                                className={`flex h-8 w-8 items-center justify-center rounded-xl font-mono text-xs font-bold ${
                                   isQuarantined
-                                    ? 'bg-rose-950 text-rose-300 border border-rose-500/40'
-                                    : 'bg-cyan-950 text-cyan-300 border border-cyan-500/40'
+                                    ? 'border border-rose-500/40 bg-rose-950 text-rose-300'
+                                    : 'border border-cyan-500/40 bg-cyan-950 text-cyan-300'
                                 }`}
                               >
-                                {edge.direction === 'INGRESS' ? '←' : edge.direction === 'EGRESS' ? '→' : '⇄'}
+                                {edge.direction === 'INGRESS'
+                                  ? '←'
+                                  : edge.direction === 'EGRESS'
+                                    ? '→'
+                                    : '⇄'}
                               </div>
                               <div>
-                                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                                <h4 className="flex items-center gap-2 text-sm font-bold text-white">
                                   <span>{isAr ? edge.neighborLabelAr : edge.neighborLabel}</span>
                                 </h4>
-                                <span className="text-[11px] font-mono text-slate-400 block">
+                                <span className="block font-mono text-[11px] text-slate-400">
                                   {edge.neighborIp} • {edge.neighborVlan}
                                 </span>
                               </div>
                             </div>
 
                             <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border ${
+                              className={`rounded-full border px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase ${
                                 isQuarantined
-                                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/50'
+                                  ? 'border-rose-500/50 bg-rose-500/20 text-rose-300'
                                   : edge.status === 'CONGESTED'
-                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
-                                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                    ? 'border-amber-500/50 bg-amber-500/20 text-amber-300'
+                                    : 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
                               }`}
                             >
-                              {isQuarantined ? 'QUARANTINED' : isQoSLimited ? 'QoS THROTTLED' : edge.status}
+                              {isQuarantined
+                                ? 'QUARANTINED'
+                                : isQoSLimited
+                                  ? 'QoS THROTTLED'
+                                  : edge.status}
                             </span>
                           </div>
 
                           {/* Edge Stats Matrix */}
-                          <div className="grid grid-cols-2 gap-2.5 bg-slate-900/80 p-3 rounded-xl border border-slate-800/80 font-mono text-xs">
+                          <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-slate-800/80 bg-slate-900/80 p-3 font-mono text-xs">
                             <div>
-                              <span className="text-slate-500 text-[10px] block">Link Capacity:</span>
-                              <span className="text-cyan-300 font-bold">{edge.capacityGbps} Gbps</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-500 text-[10px] block">Live Throughput:</span>
-                              <span className="text-white font-bold">{edge.currentThroughputMbps} Mbps</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-500 text-[10px] block">Latency RTT:</span>
-                              <span className="text-emerald-400 font-bold">
-                                {pingResult ? `${pingResult.rttMs} ms (±${pingResult.jitterMs}ms)` : `${edge.latencyMs} ms`}
+                              <span className="block text-[10px] text-slate-500">
+                                Link Capacity:
+                              </span>
+                              <span className="font-bold text-cyan-300">
+                                {edge.capacityGbps} Gbps
                               </span>
                             </div>
                             <div>
-                              <span className="text-slate-500 text-[10px] block">Packet Loss:</span>
-                              <span className={edge.packetLossPercent > 0.5 ? 'text-rose-400 font-bold' : 'text-slate-300'}>
+                              <span className="block text-[10px] text-slate-500">
+                                Live Throughput:
+                              </span>
+                              <span className="font-bold text-white">
+                                {edge.currentThroughputMbps} Mbps
+                              </span>
+                            </div>
+                            <div>
+                              <span className="block text-[10px] text-slate-500">Latency RTT:</span>
+                              <span className="font-bold text-emerald-400">
+                                {pingResult
+                                  ? `${pingResult.rttMs} ms (±${pingResult.jitterMs}ms)`
+                                  : `${edge.latencyMs} ms`}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="block text-[10px] text-slate-500">Packet Loss:</span>
+                              <span
+                                className={
+                                  edge.packetLossPercent > 0.5
+                                    ? 'font-bold text-rose-400'
+                                    : 'text-slate-300'
+                                }
+                              >
                                 {edge.packetLossPercent}%
                               </span>
                             </div>
@@ -4140,18 +4905,18 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
                           {/* Saturation Bar */}
                           <div className="space-y-1">
-                            <div className="flex justify-between text-[10px] font-mono text-slate-400">
+                            <div className="flex justify-between font-mono text-[10px] text-slate-400">
                               <span>Link Load & Saturation</span>
                               <span>{saturationPercent}%</span>
                             </div>
-                            <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                               <div
                                 className={`h-full rounded-full ${
                                   saturationPercent > 80
                                     ? 'bg-rose-500'
                                     : saturationPercent > 50
-                                    ? 'bg-amber-400'
-                                    : 'bg-cyan-400'
+                                      ? 'bg-amber-400'
+                                      : 'bg-cyan-400'
                                 }`}
                                 style={{ width: `${saturationPercent}%` }}
                               />
@@ -4159,43 +4924,47 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           </div>
 
                           {/* Encapsulation and Security Protocol */}
-                          <div className="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800 text-[11px] font-mono text-slate-300 flex items-center justify-between">
+                          <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/50 p-2.5 font-mono text-[11px] text-slate-300">
                             <span className="text-slate-500">Protocol & Encap:</span>
-                            <span className="text-cyan-300 font-bold truncate max-w-[200px]">{edge.protocol}</span>
+                            <span className="max-w-[200px] truncate font-bold text-cyan-300">
+                              {edge.protocol}
+                            </span>
                           </div>
 
                           {/* Action Directives per Edge */}
-                          <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800/80">
+                          <div className="grid grid-cols-3 gap-2 border-t border-slate-800/80 pt-1">
                             <button
                               onClick={() => handleTestEdgePing(edge.id, edge.latencyMs)}
                               disabled={isPingTesting}
-                              className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition"
+                              className="flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-900 px-2 py-1.5 font-mono text-[11px] font-bold text-slate-200 transition hover:bg-slate-800"
                             >
-                              <Activity className={`w-3.5 h-3.5 ${isPingTesting ? 'animate-spin text-cyan-400' : 'text-cyan-400'}`} />
+                              <Activity
+                                className={`h-3.5 w-3.5 ${isPingTesting ? 'animate-spin text-cyan-400' : 'text-cyan-400'}`}
+                              />
                               <span>{isPingTesting ? 'Pinging...' : 'Ping RTT'}</span>
                             </button>
 
                             <button
                               onClick={() => handleToggleEdgeQoS(edge.id)}
-                              className={`py-1.5 px-2 rounded-xl border text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition ${
+                              className={`flex items-center justify-center gap-1 rounded-xl border px-2 py-1.5 font-mono text-[11px] font-bold transition ${
                                 isQoSLimited
-                                  ? 'bg-amber-950 border-amber-500 text-amber-300'
-                                  : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-300'
+                                  ? 'border-amber-500 bg-amber-950 text-amber-300'
+                                  : 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800'
                               }`}
                             >
-                              <SlidersHorizontal className="w-3.5 h-3.5 text-amber-400" />
+                              <SlidersHorizontal className="h-3.5 w-3.5 text-amber-400" />
                               <span>{isQoSLimited ? 'QoS Active' : 'Throttle QoS'}</span>
                             </button>
 
                             <button
                               onClick={() => handleToggleEdgeQuarantine(edge.id)}
-                              className={`py-1.5 px-2 rounded-xl border text-[11px] font-mono font-bold flex items-center justify-center gap-1 transition ${
+                              className={`flex items-center justify-center gap-1 rounded-xl border px-2 py-1.5 font-mono text-[11px] font-bold transition ${
                                 isQuarantined
-                                  ? 'bg-emerald-950 border-emerald-500 text-emerald-300'
-                                  : 'bg-rose-950/80 hover:bg-rose-900 border-rose-600/80 text-rose-200'
+                                  ? 'border-emerald-500 bg-emerald-950 text-emerald-300'
+                                  : 'border-rose-600/80 bg-rose-950/80 text-rose-200 hover:bg-rose-900'
                               }`}
                             >
-                              <Ban className="w-3.5 h-3.5" />
+                              <Ban className="h-3.5 w-3.5" />
                               <span>{isQuarantined ? 'Restore Link' : 'Quarantine'}</span>
                             </button>
                           </div>
@@ -4209,10 +4978,10 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               {/* TAB 3: ACTIVE NODE SOCKETS */}
               {expandedNodeSubTab === 'SOCKETS' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-950 border border-slate-800">
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950 p-4">
                     <div>
-                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                        <Binary className="w-4 h-4 text-cyan-400" />
+                      <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                        <Binary className="h-4 w-4 text-cyan-400" />
                         <span>
                           {isAr
                             ? `المقابس الشبكية النشطة المتصلة بالعقدة (${selectedNode.ipAddress})`
@@ -4226,14 +4995,20 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       </p>
                     </div>
 
-                    <span className="px-3 py-1 rounded-xl bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-mono text-xs font-bold">
-                      {sockets.filter((s) => s.srcIp === selectedNode.ipAddress || s.dstIp === selectedNode.ipAddress).length} Active Streams
+                    <span className="rounded-xl border border-cyan-500/40 bg-cyan-950 px-3 py-1 font-mono text-xs font-bold text-cyan-300">
+                      {
+                        sockets.filter(
+                          s =>
+                            s.srcIp === selectedNode.ipAddress || s.dstIp === selectedNode.ipAddress
+                        ).length
+                      }{' '}
+                      Active Streams
                     </span>
                   </div>
 
                   <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950">
                     <table className="w-full text-left font-mono text-xs">
-                      <thead className="bg-slate-900/90 text-slate-400 border-b border-slate-800">
+                      <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400">
                         <tr>
                           <th className="p-3">Stream ID</th>
                           <th className="p-3">Process</th>
@@ -4246,10 +5021,14 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       </thead>
                       <tbody className="divide-y divide-slate-800/80">
                         {sockets
-                          .filter((s) => s.srcIp === selectedNode.ipAddress || s.dstIp === selectedNode.ipAddress)
-                          .map((s) => (
-                            <tr key={s.id} className="hover:bg-slate-900/60 transition">
-                              <td className="p-3 text-cyan-400 font-bold">{s.id}</td>
+                          .filter(
+                            s =>
+                              s.srcIp === selectedNode.ipAddress ||
+                              s.dstIp === selectedNode.ipAddress
+                          )
+                          .map(s => (
+                            <tr key={s.id} className="transition hover:bg-slate-900/60">
+                              <td className="p-3 font-bold text-cyan-400">{s.id}</td>
                               <td className="p-3 text-slate-200">
                                 {s.processName} <span className="text-slate-500">({s.pid})</span>
                               </td>
@@ -4258,18 +5037,18 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               </td>
                               <td className="p-3 text-indigo-300">{s.protocol}</td>
                               <td className="p-3">
-                                <span className="px-2 py-0.5 rounded text-[10px] bg-slate-900 border border-slate-700 text-slate-200">
+                                <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 text-[10px] text-slate-200">
                                   {s.state}
                                 </span>
                               </td>
                               <td className="p-3">
                                 <span
-                                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  className={`rounded px-2 py-0.5 text-[10px] font-bold ${
                                     s.threatLevel === 'MALICIOUS'
-                                      ? 'bg-rose-950 text-rose-400 border border-rose-800'
+                                      ? 'border border-rose-800 bg-rose-950 text-rose-400'
                                       : s.threatLevel === 'SUSPICIOUS'
-                                      ? 'bg-amber-950 text-amber-400 border border-amber-800'
-                                      : 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                                        ? 'border border-amber-800 bg-amber-950 text-amber-400'
+                                        : 'border border-emerald-800 bg-emerald-950 text-emerald-400'
                                   }`}
                                 >
                                   {s.threatLevel}
@@ -4278,7 +5057,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               <td className="p-3 text-right">
                                 <button
                                   onClick={() => setSelectedSocket(s)}
-                                  className="px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-[11px] font-bold transition"
+                                  className="rounded-lg border border-cyan-500/40 bg-cyan-950 px-2.5 py-1 text-[11px] font-bold text-cyan-300 transition hover:bg-cyan-900"
                                 >
                                   DPI Hex
                                 </button>
@@ -4295,29 +5074,39 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               {expandedNodeSubTab === 'TACTICAL' && (
                 <div className="space-y-6">
                   {/* Security Quick-Lock Feature Card */}
-                  <div className={`p-5 rounded-2xl border transition-all ${
-                    quickLockedNodes[selectedNode.id]
-                      ? 'bg-rose-950/30 border-rose-500/60 shadow-xl shadow-rose-950/40'
-                      : 'bg-slate-950 border-slate-800'
-                  }`}>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div
+                    className={`rounded-2xl border p-5 transition-all ${
+                      quickLockedNodes[selectedNode.id]
+                        ? 'border-rose-500/60 bg-rose-950/30 shadow-xl shadow-rose-950/40'
+                        : 'border-slate-800 bg-slate-950'
+                    }`}
+                  >
+                    <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                            quickLockedNodes[selectedNode.id] ? 'bg-rose-600 text-white animate-pulse' : 'bg-rose-950/50 text-rose-400 border border-rose-500/30'
-                          }`}>
-                            <Lock className="w-4 h-4" />
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                              quickLockedNodes[selectedNode.id]
+                                ? 'animate-pulse bg-rose-600 text-white'
+                                : 'border border-rose-500/30 bg-rose-950/50 text-rose-400'
+                            }`}
+                          >
+                            <Lock className="h-4 w-4" />
                           </div>
-                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                            <span>{isAr ? 'القفل الأمني السريع لنطاق العقدة (eBPF Quick-Lock)' : 'Security Quick-Lock (Kernel eBPF/XDP Drop)'}</span>
+                          <h4 className="flex items-center gap-2 text-sm font-bold text-white">
+                            <span>
+                              {isAr
+                                ? 'القفل الأمني السريع لنطاق العقدة (eBPF Quick-Lock)'
+                                : 'Security Quick-Lock (Kernel eBPF/XDP Drop)'}
+                            </span>
                             {quickLockedNodes[selectedNode.id] && (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-rose-500 text-white font-black animate-pulse">
+                              <span className="animate-pulse rounded-full bg-rose-500 px-2 py-0.5 font-mono text-[10px] font-black text-white">
                                 DROP ENFORCED
                               </span>
                             )}
                           </h4>
                         </div>
-                        <p className="text-xs text-slate-400 max-w-2xl">
+                        <p className="max-w-2xl text-xs text-slate-400">
                           {isAr
                             ? `تطبيق قاعدة إسقاط فورية عبر تعريف النواة eBPF XDP لجميع حزم البيانات الصادرة أو الواردة من نطاق العقدة (${selectedNode.ipAddress} / ${selectedNode.vlan}) لتجميد التهديدات في طبقة كرت الشبكة.`
                             : `Instantly apply a sub-microsecond eBPF/XDP drop-rule for all traffic originating from or targeting this node segment (${selectedNode.ipAddress} / ${selectedNode.vlan}) directly in the NIC kernel hook.`}
@@ -4327,67 +5116,89 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       <button
                         onClick={() => handleToggleQuickLock(selectedNode)}
                         disabled={isLoading}
-                        className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition shrink-0 shadow-lg ${
+                        className={`flex shrink-0 items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold shadow-lg transition ${
                           quickLockedNodes[selectedNode.id]
-                            ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-950/70 border border-rose-400'
-                            : 'bg-slate-900 hover:bg-rose-950/60 text-rose-300 hover:text-white border border-rose-500/40 hover:border-rose-500 shadow-slate-950'
+                            ? 'border border-rose-400 bg-rose-600 text-white shadow-rose-950/70 hover:bg-rose-500'
+                            : 'border border-rose-500/40 bg-slate-900 text-rose-300 shadow-slate-950 hover:border-rose-500 hover:bg-rose-950/60 hover:text-white'
                         }`}
                       >
                         {quickLockedNodes[selectedNode.id] ? (
                           <>
-                            <Unlock className="w-4 h-4" />
-                            <span>{isAr ? 'إلغاء القفل السريع (Disengage)' : 'Disengage Quick-Lock'}</span>
+                            <Unlock className="h-4 w-4" />
+                            <span>
+                              {isAr ? 'إلغاء القفل السريع (Disengage)' : 'Disengage Quick-Lock'}
+                            </span>
                           </>
                         ) : (
                           <>
-                            <Lock className="w-4 h-4 text-rose-400" />
-                            <span>{isAr ? 'تفعيل القفل السريع (Quick-Lock)' : 'Engage Security Quick-Lock'}</span>
+                            <Lock className="h-4 w-4 text-rose-400" />
+                            <span>
+                              {isAr
+                                ? 'تفعيل القفل السريع (Quick-Lock)'
+                                : 'Engage Security Quick-Lock'}
+                            </span>
                           </>
                         )}
                       </button>
                     </div>
                   </div>
 
-                  <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                      <span>{isAr ? 'أوامر التحكم التكتيكية للعقدة' : 'Node Defensive Directives & Attack Simulation'}</span>
+                  <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5">
+                    <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                      <ShieldCheck className="h-4 w-4 text-cyan-400" />
+                      <span>
+                        {isAr
+                          ? 'أوامر التحكم التكتيكية للعقدة'
+                          : 'Node Defensive Directives & Attack Simulation'}
+                      </span>
                     </h3>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
                       {selectedNode.status === 'ISOLATED' ? (
                         <button
                           onClick={() => handleRestoreNode(selectedNode.id)}
                           disabled={isLoading}
-                          className="p-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex flex-col items-center justify-center gap-2 transition shadow-lg shadow-emerald-950/50"
+                          className="flex flex-col items-center justify-center gap-2 rounded-xl bg-emerald-600 p-4 text-xs font-bold text-white shadow-lg shadow-emerald-950/50 transition hover:bg-emerald-500"
                         >
-                          <Unlock className="w-5 h-5" />
+                          <Unlock className="h-5 w-5" />
                           <span>Restore Node to Mesh</span>
                         </button>
                       ) : (
                         <button
                           onClick={() => handleIsolateNode(selectedNode.id)}
                           disabled={isLoading}
-                          className="p-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex flex-col items-center justify-center gap-2 transition shadow-lg shadow-rose-950/50"
+                          className="flex flex-col items-center justify-center gap-2 rounded-xl bg-rose-600 p-4 text-xs font-bold text-white shadow-lg shadow-rose-950/50 transition hover:bg-rose-500"
                         >
-                          <Ban className="w-5 h-5" />
+                          <Ban className="h-5 w-5" />
                           <span>Isolate Subnet Immediately</span>
                         </button>
                       )}
 
                       <button
-                        onClick={() => handleSimulateAttackVector(selectedNode.id, 'SYN Flood / L4 Amp', 'CRITICAL')}
-                        className="p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold flex flex-col items-center justify-center gap-2 transition"
+                        onClick={() =>
+                          handleSimulateAttackVector(
+                            selectedNode.id,
+                            'SYN Flood / L4 Amp',
+                            'CRITICAL'
+                          )
+                        }
+                        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 p-4 text-xs font-bold text-slate-200 transition hover:bg-slate-800"
                       >
-                        <Flame className="w-5 h-5 text-rose-400" />
+                        <Flame className="h-5 w-5 text-rose-400" />
                         <span>Simulate L4 SYN Flood</span>
                       </button>
 
                       <button
-                        onClick={() => handleSimulateAttackVector(selectedNode.id, 'Prompt Injection / SQLi', 'HIGH')}
-                        className="p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold flex flex-col items-center justify-center gap-2 transition"
+                        onClick={() =>
+                          handleSimulateAttackVector(
+                            selectedNode.id,
+                            'Prompt Injection / SQLi',
+                            'HIGH'
+                          )
+                        }
+                        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 p-4 text-xs font-bold text-slate-200 transition hover:bg-slate-800"
                       >
-                        <Zap className="w-5 h-5 text-amber-400" />
+                        <Zap className="h-5 w-5 text-amber-400" />
                         <span>Simulate L7 Prompt Injection</span>
                       </button>
                     </div>
@@ -4397,11 +5208,11 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             </div>
 
             {/* Footer with close trigger */}
-            <div className="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-between text-xs font-mono text-slate-400">
+            <div className="flex items-center justify-between border-t border-slate-800 bg-slate-950 p-4 font-mono text-xs text-slate-400">
               <span>Node Inspector Stream: Active • eBPF XDP Hooked</span>
               <button
                 onClick={() => setIsNodeExpanded(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition"
+                className="rounded-xl bg-slate-800 px-4 py-2 font-bold text-white transition hover:bg-slate-700"
               >
                 {isAr ? 'إغلاق اللوحة' : 'Close Deep Inspector'}
               </button>

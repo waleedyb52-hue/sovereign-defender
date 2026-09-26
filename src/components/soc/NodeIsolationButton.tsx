@@ -70,7 +70,9 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
           setTimeout(() => setToToastMessage(null), 4000);
           return;
         } else {
-          throw new Error(isAr ? 'فشل فك العزل: الخادم غير متاح' : 'Release Failed: Backend Unreachable');
+          throw new Error(
+            isAr ? 'فشل فك العزل: الخادم غير متاح' : 'Release Failed: Backend Unreachable'
+          );
         }
       }
 
@@ -95,7 +97,9 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
         const payload = await response.json();
         setIsolationStatus('success');
         setIsIsolating(false);
-        const confirmMsg = isAr ? 'تم تأكيد العزل في النواة (Isolation Confirmed)' : 'Isolation Confirmed';
+        const confirmMsg = isAr
+          ? 'تم تأكيد العزل في النواة (Isolation Confirmed)'
+          : 'Isolation Confirmed';
         setToToastMessage(confirmMsg);
 
         if (onSuccess) {
@@ -108,7 +112,9 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
         }, 4500);
       } else {
         const errJson = await response.json().catch(() => null);
-        const serverErr = errJson?.error || (isAr ? 'فشل العزل: الخادم غير متاح' : 'Isolation Failed: Backend Unreachable');
+        const serverErr =
+          errJson?.error ||
+          (isAr ? 'فشل العزل: الخادم غير متاح' : 'Isolation Failed: Backend Unreachable');
         throw new Error(serverErr);
       }
     } catch (err: any) {
@@ -118,8 +124,13 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
 
       const isAborted = err?.name === 'AbortError';
       const failMsg = isAborted
-        ? (isAr ? 'فشل العزل: انتهاء مهلة الاتصال بالخادم' : 'Isolation Failed: Gateway Timeout (8s)')
-        : (err?.message || (isAr ? 'فشل العزل: تعذر الوصول إلى الواجهة الخلفية' : 'Isolation Failed: Backend Unreachable'));
+        ? isAr
+          ? 'فشل العزل: انتهاء مهلة الاتصال بالخادم'
+          : 'Isolation Failed: Gateway Timeout (8s)'
+        : err?.message ||
+          (isAr
+            ? 'فشل العزل: تعذر الوصول إلى الواجهة الخلفية'
+            : 'Isolation Failed: Backend Unreachable');
 
       setToToastMessage(failMsg);
 
@@ -150,43 +161,55 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
         disabled={isIsolating}
         title={
           isAlreadyIsolated
-            ? (isAr ? `إلغاء عزل ${displayTarget}` : `Release isolation for ${displayTarget}`)
-            : (isAr ? `عزل فوري في النواة عبر eBPF لـ ${displayTarget}` : `Instant eBPF Zero-Trust Isolation for ${displayTarget}`)
+            ? isAr
+              ? `إلغاء عزل ${displayTarget}`
+              : `Release isolation for ${displayTarget}`
+            : isAr
+              ? `عزل فوري في النواة عبر eBPF لـ ${displayTarget}`
+              : `Instant eBPF Zero-Trust Isolation for ${displayTarget}`
         }
-        className={`inline-flex items-center justify-center gap-2 rounded font-mono font-bold tracking-tight transition-all duration-150 border disabled:cursor-wait select-none ${sizeClasses} ${
+        className={`inline-flex items-center justify-center gap-2 rounded border font-mono font-bold tracking-tight transition-all duration-150 select-none disabled:cursor-wait ${sizeClasses} ${
           isAlreadyIsolated
-            ? 'bg-[#131a24] hover:bg-[#161b22] text-[#3fb950] border-[#3fb950]/60 hover:border-[#3fb950] shadow-[0_0_10px_rgba(57,255,20,0.15)]'
+            ? 'border-[#3fb950]/60 bg-[#131a24] text-[#3fb950] shadow-[0_0_10px_rgba(57,255,20,0.15)] hover:border-[#3fb950] hover:bg-[#161b22]'
             : isolationStatus === 'success'
-            ? 'bg-[#131a24] text-[#3fb950] border-[#3fb950] shadow-[0_0_12px_rgba(57,255,20,0.3)]'
-            : isolationStatus === 'error'
-            ? 'bg-[#131a24] text-[#f85149] border-[#f85149] shadow-[0_0_12px_rgba(255,0,60,0.3)]'
-            : isIsolating
-            ? 'bg-[#131a24] text-[#fab219] border-[#fab219]/70'
-            : 'bg-[#131a24] hover:bg-[#1f0a0e] text-[#f85149] border-[#f85149]/80 hover:border-[#f85149] shadow-[0_0_8px_rgba(255,0,60,0.2)]'
+              ? 'border-[#3fb950] bg-[#131a24] text-[#3fb950] shadow-[0_0_12px_rgba(57,255,20,0.3)]'
+              : isolationStatus === 'error'
+                ? 'border-[#f85149] bg-[#131a24] text-[#f85149] shadow-[0_0_12px_rgba(255,0,60,0.3)]'
+                : isIsolating
+                  ? 'border-[#fab219]/70 bg-[#131a24] text-[#fab219]'
+                  : 'border-[#f85149]/80 bg-[#131a24] text-[#f85149] shadow-[0_0_8px_rgba(255,0,60,0.2)] hover:border-[#f85149] hover:bg-[#1f0a0e]'
         } ${className}`}
       >
         {/* State Indicator Icon */}
         {isIsolating ? (
-          <Loader2 className="w-3.5 h-3.5 text-[#fab219] animate-spin flex-shrink-0" />
+          <Loader2 className="h-3.5 w-3.5 flex-shrink-0 animate-spin text-[#fab219]" />
         ) : isAlreadyIsolated ? (
-          <Undo2 className="w-3.5 h-3.5 text-[#3fb950] flex-shrink-0" />
+          <Undo2 className="h-3.5 w-3.5 flex-shrink-0 text-[#3fb950]" />
         ) : isolationStatus === 'success' ? (
-          <CheckCircle2 className="w-3.5 h-3.5 text-[#3fb950] flex-shrink-0" />
+          <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-[#3fb950]" />
         ) : isolationStatus === 'error' ? (
-          <XCircle className="w-3.5 h-3.5 text-[#f85149] flex-shrink-0" />
+          <XCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#f85149]" />
         ) : (
-          <Ban className="w-3.5 h-3.5 text-[#f85149] flex-shrink-0" />
+          <Ban className="h-3.5 w-3.5 flex-shrink-0 text-[#f85149]" />
         )}
 
         {/* Button Label */}
         <span>
           {isIsolating
-            ? (isAr ? 'جاري العزل في النواة...' : 'Enforcing eBPF Drop...')
+            ? isAr
+              ? 'جاري العزل في النواة...'
+              : 'Enforcing eBPF Drop...'
             : isAlreadyIsolated
-            ? (isAr ? 'فك العزل' : 'Release Isolation')
-            : isolationStatus === 'success'
-            ? (isAr ? 'تم تأكيد العزل' : 'Isolation Confirmed')
-            : (isAr ? 'عزل العقدة (eBPF)' : 'Isolate Node (eBPF)')}
+              ? isAr
+                ? 'فك العزل'
+                : 'Release Isolation'
+              : isolationStatus === 'success'
+                ? isAr
+                  ? 'تم تأكيد العزل'
+                  : 'Isolation Confirmed'
+                : isAr
+                  ? 'عزل العقدة (eBPF)'
+                  : 'Isolate Node (eBPF)'}
         </span>
       </button>
 
@@ -194,22 +217,22 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
       {toastMessage && (
         <div
           role="alert"
-          className={`absolute top-full mt-1.5 z-50 whitespace-nowrap px-3 py-1.5 rounded text-[11px] font-mono border shadow-2xl flex items-center gap-2 animate-in fade-in zoom-in-95 duration-150 ${
+          className={`animate-in fade-in zoom-in-95 absolute top-full z-50 mt-1.5 flex items-center gap-2 rounded border px-3 py-1.5 font-mono text-[11px] whitespace-nowrap shadow-2xl duration-150 ${
             isolationStatus === 'error'
-              ? 'bg-[#131a24] text-[#f85149] border-[#f85149] shadow-[0_4px_20px_rgba(255,0,60,0.4)]'
-              : 'bg-[#131a24] text-[#3fb950] border-[#3fb950] shadow-[0_4px_20px_rgba(57,255,20,0.3)]'
+              ? 'border-[#f85149] bg-[#131a24] text-[#f85149] shadow-[0_4px_20px_rgba(255,0,60,0.4)]'
+              : 'border-[#3fb950] bg-[#131a24] text-[#3fb950] shadow-[0_4px_20px_rgba(57,255,20,0.3)]'
           }`}
         >
           {isolationStatus === 'error' ? (
-            <XCircle className="w-3.5 h-3.5 text-[#f85149] flex-shrink-0" />
+            <XCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#f85149]" />
           ) : (
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#3fb950] flex-shrink-0" />
+            <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-[#3fb950]" />
           )}
           <span className="font-semibold">{toastMessage}</span>
           <button
             type="button"
             onClick={() => setToToastMessage(null)}
-            className="ms-1 text-[#93a1b3] hover:text-[#e6edf3] text-xs font-bold leading-none"
+            className="ms-1 text-xs leading-none font-bold text-[#93a1b3] hover:text-[#e6edf3]"
           >
             ✕
           </button>

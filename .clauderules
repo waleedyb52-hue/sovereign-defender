@@ -1,0 +1,151 @@
+# Sovereign Defender — Operational Rules
+
+Binding constraints for UI, security mapping, and workflow. Referenced from
+`CLAUDE.md`, which is the file the agent harness actually loads; this file is the
+detailed spec that reference points at.
+
+---
+
+## 0. The rule that outranks every rule below
+
+**A number shown on screen must be real, or declared unavailable.**
+
+Every widget in this document is a data display, not decoration. A sparkline with
+invented points, a node count from a placeholder array, or a confidence gauge
+with a hardcoded 94% is a defect of the same class as a false negative — it tells
+the operator something untrue about their own network. Where a data source does
+not exist yet, the component renders an explicit empty or `NO DATA` state and
+says which endpoint is missing. It never fills the space with plausible-looking
+values.
+
+This governs conflicts with anything else here. An unfilled panel that is honest
+beats a beautiful panel that lies.
+
+## 1. Stack and supply chain
+
+- **Frontend:** React + TypeScript + Vite, Tailwind **v4** (via
+  `@tailwindcss/vite`; there is no `tailwind.config.js` — tokens live in the
+  `@theme` block of `src/index.css`).
+- **Animation:** `motion` (v12). This is the current package name for what was
+  published as `framer-motion`; import from `motion/react`. Do not add
+  `framer-motion` — it is the legacy name for the same library.
+- **Charts:** `recharts` for axes/series; `src/components/soc/charts/primitives.tsx`
+  for sparklines and bars. Check the primitives before adding a chart dependency.
+- **Graphs:** `@xyflow/react` for node/edge topology.
+- **Validation:** `zod` at every trust boundary — API responses, WebSocket
+  frames, and anything read from disk.
+- **Class merging:** `cn()` from `src/lib/utils.ts` (clsx + tailwind-merge).
+- **shadcn/ui:** primitives are hand-vendored into `src/components/ui/`. Do **not**
+  run `npx shadcn-ui@latest init`: that package name is deprecated (renamed to
+  `shadcn`), and its init rewrites `src/index.css` and emits a v3-style
+  `tailwind.config.js` that conflicts with this project's v4 setup.
+- Every dependency added to a sovereignty-focused security product widens its
+  audit surface. Prefer the platform, then an existing local primitive, then a
+  new package — in that order, and say why in the commit.
+
+## 2. Zero egress
+
+- No component may contact a host other than this server's own origin. No CDN
+  fonts, no analytics, no remote image hosts, no telemetry.
+- Fonts are self-hosted from `/assets`. A `<link>` to `fonts.googleapis.com` is a
+  sovereignty violation, not a style choice.
+- The AI inspector panel states **Zero External API Calls** only where that is
+  actually true of the running configuration.
+
+## 3. Colour
+
+Tokens live in the `@theme` block of `src/index.css`. Use the token, never the
+raw hex, in component code.
+
+| Token | Value | Meaning |
+|---|---|---|
+| `--color-deep-space` | `#080B11` | Application background |
+| `--color-midnight` | `#0F1420` | Cards, modals, tables |
+| `--color-border-subtle` | `slate-800/80` | Dividers, card edges |
+| `--color-secure` | `#10B981` | Emerald — passed packets, healthy |
+| `--color-tarpit` | `#F59E0B` | Amber — trapping, warnings |
+| `--color-quarantine` | `#EF4444` | Crimson — dropped, isolated |
+| `--color-ebpf` | `#38BDF8` | Cyan — active kernel routes |
+
+Colour carries meaning and is never decorative. Amber means a live tarpit, not
+"this looked nice here." Because colour alone is inaccessible, every status also
+carries a glyph or a text label.
+
+## 4. Typography
+
+- **`JetBrains Mono`** — and only for machine data: IP addresses, SHA-256
+  digests, port numbers, CLI commands, rule text, hex. Its purpose is that a
+  reader can tell `0` from `O` in a hash they are about to act on.
+- **`Inter`** — headings, body, labels, everything else.
+- Prose never goes in mono; a hash never goes in sans.
+
+## 5. Depth and surface
+
+- Floating elements (dropdowns, dialogs, popovers): `backdrop-blur-md bg-midnight/80`.
+- Depth: `shadow-2xl shadow-black/60`.
+- No pure-white surfaces anywhere.
+- Text contrast meets **WCAG AAA** (7:1 body, 4.5:1 large). On `#080B11` this
+  means body text no lighter-weight than `slate-300`; `slate-500` is for
+  decoration and disabled states only, never for information the operator needs.
+
+## 6. Motion
+
+- Entry: staggered fade + 4px rise, 150–250ms, `ease-out`.
+- Numerals count up on change — but only from a real previous value, never from
+  zero on mount, which would animate a fake history.
+- New table rows slide from the top with a decaying amber glow, ~1.2s.
+- Honour `prefers-reduced-motion`: all of the above collapses to an opacity
+  change. A SOC gets watched for twelve-hour shifts; motion is an accent, not a
+  personality.
+- 60 FPS under load. Animate `transform` and `opacity` only.
+
+## 7. Security mapping
+
+- Every alert displays its **MITRE ATT&CK** technique ID and name (e.g. `T1059`
+  Command and Scripting Interpreter, `T1486` Data Encrypted for Impact). An
+  alert whose technique is genuinely unknown shows `UNMAPPED`, never a guess.
+- Compliance badges — **NCA ECC-1:2018**, **PDPL** — appear in the footer and
+  settings panel, and are presented as the posture the deployment targets, not
+  as a certification the software confers.
+
+## 8. Isolation protocol
+
+- The **ISOLATE HOST** control is crimson, unmistakable, and requires two-step
+  confirmation with the target named in the second step.
+- Activation drives a real state change: emergency border across the viewport,
+  and a timeline of eBPF rules taking effect as the server reports them.
+- **It calls the real containment endpoint.** A kill switch that animates without
+  isolating is the single worst possible component in this product.
+- Release is always reachable, and every isolation is reversible and logged.
+
+## 9. Component structure
+
+- **Parsing and transport never live in a component.** Data fetching, polling and
+  shaping belong in a hook — `useTelemetry()`, `useThreatFeed()` — and the
+  component renders what the hook returns.
+- Hooks validate with `zod` at the boundary and surface three states explicitly:
+  `loading`, `error`, `empty`. A component that cannot show "no data" is
+  incomplete.
+- Panels take `lang?: 'ar' | 'en'` and set `dir` accordingly. Arabic is a first
+  audience, not a translation layer: check RTL before calling a panel done.
+- One panel per file, named export, colocated types.
+
+## 10. Workflow
+
+| Trigger | Command |
+|---|---|
+| After creating or changing a component | `npm run test:fast` |
+| Before finalising a file | `npm run format` |
+| Before every commit | `npm run lint` and `npm run build` |
+
+Full audit suite: `npx tsx audit/audit_suite.ts` with `ADMIN_API_KEY` set. It
+must stay at zero failures.
+
+## 11. Evaluation honesty
+
+The detector's reported accuracy comes from [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md),
+and this constraint extends to the UI: **the dashboard may not present a
+detection figure the harness would refuse to report.** Where the adjudicated
+corpus is too thin to support a number, the panel shows the shortfall — as
+`AdjudicationPanel.tsx` already does. The newest temporal fold is test-only and
+no rule, and no UI threshold, may be tuned against it.

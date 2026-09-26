@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import './fonts.css';
 
 /* =========================================================================
    SOVEREIGN DEFENDER — SOC ANALYST THEME
@@ -19,7 +20,7 @@
    this surface system without per-component edits.
    ========================================================================= */
 @theme {
-  --color-slate-50:  #f7f9fc;
+  --color-slate-50: #f7f9fc;
   --color-slate-100: #eef2f7;
   --color-slate-200: #dde4ec;
   --color-slate-300: #c2ccd9;
@@ -34,19 +35,42 @@
   /* Severity language — desaturated so it reads as authoritative, not alarming.
      These deliberately replace the old neon values (#39FF14 / #FF003C) which
      vibrate against a dark surface and are a known source of fatigue. */
-  --color-rose-300:    #ff9d97;
-  --color-rose-400:    #fa7970;
-  --color-rose-500:    #f85149;
-  --color-rose-600:    #da3633;
-  --color-amber-300:   #e9c46a;
-  --color-amber-400:   #dbab3a;
-  --color-amber-500:   #fab219;
+  --color-rose-300: #ff9d97;
+  --color-rose-400: #fa7970;
+  --color-rose-500: #f85149;
+  --color-rose-600: #da3633;
+  --color-amber-300: #e9c46a;
+  --color-amber-400: #dbab3a;
+  --color-amber-500: #fab219;
   --color-emerald-300: #6fd08a;
   --color-emerald-400: #56b96a;
   --color-emerald-500: #3fb950;
-  --color-cyan-300:    #79c0ff;
-  --color-cyan-400:    #58a6ff;
-  --color-cyan-500:    #388bfd;
+  --color-cyan-300: #79c0ff;
+  --color-cyan-400: #58a6ff;
+  --color-cyan-500: #388bfd;
+
+  /* ------------------------------------------------------------------------
+     Semantic surface and status tokens.
+
+     These are additive on purpose. The severity scale above is deliberately
+     desaturated — the comment there records that the neon originals vibrate on
+     a dark surface and cause fatigue over a long shift — and roughly two
+     thousand call sites depend on it, so it is left alone. The tokens below are
+     the named semantics the design system asks for, used by the components that
+     ask for them, and they do not redefine the slate/rose/amber scales.
+     ------------------------------------------------------------------------ */
+  --color-deep-space: #080b11;
+  --color-midnight: #0f1420;
+  --color-secure: #10b981;
+  --color-tarpit: #f59e0b;
+  --color-quarantine: #ef4444;
+  --color-ebpf: #38bdf8;
+
+  /* Typography split: mono is reserved for machine data (IPs, digests, ports,
+     CLI), sans for everything a person reads as prose. Cairo stays in the
+     Arabic stack because the console is Arabic-first. */
+  --font-sans: 'Inter', 'Cairo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
 }
 
 @layer base {
@@ -67,45 +91,72 @@
     --sev-info: #58a6ff;
   }
 
-  html, body, #root {
+  html,
+  body,
+  #root {
     background-color: var(--bg-root) !important;
     color: var(--text-primary);
     min-height: 100vh;
   }
 
   body {
-    font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family:
+      'Cairo',
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
     color: var(--text-primary);
     /* A single, very low-contrast ambient wash. No grid pattern behind content:
        texture competes with data and is the first thing to go in a console
        that has to stay readable for hours. */
-    background-image: radial-gradient(ellipse 90% 55% at 50% -10%, rgba(56, 139, 253, 0.06), transparent 70%);
+    background-image: radial-gradient(
+      ellipse 90% 55% at 50% -10%,
+      rgba(56, 139, 253, 0.06),
+      transparent 70%
+    );
     background-attachment: fixed;
   }
 
   /* Monospace for all IPs, hashes, timestamps and numeric telemetry */
-  code, pre, .font-mono, [data-mono="true"] {
+  code,
+  pre,
+  .font-mono,
+  [data-mono='true'] {
     font-family: 'Fira Code', 'Roboto Mono', 'Courier New', monospace !important;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
   }
 
   /* Calmer headings: tighter tracking, less shouting than default uppercase */
-  h1, h2, h3 { letter-spacing: -0.015em; }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.015em;
+  }
 
   ::selection {
     background-color: rgba(56, 139, 253, 0.3);
     color: #ffffff;
   }
 
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { background: var(--bg-root); }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg-root);
+  }
   ::-webkit-scrollbar-thumb {
     background: var(--border-strong);
     border-radius: 6px;
     border: 2px solid var(--bg-root);
   }
-  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
 }
 
 /* =========================================================================
@@ -126,15 +177,24 @@
   border-left: 3px solid var(--sev-safe);
   background: linear-gradient(90deg, rgba(63, 185, 80, 0.06), transparent 55%);
 }
-[dir="rtl"] .sev-critical,
-[dir="rtl"] .sev-warning,
-[dir="rtl"] .sev-safe {
+[dir='rtl'] .sev-critical,
+[dir='rtl'] .sev-warning,
+[dir='rtl'] .sev-safe {
   border-left: none;
   border-right: 3px solid currentColor;
 }
-[dir="rtl"] .sev-critical { border-right-color: var(--sev-critical); background: linear-gradient(-90deg, rgba(248, 81, 73, 0.07), transparent 55%); }
-[dir="rtl"] .sev-warning  { border-right-color: var(--sev-warning);  background: linear-gradient(-90deg, rgba(250, 178, 25, 0.07), transparent 55%); }
-[dir="rtl"] .sev-safe     { border-right-color: var(--sev-safe);     background: linear-gradient(-90deg, rgba(63, 185, 80, 0.06), transparent 55%); }
+[dir='rtl'] .sev-critical {
+  border-right-color: var(--sev-critical);
+  background: linear-gradient(-90deg, rgba(248, 81, 73, 0.07), transparent 55%);
+}
+[dir='rtl'] .sev-warning {
+  border-right-color: var(--sev-warning);
+  background: linear-gradient(-90deg, rgba(250, 178, 25, 0.07), transparent 55%);
+}
+[dir='rtl'] .sev-safe {
+  border-right-color: var(--sev-safe);
+  background: linear-gradient(-90deg, rgba(63, 185, 80, 0.06), transparent 55%);
+}
 
 /* =========================================================================
    MOTION BUDGET
@@ -152,15 +212,22 @@
    from breathing at once.
    ========================================================================= */
 @keyframes sd-pulse-soft {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.72; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
 }
 .animate-pulse {
   animation: sd-pulse-soft 3.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
@@ -168,29 +235,42 @@
   }
 }
 
-html[data-motion="calm"] .animate-pulse,
-html[data-motion="calm"] .animate-ping,
-html[data-motion="calm"] .animate-bounce,
-html[data-motion="calm"] .alert-live {
+html[data-motion='calm'] .animate-pulse,
+html[data-motion='calm'] .animate-ping,
+html[data-motion='calm'] .animate-bounce,
+html[data-motion='calm'] .alert-live {
   animation: none !important;
 }
 /* Spinners still turn in calm mode — a frozen spinner reads as a hang — but
    slower, and only where something is genuinely in flight. */
-html[data-motion="calm"] .animate-spin {
+html[data-motion='calm'] .animate-spin {
   animation-duration: 1.6s !important;
 }
 
 /* Numbers settle instead of snapping when a poll lands. */
 .num-settle {
-  transition: color 240ms ease, opacity 240ms ease;
+  transition:
+    color 240ms ease,
+    opacity 240ms ease;
 }
 
 /* Reserved for an ACTIVE critical incident only. */
 @keyframes sd-alert-pulse {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(248, 81, 73, 0.5), 0 0 18px -6px rgba(248, 81, 73, 0.55); }
-  50%      { box-shadow: 0 0 0 1px rgba(248, 81, 73, 0.85), 0 0 26px -4px rgba(248, 81, 73, 0.8); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(248, 81, 73, 0.5),
+      0 0 18px -6px rgba(248, 81, 73, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(248, 81, 73, 0.85),
+      0 0 26px -4px rgba(248, 81, 73, 0.8);
+  }
 }
-.alert-live { animation: sd-alert-pulse 2.4s ease-in-out infinite; }
+.alert-live {
+  animation: sd-alert-pulse 2.4s ease-in-out infinite;
+}
 
 /* Panel surface: flat, defined by border + elevation, never by a halo. */
 .soc-panel {
@@ -217,17 +297,46 @@ html[data-motion="calm"] .animate-spin {
    Legacy helper utilities — remapped onto the new tokens so any component
    still referencing the original naming stays consistent.
    ========================================================================= */
-.pitch-black-bg { background-color: var(--bg-root) !important; }
-.pitch-black-surface { background-color: var(--surface-panel) !important; border: 1px solid var(--border-subtle) !important; }
-.pitch-black-border { border-color: var(--border-subtle) !important; }
-.text-primary-offwhite { color: var(--text-primary) !important; }
-.text-muted-gray { color: var(--text-secondary) !important; }
-.text-cyber-green { color: var(--sev-safe) !important; }
-.bg-cyber-green { background-color: var(--sev-safe) !important; }
-.border-cyber-green { border-color: var(--sev-safe) !important; }
-.text-crimson-red { color: var(--sev-critical) !important; }
-.bg-crimson-red { background-color: var(--sev-critical) !important; }
-.border-crimson-red { border-color: var(--sev-critical) !important; }
-.text-amber-warning { color: var(--sev-warning) !important; }
-.bg-amber-warning { background-color: var(--sev-warning) !important; }
-.border-amber-warning { border-color: var(--sev-warning) !important; }
+.pitch-black-bg {
+  background-color: var(--bg-root) !important;
+}
+.pitch-black-surface {
+  background-color: var(--surface-panel) !important;
+  border: 1px solid var(--border-subtle) !important;
+}
+.pitch-black-border {
+  border-color: var(--border-subtle) !important;
+}
+.text-primary-offwhite {
+  color: var(--text-primary) !important;
+}
+.text-muted-gray {
+  color: var(--text-secondary) !important;
+}
+.text-cyber-green {
+  color: var(--sev-safe) !important;
+}
+.bg-cyber-green {
+  background-color: var(--sev-safe) !important;
+}
+.border-cyber-green {
+  border-color: var(--sev-safe) !important;
+}
+.text-crimson-red {
+  color: var(--sev-critical) !important;
+}
+.bg-crimson-red {
+  background-color: var(--sev-critical) !important;
+}
+.border-crimson-red {
+  border-color: var(--sev-critical) !important;
+}
+.text-amber-warning {
+  color: var(--sev-warning) !important;
+}
+.bg-amber-warning {
+  background-color: var(--sev-warning) !important;
+}
+.border-amber-warning {
+  border-color: var(--sev-warning) !important;
+}

@@ -50,13 +50,21 @@ export const Sparkline: React.FC<{
     const y = height - ((v - min) / span) * (height - 4) - 2;
     return [x, y] as const;
   });
-  const line = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const line = pts
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(' ');
   const fill = `${line} L${width},${height} L0,${height} Z`;
   const [lx, ly] = pts[pts.length - 1];
   const gid = `spark-${color.replace('#', '')}`;
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" className="overflow-visible">
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      aria-hidden="true"
+      className="overflow-visible"
+    >
       {area && (
         <>
           <defs>
@@ -68,7 +76,14 @@ export const Sparkline: React.FC<{
           <path d={fill} fill={`url(#${gid})`} />
         </>
       )}
-      <path d={line} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={line}
+        fill="none"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       {/* current value marker */}
       <circle cx={lx} cy={ly} r={3} fill={color} stroke={SURFACE} strokeWidth={2} />
     </svg>
@@ -101,26 +116,28 @@ export const StackedBars: React.FC<{
           return (
             <div
               key={i}
-              className="relative flex-1 flex flex-col-reverse justify-start cursor-default"
+              className="relative flex flex-1 cursor-default flex-col-reverse justify-start"
               style={{ height: h || 2 }}
               onMouseEnter={() => setHover(i)}
               onMouseLeave={() => setHover(null)}
             >
-              {b.segments.filter(s => s.value > 0).map((s, si, arr) => (
-                <div
-                  key={s.key}
-                  style={{
-                    height: `${(s.value / (total || 1)) * 100}%`,
-                    background: s.color,
-                    /* 2px surface gap so adjacent fills never touch */
-                    marginTop: si < arr.length - 1 ? 2 : 0,
-                    borderTopLeftRadius: si === arr.length - 1 ? 3 : 0,
-                    borderTopRightRadius: si === arr.length - 1 ? 3 : 0,
-                    opacity: hover === null || hover === i ? 1 : 0.45,
-                    transition: 'opacity 120ms ease'
-                  }}
-                />
-              ))}
+              {b.segments
+                .filter(s => s.value > 0)
+                .map((s, si, arr) => (
+                  <div
+                    key={s.key}
+                    style={{
+                      height: `${(s.value / (total || 1)) * 100}%`,
+                      background: s.color,
+                      /* 2px surface gap so adjacent fills never touch */
+                      marginTop: si < arr.length - 1 ? 2 : 0,
+                      borderTopLeftRadius: si === arr.length - 1 ? 3 : 0,
+                      borderTopRightRadius: si === arr.length - 1 ? 3 : 0,
+                      opacity: hover === null || hover === i ? 1 : 0.45,
+                      transition: 'opacity 120ms ease'
+                    }}
+                  />
+                ))}
             </div>
           );
         })}
@@ -129,15 +146,19 @@ export const StackedBars: React.FC<{
       {/* hover readout */}
       {hover !== null && buckets[hover] && (
         <div
-          className="absolute -top-1 z-20 rounded-md border border-slate-700 bg-slate-900 px-2.5 py-2 shadow-xl pointer-events-none"
-          style={{ [isAr ? 'right' : 'left']: `${(hover / buckets.length) * 100}%` } as React.CSSProperties}
+          className="pointer-events-none absolute -top-1 z-20 rounded-md border border-slate-700 bg-slate-900 px-2.5 py-2 shadow-xl"
+          style={
+            {
+              [isAr ? 'right' : 'left']: `${(hover / buckets.length) * 100}%`
+            } as React.CSSProperties
+          }
         >
-          <div className="font-mono text-[10px] text-slate-400 mb-1">{buckets[hover].label}</div>
+          <div className="mb-1 font-mono text-[10px] text-slate-400">{buckets[hover].label}</div>
           {buckets[hover].segments.map(s => (
             <div key={s.key} className="flex items-center gap-2 text-[11px] whitespace-nowrap">
-              <span className="w-2 h-2 rounded-[2px]" style={{ background: s.color }} />
+              <span className="h-2 w-2 rounded-[2px]" style={{ background: s.color }} />
               <span className="text-slate-300">{s.label}</span>
-              <span className="font-mono text-slate-100 ms-auto ps-3 tabular-nums">{s.value}</span>
+              <span className="ms-auto ps-3 font-mono text-slate-100 tabular-nums">{s.value}</span>
             </div>
           ))}
         </div>
@@ -150,10 +171,10 @@ export const StackedBars: React.FC<{
 /* Legend — always present for >= 2 series; identity never colour-alone */
 /* ------------------------------------------------------------------ */
 export const Legend: React.FC<{ items: Array<{ label: string; color: string }> }> = ({ items }) => (
-  <div className="flex items-center gap-x-4 gap-y-1.5 flex-wrap">
+  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
     {items.map(i => (
       <span key={i.label} className="flex items-center gap-1.5 text-[11px] text-slate-400">
-        <span className="w-2.5 h-2.5 rounded-[3px]" style={{ background: i.color }} />
+        <span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: i.color }} />
         {i.label}
       </span>
     ))}
@@ -168,7 +189,7 @@ export const RankedBar: React.FC<{
   max: number;
   color?: string;
 }> = ({ value, max, color = '#58a6ff' }) => (
-  <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+  <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
     <div
       className="h-full rounded-full transition-[width] duration-500"
       style={{ width: `${Math.max((value / (max || 1)) * 100, 2)}%`, background: color }}

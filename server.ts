@@ -1885,6 +1885,57 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
   return res.json(fallbackResult);
 });
 
+/**
+ * INFERENCE POSTURE — what is actually running, and whether egress is possible
+ *
+ * Added because the dashboard needs to state the platform's sovereignty claim,
+ * and a badge reading "Zero External API Calls" must be derived from the running
+ * configuration rather than printed unconditionally. If a Gemini key is present,
+ * calls do leave the machine on the deep-analysis path, and a UI that claimed
+ * otherwise would be lying about the one property this product is sold on.
+ *
+ * So `egressPossible` is computed from whether the client was constructed, and
+ * the console renders the sovereign badge only when it is false.
+ *
+ * There is no vLLM in this deployment. The local engine is the deterministic
+ * payload classifier in payloadClassifier.service.ts, which is the only
+ * detection path when no external model is configured. Reporting a vLLM memory
+ * figure would mean inventing a number for a component that does not exist.
+ */
+app.get('/api/v1/soc/inference-posture', (_req, res) => {
+  const mem = process.memoryUsage();
+  const egressPossible = Boolean(genAI);
+
+  res.json({
+    success: true,
+    localEngine: {
+      name: 'LOCAL_PAYLOAD_CLASSIFIER',
+      kind: 'DETERMINISTIC_SIGNATURE_AND_ENTROPY',
+      // Same derivation the agent status endpoint uses: the static rule set
+      // plus whatever intel the operator has ingested.
+      activeSignaturesCount: state.ingestedIntel.length + 126,
+      // The honest framing: this is the whole detector on a sovereign install.
+      isSoleDetectionPath: !egressPossible
+    },
+    // Real process figures. Named for what they are rather than dressed up as
+    // model memory, because no model is loaded in-process.
+    processMemory: {
+      heapUsedMb: Number((mem.heapUsed / 1048576).toFixed(1)),
+      rssMb: Number((mem.rss / 1048576).toFixed(1))
+    },
+    externalModel: {
+      configured: egressPossible,
+      provider: egressPossible ? 'GOOGLE_GENAI' : null,
+      usedFor: egressPossible ? 'OPTIONAL_DEEP_ANALYSIS' : null
+    },
+    /** The sovereignty claim, as a fact about this process rather than a slogan. */
+    egressPossible,
+    zeroExternalApiCalls: !egressPossible,
+    aiEvaluationsCount: state.metrics?.aiEvaluationsCount ?? 0,
+    uptimeSec: Math.round(process.uptime())
+  });
+});
+
 // 4. Ingest Threat Intelligence & Train Dynamic Prompt Context
 app.post(['/api/v1/dataset/ingest', '/api/v1/threat-intel/ingest'], async (req, res) => {
   const { name, type, rawData, logs, sourceType } = req.body || {};

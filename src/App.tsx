@@ -29,6 +29,11 @@ import { SystemComplianceReport } from './components/SystemComplianceReport';
 import { KillChainPanel } from './components/soc/KillChainPanel';
 import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
 import { AdjudicationPanel } from './components/soc/AdjudicationPanel';
+import { TelemetryHud } from './components/soc/TelemetryHud';
+import { EbpfTopologyGraph } from './components/soc/EbpfTopologyGraph';
+import { ThreatAuditTable } from './components/soc/ThreatAuditTable';
+import { IsolationProtocol, CompliancePosture } from './components/soc/IsolationProtocol';
+import { useTelemetry, useThreatFeed, useIsolation } from './hooks/useTelemetry';
 import { IncidentQueue } from './components/soc/IncidentQueue';
 import { PostureStrip } from './components/soc/PostureStrip';
 import { SecurityAnalyticsRow } from './components/soc/SecurityAnalyticsRow';
@@ -58,6 +63,31 @@ import {
 export default function App() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
   const [activeTab, setActiveTab] = useState<AppTab>('threat_heatmap');
+
+  // Live telemetry for the kernel HUD, topology and audit log. All parsing and
+  // polling lives in these hooks, so this component stays layout and wiring —
+  // see .clauderules §9.
+  const sdTelemetry = useTelemetry();
+  const sdFeed = useThreatFeed();
+  const sdIsolation = useIsolation();
+  const [sdIsolationTarget, setSdIsolationTarget] = useState<string | null>(null);
+
+  // Threat nodes for the topology, derived from the audit feed rather than a
+  // second request. Only events carrying a source address qualify: a threat node
+  // without an address would be a decorative shape on a network diagram.
+  const sdThreatNodes = React.useMemo(() => {
+    const seen = new Map<string, { ip: string; isolated?: boolean }>();
+    for (const e of sdFeed.events) {
+      const ip = (e as any).srcIp ?? (e as any).sourceIp;
+      if (!ip || seen.has(ip)) continue;
+      if (!/CRITICAL|HIGH|MEDIUM/i.test(String(e.severity ?? ''))) continue;
+      seen.set(ip, {
+        ip,
+        isolated: /ISOLAT|CONTAIN|BLOCK|QUARANT/i.test(String(e.actionTaken ?? ''))
+      });
+    }
+    return [...seen.values()].slice(0, 6);
+  }, [sdFeed.events]);
 
   // Flight Mode & Approval Queue State (Feature 5)
   const [flightMode, setFlightMode] = useState<DefenseFlightMode>('AUTOPILOT');
@@ -119,7 +149,8 @@ export default function App() {
 
   // Intel State
   const [ingestedDatasets, setIngestedDatasets] = useState<IngestedDataset[]>(SAMPLE_DATASETS);
-  const [intelMetrics, setIntelMetrics] = useState<ThreatIntelligenceMetrics>(INITIAL_INTEL_METRICS);
+  const [intelMetrics, setIntelMetrics] =
+    useState<ThreatIntelligenceMetrics>(INITIAL_INTEL_METRICS);
   const [isIngesting, setIsIngesting] = useState<boolean>(false);
 
   // Streaming State
@@ -271,7 +302,9 @@ export default function App() {
         if (data.packet) {
           const packetWithUuid = {
             ...data.packet,
-            uuid: data.packet.uuid || `packet-uuid-${data.packet.id || crypto.randomUUID()}-${crypto.randomUUID()}`
+            uuid:
+              data.packet.uuid ||
+              `packet-uuid-${data.packet.id || crypto.randomUUID()}-${crypto.randomUUID()}`
           };
           setPacketLogs(prev => [packetWithUuid, ...prev.slice(0, 149)]);
         }
@@ -286,14 +319,26 @@ export default function App() {
         }
 
         // Dynamic node highlight based on active API response
-        const isThreat = data.verdict === 'BLOCK' || data.verdict === 'DIVERT_HONEYPOT' || data.verdict === 'QUEUED_APPROVAL';
+        const isThreat =
+          data.verdict === 'BLOCK' ||
+          data.verdict === 'DIVERT_HONEYPOT' ||
+          data.verdict === 'QUEUED_APPROVAL';
         setNodes(prev =>
           prev.map(n => {
             if (n.ip === controls.spoofedSrcIp) {
-              return { ...n, riskScore: isThreat ? 98 : 5, status: isThreat ? 'UNDER_ATTACK' : 'PROTECTED' };
+              return {
+                ...n,
+                riskScore: isThreat ? 98 : 5,
+                status: isThreat ? 'UNDER_ATTACK' : 'PROTECTED'
+              };
             }
             if (controls.selectedVector === 'LATERAL_MOVEMENT' && n.id === 'node-db') {
-              return { ...n, riskScore: 85, status: 'UNDER_ATTACK', activeConnections: n.activeConnections + 1 };
+              return {
+                ...n,
+                riskScore: 85,
+                status: 'UNDER_ATTACK',
+                activeConnections: n.activeConnections + 1
+              };
             }
             if (n.id === 'node-web' && isThreat) {
               return { ...n, riskScore: 65 };
@@ -302,7 +347,11 @@ export default function App() {
           })
         );
 
-        if (isThreat && data.verdict !== 'QUEUED_APPROVAL' && !quarantinedHosts.some(q => q.ip === controls.spoofedSrcIp)) {
+        if (
+          isThreat &&
+          data.verdict !== 'QUEUED_APPROVAL' &&
+          !quarantinedHosts.some(q => q.ip === controls.spoofedSrcIp)
+        ) {
           const qStart = Date.now();
           const ttlSec = 300;
           setQuarantinedHosts(prev => [
@@ -313,7 +362,10 @@ export default function App() {
               unbanTimestamp: qStart + ttlSec * 1000,
               remainingSeconds: ttlSec,
               tier: 1,
-              actionTaken: data.verdict === 'DIVERT_HONEYPOT' ? 'DIVERT_TO_HONEYPOT (10.0.99.5)' : 'IPTABLES_DROP_AND_TCP_RST',
+              actionTaken:
+                data.verdict === 'DIVERT_HONEYPOT'
+                  ? 'DIVERT_TO_HONEYPOT (10.0.99.5)'
+                  : 'IPTABLES_DROP_AND_TCP_RST',
               reason: data.analysisEn || `${controls.selectedVector} payload detection`,
               attackVector: controls.selectedVector,
               country: 'EXTERNAL'
@@ -330,8 +382,11 @@ export default function App() {
     }
 
     // Fallback simulation if offline
-    const isWhitelisted = ['10.0.0.1', '10.0.0.2', '127.0.0.1', '1.1.1.1', '8.8.8.8'].includes(controls.spoofedSrcIp);
-    const isHoneypot = controls.selectedVector === 'SSH_BRUTE_FORCE' && controls.targetPort === 22 && !isWhitelisted;
+    const isWhitelisted = ['10.0.0.1', '10.0.0.2', '127.0.0.1', '1.1.1.1', '8.8.8.8'].includes(
+      controls.spoofedSrcIp
+    );
+    const isHoneypot =
+      controls.selectedVector === 'SSH_BRUTE_FORCE' && controls.targetPort === 22 && !isWhitelisted;
     const isThreat = !isWhitelisted;
     const threatScore = isWhitelisted ? 0 : Math.min(100, Math.floor(85 + Math.random() * 14));
     const incidentId = 'SD-' + Math.floor(100000 + Math.random() * 900000);
@@ -339,7 +394,10 @@ export default function App() {
 
     const iptablesRule = `iptables -I INPUT -s ${controls.spoofedSrcIp} -p tcp --dport ${controls.targetPort} -j DROP`;
     const suricataRule = `drop tcp ${controls.spoofedSrcIp} any -> any ${controls.targetPort} (msg:"SD-3.0 AI Threat Block [${controls.selectedVector}]"; sid:${Math.floor(900000 + Math.random() * 99999)}; rev:1;)`;
-    const ebpfRule = `bpf_xdp_drop_src_ip(0x${controls.spoofedSrcIp.split('.').map(n => parseInt(n).toString(16).padStart(2, '0')).join('')});`;
+    const ebpfRule = `bpf_xdp_drop_src_ip(0x${controls.spoofedSrcIp
+      .split('.')
+      .map(n => parseInt(n).toString(16).padStart(2, '0'))
+      .join('')});`;
 
     setLatestGeneratedRules({
       iptables: iptablesRule,
@@ -359,21 +417,39 @@ export default function App() {
       protocol: controls.targetPort === 53 ? 'DNS' : controls.targetPort === 22 ? 'SSH' : 'HTTPS',
       vector: controls.selectedVector,
       vectorNameEn: controls.selectedVector,
-      vectorNameAr: controls.selectedVector === 'SQL_INJECTION' ? 'حقن استعلامات SQL' :
-        controls.selectedVector === 'SSH_BRUTE_FORCE' ? 'هجوم القوة الغاشمة SSH' :
-        controls.selectedVector === 'DNS_EXFILTRATION' ? 'تسريب بيانات عبر DNS' :
-        controls.selectedVector === 'LATERAL_MOVEMENT' ? 'حركة جانبية نحو قاعدة البيانات' :
-        controls.selectedVector === 'DDOS_AMPLIFICATION' ? 'حجب خدمة L7 DDoS' : 'اختراق وفحص مسارات',
+      vectorNameAr:
+        controls.selectedVector === 'SQL_INJECTION'
+          ? 'حقن استعلامات SQL'
+          : controls.selectedVector === 'SSH_BRUTE_FORCE'
+            ? 'هجوم القوة الغاشمة SSH'
+            : controls.selectedVector === 'DNS_EXFILTRATION'
+              ? 'تسريب بيانات عبر DNS'
+              : controls.selectedVector === 'LATERAL_MOVEMENT'
+                ? 'حركة جانبية نحو قاعدة البيانات'
+                : controls.selectedVector === 'DDOS_AMPLIFICATION'
+                  ? 'حجب خدمة L7 DDoS'
+                  : 'اختراق وفحص مسارات',
       payload: controls.customPayload || 'Simulated Cyber Exploit Payload',
       packetSize: controls.packetSize,
       reqRate: controls.packetsPerSec,
       threatScore,
       status: isWhitelisted ? 'PASSED' : isHoneypot ? 'HONEYPOT_DIVERTED' : 'BLOCKED',
-      actionTaken: isWhitelisted ? 'WHITELIST_IMMUNITY_FORWARD' : isHoneypot ? 'DIVERT_TO_HONEYPOT_10.0.99.5' : 'IPTABLES_DROP_AND_TCP_RST',
-      reason: isWhitelisted ? 'Core infrastructure asset (10.0.0.1) immune from eviction.' : `AI Autonomous Defender identified ${controls.selectedVector} anomaly.`,
-      mitreTactic: controls.selectedVector === 'SSH_BRUTE_FORCE' ? 'Credential Access (T1110.001)' :
-        controls.selectedVector === 'DNS_EXFILTRATION' ? 'Exfiltration (T1048.003)' :
-        controls.selectedVector === 'LATERAL_MOVEMENT' ? 'Lateral Movement (T1021.002)' : 'Initial Access & Execution',
+      actionTaken: isWhitelisted
+        ? 'WHITELIST_IMMUNITY_FORWARD'
+        : isHoneypot
+          ? 'DIVERT_TO_HONEYPOT_10.0.99.5'
+          : 'IPTABLES_DROP_AND_TCP_RST',
+      reason: isWhitelisted
+        ? 'Core infrastructure asset (10.0.0.1) immune from eviction.'
+        : `AI Autonomous Defender identified ${controls.selectedVector} anomaly.`,
+      mitreTactic:
+        controls.selectedVector === 'SSH_BRUTE_FORCE'
+          ? 'Credential Access (T1110.001)'
+          : controls.selectedVector === 'DNS_EXFILTRATION'
+            ? 'Exfiltration (T1048.003)'
+            : controls.selectedVector === 'LATERAL_MOVEMENT'
+              ? 'Lateral Movement (T1021.002)'
+              : 'Initial Access & Execution',
       generatedRules: {
         iptables: iptablesRule,
         suricata: suricataRule,
@@ -393,7 +469,13 @@ export default function App() {
     } else {
       setIsStreaming(true);
       streamIntervalRef.current = setInterval(() => {
-        const sampleIps = ['203.0.113.88', '185.220.101.5', '194.26.29.112', '45.148.10.22', '192.168.1.15'];
+        const sampleIps = [
+          '203.0.113.88',
+          '185.220.101.5',
+          '194.26.29.112',
+          '45.148.10.22',
+          '192.168.1.15'
+        ];
         const randomIp = sampleIps[Math.floor(Math.random() * sampleIps.length)];
         handleInjectPacket({
           ...controls,
@@ -437,7 +519,9 @@ export default function App() {
   };
 
   // Handle Live Website Protection Test
-  const handleTestProtection = async (request: LiveProtectionRequest): Promise<LiveProtectionResponse> => {
+  const handleTestProtection = async (
+    request: LiveProtectionRequest
+  ): Promise<LiveProtectionResponse> => {
     const response = await fetch('/api/v1/agent/protect', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -472,8 +556,10 @@ export default function App() {
       return {
         threatScore: 96,
         verdict: 'BLOCK',
-        analysisEn: 'Deep AI inspection confirmed zero-day malicious pattern matching active threat intelligence.',
-        analysisAr: 'أكد فحص الذكاء الاصطناعي وجود نمط هجومي خطير يطابق استخبارات التهديدات المستحدثة.'
+        analysisEn:
+          'Deep AI inspection confirmed zero-day malicious pattern matching active threat intelligence.',
+        analysisAr:
+          'أكد فحص الذكاء الاصطناعي وجود نمط هجومي خطير يطابق استخبارات التهديدات المستحدثة.'
       };
     }
   };
@@ -517,7 +603,10 @@ export default function App() {
   const pendingApprovalsCount = approvalQueue.filter(q => q.status === 'PENDING').length;
 
   return (
-    <div className={`min-h-screen bg-[#0d1117] text-[#e6edf3] antialiased ${isAr ? 'rtl' : 'ltr'}`} dir={isAr ? 'rtl' : 'ltr'}>
+    <div
+      className={`min-h-screen bg-[#0d1117] text-[#e6edf3] antialiased ${isAr ? 'rtl' : 'ltr'}`}
+      dir={isAr ? 'rtl' : 'ltr'}
+    >
       {/* Sleek Minimal Top Status Bar (Button-Free) */}
       <Navbar
         activeTab={activeTab}
@@ -551,57 +640,59 @@ export default function App() {
       />
 
       {/* Main Content Layout Container (Offset by Sidebar Width) */}
-      <main className={`${isSidebarPinned ? (isAr ? 'mr-64' : 'ml-64') : (isAr ? 'mr-16' : 'ml-16')} transition-all duration-300 min-h-[calc(100vh-48px)] p-4 sm:p-6 lg:p-8 flex flex-col`}>
+      <main
+        className={`${isSidebarPinned ? (isAr ? 'mr-64' : 'ml-64') : isAr ? 'mr-16' : 'ml-16'} flex min-h-[calc(100vh-48px)] flex-col p-4 transition-all duration-300 sm:p-6 lg:p-8`}
+      >
         {/* VIEW 1: Live Site Traffic & Security Inspector */}
         {activeTab === 'site_inspector' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <SiteTrafficSecurityInspector lang={lang} />
           </div>
         )}
 
         {/* VIEW 2: SOC Command & Attack Graph (Blue Team SOC) */}
         {activeTab === 'blue_team_soc' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <BlueTeamConsole lang={lang} />
           </div>
         )}
 
         {/* VIEW 3: Multi-Vector Cyber Threat Labs & Adversarial Arena */}
         {activeTab === 'threat_labs' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <ThreatLabsStudio lang={lang} />
           </div>
         )}
 
         {/* VIEW 4: File Integrity (FIM) & Digital Forensics Vault */}
         {activeTab === 'fim_forensics' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <FimForensicsCenter lang={lang} />
           </div>
         )}
 
         {/* ---- Network & kernel ---- */}
         {activeTab === 'topology' && (
-          <div className="max-w-[1600px] mx-auto w-full">
+          <div className="mx-auto w-full max-w-[1600px]">
             <CyberTopologyMap lang={lang} />
           </div>
         )}
 
         {activeTab === 'kernel_perf' && (
-          <div className="max-w-[1600px] mx-auto w-full">
+          <div className="mx-auto w-full max-w-[1600px]">
             <KernelIngressPerformanceCenter lang={lang} />
           </div>
         )}
 
         {/* ---- Analytics & intelligence ---- */}
         {activeTab === 'soc_analytics' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <SocAnalyticsDashboard lang={lang} />
           </div>
         )}
 
         {activeTab === 'threat_intel' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <ThreatIntelStudio
               lang={lang}
               ingestedDatasets={ingestedDatasets}
@@ -613,14 +704,14 @@ export default function App() {
         )}
 
         {activeTab === 'behavioral' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <BehavioralAnomalyStudio lang={lang} />
           </div>
         )}
 
         {/* ---- Defense & response ---- */}
         {activeTab === 'defense_overview' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <DefenseOverview
               lang={lang}
               quarantinedHosts={quarantinedHosts}
@@ -630,7 +721,7 @@ export default function App() {
         )}
 
         {activeTab === 'live_protection' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <LiveWebsiteProtection
               lang={lang}
               apiKey={apiKey}
@@ -641,7 +732,7 @@ export default function App() {
         )}
 
         {activeTab === 'deception' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <DeceptionCommandCenter lang={lang} />
           </div>
         )}
@@ -650,7 +741,7 @@ export default function App() {
              The simulator, the graph it feeds and the resulting packet log are
              one workflow, so they share a view rather than three tabs. */}
         {activeTab === 'attack_sim' && (
-          <div className="max-w-[1600px] mx-auto w-full space-y-5">
+          <div className="mx-auto w-full max-w-[1600px] space-y-5">
             <AttackSimulator
               lang={lang}
               isStreaming={isStreaming}
@@ -675,35 +766,39 @@ export default function App() {
         )}
 
         {activeTab === 'digital_twin' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <DigitalTwinSimulator lang={lang} />
           </div>
         )}
 
         {activeTab === 'forensics_vault' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <ForensicsVault lang={lang} />
           </div>
         )}
 
         {activeTab === 'threat_corpus' && (
-          <div className="max-w-[1500px] mx-auto w-full">
+          <div className="mx-auto w-full max-w-[1500px]">
             <ThreatCorpusConsole lang={lang} />
           </div>
         )}
 
         {activeTab === 'pro_tools' && (
-          <div className="max-w-7xl mx-auto w-full">
+          <div className="mx-auto w-full max-w-7xl">
             <ProCyberTools lang={lang} />
           </div>
         )}
 
         {/* VIEW 5: 3D Global Threat Heatmap - FOCUS MODE (Massive Padding & Empty Space) */}
         {activeTab === 'threat_heatmap' && (
-          <div className="flex-1 flex flex-col justify-start max-w-[1600px] mx-auto w-full py-2 space-y-5">
+          <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-start space-y-5 py-2">
             {/* Posture strip — four numbers a reviewer reads first. Quiet by
                 default; only a live critical count carries colour. */}
-            <PostureStrip lang={lang} flightMode={flightMode} threatsBlocked={systemStatus.totalThreatsBlocked} />
+            <PostureStrip
+              lang={lang}
+              flightMode={flightMode}
+              threatsBlocked={systemStatus.totalThreatsBlocked}
+            />
 
             {/* Triage first. Mature consoles lead with the prioritised queue —
                 the analyst works a list, and opens a picture only once a row
@@ -726,14 +821,50 @@ export default function App() {
             {/* Protection stack: what stops what, and where. */}
             <DefenseLayersPanel lang={lang} />
 
+            {/* Kernel telemetry HUD. Reads from the eBPF, FIM, agent and
+                inference-posture endpoints; every card shows an em dash rather
+                than a zero where its source did not answer. */}
+            <TelemetryHud telemetry={sdTelemetry} lang={lang} />
+
+            {/* Service topology and the audit log side by side. The table is
+                wider because it is where an analyst works for long stretches. */}
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+              <div className="xl:col-span-2">
+                <EbpfTopologyGraph
+                  nodes={sdTelemetry.nodes}
+                  threats={sdThreatNodes}
+                  lang={lang}
+                  onIsolate={setSdIsolationTarget}
+                />
+              </div>
+              <div className="xl:col-span-3">
+                <ThreatAuditTable
+                  events={sdFeed.events}
+                  freshIds={sdFeed.freshIds}
+                  loading={sdFeed.loading}
+                  error={sdFeed.error}
+                  lang={lang}
+                  onIsolate={setSdIsolationTarget}
+                  isolating={sdIsolation.pending}
+                />
+              </div>
+            </div>
+
             {/* Where the platform's own accuracy claim comes from: an analyst
                 ruling on live detections. Placed after the defence stack because
                 it is about how the detector is judged, not how it protects. */}
             <AdjudicationPanel lang={lang} />
 
+            {/* Sovereignty posture, driven by the live configuration rather than
+                printed unconditionally. */}
+            <CompliancePosture
+              lang={lang}
+              zeroEgress={sdTelemetry.inference.zeroExternalApiCalls}
+            />
+
             {/* Geographic context last. It needs the full width — the map owns
                 floating overlays that collide the moment the column narrows. */}
-            <div className="soc-panel p-2 overflow-hidden h-[520px] flex">
+            <div className="soc-panel flex h-[520px] overflow-hidden p-2">
               <AutonomousThreatMap
                 lang={lang}
                 isKioskMode={false}
@@ -745,12 +876,7 @@ export default function App() {
       </main>
 
       {/* Pure SOC Wall Kiosk Display (Hides All Navigation & Shows Map + Auto-Ticker) */}
-      {isKioskMode && (
-        <KioskModeWrapper
-          lang={lang}
-          onExitKiosk={() => setIsKioskMode(false)}
-        />
-      )}
+      {isKioskMode && <KioskModeWrapper lang={lang} onExitKiosk={() => setIsKioskMode(false)} />}
 
       {/* AI Deep Threat Inspector Modal */}
       {inspectingPacket && (
@@ -795,7 +921,19 @@ export default function App() {
         onClose={() => setIsComplianceReportOpen(false)}
         isAr={lang === 'ar'}
       />
+
+      <IsolationProtocol
+        target={sdIsolationTarget}
+        onClose={() => {
+          setSdIsolationTarget(null);
+          sdIsolation.clearResult();
+        }}
+        onConfirm={sdIsolation.isolate}
+        onRelease={sdIsolation.release}
+        pending={sdIsolation.pending}
+        result={sdIsolation.result}
+        lang={lang}
+      />
     </div>
   );
 }
-

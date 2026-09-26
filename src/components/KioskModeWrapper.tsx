@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AutonomousThreatMap } from './AutonomousThreatMap';
-import {
-  Minimize2,
-  ShieldAlert,
-  Clock
-} from 'lucide-react';
+import { Minimize2, ShieldAlert, Clock } from 'lucide-react';
 
 interface MarqueeLog {
   id: string;
@@ -21,10 +17,7 @@ interface KioskModeWrapperProps {
   onExitKiosk: () => void;
 }
 
-export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({
-  lang = 'ar',
-  onExitKiosk
-}) => {
+export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({ lang = 'ar', onExitKiosk }) => {
   const isAr = lang === 'ar';
   const [logs, setLogs] = useState<MarqueeLog[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString());
@@ -68,7 +61,8 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({
             action: 'eBPF_AUTO_DROP',
             ip: '194.26.29.112',
             asn: 'AS13335',
-            reason: '[AUTONOMOUS] Algorithmic score 96.4% -> eBPF dropped 4,200 packets from AS13335 (194.26.29.112)'
+            reason:
+              '[AUTONOMOUS] Algorithmic score 96.4% -> eBPF dropped 4,200 packets from AS13335 (194.26.29.112)'
           },
           {
             id: 'm2',
@@ -77,7 +71,8 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({
             action: 'eBPF_AUTO_DROP',
             ip: '185.220.101.5',
             asn: 'AS208323',
-            reason: '[AUTONOMOUS] Algorithmic score 92.1% -> eBPF dropped 3,650 packets from AS208323 (185.220.101.5)'
+            reason:
+              '[AUTONOMOUS] Algorithmic score 92.1% -> eBPF dropped 3,650 packets from AS208323 (185.220.101.5)'
           }
         ]);
       }
@@ -91,70 +86,75 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#0d1117] text-[#e6edf3] flex flex-col justify-between select-none overflow-hidden font-mono">
+    <div className="fixed inset-0 z-[9999] flex flex-col justify-between overflow-hidden bg-[#0d1117] font-mono text-[#e6edf3] select-none">
       {/* Top SOC Wall Display Minimalist Banner */}
-      <div className="absolute top-0 left-0 right-0 z-40 bg-[#0d1117]/85 backdrop-blur-md border-b border-[#1e2733] px-6 py-2.5 flex items-center justify-between text-xs">
+      <div className="absolute top-0 right-0 left-0 z-40 flex items-center justify-between border-b border-[#1e2733] bg-[#0d1117]/85 px-6 py-2.5 text-xs backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#3fb950] animate-ping" />
-            <span className="font-bold text-[#e6edf3] tracking-wider">
-              {isAr ? 'شاشة جدارية سيادية للتحكم (SOC WALL KIOSK)' : 'SOVEREIGN DEFENDER • ZERO-TOUCH SOC WALL DISPLAY'}
+            <span className="h-2.5 w-2.5 animate-ping rounded-full bg-[#3fb950]" />
+            <span className="font-bold tracking-wider text-[#e6edf3]">
+              {isAr
+                ? 'شاشة جدارية سيادية للتحكم (SOC WALL KIOSK)'
+                : 'SOVEREIGN DEFENDER • ZERO-TOUCH SOC WALL DISPLAY'}
             </span>
           </div>
           <span className="text-[#93a1b3]">|</span>
-          <span className="text-[11px] text-[#3fb950] bg-[#3fb950]/15 px-2 py-0.5 rounded border border-[#3fb950]/30">
-            {isAr ? 'تتبع آلي عالي الدقة (K-Means Auto-Tracking)' : 'K-MEANS AUTONOMOUS TRACKING ACTIVE'}
+          <span className="rounded border border-[#3fb950]/30 bg-[#3fb950]/15 px-2 py-0.5 text-[11px] text-[#3fb950]">
+            {isAr
+              ? 'تتبع آلي عالي الدقة (K-Means Auto-Tracking)'
+              : 'K-MEANS AUTONOMOUS TRACKING ACTIVE'}
           </span>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-[#93a1b3] text-[11px]">
-            <Clock className="w-3.5 h-3.5 text-[#3fb950]" />
+          <div className="flex items-center gap-1.5 text-[11px] text-[#93a1b3]">
+            <Clock className="h-3.5 w-3.5 text-[#3fb950]" />
             <span className="font-mono text-[#e6edf3]">{currentTime} UTC</span>
           </div>
 
           <button
             onClick={onExitKiosk}
-            className="flex items-center gap-1.5 px-3 py-1 rounded bg-[#1a2230] border border-[#1e2733] hover:border-[#f85149] hover:text-[#f85149] transition text-xs font-bold"
+            className="flex items-center gap-1.5 rounded border border-[#1e2733] bg-[#1a2230] px-3 py-1 text-xs font-bold transition hover:border-[#f85149] hover:text-[#f85149]"
             title="Press Esc to Exit"
           >
-            <Minimize2 className="w-3.5 h-3.5" />
+            <Minimize2 className="h-3.5 w-3.5" />
             <span>{isAr ? 'خروج (Esc)' : 'Exit Kiosk (Esc)'}</span>
           </button>
         </div>
       </div>
 
       {/* Main 3D Geospatial Threat Map Canvas (Full Viewport) */}
-      <div className="relative w-full h-full pt-10 pb-12">
-        <AutonomousThreatMap
-          lang={lang}
-          isKioskMode={true}
-          onToggleKiosk={onExitKiosk}
-        />
+      <div className="relative h-full w-full pt-10 pb-12">
+        <AutonomousThreatMap lang={lang} isKioskMode={true} onToggleKiosk={onExitKiosk} />
       </div>
 
       {/* Bottom Autonomous Mitigation Marquee / Auto-Ticker */}
-      <div className="absolute bottom-0 left-0 right-0 z-40 bg-[#131a24] border-t border-[#1e2733] h-12 flex items-center overflow-hidden px-4">
+      <div className="absolute right-0 bottom-0 left-0 z-40 flex h-12 items-center overflow-hidden border-t border-[#1e2733] bg-[#131a24] px-4">
         {/* Ticker Header Tag */}
-        <div className="flex items-center gap-2 bg-[#f85149]/20 border border-[#f85149]/40 text-[#f85149] px-3 py-1 rounded text-[11px] font-bold shrink-0 mr-3 shadow-lg z-10">
-          <ShieldAlert className="w-4 h-4 animate-pulse" />
-          <span>{isAr ? 'شريط التدخل الآلي (eBPF Mitigation Stream)' : 'AUTONOMOUS MITIGATION STREAM'}</span>
+        <div className="z-10 mr-3 flex shrink-0 items-center gap-2 rounded border border-[#f85149]/40 bg-[#f85149]/20 px-3 py-1 text-[11px] font-bold text-[#f85149] shadow-lg">
+          <ShieldAlert className="h-4 w-4 animate-pulse" />
+          <span>
+            {isAr ? 'شريط التدخل الآلي (eBPF Mitigation Stream)' : 'AUTONOMOUS MITIGATION STREAM'}
+          </span>
         </div>
 
         {/* Continuous Scrolling Auto-Ticker Marquee */}
-        <div className="flex-1 overflow-hidden relative">
-          <div className="flex items-center gap-8 whitespace-nowrap animate-marquee">
-            {[...logs.map(l => ({ ...l, loopSegment: 'alpha', itemUuid: crypto.randomUUID() })), ...logs.map(l => ({ ...l, loopSegment: 'beta', itemUuid: crypto.randomUUID() }))].map((log) => (
+        <div className="relative flex-1 overflow-hidden">
+          <div className="animate-marquee flex items-center gap-8 whitespace-nowrap">
+            {[
+              ...logs.map(l => ({ ...l, loopSegment: 'alpha', itemUuid: crypto.randomUUID() })),
+              ...logs.map(l => ({ ...l, loopSegment: 'beta', itemUuid: crypto.randomUUID() }))
+            ].map(log => (
               <div
                 key={`kiosk-ticker-${log.itemUuid}`}
-                className="flex items-center gap-2.5 text-xs text-[#e6edf3] bg-[#1a2230] px-3 py-1 rounded border border-[#1e2733]"
+                className="flex items-center gap-2.5 rounded border border-[#1e2733] bg-[#1a2230] px-3 py-1 text-xs text-[#e6edf3]"
               >
                 <span className="text-[10px] text-[#93a1b3]">{log.timestamp}</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#f85149]/20 text-[#f85149] border border-[#f85149]/40">
+                <span className="py-0.2 rounded border border-[#f85149]/40 bg-[#f85149]/20 px-1.5 text-[10px] font-bold text-[#f85149]">
                   {log.threatScore}%
                 </span>
-                <span className="text-[#3fb950] font-semibold">{log.ip}</span>
-                <span className="text-[#93a1b3] text-[11px]">{log.reason}</span>
+                <span className="font-semibold text-[#3fb950]">{log.ip}</span>
+                <span className="text-[11px] text-[#93a1b3]">{log.reason}</span>
               </div>
             ))}
           </div>

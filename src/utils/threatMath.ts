@@ -80,10 +80,7 @@ export const GLOBE_RADIUS_3D = 100.0;
 /**
  * Calculates Great-Circle Distance between two coordinates using the Haversine formula
  */
-export function calculateHaversineDistanceKm(
-  coord1: GeoCoordinate,
-  coord2: GeoCoordinate
-): number {
+export function calculateHaversineDistanceKm(coord1: GeoCoordinate, coord2: GeoCoordinate): number {
   const toRad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = toRad(coord2.lat - coord1.lat);
   const dLon = toRad(coord2.lon - coord1.lon);
@@ -131,7 +128,7 @@ export function computeGreatCircleTrajectory(
 ): Vector3D[] {
   const points: Vector3D[] = [];
   const distKm = calculateHaversineDistanceKm(origin, destination);
-  
+
   // Normalized distance ratio determines maximum parabolic arc height
   const normalizedDist = Math.min(distKm / (Math.PI * EARTH_RADIUS_KM), 1.0);
   const peakAltitude = GLOBE_RADIUS_3D * maxAltitudeFraction * Math.max(normalizedDist, 0.18);
@@ -233,23 +230,22 @@ export function calculateShannonEntropy(payload: string | Uint8Array | undefined
  * 1. Source IP Reputation (Historical IoC, Malicious ASN, Tor Node)
  * 2. Payload Shannon Entropy (High entropy indicates encrypted webshells/packed shellcode)
  * 3. Request Frequency / Burst Rate (DDoS & volumetric indicator)
- * 
+ *
  * Logic Enforcement:
  * IF ThreatScore > 85% THEN trigger eBPF Auto-Drop AND classify as CRITICAL
  */
 export function computeBayesianThreatScore(input: ThreatTriageInput): ThreatTriageResult {
   // 1. Calculate or use provided Shannon Entropy
-  const entropy = input.entropy !== undefined
-    ? input.entropy
-    : calculateShannonEntropy(input.payload);
-  
+  const entropy =
+    input.entropy !== undefined ? input.entropy : calculateShannonEntropy(input.payload);
+
   // Normalized entropy: 0 to 1 (entropy > 6.8 bits is heavily weighted towards malicious)
   const normalizedEntropy = Math.min(Math.max((entropy - 3.2) / 4.8, 0.0), 1.0);
 
   // 2. Normalize IP Reputation Score (0 to 100) -> [0.0, 1.0]
   let repScore = input.ipReputationScore / 100;
   if (input.isTorOrProxy) repScore = Math.min(repScore + 0.25, 1.0);
-  if ((input.historicBlockCount || 0) > 3) repScore = Math.min(repScore + 0.20, 1.0);
+  if ((input.historicBlockCount || 0) > 3) repScore = Math.min(repScore + 0.2, 1.0);
 
   // 3. Request Frequency (DDoS Indicator)
   // Baseline acceptable web request is 1-15 Hz. Above 60 Hz indicates volumetric attack
@@ -259,8 +255,8 @@ export function computeBayesianThreatScore(input: ThreatTriageInput): ThreatTria
   // Weights: IP Reputation (35%), Shannon Entropy (35%), Request Frequency (30%)
   const wRep = 0.35;
   const wEntropy = 0.35;
-  const wFreq = 0.30;
-  const rawWeightedScore = (repScore * wRep) + (normalizedEntropy * wEntropy) + (freqScore * wFreq);
+  const wFreq = 0.3;
+  const rawWeightedScore = repScore * wRep + normalizedEntropy * wEntropy + freqScore * wFreq;
 
   // 5. Bayesian Posterior Probability Formulation
   // Prior Probability P(Malicious) = 0.12 (standard SOC operational baseline)
@@ -273,7 +269,7 @@ export function computeBayesianThreatScore(input: ThreatTriageInput): ThreatTria
 
   // Bayes Theorem: P(M|E) = (P(E|M) * P(M)) / (P(E|M) * P(M) + P(E|B) * P(B))
   const numerator = likelihoodMalicious * prior;
-  const denominator = numerator + (likelihoodBenign * (1 - prior));
+  const denominator = numerator + likelihoodBenign * (1 - prior);
   const bayesianPosterior = Math.min(Math.max(numerator / (denominator || 0.0001), 0.0), 1.0);
 
   // Final ThreatScore expressed as percentage [0, 100]
@@ -296,8 +292,13 @@ export function computeBayesianThreatScore(input: ThreatTriageInput): ThreatTria
   const passesNoiseFilter = threatScore >= 35.0;
 
   // Compute 3D Great-Circle Trajectory to Sovereign Datacenter
-  const trajectoryPoints = computeGreatCircleTrajectory(input.sourceGeo, SOVEREIGN_NODE_COORDINATES);
-  const greatCircleDistanceKm = Math.round(calculateHaversineDistanceKm(input.sourceGeo, SOVEREIGN_NODE_COORDINATES));
+  const trajectoryPoints = computeGreatCircleTrajectory(
+    input.sourceGeo,
+    SOVEREIGN_NODE_COORDINATES
+  );
+  const greatCircleDistanceKm = Math.round(
+    calculateHaversineDistanceKm(input.sourceGeo, SOVEREIGN_NODE_COORDINATES)
+  );
 
   let triageReason = '';
   if (ebpfAutoDropped) {
@@ -358,7 +359,7 @@ function unitVectorToCoord(v: Vector3D): GeoCoordinate {
   const nz = v.z / norm;
 
   const lat = 90 - (Math.acos(Math.max(Math.min(ny, 1.0), -1.0)) * 180) / Math.PI;
-  const lon = ((Math.atan2(nz, -nx) * 180) / Math.PI) - 180;
+  const lon = (Math.atan2(nz, -nx) * 180) / Math.PI - 180;
 
   return {
     lat: Math.round(lat * 10000) / 10000,
@@ -448,7 +449,10 @@ export function runKMeansThreatClustering(
 
     // Update Step (calculate new centroid as average unit vector)
     for (let j = 0; j < centroids.length; j++) {
-      let sumX = 0, sumY = 0, sumZ = 0, count = 0;
+      let sumX = 0,
+        sumY = 0,
+        sumZ = 0,
+        count = 0;
 
       for (let i = 0; i < threats.length; i++) {
         if (assignments[i] === j) {
@@ -480,14 +484,18 @@ export function runKMeansThreatClustering(
         if (threats[i].classification === 'CRITICAL') {
           criticalCount++;
         }
-        const dist = calculateHaversineDistanceKm(geo, { lat: threats[i].lat, lon: threats[i].lon });
+        const dist = calculateHaversineDistanceKm(geo, {
+          lat: threats[i].lat,
+          lon: threats[i].lon
+        });
         if (dist > maxDistFromCentroid) maxDistFromCentroid = dist;
       }
     }
 
     const threatCount = assignedThreats.length;
     // Density calculation: higher critical count in smaller radius = highest density
-    const density = (criticalCount * 2.5 + threatCount) / (Math.max(maxDistFromCentroid, 150) / 100);
+    const density =
+      (criticalCount * 2.5 + threatCount) / (Math.max(maxDistFromCentroid, 150) / 100);
 
     return {
       id: `cluster-${idx + 1}`,
