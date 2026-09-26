@@ -23,7 +23,7 @@ export type AttackFamily =
   | 'SQL_INJECTION' | 'XSS_ATTACK' | 'PATH_TRAVERSAL' | 'REMOTE_CODE_EXECUTION'
   | 'SSH_BRUTE_FORCE' | 'CREDENTIAL_STUFFING' | 'DNS_EXFILTRATION'
   | 'INJECTION_OTHER' | 'DESERIALIZATION' | 'OBJECT_TAMPERING' | 'RESOURCE_ABUSE'
-  | 'CLEAN_TRAFFIC';
+  | 'CREDENTIAL_ACCESS' | 'CLEAN_TRAFFIC';
 
 export interface ClassificationResult {
   family: AttackFamily;
@@ -52,6 +52,32 @@ interface Rule {
 const RULES: Rule[] = [
   // ---- SQL injection ----
   { re: /'\s*(or|and)\s*'?\d*'?\s*=\s*'?\d*/i, weight: 60, label: "SQL tautology ('OR 1=1)", family: 'SQL_INJECTION' },
+
+  // ── Credential access (MITRE TA0006) ──────────────────────────────────────
+  //
+  // Added after the ground-truth scenario report showed APT29 lateral movement
+  // scoring READY on sensor coverage while the probe itself — a Mimikatz command
+  // line — classified as CLEAN_TRAFFIC at score 0. Every sensor the scenario
+  // named existed somewhere in the tree; none of them recognised the payload.
+  //
+  // Written as a family rather than against that one string. The scenario
+  // supplied `sekurlsa::logonpasswords`, but a rule matching only that would be
+  // memorisation, so these cover the module syntax, the common dump paths, and
+  // the tools that do the same job by other means.
+  { re: /\b(sekurlsa|kerberos|lsadump|privilege)::[a-z]+/i, weight: 85, label: 'Mimikatz module syntax', family: 'CREDENTIAL_ACCESS' },
+  { re: /\blogonpasswords\b|\bdcsync\b|\bpth\b\s*\/user:/i, weight: 85, label: 'credential dump command', family: 'CREDENTIAL_ACCESS' },
+  // LSASS touched together with a dump verb. Both halves are required: "lsass"
+  // alone appears in legitimate security prose and alerting rules.
+  { re: /lsass(\.exe)?[^\n]{0,40}\b(minidump|dump|procdump|comsvcs|MiniDumpWriteDump)\b/i, weight: 80, label: 'LSASS memory dump', family: 'CREDENTIAL_ACCESS' },
+  { re: /\b(minidump|procdump)[^\n]{0,40}lsass/i, weight: 80, label: 'LSASS memory dump (reversed)', family: 'CREDENTIAL_ACCESS' },
+  { re: /\breg(\.exe)?\s+save\s+hk(lm|ey_local_machine)\\?(sam|system|security)\b/i, weight: 80, label: 'SAM/SYSTEM hive export', family: 'CREDENTIAL_ACCESS' },
+  { re: /\/etc\/shadow\b|\bntds\.dit\b/i, weight: 75, label: 'credential store access', family: 'CREDENTIAL_ACCESS' },
+  { re: /\bInvoke-(Mimikatz|Kerberoast|NinjaCopy)\b/i, weight: 85, label: 'offensive PowerShell credential module', family: 'CREDENTIAL_ACCESS' },
+  // Tool syntax required, not the bare technique name. The first version matched
+  // `kerberoast` anywhere and flagged a glossary entry defining the term — the
+  // same prose-versus-attack failure the SQL and XSS families already guard
+  // against. A technique name is vocabulary; an invocation is an attack.
+  { re: /\b(GetUserSPNs|Rubeus)\b|\b(kerberoast|asreproast)\b\s*[-/][a-z]/i, weight: 75, label: 'Kerberos ticket harvesting tool', family: 'CREDENTIAL_ACCESS' },
   { re: /\bunion\s+(all\s+)?select\b/i, weight: 65, label: 'UNION SELECT', family: 'SQL_INJECTION' },
   { re: /\b(drop|truncate)\s+table\b/i, weight: 65, label: 'DROP/TRUNCATE TABLE', family: 'SQL_INJECTION' },
   { re: /;\s*(drop|delete|update|insert)\b/i, weight: 55, label: 'stacked SQL statement', family: 'SQL_INJECTION' },

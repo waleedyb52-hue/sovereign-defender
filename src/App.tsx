@@ -29,6 +29,7 @@ import { SystemComplianceReport } from './components/SystemComplianceReport';
 import { KillChainPanel } from './components/soc/KillChainPanel';
 import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
 import { AdjudicationPanel } from './components/soc/AdjudicationPanel';
+import { ExhibitionMode } from './components/soc/ExhibitionMode';
 import { TelemetryHud } from './components/soc/TelemetryHud';
 import { EbpfTopologyGraph } from './components/soc/EbpfTopologyGraph';
 import { ThreatAuditTable } from './components/soc/ThreatAuditTable';
@@ -820,6 +821,11 @@ export default function App() {
 
             {/* Protection stack: what stops what, and where. */}
             <DefenseLayersPanel lang={lang} />
+
+            {/* Exhibition mode leads the console: it is the surface a judging
+                panel is walked through, and every stage in it advances on a real
+                classifier response rather than a scripted animation. */}
+            <ExhibitionMode lang={lang} />
 
             {/* Kernel telemetry HUD. Reads from the eBPF, FIM, agent and
                 inference-posture endpoints; every card shows an em dash rather
