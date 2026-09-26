@@ -191,27 +191,41 @@ const pct = (n: number) => (n * 100).toFixed(1) + '%';
   });
 
   // 7. The learned component itself.
-  const hasLearner = repoHas(/class\s+\w*(Classifier|Learner|Model)\b[\s\S]{0,400}(fit|train|partialFit)\s*\(/);
+  // Anchored on the real names. The first version used a generic class/method
+  // pattern that missed ContinualLearner entirely, so a component that exists was
+  // reported as absent — the mirror of the self-reference bug that reported absent
+  // components as present.
+  const hasLearner = repoHas(/class ContinualLearner/) && repoHas(/predictProbability/);
   add({
     id: 'learner',
     label: 'Learned component that updates from adjudicated data',
     group: 'COMPONENT',
     weight: 20,
-    state: hasLearner ? 'PARTIAL' : labels >= needed ? 'MISSING' : 'BLOCKED',
+    // Built and unit-tested earns half, never full. Phase 3's criterion is a
+    // measurable AUT improvement on operator data, and code that has never been
+    // validated against that data has not met it. Awarding full marks for an
+    // unvalidated model is how a project convinces itself it is finished.
+    state: hasLearner ? 'PARTIAL' : 'BLOCKED',
+    credit: hasLearner ? 0.5 : 0,
     evidence: hasLearner
-      ? 'a trainable class exists'
+      ? `ContinualLearner built and unit-tested; UNVALIDATED — no operator data to measure AUT against (${labels}/${needed} labels).`
       : `no learner; cannot be evaluated until the corpus fills (${labels}/${needed}).`
   });
 
-  // 8. Promotion gate.
-  const hasGate = repoHas(/promoteModel|promotionGate|beatsIncumbent|challengerWins/i);
+  // 8. Promotion gate. Same discipline: refusing correctly on an empty corpus is
+  //    half credit. A gate that has never judged a real challenger on real folds is
+  //    untested exactly where it matters.
+  const hasGate = repoHas(/export function decidePromotion/) && repoHas(/forgettingCheck/);
   add({
     id: 'gate',
     label: 'Promotion gated on beating the incumbent on the held-out fold',
     group: 'COMPONENT',
     weight: 15,
-    state: hasGate ? 'DONE' : labels >= needed ? 'MISSING' : 'BLOCKED',
-    evidence: hasGate ? 'promotion gate found' : 'no gate; requires a scored held-out fold, which requires labels.'
+    state: hasGate ? 'PARTIAL' : 'BLOCKED',
+    credit: hasGate ? 0.5 : 0,
+    evidence: hasGate
+      ? 'decidePromotion built with a catastrophic-forgetting check; verified to refuse on an empty corpus, never exercised on operator folds.'
+      : 'no gate; requires a scored held-out fold, which requires labels.'
   });
 
   /* ── Report ──────────────────────────────────────────────────────────── */

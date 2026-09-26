@@ -43,6 +43,9 @@ import { adjudicationRouter } from './server/routes/adjudication.routes.js';
 import { globalRansomwareBurstDetector } from './server/services/ransomwareBurst.service.js';
 import { globalDnsTunnelDetector, globalTcpTarpit, type DnsRecordType } from './server/services/dnsTunnelDetector.service.js';
 import { globalKernelIntegrity } from './server/services/kernelIntegrity.service.js';
+import { globalDriftDetector, globalStrategicRetention } from './server/services/driftDetection.service.js';
+import { globalContinualLearner, decidePromotion, type LabelledSample } from './server/services/continualLearner.service.js';
+import { globalIterativeRetrieval } from './server/services/iterativeRetrieval.service.js';
 import { globalAdjudication } from './server/services/adjudication.service.js';
 import { globalKernelMitigationDriver } from './server/services/kernelMitigationDriver.js';
 import { globalSelfHealingLedger } from './server/services/selfHealingLedger.service.js';
@@ -1875,6 +1878,14 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
   // does not inflate the sighting count for a payload nobody sent again. The
   // call is deduplicated on the payload hash and cannot throw into the response
   // path, so a degraded label store never costs a detection.
+  // Phase 3 observation. Unsupervised, so it runs on every payload regardless of
+  // whether anyone ever adjudicates it — drift is a property of the input stream.
+  // Wrapped because a monitoring component must never cost a detection.
+  try {
+    globalDriftDetector.observe(payloadStr);
+    globalStrategicRetention.admit(payloadStr);
+  } catch { /* observation is best-effort */ }
+
   globalAdjudication.recordPending({
     payload: payloadStr,
     machineVerdict: fallbackResult.verdict === 'ALLOW' ? 'ALLOW' : 'BLOCK',
@@ -2026,6 +2037,157 @@ app.post('/api/v1/soc/sensors/kill-safety', adminAuthMiddleware, (req, res) => {
   const name = sanitizeUntrustedInput(String(req.body?.processName ?? ''));
   const pid = typeof req.body?.pid === 'number' ? req.body.pid : null;
   res.json({ success: true, assessment: globalKernelIntegrity.assessKillSafety(name, pid) });
+});
+
+/**
+ * PHASE 3 ENDPOINTS — drift, retention, and the promotion gate
+ *
+ * Drift and retention need no labels and run on live traffic. The learner and the
+ * gate are built and callable, but the gate refuses while the corpus is not
+ * operator-grounded, and `validationState` says so rather than implying the model
+ * has been validated.
+ */
+
+/** Concept drift on the incoming distribution. PSI + Jensen-Shannon, no labels needed. */
+app.get('/api/v1/soc/learning/drift', (_req, res) => {
+  res.json({
+    success: true,
+    report: globalDriftDetector.report(),
+    statistics: globalDriftDetector.getStatistics()
+  });
+});
+
+/**
+ * Promote the current window to reference.
+ *
+ * Manual on purpose: a detector that re-baselines itself makes drift vanish
+ * without anyone acting on it, which is how monitoring quietly stops working.
+ */
+app.post('/api/v1/soc/learning/drift/rebaseline', adminAuthMiddleware, (_req, res) => {
+  globalDriftDetector.rebaseline();
+  res.json({ success: true, statistics: globalDriftDetector.getStatistics() });
+});
+
+/** Strategic retention — what is being kept for a future retrain, and why. */
+app.get('/api/v1/soc/learning/retention', (_req, res) => {
+  const samples = globalStrategicRetention.getSamples();
+  res.json({
+    success: true,
+    statistics: globalStrategicRetention.getStatistics(),
+    // Reasons rather than payloads: the policy is the auditable part, and the
+    // payloads are already available through the adjudication surface.
+    reasonBreakdown: samples.reduce<Record<string, number>>((acc, s) => {
+      for (const r of s.retentionReasons) acc[r] = (acc[r] ?? 0) + 1;
+      return acc;
+    }, {}),
+    sampleCount: samples.length
+  });
+});
+
+/** The learned component's current state. */
+app.get('/api/v1/soc/learning/model', (_req, res) => {
+  res.json({
+    success: true,
+    statistics: globalContinualLearner.getStatistics(),
+    incumbent: globalContinualLearner.getIncumbent()
+  });
+});
+
+/**
+ * Train a challenger on the tuning folds and ask the gate whether it may be
+ * promoted. Refuses while the corpus is not operator-grounded.
+ */
+app.post('/api/v1/soc/learning/train-and-gate', adminAuthMiddleware, (_req, res) => {
+  const stats = globalAdjudication.stats();
+  const tuning = globalAdjudication.exportForTuning();
+  const test = globalAdjudication.exportForTest({ withLabels: true });
+
+  if (!tuning.ok || !test.ok) {
+    return res.status(409).json({
+      success: false,
+      error: 'INSUFFICIENT_CORPUS',
+      reason: tuning.reason ?? test.reason,
+      decision: {
+        promote: false,
+        reasons: [
+          `Corpus cannot produce temporal folds: ${tuning.reason ?? test.reason}`,
+          'Phase 3 acceptance requires operator-adjudicated folds. No model is trained or promoted on an empty corpus.'
+        ],
+        validationState: 'UNVALIDATED'
+      },
+      corpus: { totalLabels: stats.totalLabels, operatorGrounded: stats.operatorGrounded }
+    });
+  }
+
+  // Group the tuning samples by fold so the forgetting check has earlier folds to
+  // compare against.
+  const byFold = new Map<number, LabelledSample[]>();
+  for (const s of tuning.samples) {
+    const arr = byFold.get(s.fold) ?? [];
+    arr.push({ payload: s.payload, label: s.label, fold: s.fold });
+    byFold.set(s.fold, arr);
+  }
+  const earlierFolds = [...byFold.keys()].sort((a, b) => a - b).map(k => byFold.get(k)!);
+
+  const challenger = new (globalContinualLearner.constructor as any)() as typeof globalContinualLearner;
+  challenger.train(tuning.samples.map(s => ({ payload: s.payload, label: s.label })));
+
+  const decision = decidePromotion({
+    challenger,
+    incumbentSnapshot: globalContinualLearner.getIncumbent(),
+    holdout: test.samples.map(s => ({ payload: s.payload, label: s.label! })),
+    earlierFolds,
+    operatorGrounded: stats.operatorGrounded
+  });
+
+  if (decision.promote) {
+    const snap = challenger.snapshot();
+    globalContinualLearner.restore(snap);
+    globalContinualLearner.setIncumbent(snap);
+  }
+
+  res.json({
+    success: true,
+    decision,
+    promoted: decision.promote,
+    corpus: { totalLabels: stats.totalLabels, operatorGrounded: stats.operatorGrounded }
+  });
+});
+
+/**
+ * PHASE 4 + 5 ENDPOINTS — iterative retrieval, and the actor pivot
+ *
+ * `/retrieval/iterative` reports the single-shot evidence count alongside the
+ * iterative one, so the gain Phase 4 claims is visible in the response rather
+ * than asserted in a document. Cost is bounded and stated.
+ *
+ * `/investigate/actor` answers Phase 5's acceptance question -- what else did this
+ * actor touch -- with hop distance on every related finding, so a second-hop link
+ * is not presented with the confidence of a direct hit.
+ */
+app.post('/api/v1/soc/retrieval/iterative', adminAuthMiddleware, (req, res) => {
+  const b = req.body || {};
+  res.json({
+    success: true,
+    result: globalIterativeRetrieval.retrieve({
+      actorIp: b.actorIp ? sanitizeUntrustedInput(String(b.actorIp)) : undefined,
+      vector: b.vector ? String(b.vector) : undefined,
+      mitreTechnique: b.mitreTechnique ? String(b.mitreTechnique) : undefined,
+      payload: b.payload ? sanitizeUntrustedInput(String(b.payload)) : undefined
+    })
+  });
+});
+
+app.get('/api/v1/soc/investigate/actor', adminAuthMiddleware, (req, res) => {
+  const indicator = sanitizeUntrustedInput(String(req.query.indicator ?? ''));
+  if (!indicator) {
+    return res.status(400).json({
+      success: false,
+      error: 'INDICATOR_REQUIRED',
+      messageAr: 'مطلوب مؤشّر (عنوان أو بصمة) لبدء التحقيق.'
+    });
+  }
+  res.json({ success: true, investigation: globalIterativeRetrieval.investigateActor(indicator) });
 });
 
 // 4. Ingest Threat Intelligence & Train Dynamic Prompt Context
