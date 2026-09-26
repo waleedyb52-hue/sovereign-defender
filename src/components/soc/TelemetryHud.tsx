@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from 'motion/react';
 import { Cpu, FileLock2, Magnet, BrainCircuit, ShieldOff, AlertTriangle } from 'lucide-react';
 import { Card, Badge, Mono } from '../ui/primitives';
+import type { BadgeTone } from '../ui/primitives';
 import { cn, formatCount } from '../../lib/utils';
 import type { TelemetryState } from '../../hooks/useTelemetry';
 
@@ -127,6 +128,8 @@ interface MetricCardProps {
   index: number;
   unavailableNote?: string;
   lang: 'ar' | 'en';
+  /** Origin label rendered beside the figure. Absent when the service does not say. */
+  provenanceTag?: { tone: BadgeTone; label: string };
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({
@@ -140,7 +143,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
   footer,
   index,
   unavailableNote,
-  lang
+  lang,
+  provenanceTag
 }) => {
   const reduce = useReducedMotion();
   const isAr = lang === 'ar';
@@ -168,11 +172,14 @@ const MetricCard: React.FC<MetricCardProps> = ({
               {label}
             </span>
           </div>
-          {collecting && series.length < 2 && (
-            <span className="text-[9px] tracking-wider text-slate-600">
-              {isAr ? 'يجمع' : 'COLLECTING'}
-            </span>
-          )}
+          <div className="flex shrink-0 items-center gap-1">
+            {provenanceTag && <Badge tone={provenanceTag.tone} label={provenanceTag.label} />}
+            {collecting && series.length < 2 && (
+              <span className="text-[9px] tracking-wider text-slate-600">
+                {isAr ? 'يجمع' : 'COLLECTING'}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-end justify-between gap-2">
@@ -207,6 +214,23 @@ export const TelemetryHud: React.FC<Props> = ({ telemetry: t, lang = 'ar' }) => 
   const isAr = lang === 'ar';
   const noSource = isAr ? 'لا يوجد مصدر بيانات متصل' : 'no connected data source';
 
+  /**
+   * Provenance of the packet counter, taken from the service rather than assumed.
+   * MIXED is called out separately because a blended figure is the easiest kind
+   * to misread — part of it is real and part of it is not.
+   */
+  const packetsField = t.ebpf.provenance?.fields?.totalPacketsDropped;
+  const packetsTag =
+    packetsField === 'SEEDED'
+      ? { tone: 'tarpit' as const, label: isAr ? 'مزروع' : 'SEEDED' }
+      : packetsField === 'MIXED_SEEDED_AND_MEASURED'
+        ? { tone: 'tarpit' as const, label: isAr ? 'مزروع + مرصود' : 'SEEDED + MEASURED' }
+        : packetsField === 'MEASURED'
+          ? { tone: 'secure' as const, label: isAr ? 'مقيس' : 'MEASURED' }
+          : undefined;
+
+  const kernelSimulated = t.ebpf.provenance && !t.ebpf.provenance.kernelNative;
+
   return (
     <div dir={isAr ? 'rtl' : 'ltr'}>
       {t.error && (
@@ -227,6 +251,20 @@ export const TelemetryHud: React.FC<Props> = ({ telemetry: t, lang = 'ar' }) => 
         </div>
       )}
 
+      {kernelSimulated && (
+        <div className="mb-3 flex items-start gap-2 rounded border border-[#F59E0B]/30 bg-[#F59E0B]/5 px-3 py-2">
+          <Cpu className="mt-px h-4 w-4 shrink-0 text-[#F59E0B]" aria-hidden />
+          <div className="text-[10px] leading-relaxed text-[#fcd34d]">
+            <p className="font-medium">
+              {isAr
+                ? 'طبقة eBPF تعمل بالمحاكاة على هذا المضيف'
+                : 'eBPF layer is simulated on this host'}
+            </p>
+            <p className="text-slate-500">{t.ebpf.provenance?.reason}</p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           index={0}
@@ -238,13 +276,32 @@ export const TelemetryHud: React.FC<Props> = ({ telemetry: t, lang = 'ar' }) => 
           series={t.series.packetsDropped ?? []}
           collecting={t.collecting}
           unavailableNote={noSource}
+          /* The badge is the whole point of this card. Without it the figure
+             reads as a kernel measurement, and on a host with no kernel path
+             every one of those packets is a literal shipped for review. */
+          provenanceTag={packetsTag}
           footer={
-            <div className="flex items-center justify-between text-[10px]">
-              <span className="text-slate-500">{isAr ? 'زمن النواة' : 'kernel latency'}</span>
-              {t.ebpf.kernelLatencyUs != null ? (
-                <Mono className="text-[#7dd3fc]">{t.ebpf.kernelLatencyUs.toFixed(1)} µs</Mono>
-              ) : (
-                <span className="text-slate-600">—</span>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-slate-500">{isAr ? 'زمن النواة' : 'kernel latency'}</span>
+                {t.ebpf.kernelLatencyUs != null ? (
+                  <Mono className="text-[#7dd3fc]">{t.ebpf.kernelLatencyUs.toFixed(2)} µs</Mono>
+                ) : (
+                  <span
+                    className="text-[9px] text-slate-600"
+                    title={t.ebpf.provenance?.reason ?? undefined}
+                  >
+                    {isAr ? 'غير متوفّر — لا مسار نواة' : 'unavailable — no kernel path'}
+                  </span>
+                )}
+              </div>
+              {t.ebpf.seededPacketsDropped != null && t.ebpf.seededPacketsDropped > 0 && (
+                <div className="flex items-center justify-between text-[9px]">
+                  <span className="text-slate-600">
+                    {isAr ? 'منها مزروع للعرض' : 'of which seeded'}
+                  </span>
+                  <Mono className="text-slate-500">{formatCount(t.ebpf.seededPacketsDropped)}</Mono>
+                </div>
               )}
             </div>
           }

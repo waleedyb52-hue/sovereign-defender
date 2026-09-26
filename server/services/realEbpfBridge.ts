@@ -47,6 +47,18 @@ export class RealEbpfBridge {
   private pinnedStatsPath: string = '/sys/fs/bpf/stats_map';
   private defaultInterface: string = 'eth0';
   private isKernelAvailable: boolean = false;
+
+  /**
+   * Whether a real kernel path was found on this host.
+   *
+   * Exposed because callers reporting eBPF figures must be able to say whether
+   * those figures were measured or simulated. Without this, a consumer has no
+   * way to distinguish a kernel counter from a seeded constant, and will present
+   * the latter as the former.
+   */
+  get kernelNative(): boolean {
+    return this.isKernelAvailable;
+  }
   private driverMode: RealEbpfKernelStats['driverMode'] = 'CONTAINER_EMULATION';
 
   // In-memory mirror for sub-millisecond lookups and container compatibility

@@ -32,13 +32,32 @@ const SERIES_WINDOW = 30;
 
 /* ── Schemas ─────────────────────────────────────────────────────────────── */
 
+/**
+ * Per-figure provenance, as the service now reports it.
+ *
+ * Parsed as a first-class field rather than an optional extra: the console has
+ * to be able to tell a kernel counter from a seeded literal, and until this
+ * existed it could not. `meanKernelLatencyUs` arrives null on a host with no
+ * kernel path, which is the honest value — it was previously a hardcoded 0.34
+ * that the HUD rendered as a measured microsecond figure.
+ */
+const EbpfProvenance = z.object({
+  kernelNative: z.boolean(),
+  mode: z.string(),
+  reason: z.string(),
+  fields: z.record(z.string(), z.string())
+});
+
 const EbpfStats = z.object({
   activeBlackholesCount: z.number().nullish(),
   totalHistoricIsolations: z.number().nullish(),
   totalPacketsDropped: z.number().nullish(),
+  observedPacketsDropped: z.number().nullish(),
+  seededPacketsDropped: z.number().nullish(),
   totalTcpResetsInjected: z.number().nullish(),
   meanKernelLatencyUs: z.number().nullish(),
-  anomaliesDetectedCount: z.number().nullish()
+  anomaliesDetectedCount: z.number().nullish(),
+  provenance: EbpfProvenance.nullish()
 });
 
 export const ClusterNodeSchema = z.object({
@@ -182,9 +201,18 @@ export interface TelemetryState {
   stale: boolean;
   ebpf: {
     packetsDropped: number | null;
+    observedPacketsDropped: number | null;
+    seededPacketsDropped: number | null;
     kernelLatencyUs: number | null;
     activeBlackholes: number | null;
     anomalies: number | null;
+    /** Null until the service reports it; drives the SEEDED / SIMULATED labels. */
+    provenance: {
+      kernelNative: boolean;
+      mode: string;
+      reason: string;
+      fields: Record<string, string>;
+    } | null;
   };
   fim: {
     monitoredFiles: number | null;
@@ -277,9 +305,12 @@ export function useTelemetry(pollMs = POLL_MS): TelemetryState {
     stale,
     ebpf: {
       packetsDropped: st?.totalPacketsDropped ?? null,
+      observedPacketsDropped: st?.observedPacketsDropped ?? null,
+      seededPacketsDropped: st?.seededPacketsDropped ?? null,
       kernelLatencyUs: st?.meanKernelLatencyUs ?? null,
       activeBlackholes: st?.activeBlackholesCount ?? null,
-      anomalies: st?.anomaliesDetectedCount ?? null
+      anomalies: st?.anomaliesDetectedCount ?? null,
+      provenance: st?.provenance ?? null
     },
     fim: {
       monitoredFiles: fim?.monitoredFilesCount ?? null,

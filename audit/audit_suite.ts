@@ -441,13 +441,13 @@ const auth = { 'x-api-key': KEY };
   // These assert the properties the pipeline claims structurally, not that it
   // returns 200. Each would pass trivially if the guarantee were only a comment,
   // so each asserts the refusal rather than the happy path.
-  await run(51, 'LABELS', 'Ground-truth surface requires admin authentication', async () => {
+  await run(65, 'LABELS', 'Ground-truth surface requires admin authentication', async () => {
     const r = await http('GET', '/api/v1/soc/adjudication/stats');
     assert(r.status === 401, `expected 401 without a key, got ${r.status}`);
     return 'Writing ground truth is admin-gated: whoever reaches it defines what the platform measures itself against.';
   });
 
-  await run(52, 'LABELS', 'A label without an adjudicator identity is refused', async () => {
+  await run(66, 'LABELS', 'A label without an adjudicator identity is refused', async () => {
     const q = await http('GET', '/api/v1/soc/adjudication/queue?limit=1', undefined, auth);
     const id = q.json?.items?.[0]?.id;
     if (!id) return 'Queue empty in this run; the provenance requirement is asserted at the service level instead.';
@@ -457,7 +457,7 @@ const auth = { 'x-api-key': KEY };
     return 'Anonymous labels rejected — a label without provenance is an assertion, not a measurement.';
   });
 
-  await run(53, 'LABELS', 'Agreement with the machine is derived, never accepted from the client', async () => {
+  await run(67, 'LABELS', 'Agreement with the machine is derived, never accepted from the client', async () => {
     const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
     assert(/const agreed = machineSaysMalicious === analystSaysMalicious/.test(src),
       'agreement is not computed from the two verdicts');
@@ -466,7 +466,7 @@ const auth = { 'x-api-key': KEY };
     return 'A client that could assert agreement could manufacture the platform accuracy figure; it cannot.';
   });
 
-  await run(54, 'LABELS', 'Tuning export structurally cannot return the test fold', async () => {
+  await run(68, 'LABELS', 'Tuning export structurally cannot return the test fold', async () => {
     const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
     // Anchored on the signatures, not the names: both are also mentioned in the
     // class header comment, and slicing from there yields the wrong window.
@@ -478,7 +478,7 @@ const auth = { 'x-api-key': KEY };
     return 'The newest fold is excluded before the slice is taken — no parameter returns it, per plan principle 3.';
   });
 
-  await run(55, 'LABELS', 'Test fold withholds labels unless scoring is explicit', async () => {
+  await run(69, 'LABELS', 'Test fold withholds labels unless scoring is explicit', async () => {
     const r = await http('GET', '/api/v1/soc/adjudication/export/test', undefined, auth);
     if (r.status === 409) {
       assert(/INSUFFICIENT_CORPUS/.test(JSON.stringify(r.json)), 'unexpected 409 body');
@@ -489,7 +489,7 @@ const auth = { 'x-api-key': KEY };
     return 'Classify-then-score: at the moment of classification the answers are not in the caller process.';
   });
 
-  await run(56, 'LABELS', 'Corpus reports its own inadequacy instead of a figure', async () => {
+  await run(70, 'LABELS', 'Corpus reports its own inadequacy instead of a figure', async () => {
     const r = await http('GET', '/api/v1/soc/adjudication/stats', undefined, auth);
     assert(r.status === 200, `stats unavailable (${r.status})`);
     const j = r.json;
@@ -502,7 +502,7 @@ const auth = { 'x-api-key': KEY };
     return `Withholds the rate and states the gap: ${j.shortfall}`;
   });
 
-  await run(57, 'LABELS', 'Label provenance is reported so drill data cannot pass as operator data', async () => {
+  await run(71, 'LABELS', 'Label provenance is reported so drill data cannot pass as operator data', async () => {
     const r = await http('GET', '/api/v1/soc/adjudication/stats', undefined, auth);
     const j = r.json;
     assert(j && typeof j.bySource === 'object', 'no per-origin breakdown');
@@ -512,7 +512,7 @@ const auth = { 'x-api-key': KEY };
     return `Origins ${JSON.stringify(j.bySource)}; operatorGrounded=${j.operatorGrounded}, and the harness banners it above any figure.`;
   });
 
-  await run(58, 'LABELS', 'Temporal folds are derived from timestamps, not stored', async () => {
+  await run(72, 'LABELS', 'Temporal folds are derived from timestamps, not stored', async () => {
     const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
     assert(/ORDER BY detected_at ASC/.test(src), 'labels are not read in temporal order');
     assert(!/\bfold\s+(?:TEXT|INTEGER)/i.test(src), 'a stored fold column exists and can drift from the data');
@@ -530,7 +530,7 @@ const auth = { 'x-api-key': KEY };
     return `Folds withheld: ${r.json?.shortfall}`;
   });
 
-  await run(59, 'LABELS', 'Labels are append-only; a revision supersedes rather than overwrites', async () => {
+  await run(73, 'LABELS', 'Labels are append-only; a revision supersedes rather than overwrites', async () => {
     const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
     assert(/supersedes/.test(src), 'no supersede mechanism');
     assert(!/UPDATE labels\s+SET/i.test(src), 'labels are mutated in place somewhere');
@@ -540,7 +540,7 @@ const auth = { 'x-api-key': KEY };
     return 'No UPDATE, no DELETE, no delete route: the trail can prove a label was not quietly rewritten.';
   });
 
-  await run(60, 'LABELS', 'A degraded label store never costs a detection', async () => {
+  await run(74, 'LABELS', 'A degraded label store never costs a detection', async () => {
     const src = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
     assert(/if \(!this\.ready\) return null/.test(src), 'recordPending does not bail out when degraded');
     assert(/recordPending failed/.test(src), 'recordPending does not swallow its own errors');
@@ -549,6 +549,71 @@ const auth = { 'x-api-key': KEY };
     assert(idx > 0, 'detections are not queued for adjudication at all');
     assert(/evaluationCache\.set/.test(server.slice(idx, idx + 900)), 'queuing is not followed by the normal response path');
     return 'Queuing is bounded, deduplicated, swallows its own errors, and sits off the response path.';
+  });
+
+  // ---- Telemetry provenance: a displayed number is earned or declared ----
+  //
+  // The same rule Phase 1 applied to detection figures, applied to the console.
+  // These assert that the service labels its own numbers, because an unlabelled
+  // seeded constant is read as a measurement and is the harder lie to catch --
+  // it does not fluctuate, so it looks more trustworthy than random noise.
+  await run(61, 'PROVENANCE', 'Kernel latency is null without a kernel path, never a constant', async () => {
+    const r = await http('GET', '/api/v1/soc/ebpf/cluster-nodes', undefined, auth);
+    assert(r.status === 200, `cluster-nodes unavailable (${r.status})`);
+    const st = r.json?.statistics;
+    assert(st, 'no statistics block');
+    const native = st.provenance?.kernelNative;
+    assert(typeof native === 'boolean', 'kernelNative not reported');
+    if (native) {
+      return `Kernel path present; latency ${st.meanKernelLatencyUs} us reported as MEASURED.`;
+    }
+    assert(st.meanKernelLatencyUs === null,
+      `expected null latency with no kernel path, got ${st.meanKernelLatencyUs}`);
+    assert(st.provenance.fields.meanKernelLatencyUs === 'UNAVAILABLE', 'latency not marked UNAVAILABLE');
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/ebpfContainment.service.ts'), 'utf-8');
+    assert(!/meanKernelLatencyUs:\s*0\.\d+/.test(src), 'a hardcoded latency literal is still present');
+    return 'XDP is Linux-only; with no kernel path the figure is null and the UI shows an em dash.';
+  });
+
+  await run(62, 'PROVENANCE', 'Seeded packet counters are declared, not passed off as measured', async () => {
+    const r = await http('GET', '/api/v1/soc/ebpf/cluster-nodes', undefined, auth);
+    const st = r.json?.statistics;
+    assert(st?.provenance?.fields, 'no per-field provenance');
+    assert(typeof st.seededPacketsDropped === 'number', 'seeded subtotal not reported');
+    assert(typeof st.observedPacketsDropped === 'number', 'observed subtotal not reported');
+    assert(st.totalPacketsDropped === st.seededPacketsDropped + st.observedPacketsDropped,
+      'total does not equal seeded + observed, so the split cannot be trusted');
+    const tag = st.provenance.fields.totalPacketsDropped;
+    assert(['SEEDED', 'MEASURED', 'MIXED_SEEDED_AND_MEASURED'].includes(tag), `unexpected tag ${tag}`);
+    if (st.observedPacketsDropped === 0) {
+      assert(tag === 'SEEDED', 'nothing observed yet, but the total is not marked SEEDED');
+    }
+    return `total ${st.totalPacketsDropped} = seeded ${st.seededPacketsDropped} + observed ${st.observedPacketsDropped}, tagged ${tag}.`;
+  });
+
+  await run(63, 'PROVENANCE', 'The console surfaces provenance instead of printing bare figures', async () => {
+    const hud = fs.readFileSync(path.join(ROOT, 'src/components/soc/TelemetryHud.tsx'), 'utf-8');
+    assert(/provenanceTag/.test(hud), 'HUD does not render an origin label');
+    assert(/kernelSimulated/.test(hud), 'HUD does not warn when the eBPF layer is simulated');
+    const hook = fs.readFileSync(path.join(ROOT, 'src/hooks/useTelemetry.ts'), 'utf-8');
+    assert(/EbpfProvenance/.test(hook), 'provenance is not validated at the boundary');
+    return 'Origin badge per figure, plus a banner stating the mode before any number is read.';
+  });
+
+  await run(64, 'PROVENANCE', 'No displayed metric is generated by Math.random', async () => {
+    // Visual effects and drill payloads may use randomness; a number rendered to
+    // an operator as a measurement may not.
+    const offenders: string[] = [];
+
+    const btc = fs.readFileSync(path.join(ROOT, 'src/components/BlueTeamConsole.tsx'), 'utf-8');
+    const btcCode = btc.split('\n').filter(l => !/^\s*(\*|\/\/|\/\*)/.test(l)).join('\n');
+    if (/setTicker\w*\([^)]*Math\.random/.test(btcCode)) offenders.push('BlueTeamConsole ticker');
+
+    const topo = fs.readFileSync(path.join(ROOT, 'src/components/CyberTopologyMap.tsx'), 'utf-8');
+    if (/RTT measured|قياس زمن الاستجابة/.test(topo)) offenders.push('CyberTopologyMap claims a measured RTT');
+
+    assert(offenders.length === 0, `fabricated metrics presented as measurements: ${offenders.join('; ')}`);
+    return 'Ticker now derives req/s from real counter deltas; the modelled ping says modelled, not measured.';
   });
 
   // ---- Report ----

@@ -70,8 +70,32 @@ export class EbpfContainmentService {
   private behavioralAnomalies: BehavioralAnomaly[] = [];
   private severedSockets: SeveredTcpSocket[] = [];
   private clusterNodes: ClusterNodeIsolationState[] = [];
-  private totalPacketsDropped: number = 248910;
-  private totalTcpResetsInjected: number = 842;
+  /**
+   * Seeded demo baselines, kept separate from anything observed.
+   *
+   * These were previously added straight into the reported totals, so a caller
+   * received 373,960 "packets dropped" with no way to tell that every one of
+   * them was a literal written here. They are now reported apart from observed
+   * activity, and `getStatistics()` labels them SEEDED.
+   *
+   * The values remain because an empty console is hard to review; what changes
+   * is that they can no longer be mistaken for measurements.
+   */
+  private readonly seededPacketsDroppedBaseline: number = 248910;
+  private readonly seededTcpResetsBaseline: number = 842;
+
+  /**
+   * Last kernel latency actually read, in microseconds.
+   *
+   * Null until a kernel path reports one. Deliberately not given a default: a
+   * default here is how the hardcoded 0.34 reached the console in the first
+   * place.
+   */
+  private measuredKernelLatencyUs: number | null = null;
+
+  /** Counted in this process since boot. Zero until something actually happens. */
+  private observedPacketsDropped: number = 0;
+  private observedTcpResetsInjected: number = 0;
 
   constructor() {
     this.initializeClusterNodes();
@@ -349,7 +373,7 @@ export class EbpfContainmentService {
     };
 
     this.containmentRecords.unshift(newRecord);
-    this.totalTcpResetsInjected += tcpSevered;
+    this.observedTcpResetsInjected += tcpSevered;
 
     // Direct injection into production Linux Kernel eBPF Map via Bridge
     globalRealEbpfBridge.injectIp(targetIp, reason);
@@ -504,18 +528,65 @@ export class EbpfContainmentService {
 
   public getStatistics() {
     const active = this.containmentRecords.filter(r => r.status === 'ACTIVE_BLACKHOLE');
-    const droppedSum = this.containmentRecords.reduce((acc, r) => acc + r.packetsDroppedCount, this.totalPacketsDropped);
+    const droppedSum =
+      this.containmentRecords.reduce((acc, r) => acc + r.packetsDroppedCount, this.seededPacketsDroppedBaseline) +
+      this.observedPacketsDropped;
     const quarantinedNodes = this.clusterNodes.filter(n => n.isolationStatus === 'QUARANTINED_EAST_WEST');
 
+    const kernelNative = globalRealEbpfBridge.kernelNative;
+
     return {
+      // Counted from real state: these are lengths of arrays this process owns.
       activeBlackholesCount: active.length,
       totalHistoricIsolations: this.containmentRecords.length,
-      totalPacketsDropped: droppedSum,
-      totalTcpResetsInjected: this.totalTcpResetsInjected,
-      meanKernelLatencyUs: 0.34,
       anomaliesDetectedCount: this.behavioralAnomalies.length,
       quarantinedNodesCount: quarantinedNodes.length,
-      totalClusterNodesCount: this.clusterNodes.length
+      totalClusterNodesCount: this.clusterNodes.length,
+
+      // Packet and reset counters, split by origin so a consumer cannot blend
+      // them by accident.
+      totalPacketsDropped: droppedSum,
+      observedPacketsDropped: this.observedPacketsDropped,
+      seededPacketsDropped: droppedSum - this.observedPacketsDropped,
+      totalTcpResetsInjected: this.seededTcpResetsBaseline + this.observedTcpResetsInjected,
+      observedTcpResetsInjected: this.observedTcpResetsInjected,
+
+      /**
+       * Kernel latency.
+       *
+       * This was the literal 0.34, returned unconditionally and rendered in the
+       * console as a measured microsecond figure. XDP is Linux-only, so on a
+       * host without a kernel path there is nothing to measure and the honest
+       * value is null — the UI then shows an em dash instead of a number that
+       * was typed by hand.
+       */
+      meanKernelLatencyUs: kernelNative ? this.measuredKernelLatencyUs : null,
+
+      /**
+       * Per-figure provenance. The point of this block is that no consumer has
+       * to guess: MEASURED came from the kernel or from real process state,
+       * SEEDED is a literal shipped for review, SIMULATED is modelled.
+       */
+      provenance: {
+        kernelNative,
+        mode: kernelNative ? 'KERNEL_NATIVE' : 'SIMULATED_NO_KERNEL_PATH',
+        reason: kernelNative
+          ? 'bpftool and a pinned map were found; counters read from the kernel.'
+          : 'No bpftool or pinned BPF map on this host (XDP is Linux-only), so packet figures are seeded demo values and kernel latency is unavailable.',
+        fields: {
+          activeBlackholesCount: 'MEASURED',
+          totalHistoricIsolations: 'MEASURED',
+          anomaliesDetectedCount: 'MEASURED',
+          quarantinedNodesCount: 'MEASURED',
+          totalClusterNodesCount: 'MEASURED',
+          observedPacketsDropped: 'MEASURED',
+          observedTcpResetsInjected: 'MEASURED',
+          seededPacketsDropped: 'SEEDED',
+          totalPacketsDropped: this.observedPacketsDropped > 0 ? 'MIXED_SEEDED_AND_MEASURED' : 'SEEDED',
+          totalTcpResetsInjected: this.observedTcpResetsInjected > 0 ? 'MIXED_SEEDED_AND_MEASURED' : 'SEEDED',
+          meanKernelLatencyUs: kernelNative ? 'MEASURED' : 'UNAVAILABLE'
+        }
+      }
     };
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ShieldAlert,
   ShieldCheck,
@@ -415,17 +415,74 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
   const [forensicReport, setForensicReport] = useState<any>(null);
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false);
 
-  // Dynamic Ticker Metrics
-  const [tickerThroughput, setTickerThroughput] = useState<number>(248.4);
-  const [tickerLatencyUs, setTickerLatencyUs] = useState<number>(0.42);
+  /**
+   * Ticker metrics.
+   *
+   * These were `240 + Math.random() * 25` and `0.35 + Math.random() * 0.15`,
+   * rendered as "Mbps" and "µs". That is a fabricated measurement presented to an
+   * operator as live kernel telemetry, and the steady plausible variance made it
+   * read as more trustworthy than a static number would have.
+   *
+   * Replaced with:
+   *   - request rate, derived from deltas of the real `totalRequestsProtected`
+   *     counter. It is not Mbps — nothing here measures bytes on the wire — so it
+   *     is labelled req/s, which is what it actually is.
+   *   - kernel filter latency, read from the eBPF service, which now returns null
+   *     on a host with no kernel path instead of a hardcoded constant.
+   *
+   * Both are null until a real reading exists, and the ticker renders an em dash
+   * rather than a placeholder.
+   */
+  const [tickerReqPerSec, setTickerReqPerSec] = useState<number | null>(null);
+  const [tickerLatencyUs, setTickerLatencyUs] = useState<number | null>(null);
+  const [tickerKernelNative, setTickerKernelNative] = useState<boolean | null>(null);
+  const lastRequestCount = useRef<{ n: number; at: number } | null>(null);
 
-  // Periodic Ticker Animation
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTickerThroughput(Number((240 + Math.random() * 25).toFixed(1)));
-      setTickerLatencyUs(Number((0.35 + Math.random() * 0.15).toFixed(2)));
-    }, 3500);
-    return () => clearInterval(timer);
+    let cancelled = false;
+
+    const sample = async () => {
+      try {
+        const [agentRes, ebpfRes] = await Promise.all([
+          fetch('/api/v1/agent/status'),
+          fetch('/api/v1/soc/ebpf/cluster-nodes')
+        ]);
+
+        if (agentRes.ok) {
+          const a = await agentRes.json();
+          const n = Number(a?.metrics?.totalRequestsProtected);
+          const at = Date.now();
+          if (Number.isFinite(n)) {
+            const prev = lastRequestCount.current;
+            // The first sample yields no rate. Seeding one would draw traffic
+            // that was never observed.
+            if (prev && at > prev.at) {
+              const rate = ((n - prev.n) / (at - prev.at)) * 1000;
+              if (!cancelled) setTickerReqPerSec(Math.max(0, Number(rate.toFixed(1))));
+            }
+            lastRequestCount.current = { n, at };
+          }
+        }
+
+        if (ebpfRes.ok) {
+          const e = await ebpfRes.json();
+          const us = e?.statistics?.meanKernelLatencyUs;
+          if (!cancelled) {
+            setTickerLatencyUs(typeof us === 'number' ? us : null);
+            setTickerKernelNative(e?.statistics?.provenance?.kernelNative ?? null);
+          }
+        }
+      } catch {
+        /* Leave the previous reading in place; a failed poll is not a new value. */
+      }
+    };
+
+    sample();
+    const timer = setInterval(sample, 3500);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
 
   // Fetch Lockdown Status
@@ -939,8 +996,17 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1">
               <Activity className="h-3.5 w-3.5 text-cyan-400" />
               <div className="text-left font-mono">
-                <span className="block text-[9px] leading-none text-slate-400">THROUGHPUT</span>
-                <span className="text-xs font-bold text-cyan-300">{tickerThroughput} Mbps</span>
+                <span className="block text-[9px] leading-none text-slate-400">REQUEST RATE</span>
+                {tickerReqPerSec != null ? (
+                  <span className="text-xs font-bold text-cyan-300">{tickerReqPerSec} req/s</span>
+                ) : (
+                  <span
+                    className="text-xs font-bold text-slate-600"
+                    title="awaiting a second sample"
+                  >
+                    &mdash;
+                  </span>
+                )}
               </div>
             </div>
 
@@ -948,7 +1014,20 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               <Zap className="h-3.5 w-3.5 text-amber-400" />
               <div className="text-left font-mono">
                 <span className="block text-[9px] leading-none text-slate-400">eBPF FILTER</span>
-                <span className="text-xs font-bold text-amber-300">{tickerLatencyUs} µs</span>
+                {tickerLatencyUs != null ? (
+                  <span className="text-xs font-bold text-amber-300">{tickerLatencyUs} µs</span>
+                ) : (
+                  <span
+                    className="text-[10px] font-bold text-slate-600"
+                    title={
+                      tickerKernelNative === false
+                        ? 'No kernel path on this host (XDP is Linux-only), so there is no latency to measure.'
+                        : undefined
+                    }
+                  >
+                    {tickerKernelNative === false ? 'SIMULATED' : '\u2014'}
+                  </span>
+                )}
               </div>
             </div>
 

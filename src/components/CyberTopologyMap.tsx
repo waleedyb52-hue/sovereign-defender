@@ -696,7 +696,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
   >('THROUGHPUT');
   const [pingTestingEdgeId, setPingTestingEdgeId] = useState<string | null>(null);
   const [edgePingResults, setEdgePingResults] = useState<
-    Record<string, { rttMs: number; jitterMs: number; timestamp: number }>
+    Record<string, { rttMs: number; jitterMs: number; timestamp: number; simulated?: boolean }>
   >({});
   const [edgeQoSThrottled, setEdgeQoSThrottled] = useState<Record<string, boolean>>({});
   const [edgeQuarantined, setEdgeQuarantined] = useState<Record<string, boolean>>({});
@@ -989,7 +989,18 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
     }
   };
 
-  // Dynamic Edge Actions
+  /**
+   * Edge ping.
+   *
+   * This is a model, not a measurement — a browser cannot send ICMP, and nothing
+   * here touches the wire. The internal names already said `simulatedRtt` and
+   * `simulatedJitter`, but the sentence shown to the operator read "Link RTT
+   * measured", which is the part that mattered and the part that was wrong.
+   *
+   * The simulation stays; the claim about it does not. Results are tagged
+   * `simulated` so any surface rendering them can label them, rather than each
+   * one having to remember.
+   */
   const handleTestEdgePing = (edgeId: string, baseLatency: number) => {
     setPingTestingEdgeId(edgeId);
     setTimeout(() => {
@@ -1000,13 +1011,18 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       const simulatedJitter = Math.round((0.01 + Math.random() * 0.04) * 100) / 100;
       setEdgePingResults(prev => ({
         ...prev,
-        [edgeId]: { rttMs: simulatedRtt, jitterMs: simulatedJitter, timestamp: Date.now() }
+        [edgeId]: {
+          rttMs: simulatedRtt,
+          jitterMs: simulatedJitter,
+          timestamp: Date.now(),
+          simulated: true
+        }
       }));
       setPingTestingEdgeId(null);
       setActionMessage(
         isAr
-          ? `⚡ قياس زمن الاستجابة للرابط ${edgeId}: ${simulatedRtt}ms (تذبذب: ±${simulatedJitter}ms)`
-          : `⚡ Link RTT measured for ${edgeId}: ${simulatedRtt} ms (Jitter: ±${simulatedJitter} ms)`
+          ? `⚡ زمن استجابة محاكى للرابط ${edgeId}: ${simulatedRtt}ms (تذبذب: ±${simulatedJitter}ms) — نموذج لا قياس`
+          : `⚡ Simulated RTT for ${edgeId}: ${simulatedRtt} ms (jitter ±${simulatedJitter} ms) — modelled, not measured`
       );
       setTimeout(() => setActionMessage(null), 4000);
     }, 600);
