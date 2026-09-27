@@ -10,6 +10,7 @@ import { CyberButton } from './CyberButton';
 import { EbpfModule, WafModule, FimModule, ScannerModule, IntelModule, ZtnaModule } from './ArsenalModules';
 import { AssetFleetPanel, AssetDrawer } from './AssetFleetPanel';
 import { useAssets, type AssetRow } from './useAssets';
+import { NetworkTopologyView } from './NetworkTopologyView';
 import { TelemetryTimeline } from './TelemetryTimeline';
 import { WargamePanel } from './WargamePanel';
 import {
@@ -99,6 +100,15 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
   const [sortBy, setSortBy] = React.useState<SortKey>('TIME');
   const [critOnly, setCritOnly] = React.useState(false);
   const [selectedAsset, setSelectedAsset] = React.useState<AssetRow | null>(null);
+  /**
+   * Which theatre is on stage.
+   *
+   * Two views rather than one, and never blended. GEO answers "where is this coming
+   * from" with position meaning position; NET answers "what is on my network" with
+   * position meaning relationship. The previous single canvas mixed the two — bearing
+   * from longitude, radius from threat volume — so it could answer neither.
+   */
+  const [theatre, setTheatre] = React.useState<'GEO' | 'NET'>('NET');
   const [isolateBusy, setIsolateBusy] = React.useState(false);
   const [isolateResult, setIsolateResult] = React.useState<string | null>(null);
 
@@ -185,15 +195,24 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
 
       {/* ── LAYER 1: the threat theatre ─────────────────────────────────────── */}
       <div className="absolute inset-0 z-0">
-        <TacticalTheater
-          contacts={d.geo.map(g => ({ code: g.code, country: g.country, count: g.count }))}
-          nodes={d.nodes.map(n => ({ name: n.name, ip: n.ip, isolated: n.isolated, threatScore: n.threatScore }))}
-          tracers={stream.tracers}
-          status={stream.status}
-          reduce={reduce}
-          isAr={isAr}
-          className="h-full w-full"
-        />
+        {theatre === 'NET' ? (
+          <NetworkTopologyView
+            assets={fleet.assets}
+            isAr={isAr}
+            onSelectAsset={setSelectedAsset}
+            className="h-full w-full"
+          />
+        ) : (
+          <TacticalTheater
+            contacts={d.geo.map(g => ({ code: g.code, country: g.country, count: g.count }))}
+            nodes={d.nodes.map(n => ({ name: n.name, ip: n.ip, isolated: n.isolated, threatScore: n.threatScore }))}
+            tracers={stream.tracers}
+            status={stream.status}
+            reduce={reduce}
+            isAr={isAr}
+            className="h-full w-full"
+          />
+        )}
         <div
           className="pointer-events-none absolute inset-0"
           style={{ background: 'radial-gradient(ellipse at center, transparent 36%, rgba(0,0,0,0.88) 100%)' }}
@@ -316,18 +335,24 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
 
         {/* CENTRE: the theatre shows through; only its labels sit here */}
         <div className="pointer-events-none col-span-6 flex min-h-0 flex-col justify-between xl:col-span-7">
-          <div className="flex justify-center pt-4">
-            <span
-              className="border bg-[#030712]/60 px-3 py-0.5 font-mono text-[7px] tracking-widest uppercase backdrop-blur-2xl"
-              style={{ borderColor: `${accent}55`, color: accent, textShadow: `0 0 8px ${accent}cc` }}
-            >
-              {sim
-                ? isAr ? 'مسرح المحاكاة' : 'SIMULATION THEATRE'
-                : isAr ? 'مسرح التهديد التكتيكي' : 'TACTICAL THREAT THEATRE'}
-            </span>
+          <div className="pointer-events-auto flex justify-center gap-1 pt-4">
+            <CyberButton tone="cyan" size="sm" active={theatre === 'NET'} onClick={() => setTheatre('NET')}>
+              {isAr ? '[ شبكتي ]' : '[ MY NETWORK ]'}
+            </CyberButton>
+            <CyberButton tone="cyan" size="sm" active={theatre === 'GEO'} onClick={() => setTheatre('GEO')}>
+              {isAr ? '[ مصادر عالمية ]' : '[ GLOBAL ORIGINS ]'}
+            </CyberButton>
+            {sim && (
+              <span
+                className="border border-amber-500/60 bg-amber-950/70 px-2 py-1 font-mono text-[7px] tracking-widest text-amber-400 uppercase backdrop-blur-2xl"
+                style={{ textShadow: '0 0 8px rgba(251,191,36,0.9)' }}
+              >
+                {isAr ? 'محاكاة' : 'SIMULATION'}
+              </span>
+            )}
           </div>
 
-          {d.geo[0] && (
+          {theatre === 'GEO' && d.geo[0] && (
             <div className="flex justify-center pb-1">
               <span
                 className="border border-rose-900/60 bg-[#030712]/60 px-3 py-0.5 font-mono text-[7.5px] text-rose-400 backdrop-blur-2xl"
@@ -482,6 +507,12 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
               ) : (
                 '—'
               )}
+            </Readout>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <HudLabel tone="cyan">{isAr ? 'أجهزة الشبكة' : 'LAN DEVICES'}</HudLabel>
+            <Readout className="font-mono text-[8px] text-cyan-400">
+              {fleet.summary?.lanDevices ?? '—'}
             </Readout>
           </span>
           <span className="flex items-center gap-1.5">

@@ -39,6 +39,7 @@
 
 import os from 'node:os';
 import { execFile } from 'node:child_process';
+import { arpNeighbours, localSegments, sweepRange, DEFAULT_PORTS } from './discovery.mjs';
 import { promisify } from 'node:util';
 
 const exec = promisify(execFile);
@@ -57,6 +58,9 @@ function parseArgs(argv) {
     else if (a === '--interval') out.interval = Math.max(5, Number(next()) || 30);
     else if (a === '--max-flows') out.maxFlows = Math.max(1, Math.min(200, Number(next()) || 40));
     else if (a === '--label') out.label = next();
+    else if (a === '--sweep') out.sweep = next();
+    else if (a === '--sweep-ports') out.sweepPorts = next();
+    else if (a === '--no-arp') out.noArp = true;
     else if (a === '--dry-run') out.dryRun = true;
     else if (a === '--verbose' || a === '-v') out.verbose = true;
     else if (a === '--help' || a === '-h') out.help = true;
@@ -78,7 +82,17 @@ Sovereign Defender host sensor v${VERSION}
   --dry-run           Collect and print, send nothing
   --verbose           Print each cycle's payload counts
 
-Collects host identity, connection metadata and posture counts only.
+Network discovery:
+  --no-arp            Skip the ARP neighbour read (it is on by default)
+  --sweep    <cidr>   ACTIVE TCP connect sweep of a private range, once at startup
+  --sweep-ports <csv> Ports for the sweep, default a 12-port service set
+
+PASSIVE by default. The ARP read sends nothing: it reports devices this host has
+already exchanged frames with. --sweep is ACTIVE and opens real connections, which
+appear in the target's logs and may trip its IDS. It refuses public address space
+and anything wider than /22, in code. Only sweep networks you are authorised to test.
+
+Collects host identity, connection metadata, LAN neighbours and posture counts only.
 No packet capture, no file contents, no command lines.
 `);
   process.exit(args.help ? 0 : 1);
@@ -283,7 +297,12 @@ async function enroll() {
 
 async function cycle() {
   const selfIp = primaryIp();
-  const [sockets, procs, users] = await Promise.all([collectSockets(), collectProcessCount(), collectUserCount()]);
+  const [sockets, procs, users, neighbours] = await Promise.all([
+    collectSockets(),
+    collectProcessCount(),
+    collectUserCount(),
+    args.noArp ? Promise.resolve(null) : arpNeighbours()
+  ]);
 
   const listening = sockets ? sockets.filter(s => /LISTEN/i.test(s.state)).length : null;
   const established = sockets ? sockets.filter(s => /ESTAB/i.test(s.state)).length : null;
@@ -311,8 +330,12 @@ async function cycle() {
   }
 
   if (args.dryRun) {
-    log(`dry run — sockets:${sockets?.length ?? 'unavailable'} listening:${listening ?? '—'} established:${established ?? '—'} processes:${procs ?? '—'} users:${users ?? '—'} flows:${flows.length}`);
+    log(`dry run — sockets:${sockets?.length ?? 'unavailable'} listening:${listening ?? '—'} established:${established ?? '—'} processes:${procs ?? '—'} users:${users ?? '—'} flows:${flows.length} neighbours:${neighbours === null ? 'unavailable' : neighbours.length}`);
     if (flows[0]) log('sample flow:', JSON.stringify(flows[0]));
+    for (const n of (neighbours ?? []).slice(0, 8)) {
+      log(`  neighbour ${n.ip.padEnd(16)} ${n.mac} ${n.vendor ?? 'unknown vendor'}`);
+    }
+    log('local segments:', localSegments().map(x => x.cidr).join(' '));
     return;
   }
 
@@ -332,6 +355,14 @@ async function cycle() {
     extra: { loadAvg1: Number(os.loadavg()[0].toFixed(2)), freeMemMb: Math.round(os.freemem() / 1048576) },
     flowsSent: sent
   };
+  // Neighbours travel with the heartbeat. Omitted entirely when the ARP collector could
+  // not run, so the server can tell "no neighbours" from "did not look".
+  if (neighbours !== null) {
+    posture.neighbours = neighbours;
+    posture.extra.lanNeighbours = neighbours.length;
+  }
+  posture.segments = localSegments();
+
   // Omitted, not zeroed, when the collector could not run.
   if (listening != null) posture.listeningPorts = listening;
   if (established != null) posture.establishedConnections = established;
@@ -368,6 +399,34 @@ async function main() {
     }
   } else {
     log('dry run: no enrolment, no transmission');
+  }
+
+  // An active sweep runs once at startup, never on the heartbeat cadence. A repeating
+  // connect-scan is sustained traffic against a network the operator has to keep
+  // re-authorising, and a sensor that quietly scans every thirty seconds is a sensor
+  // that will get itself blocked and its findings distrusted.
+  if (args.sweep) {
+    const ports = args.sweepPorts
+      ? args.sweepPorts.split(',').map(n => Number(n.trim())).filter(n => Number.isInteger(n) && n > 0 && n < 65536)
+      : DEFAULT_PORTS.slice(0, 12);
+
+    log(`ACTIVE SWEEP of ${args.sweep} on ${ports.length} ports — this opens real connections`);
+    const result = await sweepRange({ cidr: args.sweep, ports, onProgress: (d, t) => vlog(`  sweep ${d}/${t}`) });
+
+    if (result.error) {
+      log('sweep refused:', result.error);
+    } else {
+      log(`sweep done — ${result.respondedCount} responded, ${result.silentCount} silent, ${result.addressesProbed} probed`);
+      for (const h of result.hosts) log(`  ${h.ip.padEnd(16)} open:${h.openPorts.join(',') || '(none)'}`);
+      if (!args.dryRun) {
+        try {
+          await post(`/api/v1/assets/${assetId}/discovery`, result);
+          log('sweep reported to the platform');
+        } catch (err) {
+          log('sweep report failed:', err.message);
+        }
+      }
+    }
   }
 
   await cycle();

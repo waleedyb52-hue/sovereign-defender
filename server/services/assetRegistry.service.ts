@@ -42,6 +42,61 @@ import path from 'path';
 export type AssetKind = 'HOST' | 'NETWORK_RANGE';
 export type Liveness = 'ONLINE' | 'STALE' | 'OFFLINE' | 'NEVER_REPORTED';
 
+/**
+ * A device this host has exchanged frames with on a local segment.
+ *
+ * Observed from the ARP cache, which means it is a device that genuinely answered on
+ * the wire — stronger evidence than a ping reply, and obtained without sending anything.
+ * `vendor` is null when the MAC prefix is not in the sensor's small OUI table OR when the
+ * address is randomised, which modern phones do by default. Null is the honest answer in
+ * both cases: a guessed vendor is a false lead an analyst will chase.
+ */
+export interface Neighbour {
+  ip: string;
+  mac: string;
+  vendor: string | null;
+  arpType: string | null;
+  viaInterface: string | null;
+  method: string;
+  discoveredAt: string;
+  /** Ports found open by an authorised sweep, if one has run against this address. */
+  openPorts?: number[];
+  lastSweptAt?: string;
+  /**
+   * Three states, because two were not enough to be honest.
+   *
+   *   NOT_IN_RANGE  no sweep has covered this address — nothing was looked for
+   *   RESPONDED     completed or refused a handshake; openPorts is the finding
+   *   NO_RESPONSE   probed and silent
+   *
+   * The third is the one that matters and was missing. A device that answers ARP but
+   * not TCP is filtering: it is demonstrably alive on the wire and refusing to talk,
+   * which is security-relevant in itself. Collapsing it into "not swept" hid a
+   * firewalled host behind the same label as a host nobody had examined.
+   */
+  sweepState?: 'NOT_IN_RANGE' | 'RESPONDED' | 'NO_RESPONSE';
+}
+
+export interface Segment {
+  interface: string;
+  address: string;
+  netmask: string;
+  cidr: string;
+}
+
+export interface SweepResult {
+  cidr: string;
+  startedAt: string;
+  finishedAt: string;
+  portsProbed: number[];
+  addressesProbed: number;
+  respondedCount: number;
+  silentCount: number;
+  truncated: boolean;
+  hosts: Array<{ ip: string; openPorts: number[]; refusedPortCount: number; state: string; method: string }>;
+  note: string;
+}
+
 export interface AssetPosture {
   listeningPorts: number | null;
   establishedConnections: number | null;
@@ -50,6 +105,10 @@ export interface AssetPosture {
   uptimeSec: number | null;
   /** Free-form counts the sensor measured. Stored verbatim, never interpreted. */
   extra: Record<string, number> | null;
+  /** LAN devices seen from this host. Absent means the collector could not look. */
+  neighbours: Neighbour[] | null;
+  /** The host's own local segments, so the UI can offer them for an authorised sweep. */
+  segments: Segment[] | null;
 }
 
 export interface Asset {
@@ -71,6 +130,8 @@ export interface Asset {
   isolatedAt: string | null;
   flowsIngested: number;
   posture: AssetPosture | null;
+  /** The most recent authorised sweep reported from this host, if any. */
+  lastSweep: SweepResult | null;
   /** Derived from heartbeat age. Never taken from the sensor. */
   liveness: Liveness;
 }
@@ -140,9 +201,17 @@ export class AssetRegistryService {
         isolated       INTEGER NOT NULL DEFAULT 0,
         isolated_at    TEXT,
         flows_ingested INTEGER NOT NULL DEFAULT 0,
-        posture        TEXT
+        posture        TEXT,
+        last_sweep     TEXT
       )
     `);
+    // Additive migration for registries created before sweeps existed. A failure here
+    // means the column is already present, which is the normal case after the first run.
+    try {
+      this.db.exec(`ALTER TABLE assets ADD COLUMN last_sweep TEXT`);
+    } catch {
+      /* column exists */
+    }
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS enrollment_tokens (
         id          TEXT PRIMARY KEY,
@@ -315,10 +384,16 @@ export class AssetRegistryService {
     id: string,
     posture: Partial<AssetPosture> & { flowsSent?: number }
   ): { ok: true; asset: Asset } | { ok: false; reason: string } {
-    const row = this.db.prepare(`SELECT id, flows_ingested FROM assets WHERE id = ?`).get(id) as any;
+    const row = this.db.prepare(`SELECT id, flows_ingested, last_sweep FROM assets WHERE id = ?`).get(id) as any;
     if (!row) return { ok: false, reason: `Unknown asset ${id}.` };
 
     const clean: AssetPosture = {
+      neighbours: Array.isArray(posture.neighbours)
+        ? (posture.neighbours as Neighbour[])
+            .filter(n => n && typeof n.ip === 'string' && /^(\d{1,3}\.){3}\d{1,3}$/.test(n.ip))
+            .slice(0, 512)
+        : null,
+      segments: Array.isArray(posture.segments) ? (posture.segments as Segment[]).slice(0, 32) : null,
       listeningPorts: numOrNull(posture.listeningPorts),
       establishedConnections: numOrNull(posture.establishedConnections),
       processes: numOrNull(posture.processes),
@@ -334,11 +409,71 @@ export class AssetRegistryService {
           : null
     };
 
+    /**
+     * Re-apply the stored sweep's open ports onto the incoming neighbours.
+     *
+     * The sweep runs once at sensor startup, before the first heartbeat, so at that
+     * moment there is no neighbour list to merge onto — and the heartbeat that follows
+     * would then overwrite the merge with a fresh ARP read carrying no ports. Folding the
+     * sweep in on every heartbeat makes the merge order-independent and idempotent, which
+     * is the only version that survives a sensor restart. Found by running it: every
+     * device reported "not swept" while the sweep had plainly found open ports.
+     */
+    if (clean.neighbours && row.last_sweep) {
+      const sweep = safeJson<SweepResult | null>(row.last_sweep, null);
+      if (sweep) clean.neighbours = this.applySweep(clean.neighbours, sweep);
+    }
+
     const added = Number.isFinite(posture.flowsSent) ? Math.max(0, Number(posture.flowsSent)) : 0;
 
     this.db
       .prepare(`UPDATE assets SET last_seen_at = ?, posture = ?, flows_ingested = ? WHERE id = ?`)
       .run(new Date().toISOString(), JSON.stringify(clean), Number(row.flows_ingested) + added, id);
+
+    return { ok: true, asset: this.get(id)! };
+  }
+
+  /**
+   * Folds a sweep onto a neighbour list, assigning all three sweep states.
+   *
+   * Shared by `recordSweep` and `heartbeat` so the two paths cannot disagree about what
+   * a sweep found — which they did when only one of them merged.
+   */
+  private applySweep(neighbours: Neighbour[], sweep: SweepResult): Neighbour[] {
+    const byIp = new Map((sweep.hosts ?? []).map(h => [h.ip, h]));
+    return neighbours.map(n => {
+      const hit = byIp.get(n.ip);
+      if (hit) {
+        return { ...n, openPorts: hit.openPorts, lastSweptAt: sweep.finishedAt, sweepState: 'RESPONDED' as const };
+      }
+      if (inCidr(n.ip, sweep.cidr)) {
+        // Probed and silent. Alive on the wire per ARP, refusing TCP: a filtered host.
+        return { ...n, openPorts: [], lastSweptAt: sweep.finishedAt, sweepState: 'NO_RESPONSE' as const };
+      }
+      return { ...n, sweepState: 'NOT_IN_RANGE' as const };
+    });
+  }
+
+  /**
+   * Records an authorised sweep and folds its open ports back onto the matching
+   * neighbours, so a device discovered passively and then probed carries both facts.
+   * The sweep is stored whole as well, because the counts of silent addresses are part
+   * of the finding and must not be lost when the per-host rows are merged.
+   */
+  public recordSweep(id: string, sweep: SweepResult): { ok: true; asset: Asset } | { ok: false; reason: string } {
+    const asset = this.get(id);
+    if (!asset) return { ok: false, reason: `Unknown asset ${id}.` };
+
+    this.db.prepare(`UPDATE assets SET last_sweep = ? WHERE id = ?`).run(JSON.stringify(sweep), id);
+
+    if (asset.posture?.neighbours) {
+      this.db
+        .prepare(`UPDATE assets SET posture = ? WHERE id = ?`)
+        .run(
+          JSON.stringify({ ...asset.posture, neighbours: this.applySweep(asset.posture.neighbours, sweep) }),
+          id
+        );
+    }
 
     return { ok: true, asset: this.get(id)! };
   }
@@ -381,7 +516,13 @@ export class AssetRegistryService {
       offline: hosts.filter(a => a.liveness === 'OFFLINE').length,
       neverReported: hosts.filter(a => a.liveness === 'NEVER_REPORTED').length,
       isolated: all.filter(a => a.isolated).length,
-      flowsIngested: all.reduce((s, a) => s + a.flowsIngested, 0)
+      flowsIngested: all.reduce((s, a) => s + a.flowsIngested, 0),
+      // Distinct LAN devices seen across every reporting host. Deduplicated by address,
+      // because two sensors on the same segment see the same neighbours and counting
+      // them twice would inflate the network's apparent size.
+      lanDevices: new Set(
+        all.flatMap(a => (a.posture?.neighbours ?? []).map(n => n.ip))
+      ).size
     };
   }
 
@@ -408,6 +549,7 @@ export class AssetRegistryService {
       isolatedAt: r.isolated_at ? String(r.isolated_at) : null,
       flowsIngested: Number(r.flows_ingested) || 0,
       posture: r.posture ? safeJson<AssetPosture | null>(r.posture, null) : null,
+      lastSweep: r.last_sweep ? safeJson<SweepResult | null>(r.last_sweep, null) : null,
       liveness: deriveLiveness(kind, lastSeenAt, interval)
     };
   }
@@ -425,6 +567,16 @@ function deriveLiveness(kind: AssetKind, lastSeenAt: string | null, intervalSec:
   if (ageSec <= intervalSec * STALE_AFTER) return 'ONLINE';
   if (ageSec <= intervalSec * OFFLINE_AFTER) return 'STALE';
   return 'OFFLINE';
+}
+
+/** Whether an address falls inside a CIDR. Tells "probed and silent" from "never looked at". */
+function inCidr(ip: string, cidr: string): boolean {
+  const m = /^((?:\d{1,3}\.){3}\d{1,3})\/(\d{1,2})$/.exec(cidr ?? '');
+  if (!m) return false;
+  const bits = Number(m[2]);
+  const toInt = (v: string) => v.split('.').map(Number).reduce((a, o) => (a << 8) | o, 0) >>> 0;
+  const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0;
+  return ((toInt(ip) & mask) >>> 0) === ((toInt(m[1]) & mask) >>> 0);
 }
 
 function numOrNull(v: unknown): number | null {

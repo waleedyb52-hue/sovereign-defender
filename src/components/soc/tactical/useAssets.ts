@@ -17,7 +17,43 @@ import { z } from 'zod';
  * rather than re-deriving it, so the fleet count and the asset badge can never disagree.
  */
 
+const Neighbour = z.object({
+  ip: z.string(),
+  mac: z.string(),
+  vendor: z.string().nullable(),
+  arpType: z.string().nullable().optional(),
+  viaInterface: z.string().nullable(),
+  method: z.string(),
+  discoveredAt: z.string(),
+  openPorts: z.array(z.number()).optional(),
+  lastSweptAt: z.string().optional(),
+  sweepState: z.enum(['NOT_IN_RANGE', 'RESPONDED', 'NO_RESPONSE']).nullish()
+});
+
+const Segment = z.object({
+  interface: z.string(),
+  address: z.string(),
+  netmask: z.string(),
+  cidr: z.string()
+});
+
+const Sweep = z.object({
+  cidr: z.string(),
+  startedAt: z.string(),
+  finishedAt: z.string(),
+  portsProbed: z.array(z.number()),
+  addressesProbed: z.number(),
+  respondedCount: z.number(),
+  silentCount: z.number(),
+  truncated: z.boolean().optional(),
+  note: z.string().optional()
+});
+
 const Posture = z.object({
+  // Nullish rather than nullable: a registry written before discovery existed has no
+  // such key at all, and rejecting those rows would empty the fleet on upgrade.
+  neighbours: z.array(Neighbour).nullish(),
+  segments: z.array(Segment).nullish(),
   listeningPorts: z.number().nullable(),
   establishedConnections: z.number().nullable(),
   processes: z.number().nullable(),
@@ -44,6 +80,7 @@ const Asset = z.object({
   isolatedAt: z.string().nullable(),
   flowsIngested: z.number(),
   posture: Posture.nullable(),
+  lastSweep: Sweep.nullish(),
   liveness: z.enum(['ONLINE', 'STALE', 'OFFLINE', 'NEVER_REPORTED'])
 });
 
@@ -57,7 +94,8 @@ const Summary = z.object({
   offline: z.number(),
   neverReported: z.number(),
   isolated: z.number(),
-  flowsIngested: z.number()
+  flowsIngested: z.number(),
+  lanDevices: z.number().nullish()
 });
 
 const FleetResponse = z.object({ summary: Summary, assets: z.array(Asset) });
