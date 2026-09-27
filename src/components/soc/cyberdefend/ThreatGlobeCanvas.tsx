@@ -53,6 +53,18 @@ interface Props {
   className?: string;
   /** Honour prefers-reduced-motion: the globe holds still instead of spinning. */
   reducedMotion?: boolean;
+  /** Draw the ballistic arcs. Display-only — hiding them drops no measurement. */
+  showArcs?: boolean;
+  /** Draw the orbital graticule. */
+  showGrid?: boolean;
+  /**
+   * Fix the rotation at this bearing instead of spinning.
+   *
+   * Null resumes the automatic spin. This exists so the compass control can hold
+   * the globe still on a region an operator is reading, which is what the
+   * reference's camera dial did.
+   */
+  rotationOverride?: number | null;
 }
 
 export const ThreatGlobeCanvas: React.FC<Props> = ({
@@ -60,12 +72,25 @@ export const ThreatGlobeCanvas: React.FC<Props> = ({
   target = null,
   height = 420,
   className,
-  reducedMotion = false
+  reducedMotion = false,
+  showArcs = true,
+  showGrid = true,
+  rotationOverride = null
 }) => {
   const ref = React.useRef<HTMLCanvasElement>(null);
   const raf = React.useRef<number | null>(null);
   const originsRef = React.useRef(origins);
   originsRef.current = origins;
+
+  /**
+   * Live flags held in refs.
+   *
+   * The draw loop is created once; putting these in its dependency list would tear
+   * down and rebuild the animation on every toggle, which shows as a visible stutter
+   * and resets the spin. Refs let the running loop read the current value instead.
+   */
+  const flags = React.useRef({ showArcs, showGrid, rotationOverride, target });
+  flags.current = { showArcs, showGrid, rotationOverride, target };
 
   React.useEffect(() => {
     const canvas = ref.current;
@@ -107,7 +132,9 @@ export const ThreatGlobeCanvas: React.FC<Props> = ({
 
     const draw = (now: number) => {
       const t = (now - started) / 1000;
-      if (!reducedMotion) spin = (t * 6) % 360;
+      const override = flags.current.rotationOverride;
+      if (override != null) spin = override;
+      else if (!reducedMotion) spin = (t * 6) % 360;
 
       const cx = w / 2;
       const cy = h / 2;
@@ -158,6 +185,7 @@ export const ThreatGlobeCanvas: React.FC<Props> = ({
       ctx.stroke();
 
       // Orbital grid: parallels and meridians, clipped to the near hemisphere.
+      if (flags.current.showGrid) {
       ctx.save();
       ctx.beginPath();
       ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
@@ -186,14 +214,14 @@ export const ThreatGlobeCanvas: React.FC<Props> = ({
         ctx.stroke();
       }
       ctx.restore();
+      }
 
       const list = originsRef.current ?? [];
       const maxCount = Math.max(1, ...list.map(o => o.count));
 
       // Receiving station, if the view is locked on one.
-      const tgt = target
-        ? project(target.lat, target.lon, cx, cy, r, spin)
-        : null;
+      const liveTarget = flags.current.target;
+      const tgt = liveTarget ? project(liveTarget.lat, liveTarget.lon, cx, cy, r, spin) : null;
       if (tgt) {
         ctx.strokeStyle = 'rgba(255,255,255,0.85)';
         ctx.lineWidth = 1.2;
@@ -237,7 +265,7 @@ export const ThreatGlobeCanvas: React.FC<Props> = ({
         ctx.fill();
 
         // Ballistic arc toward the station, bowed outward from the surface.
-        if (tgt) {
+        if (tgt && flags.current.showArcs) {
           const mx = (p.x + tgt.x) / 2;
           const my = (p.y + tgt.y) / 2;
           const dx = mx - cx;
@@ -279,7 +307,9 @@ export const ThreatGlobeCanvas: React.FC<Props> = ({
       if (raf.current) cancelAnimationFrame(raf.current);
       ro.disconnect();
     };
-  }, [height, reducedMotion, target]);
+    // `target` and the display flags are read through `flags`, so they are absent
+    // here on purpose: including them would rebuild the loop on every toggle.
+  }, [height, reducedMotion]);
 
   return (
     <canvas

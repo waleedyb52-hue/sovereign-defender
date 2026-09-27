@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Radar, Satellite, Search, CircleDot } from 'lucide-react';
 import { ThreatGlobeCanvas, type ThreatOrigin } from './ThreatGlobeCanvas';
+import { GlowSparkline } from './GlowSparkline';
 import { Glass, Label, Mono, Row, Value } from './parts';
 import { cn, formatCount } from '../../../lib/utils';
 import type { CyberDefendData } from './useCyberDefendData';
@@ -46,7 +47,29 @@ export const EarthGlobeView: React.FC<Props> = ({
   nodeQuery,
   setNodeQuery
 }) => {
+  /**
+   * Layer visibility. Display-only: hiding a layer never drops a measurement, and
+   * each row shows its real count so a viewer can see exactly what is hidden.
+   */
+  const [layerState, setLayerState] = React.useState<Record<string, boolean>>({
+    origins: true,
+    arcs: true,
+    grid: true,
+    station: true
+  });
+  const toggleLayer = (id: string) => setLayerState(prev => ({ ...prev, [id]: !prev[id] }));
+
+  /** Manual rotation from the compass. Null keeps the globe auto-spinning. */
+  const [spinOffset, setSpinOffset] = React.useState<number | null>(null);
+
   const node = d.nodes[selectedNode] ?? d.nodes[0] ?? null;
+
+  const layers = [
+    { id: 'origins', en: 'Threat origins', ar: 'مصادر التهديد', on: layerState.origins, count: d.geo.length },
+    { id: 'arcs', en: 'Attack arcs', ar: 'أقواس الهجوم', on: layerState.arcs, count: d.geo.length },
+    { id: 'grid', en: 'Orbital grid', ar: 'الشبكة المدارية', on: layerState.grid, count: null },
+    { id: 'station', en: 'Receiving station', ar: 'محطة الاستقبال', on: layerState.station, count: 1 }
+  ];
   const top = d.geo[0] ?? null;
   const filtered = d.nodes.filter(
     n => !nodeQuery || n.name.toLowerCase().includes(nodeQuery.toLowerCase()) || n.ip.includes(nodeQuery)
@@ -57,8 +80,11 @@ export const EarthGlobeView: React.FC<Props> = ({
       {/* Globe theatre with floating cards */}
       <div className="relative overflow-hidden rounded-2xl border border-white/10">
         <ThreatGlobeCanvas
-          origins={origins}
-          target={{ label: 'SOC', lat: 24.7, lon: 46.7 }}
+          origins={layerState.origins ? origins : []}
+          target={layerState.station ? { label: 'SOC', lat: 24.7, lon: 46.7 } : null}
+          showArcs={layerState.arcs}
+          showGrid={layerState.grid}
+          rotationOverride={spinOffset}
           height={460}
           reducedMotion={reduce}
           className="block w-full"
@@ -103,6 +129,37 @@ export const EarthGlobeView: React.FC<Props> = ({
             <Row k={isAr ? 'إعادات TCP' : 'TCP resets'} v={d.kernel.tcpResets} />
             <Row k={isAr ? 'شذوذ' : 'Anomalies'} v={d.kernel.anomalies} />
           </dl>
+
+          {/* Layer filters, in the reference's side-list position. These change what
+              the globe draws, not what was measured — so a hidden layer is a display
+              choice and never a missing reading. Each row prints its real count. */}
+          <div className="mt-2 border-t border-white/5 pt-2">
+            <Label>{isAr ? 'الطبقات' : 'Layers'}</Label>
+            <div className="mt-1 space-y-0.5">
+              {layers.map(l => (
+                <button
+                  key={l.id}
+                  onClick={() => toggleLayer(l.id)}
+                  aria-pressed={l.on}
+                  className="flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-start transition-colors hover:bg-white/[0.04] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none"
+                >
+                  <span
+                    className={cn(
+                      'grid h-2.5 w-2.5 shrink-0 place-items-center rounded-[3px] border',
+                      l.on ? 'border-[#38BDF8]/70 bg-[#38BDF8]/30' : 'border-white/20'
+                    )}
+                    aria-hidden
+                  >
+                    {l.on && <span className="h-1 w-1 rounded-[1px] bg-[#7dd3fc]" />}
+                  </span>
+                  <span className={cn('flex-1 text-[8px]', l.on ? 'text-slate-300' : 'text-slate-600')}>
+                    {isAr ? l.ar : l.en}
+                  </span>
+                  <Mono className="text-[8px] text-slate-600">{l.count ?? '-'}</Mono>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {d.kernel.countersReadable === false && (
             <p className="mt-2 border-t border-white/5 pt-1.5 text-[8px] leading-relaxed text-[#fcd34d]">
@@ -225,6 +282,53 @@ export const EarthGlobeView: React.FC<Props> = ({
               reduce={reduce}
             />
           </div>
+          {/* Compass. Camera control, as in the reference — it carries no units and
+              does not pretend to report a bearing, because it measures nothing. */}
+          <div className="mt-2.5 border-t border-white/5 pt-2">
+            <div className="flex items-center justify-between">
+              <Label>{isAr ? 'زاوية العرض' : 'View angle'}</Label>
+              {spinOffset != null && (
+                <button
+                  onClick={() => setSpinOffset(null)}
+                  className="text-[8px] text-[#7dd3fc] transition-colors hover:text-white"
+                >
+                  {isAr ? 'استئناف الدوران' : 'resume spin'}
+                </button>
+              )}
+            </div>
+            <div className="mt-1.5 flex items-center gap-2">
+              <div className="relative h-[44px] w-[44px] shrink-0">
+                <svg viewBox="0 0 44 44" className="h-full w-full" aria-hidden>
+                  <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+                  {[0, 90, 180, 270].map(a => (
+                    <line
+                      key={a}
+                      x1="22"
+                      y1="6"
+                      x2="22"
+                      y2="10"
+                      stroke="rgba(56,189,248,0.45)"
+                      strokeWidth="1"
+                      transform={`rotate(${a} 22 22)`}
+                    />
+                  ))}
+                  <g transform={`rotate(${spinOffset ?? 0} 22 22)`}>
+                    <path d="M 22 9 L 25 22 L 22 19 L 19 22 Z" fill="#7dd3fc" />
+                  </g>
+                </svg>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={359}
+                value={spinOffset ?? 0}
+                onChange={e => setSpinOffset(Number(e.target.value))}
+                aria-label={isAr ? 'زاوية دوران الكرة' : 'Globe rotation angle'}
+                className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-[#38BDF8]"
+              />
+            </div>
+          </div>
+
           <dl className="mt-2.5 space-y-1 border-t border-white/5 pt-2">
             <Row k={isAr ? 'عقد مرصودة' : 'Nodes detected'} v={d.nodes.length} />
             <Row k={isAr ? 'محرّك الكشف' : 'Engine'} v={d.posture.engine?.replace(/_/g, ' ') ?? null} small />
@@ -314,6 +418,23 @@ export const EarthGlobeView: React.FC<Props> = ({
               </span>
             )}
           </div>
+
+          {/* The reference's smooth luminous trend, from the real request series. */}
+          {d.frequency.length >= 2 && (
+            <div className="mt-1.5 border-b border-white/5 pb-2">
+              <GlowSparkline
+                points={d.frequency.map(f => ({ label: f.label, value: f.value, secondary: f.threats }))}
+                isAr={isAr}
+                height={88}
+                unit={isAr ? '' : '/s'}
+                ariaLabel={
+                  isAr
+                    ? `معدّل الطلبات على ${d.frequency.length} عيّنة، والخطّ المتقطّع للحركة العدائية`
+                    : `Request rate over ${d.frequency.length} samples, dashed line is hostile traffic`
+                }
+              />
+            </div>
+          )}
 
           {d.drift.verdict === 'INSUFFICIENT_DATA' ? (
             <p className="mt-2.5 text-[9px] leading-relaxed text-slate-500">{d.drift.insufficientReason}</p>

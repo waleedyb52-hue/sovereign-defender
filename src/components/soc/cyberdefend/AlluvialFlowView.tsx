@@ -41,6 +41,14 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
   const totalTier = tiers.reduce((a, t) => a + (t.v ?? 0), 0);
   const maxHits = Math.max(1, ...d.endpoints.map(e => e.hits));
   const shown = d.endpoints.slice(0, 6);
+  /**
+   * The middle column. Real retained families, which is what genuinely sits between
+   * a request and the tier that stopped it — the reference's ground stations had no
+   * equivalent here, and inventing station names would have been fabricated topology.
+   */
+  const families = d.families.slice(0, 5);
+  const maxFamCount = Math.max(1, ...families.map(f => f.count));
+  const midGap = families.length > 1 ? Math.min(44, 190 / (families.length - 1)) : 0;
 
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
@@ -111,13 +119,13 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
           </p>
         ) : (
           <svg
-            viewBox="0 0 320 240"
+            viewBox="0 0 340 250"
             className="mt-2 w-full"
             role="img"
             aria-label={
               isAr
-                ? `تدفّق من ${shown.length} نقطة نهاية إلى ثلاث طبقات تخفيف، المجموع ${totalTier}`
-                : `Flow from ${shown.length} endpoints into three mitigation tiers, total ${totalTier}`
+                ? `تدفّق من ${shown.length} نقطة نهاية عبر ${families.length} عائلة إلى ثلاث طبقات تخفيف، المجموع ${totalTier}`
+                : `Flow from ${shown.length} endpoints through ${families.length} families into three mitigation tiers, total ${totalTier}`
             }
           >
             <defs>
@@ -128,35 +136,48 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
                   <stop offset="100%" stopColor={t.color} stopOpacity="0.75" />
                 </linearGradient>
               ))}
+              <linearGradient id="cd-flow-mid" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.08" />
+                <stop offset="100%" stopColor="#93a1b3" stopOpacity="0.4" />
+              </linearGradient>
             </defs>
 
-            {/* Source stubs and labels */}
+            {/* Column headers, so the three stages are named rather than inferred */}
+            <text x="4" y="10" fill="#6b7a90" fontSize="6" style={{ letterSpacing: '0.08em' }}>
+              {isAr ? 'نقاط النهاية' : 'ENDPOINTS'}
+            </text>
+            <text x="126" y="10" fill="#6b7a90" fontSize="6" style={{ letterSpacing: '0.08em' }}>
+              {isAr ? 'العائلات' : 'FAMILIES'}
+            </text>
+            <text x="336" y="10" fill="#6b7a90" fontSize="6" textAnchor="end" style={{ letterSpacing: '0.08em' }}>
+              {isAr ? 'التخفيف' : 'MITIGATION'}
+            </text>
+
+            {/* Column 1 — sources */}
             {shown.map((e, i) => {
-              const y = 22 + i * 34;
+              const y = 26 + i * 32;
               return (
                 <g key={e.endpoint}>
-                  <rect x="4" y={y - 8} width="8" height="16" rx="2" fill="rgba(56,189,248,0.35)" />
-                  <text x="18" y={y + 3} fill="#93a1b3" fontSize="7" style={{ fontFamily: 'var(--font-mono)' }}>
-                    {e.endpoint.length > 22 ? `${e.endpoint.slice(0, 21)}…` : e.endpoint}
+                  <rect x="4" y={y - 7} width="7" height="14" rx="2" fill="rgba(56,189,248,0.4)" />
+                  <text x="15" y={y + 3} fill="#93a1b3" fontSize="6.5" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {e.endpoint.length > 18 ? `${e.endpoint.slice(0, 17)}…` : e.endpoint}
                   </text>
                 </g>
               );
             })}
 
-            {/* Ribbons — thickness is endpoint share times tier share, both real */}
+            {/* Sources -> families. Thickness from the endpoint's share of hits. */}
             {shown.map((e, i) => {
-              const y0 = 22 + i * 34;
-              return tiers.map((t, ti) => {
-                if (t.v == null || t.v <= 0) return null;
-                const share = t.v / totalTier;
-                const y1 = 46 + ti * 74;
-                const thickness = Math.max(0.8, share * 14 * (e.hits / maxHits) + 0.6);
+              const y0 = 26 + i * 32;
+              return families.map((f, fi) => {
+                const y1 = 30 + fi * midGap;
+                const w = Math.max(0.6, (e.hits / maxHits) * (f.count / maxFamCount) * 6 + 0.4);
                 return (
                   <path
-                    key={`${e.endpoint}-${t.id}`}
-                    d={`M 132 ${y0} C 190 ${y0}, 196 ${y1}, 252 ${y1}`}
-                    stroke={`url(#cd-flow-${t.id})`}
-                    strokeWidth={thickness}
+                    key={`${e.endpoint}-${f.family}`}
+                    d={`M 112 ${y0} C 140 ${y0}, 142 ${y1}, 168 ${y1}`}
+                    stroke="url(#cd-flow-mid)"
+                    strokeWidth={w}
                     fill="none"
                     strokeLinecap="round"
                   />
@@ -164,15 +185,71 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
               });
             })}
 
-            {/* Tier nodes */}
+            {/* Column 2 — the middle node column the reference has and this lacked.
+                Real attack families with their retained counts, which is what
+                actually sits between a request and the tier that stopped it. */}
+            {families.map((f, fi) => {
+              const y = 30 + fi * midGap;
+              const clean = f.family === 'CLEAN_TRAFFIC';
+              return (
+                <g key={f.family}>
+                  <rect
+                    x="168"
+                    y={y - 9}
+                    width="74"
+                    height="18"
+                    rx="3"
+                    fill="rgba(255,255,255,0.035)"
+                    stroke={clean ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'}
+                    strokeWidth="0.7"
+                  />
+                  <text x="173" y={y + 2.5} fill="#c2ccd9" fontSize="5.8">
+                    {f.family.replace(/_/g, ' ').slice(0, 15)}
+                  </text>
+                  <text
+                    x="238"
+                    y={y + 2.5}
+                    fill={clean ? '#6ee7b7' : '#fca5a5'}
+                    fontSize="6"
+                    textAnchor="end"
+                    style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }}
+                  >
+                    {f.count}
+                  </text>
+                </g>
+              );
+            })}
+
+            {/* Families -> tiers */}
+            {families.map((f, fi) => {
+              const y0 = 30 + fi * midGap;
+              return tiers.map((t, ti) => {
+                if (t.v == null || t.v <= 0) return null;
+                const share = t.v / totalTier;
+                const y1 = 48 + ti * 76;
+                const w = Math.max(0.7, share * 10 * (f.count / maxFamCount) + 0.5);
+                return (
+                  <path
+                    key={`${f.family}-${t.id}`}
+                    d={`M 242 ${y0} C 264 ${y0}, 266 ${y1}, 286 ${y1}`}
+                    stroke={`url(#cd-flow-${t.id})`}
+                    strokeWidth={w}
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                );
+              });
+            })}
+
+            {/* Column 3 — destinations */}
             {tiers.map((t, ti) => {
-              const y = 46 + ti * 74;
+              const y = 48 + ti * 76;
               return (
                 <g key={t.id}>
                   <rect
-                    x="252"
+                    x="286"
                     y={y - 16}
-                    width="62"
+                    width="50"
                     height="32"
                     rx="5"
                     fill="rgba(255,255,255,0.04)"
@@ -180,17 +257,17 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
                     strokeOpacity="0.45"
                   />
                   <text
-                    x="283"
+                    x="311"
                     y={y - 3}
                     fill="#e6edf3"
-                    fontSize="9"
+                    fontSize="8.5"
                     textAnchor="middle"
                     style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }}
                   >
                     {t.v != null ? formatCount(t.v) : '—'}
                   </text>
-                  <text x="283" y={y + 8} fill="#6b7a90" fontSize="6" textAnchor="middle">
-                    {t.label}
+                  <text x="311" y={y + 8} fill="#6b7a90" fontSize="5.2" textAnchor="middle">
+                    {t.label.length > 14 ? `${t.label.slice(0, 13)}…` : t.label}
                   </text>
                 </g>
               );
