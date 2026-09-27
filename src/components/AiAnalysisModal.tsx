@@ -43,6 +43,22 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
     setTimeout(() => setCopiedKey(null), 2500);
   };
 
+  /**
+   * Null guard, placed AFTER every hook.
+   *
+   * The original version sat above the useState calls, which made the hook count
+   * change between renders as `packet` flipped — the "rendered more hooks than
+   * during the previous render" crash. Removing it fixed that and left the body
+   * dereferencing a nullable prop, which the project's tsconfig does not check
+   * because strictNullChecks is off.
+   *
+   * Here the hooks have all run, so the order is stable, and nothing below can
+   * touch a null packet. The single call site already guards, so this is defence
+   * in depth rather than a live bug — but a type that says null while the body
+   * assumes otherwise is a trap for the next caller.
+   */
+  if (!packet) return null;
+
   const handleTriggerAnalysis = async () => {
     setIsLoading(true);
     try {

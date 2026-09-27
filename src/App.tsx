@@ -31,6 +31,7 @@ import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
 import { AdjudicationPanel } from './components/soc/AdjudicationPanel';
 import { ExhibitionMode } from './components/soc/ExhibitionMode';
 import { CorpusIntelPanel } from './components/soc/CorpusIntelPanel';
+import { CyberDefendPlatform } from './components/soc/cyberdefend/CyberDefendPlatform';
 import { TelemetryHud } from './components/soc/TelemetryHud';
 import { EbpfTopologyGraph } from './components/soc/EbpfTopologyGraph';
 import { ThreatAuditTable } from './components/soc/ThreatAuditTable';
@@ -649,6 +650,11 @@ export default function App() {
         className={`${isSidebarPinned ? (isAr ? 'mr-64' : 'ml-64') : isAr ? 'mr-16' : 'ml-16'} flex min-h-[calc(100vh-48px)] flex-col p-4 transition-all duration-300 sm:p-6 lg:p-8`}
       >
         {/* VIEW 1: Live Site Traffic & Security Inspector */}
+        {/* CYBERDEFEND: the orbital command surface. Rendered full-bleed rather
+            than inside the max-w-7xl column, because the globe theatre and the
+            floating cards are positioned against the viewport. */}
+        {activeTab === 'cyberdefend' && <CyberDefendPlatform lang={lang} />}
+
         {activeTab === 'site_inspector' && (
           <div className="mx-auto w-full max-w-7xl">
             <SiteTrafficSecurityInspector lang={lang} />

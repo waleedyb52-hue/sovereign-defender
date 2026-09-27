@@ -1,5 +1,6 @@
 export type AppTab =
   // Core operations
+  | 'cyberdefend'
   | 'site_inspector'
   | 'blue_team_soc'
   | 'threat_labs'
