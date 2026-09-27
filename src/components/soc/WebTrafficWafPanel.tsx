@@ -346,7 +346,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="rounded border border-slate-700 bg-slate-950/70 px-2 py-0.5 font-mono text-sm font-black">
+            <span className="rounded border border-slate-700 bg-slate-950/70 px-2 py-0.5 font-mono text-sm font-black shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               {siteSecurityStatus.labelEn}
             </span>
           </div>
@@ -433,7 +433,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
             className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
               isWafRulesExpanded
                 ? 'border-cyan-500/40 bg-cyan-950/60 text-cyan-300'
-                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <Sliders className="h-3 w-3 text-cyan-400" />
@@ -444,11 +444,11 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
             onClick={() => setIsSimulatorExpanded(!isSimulatorExpanded)}
             className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
               isSimulatorExpanded
-                ? 'border-purple-500/40 bg-purple-950/60 text-purple-300'
-                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                ? 'border-cyan-500/40 bg-cyan-950/60 text-cyan-300'
+                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
-            <Terminal className="h-3 w-3 text-purple-400" />
+            <Terminal className="h-3 w-3 text-cyan-400" />
             <span>{isAr ? 'حقن هجوم' : 'Simulate Packet'}</span>
           </button>
 
@@ -457,7 +457,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
             className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
               isSubnetsExpanded
                 ? 'border-rose-500/40 bg-rose-950/60 text-rose-300'
-                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <Ban className="h-3 w-3 text-rose-400" />
@@ -470,7 +470,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
 
       {/* Secondary Metrics Drawer */}
       {showAdvancedMetrics && (
-        <div className="animate-fadeIn grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 text-xs sm:grid-cols-4">
+        <div className="animate-fadeIn grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 text-xs sm:grid-cols-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div>
             <span className="block text-[10px] font-bold text-slate-500 uppercase">
               {isAr ? 'إجمالي الطلبات' : 'Total Ingested'}
@@ -483,7 +483,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
             <span className="block text-[10px] font-bold text-slate-500 uppercase">
               {isAr ? 'النطاقات المعزولة' : 'Isolated Subnets'}
             </span>
-            <span className="font-mono font-bold text-purple-300">
+            <span className="font-mono font-bold text-cyan-300">
               {blockedSubnets.length} CIDRs
             </span>
           </div>
@@ -504,7 +504,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
 
       {/* Collapsible WAF Rules Control Section */}
       {isWafRulesExpanded && metrics?.wafConfig && (
-        <div className="animate-fadeIn rounded-xl border border-slate-800 bg-slate-900/90 p-3.5 shadow-md">
+        <div className="animate-fadeIn rounded-xl border border-slate-800 bg-slate-900/90 p-3.5 shadow-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-2.5 flex items-center justify-between">
             <h4 className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
               <Sliders className="h-3.5 w-3.5 text-cyan-400" />
@@ -548,7 +548,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
                 className={`flex flex-col justify-between rounded-lg border p-2 text-left text-xs transition ${
                   rule.active
                     ? 'border-cyan-500/40 bg-cyan-950/60 text-cyan-200'
-                    : 'border-slate-800 bg-slate-950 text-slate-500'
+                    : 'border-slate-800 bg-slate-950 text-slate-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -568,10 +568,10 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
 
       {/* Collapsible Attack Packet Simulator */}
       {isSimulatorExpanded && (
-        <div className="animate-fadeIn rounded-xl border border-purple-500/30 bg-slate-900/90 p-3.5 shadow-md">
+        <div className="animate-fadeIn rounded-xl border border-cyan-500/30 bg-slate-900/90 p-3.5 shadow-md">
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Terminal className="h-4 w-4 text-purple-400" />
+              <Terminal className="h-4 w-4 text-cyan-400" />
               <span className="text-xs font-bold text-slate-200">
                 {isAr
                   ? 'حقن واختبار حزم الهجوم المباشرة'
@@ -589,7 +589,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
             <select
               value={simType}
               onChange={e => setSimType(e.target.value)}
-              className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-cyan-300 focus:border-cyan-500 focus:outline-none"
+              className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-cyan-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             >
               <option value="SQLI_ATTEMPT">SQL Injection (' OR '1'='1 -- UNION SELECT)</option>
               <option value="XSS_ATTEMPT">Cross-Site Scripting (&lt;script&gt;fetch cookie)</option>
@@ -609,13 +609,13 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
               placeholder={isAr ? 'حمولة مخصصة اختيارية...' : 'Optional custom payload string...'}
               value={simPayload}
               onChange={e => setSimPayload(e.target.value)}
-              className="min-w-[200px] flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="min-w-[200px] flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 placeholder-slate-500 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             />
 
             <button
               onClick={handleInjectSimulatedPacket}
               disabled={isInjecting}
-              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-1.5 text-xs font-bold text-white transition hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-600 px-4 py-1.5 text-xs font-bold text-white transition hover:from-cyan-500 hover:to-cyan-500 disabled:opacity-50"
             >
               <Play className="h-3.5 w-3.5 fill-white" />
               <span>
@@ -665,9 +665,9 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
                 {blockedSubnets.map(sub => (
                   <tr
                     key={sub.id}
-                    className="border-b border-slate-800/40 transition hover:bg-slate-950/40"
+                    className="border-b border-slate-800/40 transition hover:bg-slate-950/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   >
-                    <td className="px-2 py-1.5 font-bold text-red-400">{sub.cidrOrIp}</td>
+                    <td className="px-2 py-1.5 font-bold text-rose-400">{sub.cidrOrIp}</td>
                     <td className="px-2 py-1.5 text-[11px] text-slate-300">
                       {isAr ? sub.reasonAr : sub.reason}
                     </td>
@@ -693,9 +693,9 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
       {/* ========================================================================= */}
       {/* 2. CLEAN & STREAMLINED 4-COLUMN TELEMETRY STREAM                           */}
       {/* ========================================================================= */}
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl">
+      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/90 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Search & Filter Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/60 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/60 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex max-w-sm flex-1 items-center gap-2">
             <Search className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             <input
@@ -703,7 +703,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={isAr ? 'بحث بالـ IP أو المسار...' : 'Filter by IP or URI endpoint...'}
-              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             />
           </div>
 
@@ -724,7 +724,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
                 className={`rounded px-2 py-0.5 whitespace-nowrap transition ${
                   categoryFilter === cat
                     ? 'bg-cyan-600 font-bold text-white'
-                    : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
+                    : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                 }`}
               >
                 {cat === 'ALL' ? (isAr ? 'الكل' : 'All') : cat.replace('_ATTEMPT', '')}
@@ -736,7 +736,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
         {/* 4-Column Streamlined Table */}
         <div className="max-h-[460px] overflow-x-auto overflow-y-auto">
           <table className="w-full border-collapse text-left font-mono text-xs">
-            <thead className="sticky top-0 z-10 border-b border-slate-800 bg-slate-950 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+            <thead className="sticky top-0 z-10 border-b border-slate-800 bg-slate-950 text-[10px] font-bold tracking-wider text-slate-400 uppercase shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <tr>
                 <th className="w-28 px-4 py-2.5">{isAr ? 'الوقت' : 'Time'}</th>
                 <th className="w-40 px-4 py-2.5">{isAr ? 'عنوان IP' : 'Client IP'}</th>
@@ -786,7 +786,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
                           <span
                             className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-black ${
                               frame.method === 'POST'
-                                ? 'bg-blue-500/20 text-blue-300'
+                                ? 'bg-cyan-500/20 text-cyan-300'
                                 : 'bg-slate-800 text-slate-300'
                             }`}
                           >
@@ -854,7 +854,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
           }}
           className="animate-fadeIn fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
         >
-          <div className="max-h-[85vh] w-full max-w-xl space-y-4 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 font-mono text-xs shadow-2xl">
+          <div className="max-h-[85vh] w-full max-w-xl space-y-4 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 font-mono text-xs shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
                 <Terminal className="h-4 w-4 text-cyan-400" />
@@ -870,7 +870,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-[11px]">
+            <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-[11px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div>
                 <span className="block text-[10px] text-slate-500">
                   {isAr ? 'المصدر:' : 'Source IP:'}
@@ -902,7 +902,7 @@ export const WebTrafficWafPanel: React.FC<WebTrafficWafPanelProps> = ({
               <span className="mb-1 block text-[10px] text-slate-400">
                 {isAr ? 'مقتطف الحمولة المكتشفة:' : 'Raw Detected Payload / Snippet:'}
               </span>
-              <div className="max-h-36 overflow-y-auto rounded-lg border border-slate-800 bg-slate-950 p-2.5 break-all text-rose-300 select-all">
+              <div className="max-h-36 overflow-y-auto rounded-lg border border-slate-800 bg-slate-950 p-2.5 break-all text-rose-300 select-all shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {selectedFrame.payloadSnippet || `${selectedFrame.method} ${selectedFrame.uriPath}`}
               </div>
             </div>

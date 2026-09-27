@@ -134,11 +134,11 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
   };
 
   return (
-    <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md">
+    <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-800 pb-4 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg border border-indigo-500/30 bg-gradient-to-br from-indigo-500/20 to-cyan-500/20 p-2.5">
+          <div className="rounded-lg border border-cyan-500/30 bg-gradient-to-br from-cyan-500/20 to-cyan-500/20 p-2.5">
             <FileCheck className="h-5 w-5 text-cyan-400" />
           </div>
           <div>
@@ -148,7 +148,7 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
                   ? 'أتمتة تقارير العمليات السيبرانية والإرسال الذاتي (SOAR Executive Reports)'
                   : 'Full SOAR Report Automation & Autonomous Dispatch'}
               </h3>
-              <span className="rounded border border-indigo-700/50 bg-indigo-950 px-2 py-0.5 text-[10px] font-bold text-indigo-300">
+              <span className="rounded border border-cyan-700/50 bg-cyan-950 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
                 Phase 2 Active
               </span>
             </div>
@@ -193,7 +193,7 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
 
       {/* Scheduler Status Pill */}
       {schedulerSettings && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-cyan-400" />
             <span className="text-slate-400">
@@ -224,9 +224,9 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
 
       {/* Report Viewer Container */}
       {activeReport ? (
-        <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-950 p-6 print:border-none print:bg-white print:text-black">
+        <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-950 p-6 print:border-none print:bg-white print:text-black shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           {/* Official Letterhead */}
-          <div className="flex flex-col items-start justify-between gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-center print:border-gray-300">
+          <div className="flex flex-col items-start justify-between gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-center print:border-slate-300">
             <div>
               <div className="font-mono text-[10px] font-bold tracking-wider text-rose-400 uppercase">
                 {activeReport.classification}
@@ -236,16 +236,16 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
                   ? 'التقرير الأمني الاستراتيجي الشامل لمنظومة الدفاع السيادي'
                   : 'Sovereign Cyber Defense Executive Briefing'}
               </h2>
-              <div className="mt-0.5 font-mono text-xs text-slate-400 print:text-gray-600">
+              <div className="mt-0.5 font-mono text-xs text-slate-400 print:text-slate-600">
                 Ref: {activeReport.id} • Standard: {activeReport.complianceStandard}
               </div>
             </div>
 
             <div className="text-right">
-              <div className="text-xs text-slate-400 print:text-gray-600">
+              <div className="text-xs text-slate-400 print:text-slate-600">
                 {new Date(activeReport.generatedAt).toLocaleString()}
               </div>
-              <span className="rounded border border-emerald-700/50 bg-emerald-950/80 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300 print:bg-gray-100 print:text-black">
+              <span className="rounded border border-emerald-700/50 bg-emerald-950/80 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300 print:bg-slate-100 print:text-black">
                 {activeReport.scheduleType}
               </span>
             </div>
@@ -253,8 +253,8 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
 
           {/* Core Posture Scores */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 print:border-gray-300 print:bg-gray-50">
-              <span className="block text-[10px] text-slate-400 print:text-gray-600">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 print:border-slate-300 print:bg-slate-50 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+              <span className="block text-[10px] text-slate-400 print:text-slate-600">
                 {isAr ? 'مؤشر الصمود العام' : 'Security Posture'}
               </span>
               <span className="font-mono text-xl font-bold text-emerald-400 print:text-emerald-700">
@@ -262,8 +262,8 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
               </span>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 print:border-gray-300 print:bg-gray-50">
-              <span className="block text-[10px] text-slate-400 print:text-gray-600">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 print:border-slate-300 print:bg-slate-50 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+              <span className="block text-[10px] text-slate-400 print:text-slate-600">
                 {isAr ? 'التهديدات المحيدة' : 'Threats Neutralized'}
               </span>
               <span className="font-mono text-xl font-bold text-cyan-400 print:text-cyan-700">
@@ -271,8 +271,8 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
               </span>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 print:border-gray-300 print:bg-gray-50">
-              <span className="block text-[10px] text-slate-400 print:text-gray-600">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 print:border-slate-300 print:bg-slate-50 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+              <span className="block text-[10px] text-slate-400 print:text-slate-600">
                 {isAr ? 'الحمولات المعزولة' : 'Quarantined Payloads'}
               </span>
               <span className="font-mono text-xl font-bold text-rose-400 print:text-rose-700">
@@ -280,8 +280,8 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
               </span>
             </div>
 
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 print:border-gray-300 print:bg-gray-50">
-              <span className="block text-[10px] text-slate-400 print:text-gray-600">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 print:border-slate-300 print:bg-slate-50 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+              <span className="block text-[10px] text-slate-400 print:text-slate-600">
                 {isAr ? 'زمن الرصد (MTTD)' : 'MTTD (Sub-ms)'}
               </span>
               <span className="font-mono text-xl font-bold text-amber-400 print:text-amber-700">
@@ -295,14 +295,14 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
             <h4 className="text-xs font-bold tracking-wider text-slate-300 uppercase print:text-black">
               {isAr ? 'النتائج الاستراتيجية الرئيسية' : 'Executive Key Findings'}
             </h4>
-            <ul className="space-y-1.5 text-xs text-slate-300 print:text-gray-800">
+            <ul className="space-y-1.5 text-xs text-slate-300 print:text-slate-800">
               {(isAr
                 ? activeReport.executiveSummary.keyFindingsAr
                 : activeReport.executiveSummary.keyFindingsEn
               ).map(finding => (
                 <li
                   key={`finding-${finding.slice(0, 32)}`}
-                  className="flex items-start gap-2 rounded-lg border border-slate-800/60 bg-slate-900/40 p-2 print:border-none print:bg-transparent"
+                  className="flex items-start gap-2 rounded-lg border border-slate-800/60 bg-slate-900/40 p-2 print:border-none print:bg-transparent shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                   <span>{finding}</span>
@@ -312,7 +312,7 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
           </div>
 
           {/* Autonomous Dispatch Confirmation */}
-          <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/60 p-4 print:border-gray-300 print:bg-gray-50">
+          <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/60 p-4 print:border-slate-300 print:bg-slate-50 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 font-bold text-slate-300 print:text-black">
                 <Send className="h-3.5 w-3.5 text-cyan-400" />
@@ -324,11 +324,11 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
                 {activeReport.dispatchStatus.status}
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-2 text-[11px] text-slate-400 sm:grid-cols-3 print:text-gray-600">
+            <div className="grid grid-cols-1 gap-2 text-[11px] text-slate-400 sm:grid-cols-3 print:text-slate-600">
               {activeReport.dispatchStatus.channels.map(c => (
                 <div
                   key={`channel-${c.channel}-${c.recipient}`}
-                  className="rounded border border-slate-800/80 bg-slate-950 p-2 print:border-gray-200 print:bg-white"
+                  className="rounded border border-slate-800/80 bg-slate-950 p-2 print:border-slate-200 print:bg-white shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="truncate font-semibold text-slate-200 print:text-black">
                     {c.channel}
@@ -341,7 +341,7 @@ export const SoarReportAutomationPanel: React.FC<SoarReportAutomationPanelProps>
           </div>
 
           {/* Cryptographic Signature Seal */}
-          <div className="flex flex-col items-start justify-between gap-2 rounded-xl border border-slate-800 bg-black/60 p-3 font-mono text-[10px] text-slate-400 sm:flex-row sm:items-center print:border-gray-300 print:bg-gray-100 print:text-gray-700">
+          <div className="flex flex-col items-start justify-between gap-2 rounded-xl border border-slate-800 bg-black/60 p-3 font-mono text-[10px] text-slate-400 sm:flex-row sm:items-center print:border-slate-300 print:bg-slate-100 print:text-slate-700">
             <div>
               <span className="text-slate-500">SHA-256 Digest:</span>{' '}
               {activeReport.cryptographicSeal.sha256Digest.slice(0, 32)}...

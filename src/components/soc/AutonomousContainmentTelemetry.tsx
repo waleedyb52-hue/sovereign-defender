@@ -353,7 +353,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
             className={`flex items-center gap-1.5 rounded-lg border px-3 py-1 font-mono text-xs font-bold transition ${
               isLiveStream
                 ? 'border-emerald-500/50 bg-emerald-950/70 text-emerald-300 shadow-md'
-                : 'border-slate-700 bg-slate-900 text-slate-400'
+                : 'border-slate-700 bg-slate-900 text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             {isLiveStream ? (
@@ -375,7 +375,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           <button
             onClick={fetchEbpfTelemetry}
             disabled={isLoading}
-            className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-300 transition hover:bg-slate-800"
+            className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-300 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             title={isAr ? 'تحديث السجلات' : 'Refresh Telemetry'}
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -433,13 +433,13 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           </div>
         </div>
 
-        <div className="col-span-2 rounded-xl border border-purple-900/60 bg-slate-900/90 p-2.5 shadow-sm sm:col-span-1">
+        <div className="col-span-2 rounded-xl border border-cyan-900/60 bg-slate-900/90 p-2.5 shadow-sm sm:col-span-1">
           <span className="block text-[9px] text-slate-400">
             {isAr ? 'العقد المعزولة أفقياً' : 'QUARANTINED NODES'}
           </span>
           <div className="mt-0.5 flex items-center gap-2">
-            <Server className="h-4 w-4 text-purple-400" />
-            <span className="text-base font-bold text-purple-300">
+            <Server className="h-4 w-4 text-cyan-400" />
+            <span className="text-base font-bold text-cyan-300">
               {stats.quarantinedNodesCount || 2} / {stats.totalClusterNodesCount || 4}
             </span>
           </div>
@@ -463,7 +463,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
       )}
 
       {/* 3. Operational Drill Simulation Bar */}
-      <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3 md:flex-row md:items-center">
+      <div className="flex flex-col justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3 md:flex-row md:items-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-cyan-400" />
           <span className="font-mono text-xs font-bold text-slate-300">
@@ -503,10 +503,10 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           <button
             onClick={() => handleSimulateAnomaly('CODE_INJECTION')}
             disabled={isSimulating}
-            className="flex items-center gap-1.5 rounded-lg border border-purple-500/50 bg-purple-950/80 px-2.5 py-1 font-mono text-xs font-bold text-purple-300 transition hover:bg-purple-900/90"
+            className="flex items-center gap-1.5 rounded-lg border border-cyan-500/50 bg-cyan-950/80 px-2.5 py-1 font-mono text-xs font-bold text-cyan-300 transition hover:bg-cyan-900/90"
             title={isAr ? 'محاكاة تدفق حقن متزامن' : 'Simulate Cascading Polyglot Injection'}
           >
-            <Zap className="h-3.5 w-3.5 text-purple-400" />
+            <Zap className="h-3.5 w-3.5 text-cyan-400" />
             <span>{isAr ? 'حقن متتالي مكثف' : 'Injection Burst'}</span>
           </button>
 
@@ -574,7 +574,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           onClick={() => setActiveTab('CLUSTER_NODES')}
           className={`flex items-center gap-2 rounded-lg px-3 py-1.5 transition ${
             activeTab === 'CLUSTER_NODES'
-              ? 'border border-purple-500/60 bg-purple-950 font-bold text-purple-300 shadow-sm'
+              ? 'border border-cyan-500/60 bg-cyan-950 font-bold text-cyan-300 shadow-sm'
               : 'bg-slate-900 text-slate-400 hover:text-white'
           }`}
         >
@@ -604,7 +604,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
       {activeTab === 'ROUTING' && (
         <div className="animate-fadeIn space-y-3">
           {/* Search & Manual Quick Trigger */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="relative">
               <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-400" />
               <input
@@ -614,7 +614,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                 placeholder={
                   isAr ? 'بحث في العناوين أو الأسباب...' : 'Search isolated IP, reason, IoC...'
                 }
-                className="w-56 rounded-lg border border-slate-700 bg-slate-950 py-1 pr-3 pl-8 font-mono text-xs text-slate-200 outline-none focus:border-rose-400"
+                className="w-56 rounded-lg border border-slate-700 bg-slate-950 py-1 pr-3 pl-8 font-mono text-xs text-slate-200 outline-none focus:border-rose-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
 
@@ -628,7 +628,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                     ? 'إدخال IP لعزله بالنواة فوراً (مثال 198.51.100.4)...'
                     : 'Target IP (e.g. 198.51.100.4)...'
                 }
-                className="w-64 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 font-mono text-xs text-slate-200 outline-none focus:border-rose-400"
+                className="w-64 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1 font-mono text-xs text-slate-200 outline-none focus:border-rose-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
               <button
                 onClick={handleTriggerManualContainment}
@@ -652,7 +652,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                   className={`flex flex-col justify-between gap-3 rounded-xl border p-3.5 transition md:flex-row md:items-center ${
                     isActive
                       ? 'border-rose-500/40 bg-rose-950/20 shadow-lg shadow-rose-950/20 hover:border-rose-400/60'
-                      : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+                      : 'border-slate-800 bg-slate-900/50 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <div className="space-y-1">
@@ -678,7 +678,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                             : 'RELEASED'}
                       </span>
 
-                      <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-xs font-bold text-rose-400">
+                      <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-xs font-bold text-rose-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         {record.cidrBlock}
                       </span>
 
@@ -699,7 +699,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                       </span>
 
                       {record.bpfMapKey && (
-                        <span className="py-0.2 rounded border border-slate-800 bg-slate-950 px-1.5 font-mono text-[9px] text-slate-400">
+                        <span className="py-0.2 rounded border border-slate-800 bg-slate-950 px-1.5 font-mono text-[9px] text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           BPF Key: {record.bpfMapKey}
                         </span>
                       )}
@@ -738,7 +738,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                     {isActive ? (
                       <button
                         onClick={() => handleReleaseIp(record.targetIp)}
-                        className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1 font-mono text-xs text-slate-300 transition hover:border-slate-600 hover:bg-slate-800"
+                        className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1 font-mono text-xs text-slate-300 transition hover:border-slate-600 hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                       >
                         <Unlock className="h-3.5 w-3.5 text-amber-400" />
                         <span>{isAr ? 'إلغاء العزل' : 'Release IP'}</span>
@@ -785,7 +785,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                   className={`space-y-2 rounded-xl border p-3.5 ${
                     isHighConfidence
                       ? 'border-amber-500/40 bg-amber-950/20 shadow-md shadow-amber-950/20'
-                      : 'border-slate-800 bg-slate-900/50'
+                      : 'border-slate-800 bg-slate-900/50 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
@@ -815,7 +815,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                   </div>
 
                   {/* Threshold Violation Info */}
-                  <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-2 font-mono text-xs text-slate-300">
+                  <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-2 font-mono text-xs text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <span className="mb-0.5 block text-[11px] font-bold text-rose-400">
                       ⚠️{' '}
                       {isAr
@@ -826,7 +826,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                   </div>
 
                   {/* Heuristic metrics breakdown */}
-                  <div className="grid grid-cols-1 gap-2 rounded-lg border border-slate-800/80 bg-slate-900/60 p-2 font-mono text-[10px] sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-2 rounded-lg border border-slate-800/80 bg-slate-900/60 p-2 font-mono text-[10px] sm:grid-cols-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div>
                       <span className="block text-slate-400">Metric:</span>
                       <span className="font-bold text-cyan-300">
@@ -932,7 +932,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                 </div>
 
                 <div className="self-end sm:self-center">
-                  <span className="rounded border border-slate-800 bg-slate-950 px-2 py-1 text-[10px] text-slate-300">
+                  <span className="rounded border border-slate-800 bg-slate-950 px-2 py-1 text-[10px] text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     Killed in &lt;0.35µs
                   </span>
                 </div>
@@ -962,14 +962,14 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                   key={node.nodeName}
                   className={`space-y-2.5 rounded-xl border p-3.5 transition ${
                     isQuarantined
-                      ? 'border-purple-500/50 bg-purple-950/20 shadow-md shadow-purple-950/30'
-                      : 'border-slate-800 bg-slate-900/50'
+                      ? 'border-cyan-500/50 bg-cyan-950/20 shadow-md shadow-cyan-950/30'
+                      : 'border-slate-800 bg-slate-900/50 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Server
-                        className={`h-4 w-4 ${isQuarantined ? 'text-purple-400' : 'text-emerald-400'}`}
+                        className={`h-4 w-4 ${isQuarantined ? 'text-cyan-400' : 'text-emerald-400'}`}
                       />
                       <span className="font-mono text-xs font-bold text-white">
                         {node.nodeName}
@@ -979,7 +979,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                     <span
                       className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
                         isQuarantined
-                          ? 'animate-pulse border border-purple-500/50 bg-purple-950 text-purple-300'
+                          ? 'animate-pulse border border-cyan-500/50 bg-cyan-950 text-cyan-300'
                           : 'border border-emerald-500/50 bg-emerald-950 text-emerald-300'
                       }`}
                     >
@@ -993,7 +993,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-800 bg-slate-950/80 p-2 font-mono text-[10px]">
+                  <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-800 bg-slate-950/80 p-2 font-mono text-[10px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div>
                       <span className="block text-slate-400">IP:</span>
                       <span className="text-slate-200">{node.nodeIp}</span>
@@ -1032,7 +1032,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
                       className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs font-bold transition ${
                         isQuarantined
                           ? 'border border-emerald-500/50 bg-emerald-950/80 text-emerald-300 hover:bg-emerald-900'
-                          : 'border border-purple-500/50 bg-purple-950/80 text-purple-300 hover:bg-purple-900'
+                          : 'border border-cyan-500/50 bg-cyan-950/80 text-cyan-300 hover:bg-cyan-900'
                       }`}
                     >
                       {isQuarantined ? (
@@ -1072,7 +1072,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3.5 text-[11px] leading-relaxed text-cyan-200 shadow-inner">
+          <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3.5 text-[11px] leading-relaxed text-cyan-200 shadow-inner shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <pre>{`// SPDX-License-Identifier: GPL-2.0
 #include <linux/bpf.h>
 #include <linux/if_ether.h>

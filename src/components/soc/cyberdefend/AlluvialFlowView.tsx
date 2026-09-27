@@ -34,9 +34,9 @@ interface Props {
 
 export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
   const tiers = [
-    { id: 'tier1', label: isAr ? 'تحديد المعدّل' : 'Rate limited', v: d.mitigation.tier1, color: '#38BDF8' },
+    { id: 'tier1', label: isAr ? 'تحديد المعدّل' : 'Rate limited', v: d.mitigation.tier1, color: '#22d3ee' },
     { id: 'tier2', label: isAr ? 'تحدٍّ' : 'Challenged', v: d.mitigation.tier2, color: '#F59E0B' },
-    { id: 'tier3', label: isAr ? 'حجب حرج' : 'Critical blocked', v: d.mitigation.tier3, color: '#EF4444' }
+    { id: 'tier3', label: isAr ? 'حجب حرج' : 'Critical blocked', v: d.mitigation.tier3, color: '#f43f5e' }
   ];
   const totalTier = tiers.reduce((a, t) => a + (t.v ?? 0), 0);
   const maxHits = Math.max(1, ...d.endpoints.map(e => e.hits));
@@ -84,7 +84,7 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
                 </div>
                 <div className="mt-1 flex gap-2.5 text-[8px] text-slate-500">
                   <span>
-                    <Mono className="text-[#fca5a5]">{formatCount(e.threatHits)}</Mono>{' '}
+                    <Mono className="text-[#fda4af]">{formatCount(e.threatHits)}</Mono>{' '}
                     {isAr ? 'عدائية' : 'hostile'}
                   </span>
                   <span>
@@ -137,19 +137,19 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
                 </linearGradient>
               ))}
               <linearGradient id="cd-flow-mid" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.08" />
-                <stop offset="100%" stopColor="#93a1b3" stopOpacity="0.4" />
+                <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.08" />
+                <stop offset="100%" stopColor="#8aa4b8" stopOpacity="0.4" />
               </linearGradient>
             </defs>
 
             {/* Column headers, so the three stages are named rather than inferred */}
-            <text x="4" y="10" fill="#6b7a90" fontSize="6" style={{ letterSpacing: '0.08em' }}>
+            <text x="4" y="10" fill="#5c7484" fontSize="6" style={{ letterSpacing: '0.08em' }}>
               {isAr ? 'نقاط النهاية' : 'ENDPOINTS'}
             </text>
-            <text x="126" y="10" fill="#6b7a90" fontSize="6" style={{ letterSpacing: '0.08em' }}>
+            <text x="126" y="10" fill="#5c7484" fontSize="6" style={{ letterSpacing: '0.08em' }}>
               {isAr ? 'العائلات' : 'FAMILIES'}
             </text>
-            <text x="336" y="10" fill="#6b7a90" fontSize="6" textAnchor="end" style={{ letterSpacing: '0.08em' }}>
+            <text x="336" y="10" fill="#5c7484" fontSize="6" textAnchor="end" style={{ letterSpacing: '0.08em' }}>
               {isAr ? 'التخفيف' : 'MITIGATION'}
             </text>
 
@@ -159,7 +159,7 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
               return (
                 <g key={e.endpoint}>
                   <rect x="4" y={y - 7} width="7" height="14" rx="2" fill="rgba(56,189,248,0.4)" />
-                  <text x="15" y={y + 3} fill="#93a1b3" fontSize="6.5" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <text x="15" y={y + 3} fill="#8aa4b8" fontSize="6.5" style={{ fontFamily: 'var(--font-mono)' }}>
                     {e.endpoint.length > 18 ? `${e.endpoint.slice(0, 17)}…` : e.endpoint}
                   </text>
                 </g>
@@ -209,7 +209,7 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
                   <text
                     x="238"
                     y={y + 2.5}
-                    fill={clean ? '#6ee7b7' : '#fca5a5'}
+                    fill={clean ? '#6ee7b7' : '#fda4af'}
                     fontSize="6"
                     textAnchor="end"
                     style={{ fontFamily: 'var(--font-mono)', fontWeight: 700 }}
@@ -266,7 +266,7 @@ export const AlluvialFlowView: React.FC<Props> = ({ d, isAr, reduce }) => {
                   >
                     {t.v != null ? formatCount(t.v) : '—'}
                   </text>
-                  <text x="311" y={y + 8} fill="#6b7a90" fontSize="5.2" textAnchor="middle">
+                  <text x="311" y={y + 8} fill="#5c7484" fontSize="5.2" textAnchor="middle">
                     {t.label.length > 14 ? `${t.label.slice(0, 13)}…` : t.label}
                   </text>
                 </g>

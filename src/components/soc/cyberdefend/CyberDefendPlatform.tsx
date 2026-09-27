@@ -67,9 +67,9 @@ export const CyberDefendPlatform: React.FC<Props> = ({ lang = 'ar', apiKey }) =>
           {/* Brand */}
           <div className="flex items-center gap-2.5">
             <div className="relative">
-              <Hexagon className="h-7 w-7 text-[#38BDF8]" strokeWidth={1.5} aria-hidden />
+              <Hexagon className="h-7 w-7 text-[#22d3ee]" strokeWidth={1.5} aria-hidden />
               <ShieldAlert
-                className="absolute inset-0 m-auto h-3.5 w-3.5 text-[#7dd3fc]"
+                className="absolute inset-0 m-auto h-3.5 w-3.5 text-[#67e8f9]"
                 strokeWidth={2}
                 aria-hidden
               />
@@ -106,7 +106,7 @@ export const CyberDefendPlatform: React.FC<Props> = ({ lang = 'ar', apiKey }) =>
                   onClick={() => setTab(t.id)}
                   className={cn(
                     'relative rounded-full px-3.5 py-1.5 text-[11px] font-medium transition-colors',
-                    'focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none',
+                    'focus-visible:ring-2 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none',
                     active ? 'text-slate-900' : 'text-slate-400 hover:text-slate-200'
                   )}
                 >
@@ -133,18 +133,18 @@ export const CyberDefendPlatform: React.FC<Props> = ({ lang = 'ar', apiKey }) =>
               <button
                 key={label}
                 aria-label={label}
-                className="rounded-full border border-white/10 bg-white/5 p-1.5 text-slate-400 transition-colors hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none"
+                className="rounded-full border border-white/10 bg-white/5 p-1.5 text-slate-400 transition-colors hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none"
               >
                 <Icon className="h-3.5 w-3.5" />
               </button>
             ))}
             <button
               aria-label={isAr ? 'التنبيهات' : 'Notifications'}
-              className="relative rounded-full border border-white/10 bg-white/5 p-1.5 text-slate-400 transition-colors hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none"
+              className="relative rounded-full border border-white/10 bg-white/5 p-1.5 text-slate-400 transition-colors hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none"
             >
               <Bell className="h-3.5 w-3.5" />
               {d.alerts.some(a => /CRITICAL|HIGH/.test(a.severity)) && (
-                <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#EF4444]" aria-hidden />
+                <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#f43f5e]" aria-hidden />
               )}
             </button>
           </div>

@@ -129,7 +129,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       labelEn: '4. Persistence (FIM)',
       labelAr: '4. التثبيت والامتيازات (FIM)',
       mitreTechnique: 'T1505.003 - Web Shell / Sudoers',
-      icon: <FileCode className="h-4 w-4 text-purple-400" />,
+      icon: <FileCode className="h-4 w-4 text-cyan-400" />,
       color: 'purple',
       descriptionEn:
         'Planting backdoors, modifying /etc/sudoers (NOPASSWD), or modifying critical binaries.',
@@ -141,7 +141,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       labelEn: '5. Exfiltration',
       labelAr: '5. تسريب البيانات وقناة C2',
       mitreTechnique: 'T1048 - Exfil Over Alternative Protocol',
-      icon: <Skull className="h-4 w-4 text-red-500" />,
+      icon: <Skull className="h-4 w-4 text-rose-500" />,
       color: 'red',
       descriptionEn:
         'Encrypted outbound C2 tunneling, leaking environment tokens or database dumps.',
@@ -356,14 +356,14 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       {/* ========================================================================= */}
       {/* 1. TOP SUB-NAVIGATION BAR & QUICK SUMMARY                                 */}
       {/* ========================================================================= */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/90 p-3 shadow-xl backdrop-blur-md">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/90 p-3 shadow-xl backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Navigation Mode Tabs */}
-        <div className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/90 p-1">
+        <div className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/90 p-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <button
             onClick={() => setActiveView('ATTACK_GRAPH')}
             className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold transition ${
               activeView === 'ATTACK_GRAPH'
-                ? 'border border-rose-500/50 bg-gradient-to-r from-rose-900/80 to-purple-900/80 text-rose-200 shadow-md'
+                ? 'border border-rose-500/50 bg-gradient-to-r from-rose-900/80 to-cyan-900/80 text-rose-200 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -380,15 +380,15 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
             onClick={() => setActiveView('HONEYTOKENS')}
             className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-xs font-bold transition ${
               activeView === 'HONEYTOKENS'
-                ? 'border border-purple-500/50 bg-gradient-to-r from-purple-900/80 to-cyan-900/80 text-purple-200 shadow-md'
+                ? 'border border-cyan-500/50 bg-gradient-to-r from-cyan-900/80 to-cyan-900/80 text-cyan-200 shadow-md'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Radio className="h-3.5 w-3.5 animate-pulse text-purple-400" />
+            <Radio className="h-3.5 w-3.5 animate-pulse text-cyan-400" />
             <span>
               {isAr ? 'فخاخ الخداع والمصائد المسمومة (Honeytokens)' : 'Honeytoken & Canary Traps'}
             </span>
-            <span className="py-0.2 rounded border border-purple-500/40 bg-purple-950 px-1.5 font-mono text-[10px] text-purple-300">
+            <span className="py-0.2 rounded border border-cyan-500/40 bg-cyan-950 px-1.5 font-mono text-[10px] text-cyan-300">
               {honeytokens.length}
             </span>
           </button>
@@ -421,7 +421,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               fetchHoneytokens();
               fetchCredentialStuffing();
             }}
-            className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-xs font-bold text-slate-300 transition hover:bg-slate-800"
+            className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-xs font-bold text-slate-300 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           >
             <RefreshCw className="h-3.5 w-3.5 text-cyan-400" />
             <span>{isAr ? 'تحديث البيانات' : 'Refresh Telemetry'}</span>
@@ -431,14 +431,14 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
       {/* Feedback Banner */}
       {trapActionFeedback && (
-        <div className="flex items-center justify-between rounded-xl border border-purple-500/60 bg-purple-950/80 p-3 text-xs text-purple-200 shadow-lg">
+        <div className="flex items-center justify-between rounded-xl border border-cyan-500/60 bg-cyan-950/80 p-3 text-xs text-cyan-200 shadow-lg">
           <div className="flex items-center gap-2">
-            <Radio className="h-4 w-4 animate-pulse text-purple-400" />
+            <Radio className="h-4 w-4 animate-pulse text-cyan-400" />
             <span className="font-mono">{trapActionFeedback}</span>
           </div>
           <button
             onClick={() => setTrapActionFeedback(null)}
-            className="px-2 py-0.5 text-xs text-purple-400 hover:text-white"
+            className="px-2 py-0.5 text-xs text-cyan-400 hover:text-white"
           >
             ✕
           </button>
@@ -453,7 +453,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
           {/* Top Controls: Session Selector & Simulation Trigger */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* Left: Active Intrusion Sessions List */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950/90 p-3.5 lg:col-span-1">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950/90 p-3.5 lg:col-span-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Skull className="h-4 w-4 text-rose-400" />
@@ -497,7 +497,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                         className={`cursor-pointer rounded-lg border p-3 transition ${
                           isSelected
                             ? 'border-rose-500/80 bg-rose-950/40 shadow-lg shadow-rose-950/40'
-                            : 'border-slate-800/80 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900'
+                            : 'border-slate-800/80 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                         }`}
                       >
                         <div className="mb-1.5 flex items-center justify-between">
@@ -553,7 +553,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
             </div>
 
             {/* Right: Selected Session Detail & Gemini AI Intent Reasoning */}
-            <div className="flex flex-col justify-between space-y-3 rounded-xl border border-slate-800 bg-slate-950/90 p-4 lg:col-span-2">
+            <div className="flex flex-col justify-between space-y-3 rounded-xl border border-slate-800 bg-slate-950/90 p-4 lg:col-span-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               {/* Header Info */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
                 <div>
@@ -593,9 +593,9 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               </div>
 
               {/* Gemini AI Reasoning Box */}
-              <div className="rounded-xl border border-purple-500/40 bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-slate-900/60 p-3.5 shadow-inner">
-                <div className="mb-1.5 flex items-center gap-2 text-xs font-bold text-purple-300">
-                  <Sparkles className="h-4 w-4 animate-pulse text-purple-400" />
+              <div className="rounded-xl border border-cyan-500/40 bg-gradient-to-br from-cyan-950/40 via-cyan-950/30 to-slate-900/60 p-3.5 shadow-inner">
+                <div className="mb-1.5 flex items-center gap-2 text-xs font-bold text-cyan-300">
+                  <Sparkles className="h-4 w-4 animate-pulse text-cyan-400" />
                   <span>
                     {isAr
                       ? 'تحليل النوايا الهجومية (Gemini AI Threat Intent Summary)'
@@ -609,7 +609,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
               {/* Quick Attack Chain Metrics */}
               <div className="grid grid-cols-3 gap-3 font-mono">
-                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-400">
                     {isAr ? 'مستوى الخطورة' : 'THREAT LEVEL'}
                   </span>
@@ -622,7 +622,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                   </span>
                 </div>
 
-                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-400">
                     {isAr ? 'المراحل المكتملة' : 'PROGRESSION'}
                   </span>
@@ -633,7 +633,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                   </span>
                 </div>
 
-                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-400">
                     {isAr ? 'حالة الاحتواء' : 'CONTAINMENT'}
                   </span>
@@ -650,7 +650,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
           {/* ========================================================================= */}
           {/* 5-STAGE INTERACTIVE MITRE ATT&CK PROGRESSION GRAPH                       */}
           {/* ========================================================================= */}
-          <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950/95 p-5 shadow-2xl">
+          <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950/95 p-5 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <GitCommit className="h-5 w-5 text-rose-400" />
@@ -679,7 +679,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                     className={`relative flex min-h-[190px] flex-col justify-between rounded-xl border p-3.5 transition-all duration-300 ${
                       isTriggered
                         ? 'border-rose-500/70 bg-slate-900/90 shadow-lg shadow-rose-950/50'
-                        : 'border-slate-800/60 bg-slate-950/40 opacity-60'
+                        : 'border-slate-800/60 bg-slate-950/40 opacity-60 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     {/* Top Order & Status Badge */}
@@ -754,12 +754,12 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
       {activeView === 'HONEYTOKENS' && (
         <div className="space-y-4">
           {/* Top Banner & Deployment Controls */}
-          <div className="rounded-xl border border-purple-500/30 bg-slate-950/90 p-4 shadow-xl backdrop-blur-md">
+          <div className="rounded-xl border border-cyan-500/30 bg-slate-950/90 p-4 shadow-xl backdrop-blur-md">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <Radio className="h-5 w-5 animate-pulse text-purple-400" />
-                  <h3 className="text-sm font-black tracking-wider text-purple-300 uppercase">
+                  <Radio className="h-5 w-5 animate-pulse text-cyan-400" />
+                  <h3 className="text-sm font-black tracking-wider text-cyan-300 uppercase">
                     {isAr
                       ? 'منظومة الخداع السيبراني والمصائد المسمومة (Honeytoken Deception Engine)'
                       : 'Autonomous Honeytoken & Canary Trap Monitor'}
@@ -774,11 +774,11 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
               {/* Stats Counters */}
               <div className="flex items-center gap-3 font-mono">
-                <div className="rounded-lg border border-purple-500/40 bg-purple-950/60 px-3 py-1.5 text-center">
-                  <span className="block text-[10px] leading-none text-purple-300">
+                <div className="rounded-lg border border-cyan-500/40 bg-cyan-950/60 px-3 py-1.5 text-center">
+                  <span className="block text-[10px] leading-none text-cyan-300">
                     ACTIVE TRAPS
                   </span>
-                  <span className="text-sm font-bold text-purple-200">
+                  <span className="text-sm font-bold text-cyan-200">
                     {honeytokens.length} Endpoints
                   </span>
                 </div>
@@ -792,7 +792,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
             </div>
 
             {/* Deploy Custom Trap Form */}
-            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/80 p-3">
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="text-xs font-bold whitespace-nowrap text-slate-300">
                 {isAr ? 'نشر فخ مخصص جديد:' : 'Deploy Custom Canary Trap:'}
               </span>
@@ -801,12 +801,12 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                 value={newTrapPath}
                 onChange={e => setNewTrapPath(e.target.value)}
                 placeholder="/admin/credentials.txt or /.aws/config"
-                className="min-w-[200px] flex-1 rounded border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-cyan-300 focus:border-purple-400 focus:outline-none"
+                className="min-w-[200px] flex-1 rounded border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-cyan-300 focus:border-cyan-400 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
               <select
                 value={newTrapType}
                 onChange={e => setNewTrapType(e.target.value as any)}
-                className="rounded border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:outline-none"
+                className="rounded border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <option value="ENV_SECRETS">ENV Secrets Decoy</option>
                 <option value="GIT_CONFIG">Git Config Trap</option>
@@ -817,7 +817,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               <button
                 onClick={handleDeployCustomTrap}
                 disabled={isDeployingTrap || !newTrapPath}
-                className="flex items-center gap-1.5 rounded bg-purple-600 px-3 py-1.5 font-mono text-xs font-bold text-white transition hover:bg-purple-500 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded bg-cyan-600 px-3 py-1.5 font-mono text-xs font-bold text-white transition hover:bg-cyan-500 disabled:opacity-50"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>{isAr ? 'نشر الفخ في المسار' : 'Deploy Canary Asset'}</span>
@@ -826,14 +826,14 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
           </div>
 
           {/* Active Honeytokens Table */}
-          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/90 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/90 p-3.5">
+          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/90 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/90 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="text-xs font-black tracking-wider text-slate-300 uppercase">
                 {isAr
                   ? 'قائمة الفخاخ والمصائد النشطة'
                   : 'Active Deception Endpoints & Auto-Jail Status'}
               </span>
-              <span className="font-mono text-xs text-purple-400">
+              <span className="font-mono text-xs text-cyan-400">
                 {isAr
                   ? 'نظام الحظر الفوري: نشط في النواة (Kernel Auto-Ban Active)'
                   : 'Kernel eBPF Auto-Jail: ENFORCED'}
@@ -842,7 +842,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs" dir="ltr">
-                <thead className="border-b border-slate-800 bg-slate-950 text-slate-400">
+                <thead className="border-b border-slate-800 bg-slate-950 text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <tr>
                     <th className="px-4 py-2.5">TRAP ID</th>
                     <th className="px-4 py-2.5">CANARY ENDPOINT</th>
@@ -857,7 +857,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                 <tbody className="divide-y divide-slate-800/60">
                   {honeytokens.map(trap => (
                     <tr key={trap.id} className="transition hover:bg-slate-900/60">
-                      <td className="px-4 py-3 font-bold text-purple-300">{trap.id}</td>
+                      <td className="px-4 py-3 font-bold text-cyan-300">{trap.id}</td>
                       <td className="px-4 py-3 font-bold text-cyan-300">{trap.endpointPath}</td>
                       <td className="px-4 py-3 text-slate-300">{trap.trapType}</td>
                       <td className="px-4 py-3 text-center">
@@ -931,13 +931,13 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
               </div>
 
               {/* Attack Simulator Form */}
-              <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 p-2">
+              <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <input
                   type="text"
                   value={targetUsernameInput}
                   onChange={e => setTargetUsernameInput(e.target.value)}
                   placeholder="target_user@domain.com"
-                  className="rounded border border-slate-700 bg-slate-950 px-2.5 py-1 font-mono text-xs text-cyan-300 focus:outline-none"
+                  className="rounded border border-slate-700 bg-slate-950 px-2.5 py-1 font-mono text-xs text-cyan-300 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
                 <button
                   onClick={handleSimulateCredentialStuffing}
@@ -960,8 +960,8 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
           </div>
 
           {/* Credential Events Feed Table */}
-          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/90 shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/90 p-3.5">
+          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/90 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/90 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="text-xs font-black tracking-wider text-slate-300 uppercase">
                 {isAr
                   ? 'سجل هجمات التخمين والبوتات المعترضة'
@@ -974,7 +974,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs" dir="ltr">
-                <thead className="border-b border-slate-800 bg-slate-950 text-slate-400">
+                <thead className="border-b border-slate-800 bg-slate-950 text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <tr>
                     <th className="px-4 py-2.5">TIMESTAMP</th>
                     <th className="px-4 py-2.5">BOTNET NODE IP</th>
@@ -1001,7 +1001,7 @@ export const AttackChainDeceptionPanel: React.FC<AttackChainDeceptionPanelProps>
                           {evt.velocityPerMinute} req/min
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-purple-300">
+                      <td className="px-4 py-3 text-cyan-300">
                         {evt.botnetClusterName || 'Distributed Swarm'}
                       </td>
                       <td className="px-4 py-3 text-right">

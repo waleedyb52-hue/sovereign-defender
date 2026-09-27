@@ -993,7 +993,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
 
           {/* Live Telemetry Ticker Readouts */}
           <div className="flex items-center gap-3 overflow-x-auto py-1">
-            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <Activity className="h-3.5 w-3.5 text-cyan-400" />
               <div className="text-left font-mono">
                 <span className="block text-[9px] leading-none text-slate-400">REQUEST RATE</span>
@@ -1010,7 +1010,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <Zap className="h-3.5 w-3.5 text-amber-400" />
               <div className="text-left font-mono">
                 <span className="block text-[9px] leading-none text-slate-400">eBPF FILTER</span>
@@ -1031,7 +1031,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <FileCheck className="h-3.5 w-3.5 text-emerald-400" />
               <div className="text-left font-mono">
                 <span className="block text-[9px] leading-none text-slate-400">FIM INTEGRITY</span>
@@ -1041,7 +1041,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <Flame className="h-3.5 w-3.5 text-rose-400" />
               <div className="text-left font-mono">
                 <span className="block text-[9px] leading-none text-slate-400">ACTIVE THREATS</span>
@@ -1101,9 +1101,9 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             {/* 4. Export Incident Forensic Report */}
             <button
               onClick={() => setIsReportModalOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-slate-900 px-3 py-1.5 font-mono text-xs font-bold text-purple-300 shadow-md transition hover:border-purple-400 hover:bg-purple-900/50"
+              className="flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-slate-900 px-3 py-1.5 font-mono text-xs font-bold text-cyan-300 shadow-md transition hover:border-cyan-400 hover:bg-cyan-900/50"
             >
-              <FileDown className="h-3.5 w-3.5 text-purple-400" />
+              <FileDown className="h-3.5 w-3.5 text-cyan-400" />
               <span>{isAr ? 'تصدير تقرير جنائي' : 'Export Forensic Audit'}</span>
             </button>
           </div>
@@ -1153,13 +1153,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('soar_reports')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap transition ${
             subTab === 'soar_reports'
-              ? 'border-x border-t-2 border-indigo-400 border-slate-800 bg-indigo-950/90 text-indigo-200 shadow-md'
+              ? 'border-x border-t-2 border-cyan-400 border-slate-800 bg-cyan-950/90 text-cyan-200 shadow-md'
               : 'text-slate-400 hover:bg-slate-900/50 hover:text-slate-200'
           }`}
         >
-          <FileCheck className="h-3.5 w-3.5 text-indigo-400" />
+          <FileCheck className="h-3.5 w-3.5 text-cyan-400" />
           <span>{isAr ? 'أتمتة تقارير SOAR' : '2. SOAR Reports & Dispatch'}</span>
-          <span className="py-0.2 rounded bg-indigo-900/40 px-1.5 font-mono text-[10px] text-indigo-300">
+          <span className="py-0.2 rounded bg-cyan-900/40 px-1.5 font-mono text-[10px] text-cyan-300">
             Phase 2
           </span>
         </button>
@@ -1185,15 +1185,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('sovereign_phases')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'sovereign_phases'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <ShieldAlert
-            className={`h-3.5 w-3.5 ${subTab === 'sovereign_phases' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'sovereign_phases' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'المصفوفة السيادية (1 - 5)' : 'Sovereign Matrix (Phases 1 - 5)'}</span>
-          <span className="py-0.2 rounded bg-[#1e2733] px-1.5 font-mono text-[10px] text-[#93a1b3]">
+          <span className="py-0.2 rounded bg-[#0e3a44] px-1.5 font-mono text-[10px] text-[#8aa4b8]">
             MoD
           </span>
         </button>
@@ -1203,15 +1203,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('traffic_waf')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'traffic_waf'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Activity
-            className={`h-3.5 w-3.5 ${subTab === 'traffic_waf' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'traffic_waf' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? '1. حركة المرور و WAF' : '1. Live Traffic & WAF'}</span>
-          <span className="py-0.2 rounded bg-[#1e2733] px-1.5 font-mono text-[10px] text-[#93a1b3]">
+          <span className="py-0.2 rounded bg-[#0e3a44] px-1.5 font-mono text-[10px] text-[#8aa4b8]">
             LIVE
           </span>
         </button>
@@ -1221,15 +1221,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('ebpf_containment')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'ebpf_containment'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Zap
-            className={`h-3.5 w-3.5 ${subTab === 'ebpf_containment' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'ebpf_containment' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'عزل النواة (eBPF)' : 'eBPF Containment'}</span>
-          <span className="py-0.2 rounded bg-[#1e2733] px-1.5 font-mono text-[10px] text-[#93a1b3]">
+          <span className="py-0.2 rounded bg-[#0e3a44] px-1.5 font-mono text-[10px] text-[#8aa4b8]">
             Zero-Trust
           </span>
         </button>
@@ -1239,15 +1239,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('deception_sandbox')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'deception_sandbox'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Flame
-            className={`h-3.5 w-3.5 ${subTab === 'deception_sandbox' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'deception_sandbox' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? '2. سلسلة الهجوم والخداع' : '2. Attack Graph & Deception'}</span>
-          <span className="py-0.2 rounded bg-[#1e2733] px-1.5 font-mono text-[10px] text-[#93a1b3]">
+          <span className="py-0.2 rounded bg-[#0e3a44] px-1.5 font-mono text-[10px] text-[#8aa4b8]">
             AUTO
           </span>
         </button>
@@ -1257,16 +1257,16 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('fim')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'fim'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <FileCheck
-            className={`h-3.5 w-3.5 ${subTab === 'fim' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'fim' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? '3. تكامل الملفات والعمليات' : '3. File Integrity & Processes'}</span>
           {activeQuarantined > 0 && (
-            <span className="py-0.2 rounded border border-[#f85149]/30 bg-[#2A0E12] px-1.5 font-mono text-[10px] text-[#f85149]">
+            <span className="py-0.2 rounded border border-[#f43f5e]/30 bg-[#2A0E12] px-1.5 font-mono text-[10px] text-[#f43f5e]">
               {activeQuarantined}
             </span>
           )}
@@ -1277,12 +1277,12 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('interception')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'interception'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#DC143C] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#f43f5e] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <ShieldOff
-            className={`h-3.5 w-3.5 ${subTab === 'interception' ? 'text-[#DC143C]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'interception' ? 'text-[#f43f5e]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'الاعتراض النشط ومنع التسريب' : 'Active Interception & DLP'}</span>
           <span className="py-0.2 rounded bg-[#2A0D14] px-1.5 font-mono text-[10px] text-[#FF5C7A]">
@@ -1295,12 +1295,12 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('deception_grid')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'deception_grid'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#8A2BE2] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#8A2BE2] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Drama
-            className={`h-3.5 w-3.5 ${subTab === 'deception_grid' ? 'text-[#8A2BE2]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'deception_grid' ? 'text-[#8A2BE2]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'شبكة الخداع التكيفية' : 'Adaptive Deception Grid'}</span>
           <span className="py-0.2 rounded bg-[#1A0D2A] px-1.5 font-mono text-[10px] text-[#C89BFF]">
@@ -1313,15 +1313,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('telemetry')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'telemetry'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Radio
-            className={`h-3.5 w-3.5 ${subTab === 'telemetry' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'telemetry' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? '4. سجلات MITRE والتتبع' : '4. Telemetry & MITRE'}</span>
-          <span className="py-0.2 rounded bg-[#1e2733] px-1.5 font-mono text-[10px] text-[#93a1b3]">
+          <span className="py-0.2 rounded bg-[#0e3a44] px-1.5 font-mono text-[10px] text-[#8aa4b8]">
             {telemetryEvents.length}
           </span>
         </button>
@@ -1331,15 +1331,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('threat_timeline')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'threat_timeline'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Clock
-            className={`h-3.5 w-3.5 ${subTab === 'threat_timeline' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'threat_timeline' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'المخطط الزمني (D3)' : 'Threat Timeline (D3)'}</span>
-          <span className="py-0.2 rounded bg-[#1e2733] px-1.5 font-mono text-[10px] text-[#93a1b3]">
+          <span className="py-0.2 rounded bg-[#0e3a44] px-1.5 font-mono text-[10px] text-[#8aa4b8]">
             D3
           </span>
         </button>
@@ -1349,12 +1349,12 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('scanner')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'scanner'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Crosshair
-            className={`h-3.5 w-3.5 ${subTab === 'scanner' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'scanner' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'ماسح الأهداف والثغرات' : '5. Target Scanner'}</span>
         </button>
@@ -1364,15 +1364,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('processes')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'processes'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Cpu
-            className={`h-3.5 w-3.5 ${subTab === 'processes' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'processes' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'معالجات الذاكرة' : '6. Processes'}</span>
-          <span className="py-0.2 rounded bg-[#1e2733] px-1.5 font-mono text-[10px] text-[#93a1b3]">
+          <span className="py-0.2 rounded bg-[#0e3a44] px-1.5 font-mono text-[10px] text-[#8aa4b8]">
             {processes.length}
           </span>
         </button>
@@ -1382,12 +1382,12 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('rules_engine')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'rules_engine'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <FileCode
-            className={`h-3.5 w-3.5 ${subTab === 'rules_engine' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'rules_engine' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'قواعد YARA و Sigma' : '7. YARA & Sigma'}</span>
         </button>
@@ -1397,12 +1397,12 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('network_pcap')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'network_pcap'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Wifi
-            className={`h-3.5 w-3.5 ${subTab === 'network_pcap' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'network_pcap' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'حزم PCAP' : '8. PCAP Inspector'}</span>
         </button>
@@ -1412,15 +1412,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('threat_intel')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'threat_intel'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <Globe
-            className={`h-3.5 w-3.5 ${subTab === 'threat_intel' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'threat_intel' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'استخبارات IOC' : '9. Threat Intel'}</span>
-          <span className="py-0.2 rounded bg-[#1e2733] px-1.5 font-mono text-[10px] text-[#93a1b3]">
+          <span className="py-0.2 rounded bg-[#0e3a44] px-1.5 font-mono text-[10px] text-[#8aa4b8]">
             {iocList.length}
           </span>
         </button>
@@ -1430,12 +1430,12 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           onClick={() => setSubTab('playbooks_reports')}
           className={`flex items-center gap-1.5 rounded-t-lg px-3 py-1.5 font-mono text-xs font-bold whitespace-nowrap transition ${
             subTab === 'playbooks_reports'
-              ? 'border-x border-t-2 border-[#1e2733] border-[#3fb950] bg-[#1a2230] text-[#e6edf3]'
-              : 'border-x border-t border-[#1e2733] bg-[#0D0D0D] text-[#93a1b3] hover:bg-[#131a24] hover:text-[#e6edf3]'
+              ? 'border-x border-t-2 border-[#0e3a44] border-[#10b981] bg-[#061019] text-[#e6edf3]'
+              : 'border-x border-t border-[#0e3a44] bg-[#000000] text-[#8aa4b8] hover:bg-[#03070c] hover:text-[#e6edf3]'
           }`}
         >
           <FileText
-            className={`h-3.5 w-3.5 ${subTab === 'playbooks_reports' ? 'text-[#3fb950]' : 'text-[#93a1b3]'}`}
+            className={`h-3.5 w-3.5 ${subTab === 'playbooks_reports' ? 'text-[#10b981]' : 'text-[#8aa4b8]'}`}
           />
           <span>{isAr ? 'التقارير' : '10. Reports'}</span>
         </button>
@@ -1509,7 +1509,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
       {subTab === 'telemetry' && (
         <div className="space-y-4">
           {/* Filter Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
                 <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-400" />
@@ -1518,14 +1518,14 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder={isAr ? 'بحث في السجلات والـ IPs...' : 'Search logs, tactics, IPs...'}
-                  className="w-52 rounded-lg border border-slate-700 bg-slate-950 py-1 pr-3 pl-8 text-xs text-slate-200 outline-none focus:border-cyan-400"
+                  className="w-52 rounded-lg border border-slate-700 bg-slate-950 py-1 pr-3 pl-8 text-xs text-slate-200 outline-none focus:border-cyan-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
               <select
                 value={severityFilter}
                 onChange={e => setSeverityFilter(e.target.value)}
-                className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-xs text-slate-300 outline-none"
+                className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-xs text-slate-300 outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <option value="ALL">Severity: ALL</option>
                 <option value="CRITICAL">CRITICAL</option>
@@ -1537,7 +1537,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               <select
                 value={sourceFilter}
                 onChange={e => setSourceFilter(e.target.value)}
-                className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-xs text-slate-300 outline-none"
+                className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-xs text-slate-300 outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <option value="ALL">Source: ALL</option>
                 <option value="WAF_EBPF">WAF / eBPF Kernel</option>
@@ -1570,7 +1570,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           {/* Split Screen Telemetry View */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {/* Left Column: Live Event Stream (7 Cols) */}
-            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-7">
+            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-7 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between border-b border-slate-800 pb-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
                 <span>
                   {isAr ? 'سجل الأحداث الأمنية الموحد' : 'Unified Security Event Ingress'}
@@ -1597,7 +1597,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                         ? 'border-amber-500/60 bg-amber-950/20 text-amber-300'
                         : evt.severity === 'MEDIUM'
                           ? 'border-cyan-500/50 bg-cyan-950/20 text-cyan-300'
-                          : 'border-slate-700 bg-slate-900/40 text-slate-300';
+                          : 'border-slate-700 bg-slate-900/40 text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]';
 
                   return (
                     <div
@@ -1655,7 +1655,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             </div>
 
             {/* Right Column: Deep Forensic Packet & Tactic Inspector (5 Cols) */}
-            <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-5">
+            <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
                   <Terminal className="h-4 w-4 text-cyan-400" />
@@ -1672,7 +1672,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
 
               {selectedTelemetryEvent ? (
                 <div className="space-y-3 font-mono text-xs">
-                  <div className="space-y-2 rounded-lg border border-slate-800 bg-slate-900/90 p-3">
+                  <div className="space-y-2 rounded-lg border border-slate-800 bg-slate-900/90 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div className="flex justify-between">
                       <span className="text-slate-400">Timestamp:</span>
                       <span className="text-slate-200">{selectedTelemetryEvent.timestamp}</span>
@@ -1713,7 +1713,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     <span className="text-[11px] font-bold text-slate-400 uppercase">
                       Analysis Summary:
                     </span>
-                    <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 font-sans text-xs leading-relaxed text-slate-200">
+                    <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 font-sans text-xs leading-relaxed text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       {isAr && selectedTelemetryEvent.detailsAr
                         ? selectedTelemetryEvent.detailsAr
                         : selectedTelemetryEvent.details}
@@ -1755,7 +1755,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
       {/* ========================================================================= */}
       {subTab === 'fim' && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div>
               <h3 className="flex items-center gap-2 text-sm font-bold text-emerald-400">
                 <FileCheck className="h-4 w-4" />
@@ -1813,7 +1813,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           {/* FIM Alerts & Files Grid */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {/* Active FIM Alerts (7 Cols) */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-3 lg:col-span-7">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-3 lg:col-span-7 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex justify-between border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                 <span>
                   {isAr ? 'تنبيهات التلاعب المكتشفة' : 'Tamper Detections & Quarantined Files'}
@@ -1874,7 +1874,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             </div>
 
             {/* Monitored File Directory (5 Cols) */}
-            <div className="max-h-[500px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 lg:col-span-5">
+            <div className="max-h-[500px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 lg:col-span-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                 {isAr ? 'دليل الملفات المراقبة تشفيرياً' : 'Cryptographically Monitored Inventory'}
               </div>
@@ -1882,7 +1882,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               {fimFiles.map(file => (
                 <div
                   key={`fim-file-${file.relativePath}`}
-                  className="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-900/60 p-2 font-mono text-xs"
+                  className="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-900/60 p-2 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="mr-2 truncate">
                     <span className="block truncate text-slate-200">{file.fileName}</span>
@@ -1911,7 +1911,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
       {/* ========================================================================= */}
       {subTab === 'scanner' && (
         <div className="space-y-4">
-          <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="flex items-center gap-2 text-sm font-bold text-amber-400">
@@ -1935,7 +1935,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   value={targetUrlInput}
                   onChange={e => setTargetUrlInput(e.target.value)}
                   placeholder="https://your-domain.com"
-                  className="w-64 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 outline-none focus:border-amber-400"
+                  className="w-64 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 outline-none focus:border-amber-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
                 <button
                   onClick={handleRunScan}
@@ -1960,7 +1960,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
           {currentScanReport && (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
               {/* Score & Executive Summary (4 Cols) */}
-              <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-4">
+              <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                   <span className="font-mono text-xs text-slate-400">TARGET AUDIT</span>
                   <span className="font-mono text-xs text-cyan-400">
@@ -1968,7 +1968,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   </span>
                 </div>
 
-                <div className="rounded-xl border border-slate-800 bg-slate-900/60 py-4 text-center">
+                <div className="rounded-xl border border-slate-800 bg-slate-900/60 py-4 text-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div className="font-mono text-4xl font-black text-amber-400">
                     {currentScanReport.overallScore}/100
                   </div>
@@ -1981,7 +1981,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   <span className="text-[11px] font-bold text-slate-400 uppercase">
                     Executive Assessment:
                   </span>
-                  <p className="rounded-lg border border-slate-800/80 bg-slate-900/40 p-2.5 font-sans text-xs leading-relaxed text-slate-300">
+                  <p className="rounded-lg border border-slate-800/80 bg-slate-900/40 p-2.5 font-sans text-xs leading-relaxed text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     {isAr && currentScanReport.executiveSummaryAr
                       ? currentScanReport.executiveSummaryAr
                       : currentScanReport.executiveSummaryEn}
@@ -1990,7 +1990,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               </div>
 
               {/* Headers Audit & Remediation (8 Cols) */}
-              <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-8">
+              <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-8 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <div className="border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                   {isAr
                     ? 'تدقيق ترويسات الأمان والتوصيات'
@@ -2001,7 +2001,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   {currentScanReport.headersAudit.map(h => (
                     <div
                       key={`header-${h.header || h.name}`}
-                      className="space-y-1 rounded-lg border border-slate-800 bg-slate-900 p-2.5 font-mono text-xs"
+                      className="space-y-1 rounded-lg border border-slate-800 bg-slate-900 p-2.5 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-200">{h.header || h.name}</span>
@@ -2032,9 +2032,9 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
       {/* ========================================================================= */}
       {subTab === 'processes' && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-purple-400">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-cyan-400">
                 <Cpu className="h-4 w-4" />
                 <span>
                   {isAr
@@ -2060,7 +2060,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {/* Process Table (7 Cols) */}
-            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-7">
+            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-7 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex justify-between border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                 <span>{isAr ? 'شجرة العمليات النشطة' : 'Live System Process Hierarchy'}</span>
                 <span>{processes.length} Processes</span>
@@ -2074,8 +2074,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     : proc.status === 'SUSPICIOUS'
                       ? 'border-amber-500/60 bg-amber-950/20'
                       : proc.status === 'TERMINATED'
-                        ? 'border-slate-800 bg-slate-950 opacity-50'
-                        : 'border-slate-800 bg-slate-900/40';
+                        ? 'border-slate-800 bg-slate-950 opacity-50 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
+                        : 'border-slate-800 bg-slate-900/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]';
 
                 return (
                   <div
@@ -2087,13 +2087,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     }}
                     className={`cursor-pointer rounded-lg border p-2.5 transition ${statusColor} ${
                       isSelected
-                        ? 'bg-slate-900/90 ring-2 ring-purple-400'
+                        ? 'bg-slate-900/90 ring-2 ring-cyan-400'
                         : 'hover:bg-slate-900/60'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-purple-300">PID: {proc.pid}</span>
+                        <span className="font-bold text-cyan-300">PID: {proc.pid}</span>
                         <span className="text-[10px] text-slate-400">PPID: {proc.ppid}</span>
                         <span className="font-bold text-slate-200">{proc.name}</span>
                       </div>
@@ -2132,17 +2132,17 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             </div>
 
             {/* Deep Process Controls & Memory Dump (5 Cols) */}
-            <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-5">
+            <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               {selectedProcess ? (
                 <div className="space-y-3 font-mono text-xs">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <h4 className="font-bold text-purple-300">
+                    <h4 className="font-bold text-cyan-300">
                       PROCESS FORENSICS // PID {selectedProcess.pid}
                     </h4>
                     <span className="text-[10px] text-slate-400">{selectedProcess.name}</span>
                   </div>
 
-                  <div className="space-y-1.5 rounded-lg border border-slate-800 bg-slate-900/90 p-3 text-[11px]">
+                  <div className="space-y-1.5 rounded-lg border border-slate-800 bg-slate-900/90 p-3 text-[11px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div className="flex justify-between">
                       <span className="text-slate-400">Binary Hash:</span>
                       <span className="max-w-[200px] truncate text-slate-300">
@@ -2167,7 +2167,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   <div className="grid grid-cols-2 gap-2 pt-2">
                     <button
                       onClick={() => handleDumpMemory(selectedProcess.pid)}
-                      className="flex items-center justify-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-950/60 px-3 py-1.5 text-xs font-bold text-purple-200 transition hover:bg-purple-900"
+                      className="flex items-center justify-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-950/60 px-3 py-1.5 text-xs font-bold text-cyan-200 transition hover:bg-cyan-900"
                     >
                       <HardDrive className="h-3.5 w-3.5" />
                       <span>Dump Memory</span>
@@ -2198,10 +2198,10 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   {/* Memory Dump Output */}
                   {memoryDumpData && (
                     <div className="space-y-2 border-t border-slate-800 pt-2">
-                      <span className="text-[11px] font-bold text-purple-300 uppercase">
+                      <span className="text-[11px] font-bold text-cyan-300 uppercase">
                         Memory Hex Inspection:
                       </span>
-                      <pre className="max-h-40 overflow-x-auto rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-[10px] leading-snug text-emerald-400">
+                      <pre className="max-h-40 overflow-x-auto rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-[10px] leading-snug text-emerald-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         {memoryDumpData.hexSnippet}
                       </pre>
                       <div className="text-[10px] text-slate-400">
@@ -2259,9 +2259,9 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
       {/* ========================================================================= */}
       {subTab === 'rules_engine' && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-pink-400">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-rose-400">
                 <FileCode className="h-4 w-4" />
                 <span>
                   {isAr
@@ -2281,7 +2281,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                 onClick={() => setActiveRuleType('YARA')}
                 className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
                   activeRuleType === 'YARA'
-                    ? 'bg-pink-600 text-white'
+                    ? 'bg-rose-600 text-white'
                     : 'bg-slate-800 text-slate-300'
                 }`}
               >
@@ -2291,7 +2291,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                 onClick={() => setActiveRuleType('SIGMA')}
                 className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
                   activeRuleType === 'SIGMA'
-                    ? 'bg-pink-600 text-white'
+                    ? 'bg-rose-600 text-white'
                     : 'bg-slate-800 text-slate-300'
                 }`}
               >
@@ -2302,7 +2302,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {/* Rule List (4 Cols) */}
-            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-4">
+            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                 {activeRuleType === 'YARA'
                   ? 'YARA Signature Catalog'
@@ -2320,13 +2320,13 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                       }}
                       className={`cursor-pointer rounded-lg border p-2.5 transition ${
                         selectedYaraRule?.id === r.id
-                          ? 'border-pink-500 bg-pink-950/40 text-pink-200'
-                          : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:bg-slate-900/80'
+                          ? 'border-rose-500 bg-rose-950/40 text-rose-200'
+                          : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:bg-slate-900/80 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="truncate font-bold text-slate-100">{r.name}</span>
-                        <span className="text-[10px] font-bold text-pink-400">{r.severity}</span>
+                        <span className="text-[10px] font-bold text-rose-400">{r.severity}</span>
                       </div>
                       <p className="mt-1 line-clamp-2 font-sans text-[11px] text-slate-400">
                         {r.description}
@@ -2344,7 +2344,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                         setRuleEditorCode(s.rawYaml);
                         setRuleTestResult(null);
                       }}
-                      className="cursor-pointer space-y-1 rounded-lg border border-slate-800 bg-slate-900/40 p-2.5 text-slate-300 hover:bg-slate-900/80"
+                      className="cursor-pointer space-y-1 rounded-lg border border-slate-800 bg-slate-900/40 p-2.5 text-slate-300 hover:bg-slate-900/80 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                     >
                       <div className="flex items-center justify-between">
                         <span className="truncate font-bold text-slate-100">{s.title}</span>
@@ -2358,18 +2358,18 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             </div>
 
             {/* Code Editor & Realtime Matcher (8 Cols) */}
-            <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-8">
+            <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-8 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <div className="flex items-center gap-2">
-                  <Code className="h-4 w-4 text-pink-400" />
-                  <span className="text-xs font-bold text-pink-300 uppercase">
+                  <Code className="h-4 w-4 text-rose-400" />
+                  <span className="text-xs font-bold text-rose-300 uppercase">
                     Live Rule Code Editor
                   </span>
                 </div>
                 <button
                   onClick={handleTestYaraRule}
                   disabled={isTestingRule}
-                  className="flex items-center gap-1.5 rounded-lg bg-pink-600 px-3 py-1 text-xs font-bold text-white transition hover:bg-pink-500"
+                  className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1 text-xs font-bold text-white transition hover:bg-rose-500"
                 >
                   <Play className="h-3.5 w-3.5" />
                   <span>{isTestingRule ? 'Testing...' : 'Test Rule vs Payload'}</span>
@@ -2381,7 +2381,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                 value={ruleEditorCode}
                 onChange={e => setRuleEditorCode(e.target.value)}
                 rows={10}
-                className="w-full resize-none rounded-lg border border-slate-800 bg-slate-900 p-3 font-mono text-xs leading-relaxed text-pink-200 outline-none focus:border-pink-500"
+                className="w-full resize-none rounded-lg border border-slate-800 bg-slate-900 p-3 font-mono text-xs leading-relaxed text-rose-200 outline-none focus:border-rose-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
 
               {/* Test Payload Input & Output */}
@@ -2393,7 +2393,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   value={ruleTestPayload}
                   onChange={e => setRuleTestPayload(e.target.value)}
                   rows={3}
-                  className="w-full resize-none rounded-lg border border-slate-800 bg-slate-900 p-2.5 font-mono text-xs text-slate-200 outline-none focus:border-cyan-400"
+                  className="w-full resize-none rounded-lg border border-slate-800 bg-slate-900 p-2.5 font-mono text-xs text-slate-200 outline-none focus:border-cyan-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
@@ -2435,9 +2435,9 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
       {/* ========================================================================= */}
       {subTab === 'network_pcap' && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-blue-400">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-cyan-400">
                 <Wifi className="h-4 w-4" />
                 <span>
                   {isAr
@@ -2463,7 +2463,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {/* Active Sockets Table (6 Cols) */}
-            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-6">
+            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-6 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex justify-between border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                 <span>Active Sockets</span>
                 <span>{sockets.length} Connections</span>
@@ -2477,7 +2477,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     className={`space-y-1.5 rounded-lg border p-2.5 ${
                       isC2
                         ? 'border-rose-500/80 bg-rose-950/30'
-                        : 'border-slate-800 bg-slate-900/40'
+                        : 'border-slate-800 bg-slate-900/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -2527,7 +2527,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             </div>
 
             {/* PCAP Packet Stream & Hex Dump (6 Cols) */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-6">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-6 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex justify-between border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                 <span>Live PCAP Packet Frames</span>
                 <span>{pcapPackets.length} Frames</span>
@@ -2540,8 +2540,8 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     onClick={() => setSelectedPacket(pkt)}
                     className={`cursor-pointer rounded border p-2 text-[11px] ${
                       selectedPacket?.id === pkt.id
-                        ? 'border-blue-400 bg-blue-950/40 text-blue-200'
-                        : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:bg-slate-900'
+                        ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200'
+                        : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:bg-slate-900 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <div className="flex justify-between font-bold">
@@ -2560,12 +2560,12 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               {selectedPacket && (
                 <div className="space-y-2 border-t border-slate-800 pt-2">
                   <div className="flex justify-between text-[11px] text-slate-300">
-                    <span className="font-bold text-blue-300">
+                    <span className="font-bold text-cyan-300">
                       Raw Frame #{selectedPacket.frameNo} Hex Dissection:
                     </span>
                     <span>{selectedPacket.lengthBytes} Bytes</span>
                   </div>
-                  <pre className="max-h-48 overflow-x-auto rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-[10px] leading-snug text-cyan-300">
+                  <pre className="max-h-48 overflow-x-auto rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-[10px] leading-snug text-cyan-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     {selectedPacket.hexDump}
                   </pre>
                   <div className="truncate rounded bg-slate-900/80 p-2 text-[10px] text-slate-400">
@@ -2583,7 +2583,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
       {/* ========================================================================= */}
       {subTab === 'threat_intel' && (
         <div className="space-y-4">
-          <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="flex items-center gap-2 text-sm font-bold text-rose-400">
@@ -2607,7 +2607,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                   value={iocQueryInput}
                   onChange={e => setIocQueryInput(e.target.value)}
                   placeholder="IP, SHA-256, or Domain..."
-                  className="w-64 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 outline-none focus:border-rose-400"
+                  className="w-64 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 outline-none focus:border-rose-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
                 <button
                   onClick={handleQueryIoc}
@@ -2623,7 +2623,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {/* Active IOC Database (6 Cols) */}
-            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-6">
+            <div className="max-h-[580px] space-y-2 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs lg:col-span-6 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex justify-between border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                 <span>Active Threat IOC Feeds</span>
                 <span>{iocList.length} Indicators</span>
@@ -2636,7 +2636,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     setIocQueryInput(ioc.value);
                     handleQueryIoc();
                   }}
-                  className="cursor-pointer space-y-1.5 rounded-lg border border-slate-800 bg-slate-900/40 p-2.5 hover:bg-slate-900/80"
+                  className="cursor-pointer space-y-1.5 rounded-lg border border-slate-800 bg-slate-900/40 p-2.5 hover:bg-slate-900/80 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="flex items-center justify-between">
                     <span className="truncate font-bold text-rose-300">{ioc.value}</span>
@@ -2655,7 +2655,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             </div>
 
             {/* AI Threat Intel Dossier (6 Cols) */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs lg:col-span-6">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs lg:col-span-6 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-rose-300 uppercase">
                 Threat Intelligence Dossier
               </div>
@@ -2687,7 +2687,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     <span className="text-[11px] font-bold text-slate-400 uppercase">
                       AI Threat Rationale:
                     </span>
-                    <p className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-xs leading-relaxed text-slate-200">
+                    <p className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-xs leading-relaxed text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       {isAr && iocQueryResult.aiRationaleAr
                         ? iocQueryResult.aiRationaleAr
                         : iocQueryResult.aiRationaleEn}
@@ -2698,7 +2698,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     <span className="text-[11px] font-bold text-slate-400 uppercase">
                       Recommended Firewall & eBPF Rules:
                     </span>
-                    <pre className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-[10px] leading-snug text-emerald-400">
+                    <pre className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-900 p-2.5 text-[10px] leading-snug text-emerald-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       {iocQueryResult.recommendedRules?.join('\n')}
                     </pre>
                   </div>
@@ -2723,9 +2723,9 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
       {/* ========================================================================= */}
       {subTab === 'playbooks_reports' && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div>
-              <h3 className="flex items-center gap-2 text-sm font-bold text-indigo-400">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-cyan-400">
                 <FileText className="h-4 w-4" />
                 <span>
                   {isAr
@@ -2743,7 +2743,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             <button
               onClick={handleGenerateReport}
               disabled={isGeneratingReport}
-              className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-indigo-500"
+              className="flex items-center gap-1.5 rounded-lg bg-cyan-600 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-cyan-500"
             >
               <Download className="h-3.5 w-3.5" />
               <span>{isGeneratingReport ? 'Compiling Report...' : 'Generate Forensic Report'}</span>
@@ -2752,7 +2752,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             {/* Playbooks List & Execution Engine (7 Cols) */}
-            <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-7">
+            <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950 p-4 lg:col-span-7 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-slate-300 uppercase">
                 Active Incident Response Playbooks
               </div>
@@ -2760,11 +2760,11 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
               {playbooks.map(pb => (
                 <div
                   key={pb.id}
-                  className="space-y-3 rounded-xl border border-indigo-500/40 bg-slate-900/90 p-3"
+                  className="space-y-3 rounded-xl border border-cyan-500/40 bg-slate-900/90 p-3"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-indigo-300">
+                      <h4 className="text-xs font-bold text-cyan-300">
                         {isAr ? pb.nameAr : pb.name}
                       </h4>
                       <p className="mt-0.5 font-sans text-[11px] text-slate-400">
@@ -2787,10 +2787,10 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     {pb.steps.map(step => (
                       <div
                         key={step.id}
-                        className="flex items-center justify-between gap-2 rounded border border-slate-800 bg-slate-950 p-2"
+                        className="flex items-center justify-between gap-2 rounded border border-slate-800 bg-slate-950 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                       >
                         <div className="flex items-center gap-2 truncate">
-                          <span className="font-bold text-indigo-400">#{step.order}</span>
+                          <span className="font-bold text-cyan-400">#{step.order}</span>
                           <span className="truncate text-slate-200">
                             {isAr ? step.titleAr : step.title}
                           </span>
@@ -2806,7 +2806,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                             <button
                               onClick={() => handleExecutePlaybookStep(pb.id, step.id)}
                               disabled={isPlaybookExecuting}
-                              className="rounded border border-indigo-500/40 bg-indigo-950 px-2 py-0.5 text-[10px] font-bold text-indigo-200 hover:bg-indigo-900"
+                              className="rounded border border-cyan-500/40 bg-cyan-950 px-2 py-0.5 text-[10px] font-bold text-cyan-200 hover:bg-cyan-900"
                             >
                               Run Step
                             </button>
@@ -2835,15 +2835,15 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
             </div>
 
             {/* Compliance Forensic Report Viewer (5 Cols) */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs lg:col-span-5">
-              <div className="flex justify-between border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-indigo-300 uppercase">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs lg:col-span-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+              <div className="flex justify-between border-b border-slate-800 pb-1 text-xs font-bold tracking-wider text-cyan-300 uppercase">
                 <span>Forensic Incident Report</span>
                 {forensicReport && <span>{forensicReport.reportId}</span>}
               </div>
 
               {forensicReport ? (
                 <div className="max-h-[540px] space-y-3 overflow-y-auto">
-                  <div className="space-y-1 rounded border border-indigo-500/40 bg-slate-900 p-2.5">
+                  <div className="space-y-1 rounded border border-cyan-500/40 bg-slate-900 p-2.5">
                     <span className="text-[10px] font-bold text-amber-400">
                       {forensicReport.classification}
                     </span>
@@ -2856,7 +2856,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     <span className="text-[11px] font-bold text-slate-400 uppercase">
                       Executive Summary:
                     </span>
-                    <p className="rounded border border-slate-800 bg-slate-900 p-2 text-[11px] leading-relaxed text-slate-300">
+                    <p className="rounded border border-slate-800 bg-slate-900 p-2 text-[11px] leading-relaxed text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       {isAr && forensicReport.executiveSummaryAr
                         ? forensicReport.executiveSummaryAr
                         : forensicReport.executiveSummaryEn}
@@ -2870,7 +2870,7 @@ export const BlueTeamConsole: React.FC<BlueTeamConsoleProps> = ({ lang }) => {
                     {forensicReport.forensicTimeline.map((t: any) => (
                       <div
                         key={`timeline-${t.id || t.time + '-' + t.event}`}
-                        className="space-y-0.5 rounded border border-slate-800 bg-slate-900 p-1.5 text-[10px]"
+                        className="space-y-0.5 rounded border border-slate-800 bg-slate-900 p-1.5 text-[10px] shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                       >
                         <div className="flex justify-between font-bold text-cyan-300">
                           <span>{t.time}</span>

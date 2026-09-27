@@ -76,8 +76,8 @@ export const PacketLogsStream: React.FC<PacketLogsStreamProps> = ({
         );
       case 'HONEYPOT_DIVERTED':
         return (
-          <span className="flex items-center gap-1 rounded border border-purple-500/40 bg-purple-500/20 px-2 py-0.5 text-[10px] font-bold text-purple-300">
-            <Radio className="h-3 w-3 text-purple-400" />
+          <span className="flex items-center gap-1 rounded border border-cyan-500/40 bg-cyan-500/20 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
+            <Radio className="h-3 w-3 text-cyan-400" />
             <span>HONEYPOT</span>
           </span>
         );
@@ -99,9 +99,9 @@ export const PacketLogsStream: React.FC<PacketLogsStreamProps> = ({
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl">
+    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Header & Controls Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/60 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/60 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex items-center gap-2.5">
           <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2 text-emerald-400">
             <Terminal className="h-4 w-4" />
@@ -139,7 +139,7 @@ export const PacketLogsStream: React.FC<PacketLogsStreamProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/40 px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/40 px-4 py-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Status Filter Pills */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
           {['ALL', 'BLOCKED', 'HONEYPOT_DIVERTED', 'PASSED'].map(status => (
@@ -179,13 +179,13 @@ export const PacketLogsStream: React.FC<PacketLogsStreamProps> = ({
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder={isAr ? 'بحث بالـ IP أو الحمولة...' : 'Filter by IP, payload, vector...'}
-            className="w-full rounded-lg border border-slate-800 bg-slate-950 py-1.5 pr-3 pl-8 font-mono text-xs text-white focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-800 bg-slate-950 py-1.5 pr-3 pl-8 font-mono text-xs text-white focus:border-emerald-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           />
         </div>
       </div>
 
       {/* Table Header: 4 Columns (Time, Client IP, Target Endpoint, Verdict) */}
-      <div className="hidden grid-cols-12 gap-2 border-b border-slate-800 bg-slate-950/80 px-4 py-2 font-mono text-[10px] font-bold tracking-wider text-slate-400 uppercase sm:grid">
+      <div className="hidden grid-cols-12 gap-2 border-b border-slate-800 bg-slate-950/80 px-4 py-2 font-mono text-[10px] font-bold tracking-wider text-slate-400 uppercase sm:grid shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="col-span-2">{isAr ? 'الوقت' : 'Time'}</div>
         <div className="col-span-3">{isAr ? 'عنوان IP العميل' : 'Client IP'}</div>
         <div className="col-span-4">{isAr ? 'نقطة النهاية المستهدفة' : 'Target Endpoint'}</div>
@@ -246,9 +246,9 @@ export const PacketLogsStream: React.FC<PacketLogsStreamProps> = ({
                         e.stopPropagation();
                         onInspectPacket(packet);
                       }}
-                      className="flex items-center gap-1 rounded border border-purple-500/40 bg-purple-950/60 px-2 py-0.5 font-sans text-[10px] font-bold text-purple-300 transition hover:bg-purple-900/60"
+                      className="flex items-center gap-1 rounded border border-cyan-500/40 bg-cyan-950/60 px-2 py-0.5 font-sans text-[10px] font-bold text-cyan-300 transition hover:bg-cyan-900/60"
                     >
-                      <Sparkles className="h-3 w-3 text-purple-400" />
+                      <Sparkles className="h-3 w-3 text-cyan-400" />
                       <span>{isAr ? 'فحص' : 'Inspect'}</span>
                     </button>
                   </div>
@@ -256,13 +256,13 @@ export const PacketLogsStream: React.FC<PacketLogsStreamProps> = ({
 
                 {/* Expanded Packet Inspector Drawer */}
                 {isExpanded && (
-                  <div className="space-y-2.5 border-t border-slate-800/80 bg-slate-950/90 px-6 py-3 text-[11px] text-slate-300">
+                  <div className="space-y-2.5 border-t border-slate-800/80 bg-slate-950/90 px-6 py-3 text-[11px] text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                       <div>
                         <span className="block text-[10px] text-slate-500">
                           {isAr ? 'الحمولة / الرابط المختبر:' : 'Raw Payload / Request URI:'}
                         </span>
-                        <div className="rounded border border-slate-800 bg-slate-900 p-2 break-all text-emerald-300 select-all">
+                        <div className="rounded border border-slate-800 bg-slate-900 p-2 break-all text-emerald-300 select-all shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           {packet.payload || 'No payload body (TCP/DNS probe)'}
                         </div>
                       </div>
@@ -270,7 +270,7 @@ export const PacketLogsStream: React.FC<PacketLogsStreamProps> = ({
                         <span className="block text-[10px] text-slate-500">
                           {isAr ? 'السبب التكتيكي للقرار:' : 'Autonomous Defense Reason:'}
                         </span>
-                        <div className="rounded border border-slate-800 bg-slate-900 p-2 text-slate-200">
+                        <div className="rounded border border-slate-800 bg-slate-900 p-2 text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           {packet.reason}
                         </div>
                       </div>
@@ -278,7 +278,7 @@ export const PacketLogsStream: React.FC<PacketLogsStreamProps> = ({
 
                     {/* Generated Rules Snippet */}
                     {packet.generatedRules && (
-                      <div className="space-y-1.5 rounded-lg border border-slate-800 bg-slate-900/90 p-2.5">
+                      <div className="space-y-1.5 rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-cyan-400">
                             IPTables & Suricata Rules Synthesized:

@@ -153,7 +153,7 @@ export const AdjudicationPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
 
   const machineChip = (v: string) =>
     v === 'BLOCK'
-      ? 'bg-red-500/10 text-red-300 border-red-500/30'
+      ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
       : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30';
 
   return (
@@ -228,8 +228,8 @@ export const AdjudicationPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
       )}
 
       {stats && stats.totalLabels > 0 && !stats.operatorGrounded && (
-        <div className="mb-4 flex gap-2 rounded border border-red-500/30 bg-red-500/5 px-3 py-2 text-[11px] text-red-200/90">
-          <ShieldAlert className="h-4 w-4 shrink-0 text-red-400" />
+        <div className="mb-4 flex gap-2 rounded border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-[11px] text-rose-200/90">
+          <ShieldAlert className="h-4 w-4 shrink-0 text-rose-400" />
           <span>
             {isAr
               ? `ليست بيانات مُحكَّمة بشرياً بالكامل (${JSON.stringify(stats.bySource)}). أي رقم مبني عليها يختبر المسار لا المحرّك.`
@@ -256,7 +256,7 @@ export const AdjudicationPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                   key={f.index}
                   className={`rounded border px-2 py-1 text-[10px] ${
                     f.role === 'TEST'
-                      ? 'border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-300'
+                      ? 'border-rose-500/30 bg-rose-500/10 text-rose-300'
                       : 'border-slate-500/25 bg-slate-500/10 text-slate-300'
                   }`}
                 >
@@ -293,7 +293,7 @@ export const AdjudicationPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
       </div>
 
       {error && (
-        <div className="mb-3 rounded border border-red-500/25 bg-red-500/5 px-3 py-2 text-[11px] text-red-300">
+        <div className="mb-3 rounded border border-rose-500/25 bg-rose-500/5 px-3 py-2 text-[11px] text-rose-300">
           {error}
         </div>
       )}
@@ -342,7 +342,7 @@ export const AdjudicationPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                 <button
                   disabled={busy === item.id}
                   onClick={() => rule(item.id, 'MALICIOUS')}
-                  className="rounded border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 text-[10px] text-red-300 transition hover:bg-red-500/20 disabled:opacity-40"
+                  className="rounded border border-rose-500/40 bg-rose-500/10 px-2.5 py-1.5 text-[10px] text-rose-300 transition hover:bg-rose-500/20 disabled:opacity-40"
                 >
                   {isAr ? 'خطر' : 'MALICIOUS'}
                 </button>

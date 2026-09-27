@@ -47,7 +47,7 @@ export const DefenseOverview: React.FC<DefenseOverviewProps> = ({
     <div className="space-y-6">
       {/* Top Banner: Blue Team Tactical Status */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">
               {isAr ? 'عناوين IP في العزل النشط:' : 'Quarantined Attackers:'}
@@ -60,7 +60,7 @@ export const DefenseOverview: React.FC<DefenseOverviewProps> = ({
           </span>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">
               {isAr ? 'الأصول المحمية (Whitelist):' : 'Whitelisted Core Assets:'}
@@ -73,20 +73,20 @@ export const DefenseOverview: React.FC<DefenseOverviewProps> = ({
           </span>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">
               {isAr ? 'مصائد الخداع السيبراني:' : 'Deception Honeypots:'}
             </span>
-            <Radio className="h-4 w-4 text-purple-400" />
+            <Radio className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="mt-2 text-2xl font-black text-white">10.0.99.5</div>
-          <span className="mt-1 block font-mono text-[10px] text-purple-400">
+          <span className="mt-1 block font-mono text-[10px] text-cyan-400">
             {isAr ? 'عزل وإيقاع تلقائي بالمهاجمين' : 'Active Cowrie SSH/HTTP Trap'}
           </span>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400">
               {isAr ? 'طبقة ترشيح النواة (eBPF):' : 'Kernel eBPF XDP Filter:'}
@@ -101,7 +101,7 @@ export const DefenseOverview: React.FC<DefenseOverviewProps> = ({
       </div>
 
       {/* Active Quarantine Table with Live TTL */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2">
             <Lock className="h-4 w-4 text-rose-400" />
@@ -188,7 +188,7 @@ export const DefenseOverview: React.FC<DefenseOverviewProps> = ({
       </div>
 
       {/* Critical Infrastructure Whitelist Manager */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl">
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="mb-3 flex items-center gap-2 border-b border-slate-800 pb-3">
           <Shield className="h-4 w-4 text-emerald-400" />
           <h3 className="text-base font-bold text-white">

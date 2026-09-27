@@ -170,27 +170,27 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
         }
         className={`inline-flex items-center justify-center gap-2 rounded border font-mono font-bold tracking-tight transition-all duration-150 select-none disabled:cursor-wait ${sizeClasses} ${
           isAlreadyIsolated
-            ? 'border-[#3fb950]/60 bg-[#131a24] text-[#3fb950] shadow-[0_0_10px_rgba(57,255,20,0.15)] hover:border-[#3fb950] hover:bg-[#161b22]'
+            ? 'border-[#10b981]/60 bg-[#03070c] text-[#10b981] shadow-[0_0_10px_rgba(57,255,20,0.15)] hover:border-[#10b981] hover:bg-[#161b22]'
             : isolationStatus === 'success'
-              ? 'border-[#3fb950] bg-[#131a24] text-[#3fb950] shadow-[0_0_12px_rgba(57,255,20,0.3)]'
+              ? 'border-[#10b981] bg-[#03070c] text-[#10b981] shadow-[0_0_12px_rgba(57,255,20,0.3)]'
               : isolationStatus === 'error'
-                ? 'border-[#f85149] bg-[#131a24] text-[#f85149] shadow-[0_0_12px_rgba(255,0,60,0.3)]'
+                ? 'border-[#f43f5e] bg-[#03070c] text-[#f43f5e] shadow-[0_0_12px_rgba(255,0,60,0.3)]'
                 : isIsolating
-                  ? 'border-[#fab219]/70 bg-[#131a24] text-[#fab219]'
-                  : 'border-[#f85149]/80 bg-[#131a24] text-[#f85149] shadow-[0_0_8px_rgba(255,0,60,0.2)] hover:border-[#f85149] hover:bg-[#1f0a0e]'
+                  ? 'border-[#f59e0b]/70 bg-[#03070c] text-[#f59e0b]'
+                  : 'border-[#f43f5e]/80 bg-[#03070c] text-[#f43f5e] shadow-[0_0_8px_rgba(255,0,60,0.2)] hover:border-[#f43f5e] hover:bg-[#1f0a0e]'
         } ${className}`}
       >
         {/* State Indicator Icon */}
         {isIsolating ? (
-          <Loader2 className="h-3.5 w-3.5 flex-shrink-0 animate-spin text-[#fab219]" />
+          <Loader2 className="h-3.5 w-3.5 flex-shrink-0 animate-spin text-[#f59e0b]" />
         ) : isAlreadyIsolated ? (
-          <Undo2 className="h-3.5 w-3.5 flex-shrink-0 text-[#3fb950]" />
+          <Undo2 className="h-3.5 w-3.5 flex-shrink-0 text-[#10b981]" />
         ) : isolationStatus === 'success' ? (
-          <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-[#3fb950]" />
+          <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-[#10b981]" />
         ) : isolationStatus === 'error' ? (
-          <XCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#f85149]" />
+          <XCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#f43f5e]" />
         ) : (
-          <Ban className="h-3.5 w-3.5 flex-shrink-0 text-[#f85149]" />
+          <Ban className="h-3.5 w-3.5 flex-shrink-0 text-[#f43f5e]" />
         )}
 
         {/* Button Label */}
@@ -219,20 +219,20 @@ export const NodeIsolationButton: React.FC<NodeIsolationButtonProps> = ({
           role="alert"
           className={`animate-in fade-in zoom-in-95 absolute top-full z-50 mt-1.5 flex items-center gap-2 rounded border px-3 py-1.5 font-mono text-[11px] whitespace-nowrap shadow-2xl duration-150 ${
             isolationStatus === 'error'
-              ? 'border-[#f85149] bg-[#131a24] text-[#f85149] shadow-[0_4px_20px_rgba(255,0,60,0.4)]'
-              : 'border-[#3fb950] bg-[#131a24] text-[#3fb950] shadow-[0_4px_20px_rgba(57,255,20,0.3)]'
+              ? 'border-[#f43f5e] bg-[#03070c] text-[#f43f5e] shadow-[0_4px_20px_rgba(255,0,60,0.4)]'
+              : 'border-[#10b981] bg-[#03070c] text-[#10b981] shadow-[0_4px_20px_rgba(57,255,20,0.3)]'
           }`}
         >
           {isolationStatus === 'error' ? (
-            <XCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#f85149]" />
+            <XCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#f43f5e]" />
           ) : (
-            <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-[#3fb950]" />
+            <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-[#10b981]" />
           )}
           <span className="font-semibold">{toastMessage}</span>
           <button
             type="button"
             onClick={() => setToToastMessage(null)}
-            className="ms-1 text-xs leading-none font-bold text-[#93a1b3] hover:text-[#e6edf3]"
+            className="ms-1 text-xs leading-none font-bold text-[#8aa4b8] hover:text-[#e6edf3]"
           >
             ✕
           </button>

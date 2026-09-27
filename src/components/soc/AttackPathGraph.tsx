@@ -100,7 +100,7 @@ export const AttackPathGraph: React.FC<Props> = ({ lang = 'ar', stoppedAt = 1, a
                         ? 'border-emerald-500/60 bg-emerald-500/10'
                         : reached
                           ? 'border-rose-500/50 bg-rose-500/10'
-                          : 'border-slate-800 bg-slate-900/60'
+                          : 'border-slate-800 bg-slate-900/60 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <Icon
@@ -141,7 +141,7 @@ export const AttackPathGraph: React.FC<Props> = ({ lang = 'ar', stoppedAt = 1, a
                           i >= stoppedAt
                             ? {
                                 backgroundImage:
-                                  'repeating-linear-gradient(90deg,#2d3948 0 6px,transparent 6px 12px)',
+                                  'repeating-linear-gradient(90deg,#155e6b 0 6px,transparent 6px 12px)',
                                 backgroundColor: 'transparent'
                               }
                             : undefined
@@ -174,7 +174,7 @@ export const AttackPathGraph: React.FC<Props> = ({ lang = 'ar', stoppedAt = 1, a
           {isAr ? 'نقطة الإيقاف' : 'Stop point'}
         </span>
         <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
-          <span className="h-2.5 w-2.5 rounded-[3px] border border-slate-700 bg-slate-900" />
+          <span className="h-2.5 w-2.5 rounded-[3px] border border-slate-700 bg-slate-900 shadow-[0_0_20px_rgba(0,255,255,0.08)]" />
           {isAr ? 'لم يُبلَغ' : 'Never reached'}
         </span>
       </div>

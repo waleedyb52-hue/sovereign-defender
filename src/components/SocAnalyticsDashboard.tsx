@@ -78,7 +78,7 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
   return (
     <div className="space-y-6">
       {/* Header Panel */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 p-6 shadow-xl md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/40 p-6 shadow-xl md:flex-row md:items-center md:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-3">
             <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/20 p-2.5 text-cyan-400">
@@ -175,20 +175,20 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
         </div>
 
         {/* Tier 2 */}
-        <div className="relative overflow-hidden rounded-2xl border border-purple-500/30 bg-slate-900 p-5 text-left shadow-lg">
+        <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-slate-900 p-5 text-left shadow-lg">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="rounded-xl border border-purple-500/30 bg-purple-500/20 p-2 text-purple-400">
+              <span className="rounded-xl border border-cyan-500/30 bg-cyan-500/20 p-2 text-cyan-400">
                 <Sliders className="h-4 w-4" />
               </span>
               <div>
-                <span className="block text-xs font-black tracking-wider text-purple-300 uppercase">
+                <span className="block text-xs font-black tracking-wider text-cyan-300 uppercase">
                   {isAr ? 'المستوى 2: التحدي الأمني التفاعلي' : 'Tier 2: Interactive Challenge'}
                 </span>
                 <span className="text-[10px] text-slate-400">CAPTCHA & Proof-of-Work</span>
               </div>
             </div>
-            <span className="rounded bg-purple-500/20 px-2 py-0.5 font-mono text-xs font-bold text-purple-300">
+            <span className="rounded bg-cyan-500/20 px-2 py-0.5 font-mono text-xs font-bold text-cyan-300">
               HIGH RISK
             </span>
           </div>
@@ -203,7 +203,7 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
               </span>
             </div>
             <div className="text-right">
-              <span className="font-mono text-xs font-bold text-purple-400">
+              <span className="font-mono text-xs font-bold text-cyan-400">
                 {progressive.activeTier2Challenges} active
               </span>
               <span className="block text-[10px] text-slate-500">
@@ -256,10 +256,10 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
       {/* Main Charts Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Traffic Velocity & Threat Ingress Stream (7 cols) */}
-        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-xl lg:col-span-7">
+        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-xl lg:col-span-7 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <TrendingUp className="h-5 w-5 text-indigo-400" />
+              <TrendingUp className="h-5 w-5 text-cyan-400" />
               <div>
                 <h3 className="text-sm font-black text-white">
                   {isAr
@@ -341,9 +341,9 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
         </div>
 
         {/* Targeted Endpoints & Vulnerability Surface (5 cols) */}
-        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-xl lg:col-span-5">
+        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-xl lg:col-span-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center gap-2.5">
-            <Layers className="h-5 w-5 text-purple-400" />
+            <Layers className="h-5 w-5 text-cyan-400" />
             <div>
               <h3 className="text-sm font-black text-white">
                 {isAr
@@ -361,7 +361,7 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
               return (
                 <div
                   key={ep.id || `ep-${ep.endpoint}-${ep.primaryVector}`}
-                  className="space-y-1.5 rounded-xl border border-slate-800/80 bg-slate-950 p-3"
+                  className="space-y-1.5 rounded-xl border border-slate-800/80 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="flex items-center justify-between text-xs">
                     <span className="max-w-[200px] truncate font-mono font-bold text-slate-200">
@@ -395,7 +395,7 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
       </div>
 
       {/* Geo-Threat Origin Map & Clusters */}
-      <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-xl">
+      <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2.5">
             <Globe className="h-5 w-5 text-cyan-400" />
@@ -419,7 +419,7 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
             return (
               <div
                 key={geo.id || `geo-${geo.country || geo.countryCode}-${geo.threatTier}`}
-                className="space-y-2 rounded-xl border border-slate-800 bg-slate-950 p-4 transition hover:border-slate-700"
+                className="space-y-2 rounded-xl border border-slate-800 bg-slate-950 p-4 transition hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -441,7 +441,7 @@ export const SocAnalyticsDashboard: React.FC<SocAnalyticsDashboardProps> = ({ la
 
                 <div className="flex items-baseline justify-between border-t border-slate-900 pt-1 text-xs">
                   <span className="font-mono text-lg font-black text-white">{geo.attackCount}</span>
-                  <span className="max-w-[110px] truncate font-mono text-[11px] text-indigo-400">
+                  <span className="max-w-[110px] truncate font-mono text-[11px] text-cyan-400">
                     {geo.topVector}
                   </span>
                 </div>

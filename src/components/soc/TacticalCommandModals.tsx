@@ -125,7 +125,7 @@ export const ManualIpQuarantineModal: React.FC<ManualIpQuarantineModalProps> = (
                 value={ipInput}
                 onChange={e => setIpInput(e.target.value)}
                 placeholder="194.26.29.112 or 10.0.0.0/24"
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-bold text-rose-300 focus:border-rose-400 focus:outline-none"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-bold text-rose-300 focus:border-rose-400 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
 
@@ -138,7 +138,7 @@ export const ManualIpQuarantineModal: React.FC<ManualIpQuarantineModalProps> = (
                 value={threatActor}
                 onChange={e => setThreatActor(e.target.value)}
                 placeholder="APT-29 / VoltSwarm"
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-purple-300 focus:outline-none"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-cyan-300 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
 
@@ -150,7 +150,7 @@ export const ManualIpQuarantineModal: React.FC<ManualIpQuarantineModalProps> = (
                 type="text"
                 value={reasonInput}
                 onChange={e => setReasonInput(e.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:outline-none"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-slate-200 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
 
@@ -161,7 +161,7 @@ export const ManualIpQuarantineModal: React.FC<ManualIpQuarantineModalProps> = (
               <select
                 value={ttlHours}
                 onChange={e => setTtlHours(Number(e.target.value))}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-cyan-300 focus:outline-none"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-cyan-300 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <option value={1}>1 Hour (Temporary Cooldown)</option>
                 <option value={24}>24 Hours (Standard Incident Lockout)</option>
@@ -280,12 +280,12 @@ export const TargetScannerAuditModal: React.FC<TargetScannerAuditModalProps> = (
             value={targetUrl}
             onChange={e => setTargetUrl(e.target.value)}
             placeholder="https://target-domain.com"
-            className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-cyan-300 focus:border-cyan-400 focus:outline-none"
+            className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-cyan-300 focus:border-cyan-400 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           />
           <select
             value={scanDepth}
             onChange={e => setScanDepth(e.target.value as any)}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-300 focus:outline-none"
+            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-300 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           >
             <option value="STANDARD">Standard Scan</option>
             <option value="DEEP">Deep Inspection</option>
@@ -313,7 +313,7 @@ export const TargetScannerAuditModal: React.FC<TargetScannerAuditModalProps> = (
         {scanReport && (
           <div className="space-y-3 pt-2 font-mono text-xs">
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-center">
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">OVERALL GRADE</span>
                 <span
                   className={`text-xl font-black ${scanReport.overallScore >= 80 ? 'text-emerald-400' : 'text-rose-400'}`}
@@ -321,13 +321,13 @@ export const TargetScannerAuditModal: React.FC<TargetScannerAuditModalProps> = (
                   {scanReport.grade}
                 </span>
               </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-center">
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">POSTURE SCORE</span>
                 <span className="text-xl font-black text-cyan-300">
                   {scanReport.overallScore}/100
                 </span>
               </div>
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-center">
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">HOST TARGET</span>
                 <span className="mt-1 block truncate text-xs font-bold text-slate-200">
                   {scanReport.normalizedHost}
@@ -336,8 +336,8 @@ export const TargetScannerAuditModal: React.FC<TargetScannerAuditModalProps> = (
             </div>
 
             {/* Executive Summary */}
-            <div className="rounded-xl border border-indigo-500/40 bg-indigo-950/30 p-3 leading-relaxed text-slate-300">
-              <div className="mb-1 flex items-center gap-1.5 font-bold text-indigo-300">
+            <div className="rounded-xl border border-cyan-500/40 bg-cyan-950/30 p-3 leading-relaxed text-slate-300">
+              <div className="mb-1 flex items-center gap-1.5 font-bold text-cyan-300">
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>{isAr ? 'ملخص التقييم التنفيذي' : 'Executive Security Audit Summary'}</span>
               </div>
@@ -353,7 +353,7 @@ export const TargetScannerAuditModal: React.FC<TargetScannerAuditModalProps> = (
                 {scanReport.headersAnalyzed.map(h => (
                   <div
                     key={h.headerName}
-                    className="flex items-center justify-between rounded border border-slate-800 bg-slate-950 p-2"
+                    className="flex items-center justify-between rounded border border-slate-800 bg-slate-950 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   >
                     <span className="font-bold text-slate-300">{h.headerName}</span>
                     <span
@@ -374,7 +374,7 @@ export const TargetScannerAuditModal: React.FC<TargetScannerAuditModalProps> = (
                 <span className="mb-1 block font-bold text-slate-300">
                   RECOMMENDED NGINX HARDENING SNIPPET:
                 </span>
-                <pre className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950 p-3 text-[11px] text-emerald-300 select-all">
+                <pre className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-950 p-3 text-[11px] text-emerald-300 select-all shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   {scanReport.remediationConfigSnippet}
                 </pre>
               </div>
@@ -442,11 +442,11 @@ export const ExportForensicReportModal: React.FC<ExportForensicReportModalProps>
       className="animate-fadeIn fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      <div className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-2xl border border-purple-500/50 bg-slate-900 p-5 shadow-2xl">
+      <div className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-2xl border border-cyan-500/50 bg-slate-900 p-5 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2">
-            <div className="rounded-lg border border-purple-500/40 bg-purple-950/80 p-2 text-purple-400">
+            <div className="rounded-lg border border-cyan-500/40 bg-cyan-950/80 p-2 text-cyan-400">
               <FileDown className="h-5 w-5" />
             </div>
             <div>
@@ -474,12 +474,12 @@ export const ExportForensicReportModal: React.FC<ExportForensicReportModalProps>
             value={incidentId}
             onChange={e => setIncidentId(e.target.value)}
             placeholder="INC-2026-0830"
-            className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-purple-300 focus:outline-none"
+            className="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-cyan-300 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           />
           <button
             onClick={handleGenerateReport}
             disabled={isGenerating}
-            className="flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 font-bold text-white shadow-lg shadow-purple-950 transition hover:bg-purple-500"
+            className="flex items-center gap-1.5 rounded-lg bg-cyan-600 px-4 py-2 font-bold text-white shadow-lg shadow-cyan-950 transition hover:bg-cyan-500"
           >
             <Sparkles className="h-3.5 w-3.5" />
             <span>
@@ -497,7 +497,7 @@ export const ExportForensicReportModal: React.FC<ExportForensicReportModalProps>
         {/* Report Preview */}
         {reportData && (
           <div className="space-y-3 pt-2 font-mono text-xs">
-            <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950 p-3.5">
+            <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-200">REPORT ID: {reportData.id}</span>
                 <span className="text-slate-400">

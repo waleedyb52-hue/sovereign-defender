@@ -71,8 +71,8 @@ export const GlowSparkline: React.FC<Props> = ({
   points,
   isAr,
   height = 96,
-  accent = '#38BDF8',
-  secondaryAccent = '#EF4444',
+  accent = '#22d3ee',
+  secondaryAccent = '#f43f5e',
   unit = '',
   ariaLabel
 }) => {
@@ -198,13 +198,13 @@ export const GlowSparkline: React.FC<Props> = ({
         ))}
 
         {/* First and last labels only — fifteen samples cannot carry more. */}
-        <text x={padX} y={height - 6} fill="#6b7a90" fontSize="6" style={{ fontFamily: 'var(--font-mono)' }}>
+        <text x={padX} y={height - 6} fill="#5c7484" fontSize="6" style={{ fontFamily: 'var(--font-mono)' }}>
           {points[0].label}
         </text>
         <text
           x={W - padX}
           y={height - 6}
-          fill="#6b7a90"
+          fill="#5c7484"
           fontSize="6"
           textAnchor="end"
           style={{ fontFamily: 'var(--font-mono)' }}

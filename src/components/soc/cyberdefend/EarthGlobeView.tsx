@@ -93,15 +93,15 @@ export const EarthGlobeView: React.FC<Props> = ({
         {/* Left card — the radar position, carrying kernel telemetry */}
         <Glass className="absolute top-3 start-3 w-[268px] p-3">
           <div className="mb-2 flex items-center gap-1.5">
-            <Radar className="h-3.5 w-3.5 text-[#38BDF8]" aria-hidden />
+            <Radar className="h-3.5 w-3.5 text-[#22d3ee]" aria-hidden />
             <Label>{isAr ? 'قياسات النواة' : 'Kernel telemetry'}</Label>
           </div>
 
           {/* Radar sweep. The centre figure is the live blackhole count. */}
           <div className="relative mx-auto mb-2.5 h-[104px] w-[104px]">
-            <div className="absolute inset-0 rounded-full border border-[#38BDF8]/25" />
-            <div className="absolute inset-[18%] rounded-full border border-[#38BDF8]/15" />
-            <div className="absolute inset-[38%] rounded-full border border-[#38BDF8]/10" />
+            <div className="absolute inset-0 rounded-full border border-[#22d3ee]/25" />
+            <div className="absolute inset-[18%] rounded-full border border-[#22d3ee]/15" />
+            <div className="absolute inset-[38%] rounded-full border border-[#22d3ee]/10" />
             {!reduce && (
               <motion.div
                 className="absolute inset-0 rounded-full"
@@ -113,7 +113,7 @@ export const EarthGlobeView: React.FC<Props> = ({
             )}
             <div className="absolute inset-0 grid place-items-center">
               <div className="text-center">
-                <Value v={d.kernel.blackholes} className="text-lg font-bold text-[#7dd3fc]" />
+                <Value v={d.kernel.blackholes} className="text-lg font-bold text-[#67e8f9]" />
                 <p className="text-[8px] text-slate-500">{isAr ? 'حجب نشط' : 'active blocks'}</p>
               </div>
             </div>
@@ -141,16 +141,16 @@ export const EarthGlobeView: React.FC<Props> = ({
                   key={l.id}
                   onClick={() => toggleLayer(l.id)}
                   aria-pressed={l.on}
-                  className="flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-start transition-colors hover:bg-white/[0.04] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none"
+                  className="flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-start transition-colors hover:bg-white/[0.04] focus-visible:ring-1 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none"
                 >
                   <span
                     className={cn(
                       'grid h-2.5 w-2.5 shrink-0 place-items-center rounded-[3px] border',
-                      l.on ? 'border-[#38BDF8]/70 bg-[#38BDF8]/30' : 'border-white/20'
+                      l.on ? 'border-[#22d3ee]/70 bg-[#22d3ee]/30' : 'border-white/20'
                     )}
                     aria-hidden
                   >
-                    {l.on && <span className="h-1 w-1 rounded-[1px] bg-[#7dd3fc]" />}
+                    {l.on && <span className="h-1 w-1 rounded-[1px] bg-[#67e8f9]" />}
                   </span>
                   <span className={cn('flex-1 text-[8px]', l.on ? 'text-slate-300' : 'text-slate-600')}>
                     {isAr ? l.ar : l.en}
@@ -174,7 +174,7 @@ export const EarthGlobeView: React.FC<Props> = ({
         {node && (
           <Glass className="absolute top-3 end-3 w-[248px] overflow-hidden">
             <div className="flex items-center gap-1.5 px-3 pt-3">
-              <Satellite className="h-3.5 w-3.5 text-[#38BDF8]" aria-hidden />
+              <Satellite className="h-3.5 w-3.5 text-[#22d3ee]" aria-hidden />
               <Label>{isAr ? 'العقدة قيد الفحص' : 'Node under inspection'}</Label>
             </div>
             <div className="px-3 pt-1.5">
@@ -183,11 +183,11 @@ export const EarthGlobeView: React.FC<Props> = ({
             </div>
 
             <div className="relative mx-auto my-2.5 h-[86px] w-[150px]">
-              <div className="absolute top-1/2 left-1/2 h-8 w-11 -translate-x-1/2 -translate-y-1/2 rounded border border-[#38BDF8]/40 bg-[#38BDF8]/8" />
+              <div className="absolute top-1/2 left-1/2 h-8 w-11 -translate-x-1/2 -translate-y-1/2 rounded border border-[#22d3ee]/40 bg-[#22d3ee]/8" />
               {[-1, 1].map(s => (
                 <div
                   key={s}
-                  className="absolute top-1/2 h-6 w-[42px] -translate-y-1/2 border border-[#38BDF8]/25"
+                  className="absolute top-1/2 h-6 w-[42px] -translate-y-1/2 border border-[#22d3ee]/25"
                   style={
                     {
                       background: 'repeating-linear-gradient(90deg, rgba(56,189,248,0.16) 0 3px, transparent 3px 7px)',
@@ -198,7 +198,7 @@ export const EarthGlobeView: React.FC<Props> = ({
               ))}
               {!reduce && (
                 <motion.div
-                  className="absolute inset-0 rounded-full border border-[#38BDF8]/15"
+                  className="absolute inset-0 rounded-full border border-[#22d3ee]/15"
                   animate={{ scale: [0.9, 1.06, 0.9], opacity: [0.5, 0.15, 0.5] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                   aria-hidden
@@ -215,7 +215,7 @@ export const EarthGlobeView: React.FC<Props> = ({
             <div
               className={cn(
                 'mt-2.5 flex items-center justify-between px-3 py-1.5 text-[9px] font-semibold',
-                node.isolated ? 'bg-[#EF4444]/15 text-[#fca5a5]' : 'bg-[#10B981]/12 text-[#6ee7b7]'
+                node.isolated ? 'bg-[#f43f5e]/15 text-[#fda4af]' : 'bg-[#10B981]/12 text-[#6ee7b7]'
               )}
             >
               <span>{node.isolated ? (isAr ? 'معزولة' : 'ISOLATED') : isAr ? 'متصلة' : 'CONNECTED'}</span>
@@ -231,7 +231,7 @@ export const EarthGlobeView: React.FC<Props> = ({
               <span className="relative flex h-2 w-2">
                 {!reduce && (
                   <motion.span
-                    className="absolute inset-0 rounded-full bg-[#EF4444]"
+                    className="absolute inset-0 rounded-full bg-[#f43f5e]"
                     animate={{ opacity: [1, 0.2, 1] }}
                     transition={{ duration: 1.1, repeat: Infinity }}
                     aria-hidden
@@ -243,7 +243,7 @@ export const EarthGlobeView: React.FC<Props> = ({
                 <Label>{isAr ? 'أعلى مصدر' : 'Top origin'}</Label>
                 <p className="text-[11px] font-semibold text-white">
                   {top.flag ? `${top.flag} ` : ''}
-                  {top.country} <Mono className="text-[#fca5a5]">{formatCount(top.count)}</Mono>
+                  {top.country} <Mono className="text-[#fda4af]">{formatCount(top.count)}</Mono>
                 </p>
               </div>
               <div className="border-s border-white/10 ps-3">
@@ -271,7 +271,7 @@ export const EarthGlobeView: React.FC<Props> = ({
               label={isAr ? 'طلب/ث' : 'req/s'}
               value={d.derived.requestRate}
               reason="awaiting a second sample"
-              accent="#38BDF8"
+              accent="#22d3ee"
               reduce={reduce}
             />
             <Dial
@@ -290,7 +290,7 @@ export const EarthGlobeView: React.FC<Props> = ({
               {spinOffset != null && (
                 <button
                   onClick={() => setSpinOffset(null)}
-                  className="text-[8px] text-[#7dd3fc] transition-colors hover:text-white"
+                  className="text-[8px] text-[#67e8f9] transition-colors hover:text-white"
                 >
                   {isAr ? 'استئناف الدوران' : 'resume spin'}
                 </button>
@@ -313,7 +313,7 @@ export const EarthGlobeView: React.FC<Props> = ({
                     />
                   ))}
                   <g transform={`rotate(${spinOffset ?? 0} 22 22)`}>
-                    <path d="M 22 9 L 25 22 L 22 19 L 19 22 Z" fill="#7dd3fc" />
+                    <path d="M 22 9 L 25 22 L 22 19 L 19 22 Z" fill="#67e8f9" />
                   </g>
                 </svg>
               </div>
@@ -324,7 +324,7 @@ export const EarthGlobeView: React.FC<Props> = ({
                 value={spinOffset ?? 0}
                 onChange={e => setSpinOffset(Number(e.target.value))}
                 aria-label={isAr ? 'زاوية دوران الكرة' : 'Globe rotation angle'}
-                className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-[#38BDF8]"
+                className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-[#22d3ee]"
               />
             </div>
           </div>
@@ -382,13 +382,13 @@ export const EarthGlobeView: React.FC<Props> = ({
                   )}
                 >
                   <CircleDot
-                    className={cn('h-2.5 w-2.5 shrink-0', n.isolated ? 'text-[#EF4444]' : 'text-[#10B981]')}
+                    className={cn('h-2.5 w-2.5 shrink-0', n.isolated ? 'text-[#f43f5e]' : 'text-[#10B981]')}
                     aria-hidden
                   />
                   <span className="w-[136px] shrink-0 truncate text-[10px] text-slate-200">{n.name}</span>
                   <Mono className="w-[86px] shrink-0 text-[9px] text-slate-500">{n.ip}</Mono>
                   <span className="flex-1 truncate text-[9px] text-slate-600">{n.role ?? '—'}</span>
-                  <Mono className="text-[9px] text-[#7dd3fc]">
+                  <Mono className="text-[9px] text-[#67e8f9]">
                     {n.packetsDropped != null ? formatCount(n.packetsDropped) : '—'}
                   </Mono>
                 </button>
@@ -406,7 +406,7 @@ export const EarthGlobeView: React.FC<Props> = ({
                 className={cn(
                   'rounded-full px-1.5 py-0.5 text-[8px] font-semibold',
                   d.drift.verdict === 'SIGNIFICANT_SHIFT'
-                    ? 'bg-[#EF4444]/15 text-[#fca5a5]'
+                    ? 'bg-[#f43f5e]/15 text-[#fda4af]'
                     : d.drift.verdict === 'MODERATE_SHIFT'
                       ? 'bg-[#F59E0B]/15 text-[#fcd34d]'
                       : d.drift.verdict === 'STABLE'
@@ -463,7 +463,7 @@ export const EarthGlobeView: React.FC<Props> = ({
                             className="h-full rounded-full"
                             style={{
                               width: `${Math.min(100, (f.psi / Math.max(sig * 2, 0.5)) * 100)}%`,
-                              background: f.psi >= sig ? '#EF4444' : f.psi >= mod ? '#F59E0B' : '#38BDF8'
+                              background: f.psi >= sig ? '#f43f5e' : f.psi >= mod ? '#F59E0B' : '#22d3ee'
                             }}
                           />
                         </div>

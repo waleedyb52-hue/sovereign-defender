@@ -195,7 +195,7 @@ export const CorpusIntelPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
     <Card dir={isAr ? 'rtl' : 'ltr'}>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Database className="h-4 w-4 text-[#38BDF8]" aria-hidden />
+          <Database className="h-4 w-4 text-[#22d3ee]" aria-hidden />
           <CardTitle>
             {isAr ? 'الكوربوس والتعلّم المستمر' : 'CORPUS & CONTINUAL LEARNING'}
           </CardTitle>
@@ -217,7 +217,7 @@ export const CorpusIntelPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
       </CardHeader>
 
       {error && (
-        <div className="mx-4 mb-3 rounded border border-[#EF4444]/30 bg-[#EF4444]/5 px-3 py-2 text-[11px] text-[#fca5a5]">
+        <div className="mx-4 mb-3 rounded border border-[#f43f5e]/30 bg-[#f43f5e]/5 px-3 py-2 text-[11px] text-[#fda4af]">
           {error}
         </div>
       )}
@@ -312,14 +312,14 @@ export const CorpusIntelPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                   className={cn(
                     'flex-1 rounded border px-2 py-1.5 text-center',
                     f.role === 'TEST'
-                      ? 'border-fuchsia-500/40 bg-fuchsia-500/8'
+                      ? 'border-rose-500/40 bg-rose-500/8'
                       : 'border-slate-700/40 bg-black/25'
                   )}
                 >
                   <Mono
                     className={cn(
                       'block text-[11px] font-bold',
-                      f.role === 'TEST' ? 'text-fuchsia-300' : 'text-slate-300'
+                      f.role === 'TEST' ? 'text-rose-300' : 'text-slate-300'
                     )}
                   >
                     {f.n}
@@ -327,7 +327,7 @@ export const CorpusIntelPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                   <span
                     className={cn(
                       'text-[8px] tracking-wider',
-                      f.role === 'TEST' ? 'text-fuchsia-400/80' : 'text-slate-600'
+                      f.role === 'TEST' ? 'text-rose-400/80' : 'text-slate-600'
                     )}
                   >
                     {f.role === 'TEST'
@@ -391,7 +391,7 @@ export const CorpusIntelPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
               {drift.drivingFeature && (
                 <span className="text-[9px] text-slate-500">
                   {isAr ? 'المحرّك: ' : 'driven by '}
-                  <Mono className="text-[#7dd3fc]">{drift.drivingFeature}</Mono>
+                  <Mono className="text-[#67e8f9]">{drift.drivingFeature}</Mono>
                 </span>
               )}
             </div>
@@ -412,7 +412,7 @@ export const CorpusIntelPanel: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                           width: `${Math.min(100, (f.psi / Math.max(drift.thresholds.significant * 2, 0.5)) * 100)}%`,
                           background:
                             f.psi >= drift.thresholds.significant
-                              ? '#EF4444'
+                              ? '#f43f5e'
                               : f.psi >= drift.thresholds.moderate
                                 ? '#F59E0B'
                                 : '#10B981'

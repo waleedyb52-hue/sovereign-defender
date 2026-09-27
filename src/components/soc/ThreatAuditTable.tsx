@@ -126,7 +126,7 @@ const CopyableIp: React.FC<{ ip: string; lang: 'ar' | 'en' }> = ({ ip, lang }) =
       <button
         onClick={copy}
         aria-label={lang === 'ar' ? `نسخ ${ip}` : `Copy ${ip}`}
-        className="text-slate-600 transition-colors hover:text-[#7dd3fc]"
+        className="text-slate-600 transition-colors hover:text-[#67e8f9]"
       >
         {done ? <Check className="h-3 w-3 text-[#6ee7b7]" /> : <Copy className="h-3 w-3" />}
       </button>
@@ -193,7 +193,7 @@ export const ThreatAuditTable: React.FC<Props> = ({
       >
         {children}
         <ArrowUpDown
-          className={cn('h-2.5 w-2.5', sortKey === k ? 'text-[#7dd3fc]' : 'text-slate-600')}
+          className={cn('h-2.5 w-2.5', sortKey === k ? 'text-[#67e8f9]' : 'text-slate-600')}
         />
       </button>
     </TH>
@@ -211,7 +211,7 @@ export const ThreatAuditTable: React.FC<Props> = ({
       </CardHeader>
 
       {error && (
-        <div className="mx-4 mb-3 rounded border border-[#EF4444]/30 bg-[#EF4444]/5 px-3 py-2 text-[11px] text-[#fca5a5]">
+        <div className="mx-4 mb-3 rounded border border-[#f43f5e]/30 bg-[#f43f5e]/5 px-3 py-2 text-[11px] text-[#fda4af]">
           {isAr ? 'تعذّر تحميل السجل: ' : 'Could not load the log: '}
           <Mono className="text-[10px]">{error}</Mono>
         </div>
@@ -300,7 +300,7 @@ export const ThreatAuditTable: React.FC<Props> = ({
                       <TD>
                         {tech ? (
                           <span className="inline-flex items-center gap-1.5">
-                            <Mono className="text-[#7dd3fc]">{tech.id}</Mono>
+                            <Mono className="text-[#67e8f9]">{tech.id}</Mono>
                             {tech.name && (
                               <span className="hidden max-w-[150px] truncate text-[10px] text-slate-500 lg:inline">
                                 {tech.name}

@@ -111,7 +111,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
   };
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Title & Badge */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <div className="flex items-center gap-2.5">
@@ -142,7 +142,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
                 ? 'border-rose-500/40 bg-rose-500/20 text-rose-300'
                 : currentVector.severity === 'HIGH'
                   ? 'border-amber-500/40 bg-amber-500/20 text-amber-300'
-                  : 'border-sky-500/40 bg-sky-500/20 text-sky-300'
+                  : 'border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
             }`}
           >
             {currentVector.severity}
@@ -168,7 +168,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
                 className={`rounded-xl border p-3 text-left transition-all ${
                   isSelected
                     ? 'border-rose-500/60 bg-rose-500/15 text-white shadow-md ring-1 shadow-rose-950/40 ring-rose-400/40'
-                    : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'
+                    : 'border-slate-800/80 bg-slate-950/60 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                 }`}
               >
                 <div className="mb-1 flex items-center justify-between">
@@ -189,7 +189,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
       </div>
 
       {/* Vector Description Callout */}
-      <div className="mt-3.5 flex items-start gap-2.5 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs text-slate-300">
+      <div className="mt-3.5 flex items-start gap-2.5 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-xs text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <Crosshair className="mt-0.5 h-4 w-4 shrink-0 text-cyan-400" />
         <div>
           <strong className="text-white">
@@ -204,7 +204,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
       {/* Granular Sliders & Injection Controls Grid */}
       <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* 1. Source IP Spoofing */}
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <label className="mb-1.5 block flex items-center justify-between text-xs font-bold text-slate-300">
             <span>{isAr ? 'عنوان IP المصدر المزيف (Spoofed IP):' : 'Spoofed Source IP:'}</span>
             <span className="font-mono text-[10px] text-cyan-400">IPv4 Spoof</span>
@@ -213,7 +213,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
             type="text"
             value={spoofedIp}
             onChange={e => setSpoofedIp(e.target.value)}
-            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-xs text-white focus:border-rose-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-xs text-white focus:border-rose-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             placeholder="e.g. 203.0.113.88"
           />
           {/* Quick presets */}
@@ -247,7 +247,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
         </div>
 
         {/* 2. Target Port & Protocol */}
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <label className="mb-1.5 block flex items-center justify-between text-xs font-bold text-slate-300">
             <span>
               {isAr ? 'المنفذ والخدمة المستهدفة (Target Port):' : 'Target Port & Service:'}
@@ -259,7 +259,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
               type="number"
               value={targetPort}
               onChange={e => setTargetPort(Number(e.target.value))}
-              className="w-24 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-xs text-white focus:border-rose-500 focus:outline-none"
+              className="w-24 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-xs text-white focus:border-rose-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             />
             <div className="flex flex-1 flex-wrap gap-1">
               {[22, 80, 443, 53, 445, 3389, 5432].map(port => (
@@ -280,7 +280,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
         </div>
 
         {/* 3. Packet Size Slider */}
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-1 flex items-center justify-between text-xs font-bold text-slate-300">
             <span>{isAr ? 'حجم الحزمة (Packet Size):' : 'Packet Size (Bytes):'}</span>
             <span className="font-mono text-cyan-400">{packetSize.toLocaleString()} B</span>
@@ -302,7 +302,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
         </div>
 
         {/* 4. Injection Rate Slider (Packets/Sec) */}
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-1 flex items-center justify-between text-xs font-bold text-slate-300">
             <span>{isAr ? 'معدل الحزم بالثانية (Rate):' : 'Payload Rate (Packets/Sec):'}</span>
             <span className="font-mono text-rose-400">{packetsPerSec.toLocaleString()} pps</span>
@@ -324,7 +324,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
         </div>
 
         {/* 5. Connection Duration Slider */}
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-1 flex items-center justify-between text-xs font-bold text-slate-300">
             <span>{isAr ? 'مدة الاتصال (Duration):' : 'Connection Duration (Sec):'}</span>
             <span className="font-mono text-amber-400">{durationSec}s</span>
@@ -346,11 +346,11 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
         </div>
 
         {/* 6. Target Infrastructure Node */}
-        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <label className="mb-1.5 block text-xs font-bold text-slate-300">
             {isAr ? 'الهدف المستهدف في الشبكة:' : 'Target Network Node:'}
           </label>
-          <div className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-xs text-white">
+          <div className="flex items-center justify-between rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 font-mono text-xs text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <span>
               {selectedVectorId === 'LATERAL_MOVEMENT'
                 ? '10.0.0.8 (Database Tier)'
@@ -377,7 +377,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
           rows={2}
           value={customPayload}
           onChange={e => setCustomPayload(e.target.value)}
-          className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 font-mono text-xs text-emerald-300 focus:border-rose-500 focus:outline-none"
+          className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 font-mono text-xs text-emerald-300 focus:border-rose-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           placeholder="Enter exploit payload string or command..."
         />
       </div>
@@ -389,7 +389,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
           <button
             type="button"
             onClick={handleSingleShot}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-rose-950/50 transition hover:from-rose-500 hover:to-red-500 active:scale-95 sm:text-sm"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-600 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-rose-950/50 transition hover:from-rose-500 hover:to-rose-500 active:scale-95 sm:text-sm"
           >
             <Play className="h-4 w-4 fill-white" />
             <span>{isAr ? 'حقن حزمة منفردة (Inject Packet)' : 'Inject Single Packet'}</span>
@@ -434,7 +434,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
 
       {/* Live Gemini-Generated Kernel Rules Card */}
       {latestGeneratedRules && (
-        <div className="animate-fadeIn mt-5 space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs">
+        <div className="animate-fadeIn mt-5 space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div className="flex items-center gap-2 font-sans font-bold text-cyan-400">
               <Shield className="h-4 w-4" />
@@ -457,7 +457,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
 
           <div className="grid grid-cols-1 gap-2 text-[11px] md:grid-cols-3">
             {latestGeneratedRules.iptables && (
-              <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5">
+              <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="mb-0.5 block text-[9px] text-slate-400">
                   1. Linux IPTables Drop:
                 </span>
@@ -467,7 +467,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
               </div>
             )}
             {latestGeneratedRules.suricata && (
-              <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5">
+              <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="mb-0.5 block text-[9px] text-slate-400">
                   2. Suricata / Snort Signature:
                 </span>
@@ -477,7 +477,7 @@ export const AttackSimulator: React.FC<AttackSimulatorProps> = ({
               </div>
             )}
             {latestGeneratedRules.ebpf && (
-              <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5">
+              <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="mb-0.5 block text-[9px] text-slate-400">3. eBPF XDP Filter:</span>
                 <code className="block truncate text-cyan-300">{latestGeneratedRules.ebpf}</code>
               </div>

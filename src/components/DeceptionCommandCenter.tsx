@@ -187,7 +187,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left Column: Trapped Attacker Sessions (5 Cols) */}
         <div className="space-y-4 lg:col-span-5">
-          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl">
+          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <Eye className="h-4 w-4 text-amber-400" />
@@ -210,7 +210,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
                     className={`cursor-pointer rounded-xl border p-3.5 transition ${
                       isSelected
                         ? 'border-amber-500/60 bg-amber-950/40 shadow-md shadow-amber-950/40'
-                        : 'border-slate-800 bg-slate-950/80 hover:border-slate-700'
+                        : 'border-slate-800 bg-slate-950/80 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -281,7 +281,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
           {/* Canary Token Deployment Module */}
           <form
             onSubmit={handleInjectCanary}
-            className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl"
+            className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           >
             <h3 className="flex items-center gap-2 text-xs font-bold text-white">
               <Key className="h-4 w-4 text-cyan-400" />
@@ -297,7 +297,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
               <select
                 value={canaryType}
                 onChange={e => setCanaryType(e.target.value)}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <option value="AWS_SECRET_KEY">AWS IAM Access Key (AKIA...)</option>
                 <option value="DATABASE_CREDENTIAL">Database Connection String (PostgreSQL)</option>
@@ -314,7 +314,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
                 type="text"
                 value={canaryLabel}
                 onChange={e => setCanaryLabel(e.target.value)}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
 
@@ -335,7 +335,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
               {/* Terminal Header */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-amber-400">
+                  <div className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-amber-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <Terminal className="h-5 w-5" />
                   </div>
                   <div>
@@ -351,7 +351,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
                 </div>
 
                 <div className="flex items-center gap-2 font-mono text-xs">
-                  <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 text-slate-300">
+                  <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     Keystrokes: {currentSession.keystrokesCount}
                   </span>
                   <span className="rounded border border-rose-500/40 bg-rose-950/80 px-2 py-0.5 text-rose-300">
@@ -361,7 +361,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
               </div>
 
               {/* Terminal Screen with Real-Time Decoy Shell Output */}
-              <div className="max-h-80 min-h-64 space-y-3 overflow-y-auto rounded-xl border border-slate-800/90 bg-slate-950 p-4 font-mono text-xs">
+              <div className="max-h-80 min-h-64 space-y-3 overflow-y-auto rounded-xl border border-slate-800/90 bg-slate-950 p-4 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <div className="text-slate-500">
                   # Sovereign Defender v4.0 Deception Virtual Shell Attached (PID: 9021)
                   <br /># Trapped IP: {currentSession.attackerIp} | Mode: SYNTHETIC_DECOY_FS
@@ -375,7 +375,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
                       </span>
                       <span className="text-[10px] text-slate-500">{rec.time}</span>
                     </div>
-                    <pre className="rounded border border-slate-800/80 bg-slate-900/90 p-2 text-[11px] leading-tight whitespace-pre-wrap text-slate-300">
+                    <pre className="rounded border border-slate-800/80 bg-slate-900/90 p-2 text-[11px] leading-tight whitespace-pre-wrap text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       {rec.decoyResponse}
                     </pre>
                   </div>
@@ -393,7 +393,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
                     value={interactiveCmd}
                     onChange={e => setInteractiveCmd(e.target.value)}
                     placeholder="Run probe in decoy sandbox (e.g. cat /etc/shadow, env, ls, uname)..."
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pr-3 pl-7 font-mono text-xs text-white focus:border-amber-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pr-3 pl-7 font-mono text-xs text-white focus:border-amber-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   />
                 </div>
 
@@ -424,7 +424,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
                     key={cmd}
                     type="button"
                     onClick={() => setInteractiveCmd(cmd)}
-                    className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-[10px] text-slate-300 transition hover:border-amber-500/50 hover:text-amber-300"
+                    className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-[10px] text-slate-300 transition hover:border-amber-500/50 hover:text-amber-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   >
                     {cmd}
                   </button>
@@ -432,7 +432,7 @@ export const DeceptionCommandCenter: React.FC<DeceptionCommandCenterProps> = ({ 
               </div>
             </div>
           ) : (
-            <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/50 p-12 text-center">
+            <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/50 p-12 text-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <Skull className="mx-auto h-12 w-12 text-slate-600" />
               <h4 className="text-sm font-bold text-slate-300">
                 {isAr ? 'لا توجد جلسات محاصرة حالياً' : 'No Active Trapped Sessions'}

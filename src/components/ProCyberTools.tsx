@@ -129,9 +129,9 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
   };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl">
+    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-slate-950/80 px-6 py-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-slate-950/80 px-6 py-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex items-center gap-3">
           <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3 text-cyan-400 shadow-lg shadow-cyan-950/40">
             <Terminal className="h-6 w-6" />
@@ -156,7 +156,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
         </div>
 
         {/* Tool Navigation Switcher */}
-        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs font-medium">
+        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs font-medium shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <button
             onClick={() => setActiveTool('PCAP_DISSECT')}
             className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
@@ -185,7 +185,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
             onClick={() => setActiveTool('RULE_SYNTHESIZER')}
             className={`flex items-center gap-2 rounded-lg px-3 py-2 transition ${
               activeTool === 'RULE_SYNTHESIZER'
-                ? 'border border-purple-500/40 bg-purple-500/20 font-bold text-purple-300'
+                ? 'border border-cyan-500/40 bg-cyan-500/20 font-bold text-cyan-300'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -223,7 +223,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   value={pcapInput}
                   onChange={e => setPcapInput(e.target.value)}
                   rows={4}
-                  className="w-full resize-none rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-relaxed text-cyan-300 focus:border-cyan-500 focus:outline-none"
+                  className="w-full resize-none rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-relaxed text-cyan-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   placeholder="Paste hex bytes e.g. 4500003c..."
                 />
               </div>
@@ -236,7 +236,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   <select
                     value={dissectProtocol}
                     onChange={e => setDissectProtocol(e.target.value as any)}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   >
                     <option value="TCP">TCP (Port 443/80/22)</option>
                     <option value="UDP">UDP (DNS / NTP)</option>
@@ -263,7 +263,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                           '000101000001000000000000186347467a6333646b58326868633268665a58686d61577706626561636f6e0263630000100001'
                         );
                     }}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-300 focus:border-cyan-500 focus:outline-none"
+                    className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   >
                     <option value="">{isAr ? 'اختر نموذج...' : 'Select template...'}</option>
                     <option value="SYN">TCP SYN Packet (Port 80)</option>
@@ -297,7 +297,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                 <div className="space-y-4">
                   {/* Metric Chips */}
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="block text-[11px] text-slate-400">
                         {isAr ? 'حجم الحزمة:' : 'Packet Size:'}
                       </span>
@@ -305,7 +305,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                         {dissectionResult.packetLengthBytes} Bytes
                       </span>
                     </div>
-                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="block text-[11px] text-slate-400">
                         {isAr ? 'معامل العشوائية (Shannon Entropy):' : 'Entropy Score:'}
                       </span>
@@ -313,7 +313,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                         {dissectionResult.entropy} / 8.0
                       </span>
                     </div>
-                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="block text-[11px] text-slate-400">
                         {isAr ? 'تصنيف الحمولة:' : 'Payload Classification:'}
                       </span>
@@ -324,7 +324,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   </div>
 
                   {/* Header Breakdown */}
-                  <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs">
+                  <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <h5 className="flex items-center gap-2 font-bold text-white">
                       <Layers className="h-4 w-4 text-cyan-400" />
                       <span>
@@ -335,7 +335,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                     </h5>
 
                     <div className="grid grid-cols-2 gap-3 text-[11px]">
-                      <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                      <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         <div className="border-b border-slate-800 pb-1 font-bold text-slate-400">
                           Ethernet II Layer:
                         </div>
@@ -359,7 +359,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                         </div>
                       </div>
 
-                      <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                      <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         <div className="border-b border-slate-800 pb-1 font-bold text-slate-400">
                           IPv4 Layer (TTL {dissectionResult.headers.ip.ttl}):
                         </div>
@@ -385,7 +385,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                     </div>
 
                     {/* Flags */}
-                    <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+                    <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="text-slate-400">TCP Control Flags:</span>
                       <div className="flex items-center gap-2">
                         {Object.entries(dissectionResult.headers.transport.flags).map(
@@ -407,7 +407,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center space-y-2 rounded-xl border border-slate-800/80 bg-slate-950 p-12 text-center text-slate-500">
+                <div className="flex flex-col items-center justify-center space-y-2 rounded-xl border border-slate-800/80 bg-slate-950 p-12 text-center text-slate-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <Terminal className="h-8 w-8 text-slate-600" />
                   <p className="text-xs">
                     {isAr
@@ -434,7 +434,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   type="text"
                   value={ebpfTargetIp}
                   onChange={e => setEbpfTargetIp(e.target.value)}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-emerald-300 focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-emerald-300 focus:border-emerald-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
@@ -445,7 +445,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                 <select
                   value={ebpfHook}
                   onChange={e => setEbpfHook(e.target.value as any)}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-emerald-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <option value="XDP_DROP">XDP (eXpress Data Path - Earliest Driver Drop)</option>
                   <option value="TC_INGRESS">TC Ingress (Traffic Control Layer)</option>
@@ -475,7 +475,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
               {ebpfResult ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono">
+                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="block text-[10px] text-slate-400">
                         {isAr ? 'زمن المعالجة بالحزمة:' : 'Packet Processing Latency:'}
                       </span>
@@ -483,7 +483,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                         {ebpfResult.nanosecondLatency}
                       </span>
                     </div>
-                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono">
+                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="block text-[10px] text-slate-400">
                         {isAr ? 'حجم البايت كود:' : 'Bytecode Size:'}
                       </span>
@@ -492,7 +492,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                         insns)
                       </span>
                     </div>
-                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono">
+                    <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="block text-[10px] text-slate-400">
                         {isAr ? 'فاحص النواة (Verifier):' : 'Kernel Verifier:'}
                       </span>
@@ -503,7 +503,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   </div>
 
                   <div className="relative">
-                    <div className="flex items-center justify-between rounded-t-xl border border-slate-800 bg-slate-950 px-4 py-2 font-mono text-xs text-slate-400">
+                    <div className="flex items-center justify-between rounded-t-xl border border-slate-800 bg-slate-950 px-4 py-2 font-mono text-xs text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span>sovereign_filter.bpf.c (Kernel C Program)</span>
                       <button
                         onClick={() => handleCopyText(ebpfResult.sourceCode, 'ebpf')}
@@ -523,7 +523,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center space-y-2 rounded-xl border border-slate-800/80 bg-slate-950 p-12 text-center text-slate-500">
+                <div className="flex flex-col items-center justify-center space-y-2 rounded-xl border border-slate-800/80 bg-slate-950 p-12 text-center text-slate-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <Cpu className="h-8 w-8 text-slate-600" />
                   <p className="text-xs">
                     {isAr
@@ -556,7 +556,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                       setCustomRulePayload(found.samplePayloads[0]);
                     }
                   }}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   {ATTACK_VECTORS.map(v => (
                     <option key={v.id} value={v.id}>
@@ -576,14 +576,14 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   value={customRulePayload}
                   onChange={e => setCustomRulePayload(e.target.value)}
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs text-purple-300 focus:border-purple-500 focus:outline-none"
+                  className="w-full resize-none rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs text-cyan-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
               <button
                 onClick={handleGenerateRules}
                 disabled={isGeneratingRules}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600 py-3 text-xs font-bold text-white shadow-lg shadow-purple-950/50 transition hover:bg-purple-500"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 py-3 text-xs font-bold text-white shadow-lg shadow-cyan-950/50 transition hover:bg-cyan-500"
               >
                 <FileCode className="h-4 w-4" />
                 <span>
@@ -607,7 +607,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                       onClick={() => setRuleFormat('SIGMA')}
                       className={`rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition ${
                         ruleFormat === 'SIGMA'
-                          ? 'border border-purple-500/40 bg-purple-500/20 text-purple-300'
+                          ? 'border border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
                           : 'text-slate-400 hover:text-white'
                       }`}
                     >
@@ -617,7 +617,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                       onClick={() => setRuleFormat('YARA')}
                       className={`rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition ${
                         ruleFormat === 'YARA'
-                          ? 'border border-purple-500/40 bg-purple-500/20 text-purple-300'
+                          ? 'border border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
                           : 'text-slate-400 hover:text-white'
                       }`}
                     >
@@ -627,7 +627,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                       onClick={() => setRuleFormat('SURICATA')}
                       className={`rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition ${
                         ruleFormat === 'SURICATA'
-                          ? 'border border-purple-500/40 bg-purple-500/20 text-purple-300'
+                          ? 'border border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
                           : 'text-slate-400 hover:text-white'
                       }`}
                     >
@@ -637,7 +637,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
 
                   {/* Code Display */}
                   <div className="relative">
-                    <div className="flex items-center justify-between rounded-t-xl border border-slate-800 bg-slate-950 px-4 py-2 font-mono text-xs text-slate-400">
+                    <div className="flex items-center justify-between rounded-t-xl border border-slate-800 bg-slate-950 px-4 py-2 font-mono text-xs text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span>
                         {ruleFormat === 'SIGMA'
                           ? 'rule.sigma.yaml'
@@ -665,7 +665,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                         <span>{copiedId === 'rules' ? 'Copied' : 'Copy Rule'}</span>
                       </button>
                     </div>
-                    <pre className="max-h-72 overflow-x-auto rounded-b-xl border-x border-b border-slate-800 bg-black p-4 font-mono text-xs leading-relaxed text-purple-300/90">
+                    <pre className="max-h-72 overflow-x-auto rounded-b-xl border-x border-b border-slate-800 bg-black p-4 font-mono text-xs leading-relaxed text-cyan-300/90">
                       {ruleFormat === 'SIGMA' && ruleResults.sigmaYaml}
                       {ruleFormat === 'YARA' && ruleResults.yaraRule}
                       {ruleFormat === 'SURICATA' && ruleResults.suricataRule}
@@ -673,7 +673,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center space-y-2 rounded-xl border border-slate-800/80 bg-slate-950 p-12 text-center text-slate-500">
+                <div className="flex flex-col items-center justify-center space-y-2 rounded-xl border border-slate-800/80 bg-slate-950 p-12 text-center text-slate-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <FileCode className="h-8 w-8 text-slate-600" />
                   <p className="text-xs">
                     {isAr
@@ -692,7 +692,7 @@ export const ProCyberTools: React.FC<ProCyberToolsProps> = ({ lang }) => {
         <div className="space-y-6 p-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* ModSecurity CRS Rule */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between">
                 <h5 className="flex items-center gap-2 text-xs font-bold text-white">
                   <ShieldCheck className="h-4 w-4 text-amber-400" />
@@ -727,7 +727,7 @@ SecRule REQUEST_URI|ARGS "@rx (?i:(?:select\\s+.*\\s+from|union\\s+select|insert
             </div>
 
             {/* Nginx Lua WAF Direct Filter */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between">
                 <h5 className="flex items-center gap-2 text-xs font-bold text-white">
                   <Zap className="h-4 w-4 text-cyan-400" />

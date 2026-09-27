@@ -418,7 +418,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
         badge: 'INTERCEPTED: ' + r.primaryTamperClass,
         badgeBg: 'rgba(0,240,255,0.10)',
         badgeBorder: 'rgba(0,240,255,0.4)',
-        badgeColor: '#00F0FF',
+        badgeColor: '#00f3ff',
         expectedHash: r.expectedHash,
         observedHash: r.observedHash,
         chain: transitChain(r)
@@ -433,19 +433,19 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
   return (
     <div
       className="space-y-5 rounded-xl border p-5 shadow-2xl"
-      style={{ background: '#050914', borderColor: '#1B2338' }}
+      style={{ background: '#050914', borderColor: '#061019' }}
     >
       {/* ---------------- Header ---------------- */}
       <div
         className="flex flex-col items-start justify-between gap-4 border-b pb-4 lg:flex-row lg:items-center"
-        style={{ borderColor: '#1B2338' }}
+        style={{ borderColor: '#061019' }}
       >
         <div className="flex items-center gap-3">
           <div
             className="rounded-lg border p-2.5"
             style={{ background: 'rgba(220,20,60,0.12)', borderColor: 'rgba(220,20,60,0.4)' }}
           >
-            <ShieldOff className="h-5 w-5" style={{ color: '#DC143C' }} />
+            <ShieldOff className="h-5 w-5" style={{ color: '#f43f5e' }} />
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -468,7 +468,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
               <span
                 key={streamPulse}
                 className="font-mono text-[10px]"
-                style={{ color: '#4B5B78' }}
+                style={{ color: '#2c4a57' }}
               >
                 {isAr ? 'تحديث حي' : 'live'} · {streamPulse}
               </span>
@@ -493,7 +493,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                     borderColor: 'rgba(220,20,60,0.4)',
                     color: '#FF5C7A'
                   }
-                : { background: '#0C1322', borderColor: '#1B2338', color: '#7A8AA8' }
+                : { background: '#0C1322', borderColor: '#061019', color: '#7A8AA8' }
             }
           >
             <Power className="h-3.5 w-3.5" />
@@ -510,7 +510,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                     borderColor: 'rgba(220,20,60,0.4)',
                     color: '#FF5C7A'
                   }
-                : { background: '#0C1322', borderColor: '#1B2338', color: '#7A8AA8' }
+                : { background: '#0C1322', borderColor: '#061019', color: '#7A8AA8' }
             }
           >
             <Power className="h-3.5 w-3.5" />
@@ -519,7 +519,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
           <button
             onClick={() => fetchBlocks(true)}
             className="rounded-lg border p-1.5 transition"
-            style={{ background: '#0C1322', borderColor: '#1B2338', color: '#7A8AA8' }}
+            style={{ background: '#0C1322', borderColor: '#061019', color: '#7A8AA8' }}
             title={isAr ? 'تحديث' : 'Refresh'}
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -540,7 +540,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
             icon: Ban,
             label: isAr ? 'اعتراضات' : 'Intercepts',
             value: inLine?.totalIntercepted ?? 0,
-            color: '#DC143C'
+            color: '#f43f5e'
           },
           {
             icon: Zap,
@@ -552,7 +552,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
             icon: FileWarning,
             label: isAr ? 'ملفات محظورة' : 'Files Blocked',
             value: dlp?.totalBlocked ?? 0,
-            color: '#DC143C'
+            color: '#f43f5e'
           },
           {
             icon: Lock,
@@ -570,7 +570,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
           <div
             key={i}
             className="rounded-lg border p-2.5"
-            style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+            style={{ background: '#0A0F1E', borderColor: '#061019' }}
           >
             <div
               className="flex items-center gap-1.5 font-mono text-[10px]"
@@ -589,14 +589,14 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
       {/* ---------------- Canvas link analysis ---------------- */}
       <div
         className="space-y-3 rounded-lg border p-4"
-        style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+        style={{ background: '#0A0F1E', borderColor: '#061019' }}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div
             className="flex items-center gap-2 font-mono text-xs font-bold"
             style={{ color: '#E6EDF7' }}
           >
-            <Network className="h-4 w-4" style={{ color: '#00F0FF' }} />
+            <Network className="h-4 w-4" style={{ color: '#00f3ff' }} />
             <span>
               {isAr
                 ? 'محرك تحليل الصلات — رسم القوى الفيزيائي'
@@ -605,7 +605,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
           </div>
           <div
             className="flex items-center gap-3 font-mono text-[10px]"
-            style={{ color: '#4B5B78' }}
+            style={{ color: '#2c4a57' }}
           >
             <span>
               {isAr ? 'العقد' : 'nodes'}: {graph.nodes.length}
@@ -650,7 +650,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                 </div>
               </div>
             </div>
-            <div className="shrink-0 text-end font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+            <div className="shrink-0 text-end font-mono text-[9px]" style={{ color: '#2c4a57' }}>
               {
                 graph.edges.filter(
                   e => e.source === selectedGraphNode.id || e.target === selectedGraphNode.id
@@ -663,10 +663,10 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
       </div>
 
       {/* ---------------- Interception audit table ---------------- */}
-      <div className="rounded-lg border" style={{ background: '#0A0F1E', borderColor: '#1B2338' }}>
+      <div className="rounded-lg border" style={{ background: '#0A0F1E', borderColor: '#061019' }}>
         <div
           className="flex flex-wrap items-center justify-between gap-2 border-b p-3"
-          style={{ borderColor: '#1B2338' }}
+          style={{ borderColor: '#061019' }}
         >
           <div
             className="flex items-center gap-2 font-mono text-xs font-bold"
@@ -681,7 +681,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
               {auditRows.length}
             </span>
           </div>
-          <div className="font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+          <div className="font-mono text-[9px]" style={{ color: '#2c4a57' }}>
             {isAr ? 'يعرض أحدث' : 'rendering newest'} {Math.min(auditRows.length, visibleCount)} /{' '}
             {auditRows.length}
           </div>
@@ -700,7 +700,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
           }}
         >
           {auditRows.length === 0 && (
-            <div className="p-6 text-center font-mono text-[11px]" style={{ color: '#4B5B78' }}>
+            <div className="p-6 text-center font-mono text-[11px]" style={{ color: '#2c4a57' }}>
               {isAr ? 'لا توجد معاملات معترضة بعد.' : 'No intercepted transactions yet.'}
             </div>
           )}
@@ -751,7 +751,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                           border: '1px solid rgba(0,255,102,0.18)'
                         }}
                       >
-                        <div className="font-mono text-[8px]" style={{ color: '#4B5B78' }}>
+                        <div className="font-mono text-[8px]" style={{ color: '#2c4a57' }}>
                           {isAr ? 'البصمة المتوقعة' : 'EXPECTED'}
                         </div>
                         <div
@@ -768,7 +768,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                           border: '1px solid rgba(255,0,85,0.22)'
                         }}
                       >
-                        <div className="font-mono text-[8px]" style={{ color: '#4B5B78' }}>
+                        <div className="font-mono text-[8px]" style={{ color: '#2c4a57' }}>
                           {isAr ? 'البصمة المتلاعب بها' : 'TAMPERED'}
                         </div>
                         <div
@@ -781,7 +781,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                     </div>
                   )}
                 </div>
-                <span className="shrink-0 font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+                <span className="shrink-0 font-mono text-[9px]" style={{ color: '#2c4a57' }}>
                   {timeAgo(row.timestamp, isAr)}
                 </span>
               </div>
@@ -793,19 +793,19 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
       {/* ---------------- Live Intercept Link ---------------- */}
       <div
         className="rounded-lg border p-4"
-        style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+        style={{ background: '#0A0F1E', borderColor: '#061019' }}
       >
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div
             className="flex items-center gap-2 font-mono text-xs font-bold"
             style={{ color: '#E6EDF7' }}
           >
-            <Link2 className="h-4 w-4" style={{ color: '#DC143C' }} />
+            <Link2 className="h-4 w-4" style={{ color: '#f43f5e' }} />
             <span>
               {isAr ? 'رابط الاعتراض الحي — تحليل الصلة' : 'Live Intercept Link — Chain Analysis'}
             </span>
           </div>
-          <span className="font-mono text-[10px]" style={{ color: '#4B5B78' }}>
+          <span className="font-mono text-[10px]" style={{ color: '#2c4a57' }}>
             {isAr ? 'اختر حدثاً من القوائم أدناه' : 'select an event below to trace it'}
           </span>
         </div>
@@ -813,7 +813,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
         {selectedChain ? (
           <LiveInterceptLink chain={selectedChain} isAr={isAr} />
         ) : (
-          <div className="py-10 text-center font-mono text-xs" style={{ color: '#4B5B78' }}>
+          <div className="py-10 text-center font-mono text-xs" style={{ color: '#2c4a57' }}>
             {isAr
               ? 'لا توجد اعتراضات نشطة. النظام في وضع المراقبة.'
               : 'No active interceptions. Engines are watching.'}
@@ -824,13 +824,13 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
       {/* ---------------- Drill controls ---------------- */}
       <div
         className="space-y-2.5 rounded-lg border p-3.5"
-        style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+        style={{ background: '#0A0F1E', borderColor: '#061019' }}
       >
         <div
           className="flex items-center gap-2 font-mono text-xs font-bold"
           style={{ color: '#B9C6DC' }}
         >
-          <Terminal className="h-4 w-4" style={{ color: '#DC143C' }} />
+          <Terminal className="h-4 w-4" style={{ color: '#f43f5e' }} />
           <span>{isAr ? 'تدريبات الاعتراض' : 'Interception Drills'}</span>
         </div>
 
@@ -939,7 +939,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
             className="flex items-center gap-2 font-mono text-xs font-bold"
             style={{ color: '#B9C6DC' }}
           >
-            <FileWarning className="h-4 w-4" style={{ color: '#DC143C' }} />
+            <FileWarning className="h-4 w-4" style={{ color: '#f43f5e' }} />
             <span>{isAr ? 'عمليات الملفات المعترضة' : 'Intercepted File Operations'}</span>
             <span
               className="rounded px-1.5 py-0.5 text-[10px]"
@@ -969,14 +969,14 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                   className="w-full rounded-lg border p-2.5 text-start transition"
                   style={{
                     background: selected ? 'rgba(220,20,60,0.10)' : '#0A0F1E',
-                    borderColor: selected ? 'rgba(220,20,60,0.5)' : '#1B2338'
+                    borderColor: selected ? 'rgba(220,20,60,0.5)' : '#061019'
                   }}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-start gap-2">
                       <Icon
                         className="mt-0.5 h-4 w-4 shrink-0"
-                        style={{ color: r.blocked ? '#DC143C' : '#7A8AA8' }}
+                        style={{ color: r.blocked ? '#f43f5e' : '#7A8AA8' }}
                       />
                       <div className="min-w-0">
                         <StatusBadge
@@ -1008,7 +1008,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                         </div>
                       </div>
                     </div>
-                    <span className="shrink-0 font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+                    <span className="shrink-0 font-mono text-[9px]" style={{ color: '#2c4a57' }}>
                       {timeAgo(r.timestamp, isAr)}
                     </span>
                   </div>
@@ -1054,7 +1054,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                   className="w-full rounded-lg border p-2.5 text-start transition"
                   style={{
                     background: selected ? 'rgba(255,138,61,0.08)' : '#0A0F1E',
-                    borderColor: selected ? 'rgba(255,138,61,0.5)' : '#1B2338'
+                    borderColor: selected ? 'rgba(255,138,61,0.5)' : '#061019'
                   }}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -1084,7 +1084,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                         {r.tcpResetIssued && (
                           <span
                             className="flex items-center gap-0.5 font-mono text-[9px]"
-                            style={{ color: '#DC143C' }}
+                            style={{ color: '#f43f5e' }}
                           >
                             <Zap className="h-2.5 w-2.5" /> TCP RST
                           </span>
@@ -1106,20 +1106,20 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
                         style={{ background: '#060B16', border: '1px solid #16203A' }}
                       >
                         <div className="flex items-center gap-1.5 font-mono text-[9px]">
-                          <span className="w-14 shrink-0" style={{ color: '#4B5B78' }}>
+                          <span className="w-14 shrink-0" style={{ color: '#2c4a57' }}>
                             {isAr ? 'متوقع' : 'expected'}
                           </span>
                           <span style={{ color: '#7EE2A8' }}>{shortHash(r.expectedHash)}</span>
                         </div>
                         <div className="flex items-center gap-1.5 font-mono text-[9px]">
-                          <span className="w-14 shrink-0" style={{ color: '#4B5B78' }}>
+                          <span className="w-14 shrink-0" style={{ color: '#2c4a57' }}>
                             {isAr ? 'مرصود' : 'observed'}
                           </span>
                           <span style={{ color: '#FF5C7A' }}>{shortHash(r.observedHash)}</span>
                         </div>
                       </div>
                     </div>
-                    <span className="shrink-0 font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+                    <span className="shrink-0 font-mono text-[9px]" style={{ color: '#2c4a57' }}>
                       {timeAgo(r.timestamp, isAr)}
                     </span>
                   </div>
@@ -1168,7 +1168,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
       {data && (
         <div
           className="flex flex-wrap items-center gap-3 border-t pt-3 font-mono text-[10px]"
-          style={{ borderColor: '#1B2338', color: '#5C6E8C' }}
+          style={{ borderColor: '#061019', color: '#5C6E8C' }}
         >
           <Fingerprint className="h-3.5 w-3.5" style={{ color: '#5EA9FF' }} />
           <span>{isAr ? 'سلسلة التدقيق المقاومة للعبث:' : 'Tamper-evident audit chain:'}</span>
@@ -1195,7 +1195,7 @@ export const InterceptionMatrixPanel: React.FC<InterceptionMatrixPanelProps> = (
 const EmptyRow: React.FC<{ text: string }> = ({ text }) => (
   <div
     className="rounded-lg border p-5 text-center font-mono text-[11px]"
-    style={{ background: '#0A0F1E', borderColor: '#1B2338', color: '#4B5B78' }}
+    style={{ background: '#0A0F1E', borderColor: '#061019', color: '#2c4a57' }}
   >
     {text}
   </div>
@@ -1297,7 +1297,7 @@ const ContainmentList: React.FC<{
         <div
           key={r.id}
           className="flex items-center justify-between gap-2 rounded-lg border p-2"
-          style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+          style={{ background: '#0A0F1E', borderColor: '#061019' }}
         >
           <div className="min-w-0">
             <div className="truncate font-mono text-[11px] font-bold" style={{ color: '#E6EDF7' }}>
@@ -1336,7 +1336,7 @@ const ContainmentList: React.FC<{
  * a charting dependency.
  */
 const LiveInterceptLink: React.FC<{ chain: LinkChain; isAr: boolean }> = ({ chain, isAr }) => {
-  const accent = chain.blocked ? '#DC143C' : '#7EE2A8';
+  const accent = chain.blocked ? '#f43f5e' : '#7EE2A8';
   const nodes = [
     {
       icon: Crosshair,
@@ -1367,11 +1367,11 @@ const LiveInterceptLink: React.FC<{ chain: LinkChain; isAr: boolean }> = ({ chai
           <React.Fragment key={i}>
             <div
               className="flex min-w-0 flex-col justify-center rounded-lg border p-2.5 md:col-span-1"
-              style={{ background: '#060B16', borderColor: i === 3 ? `${accent}88` : '#1B2338' }}
+              style={{ background: '#060B16', borderColor: i === 3 ? `${accent}88` : '#061019' }}
             >
               <div
                 className="mb-1 flex items-center gap-1 font-mono text-[9px]"
-                style={{ color: '#4B5B78' }}
+                style={{ color: '#2c4a57' }}
               >
                 <n.icon className="h-3 w-3" style={{ color: n.color }} />
                 <span className="truncate">{n.label}</span>
@@ -1436,7 +1436,7 @@ const LiveInterceptLink: React.FC<{ chain: LinkChain; isAr: boolean }> = ({ chai
                 border: '1px solid rgba(34,197,94,0.2)'
               }}
             >
-              <span style={{ color: '#4B5B78' }}>
+              <span style={{ color: '#2c4a57' }}>
                 {isAr ? 'البصمة المتوقعة' : 'expected digest'}
               </span>
               <div className="mt-0.5 break-all" style={{ color: '#7EE2A8' }}>
@@ -1450,7 +1450,7 @@ const LiveInterceptLink: React.FC<{ chain: LinkChain; isAr: boolean }> = ({ chai
                 border: '1px solid rgba(220,20,60,0.25)'
               }}
             >
-              <span style={{ color: '#4B5B78' }}>
+              <span style={{ color: '#2c4a57' }}>
                 {isAr ? 'البصمة المرصودة' : 'observed digest'}
               </span>
               <div className="mt-0.5 break-all" style={{ color: '#FF5C7A' }}>

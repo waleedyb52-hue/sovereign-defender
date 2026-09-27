@@ -163,10 +163,10 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Banner: AI Dynamic Context Memory Status */}
-      <div className="rounded-2xl border border-purple-500/30 bg-gradient-to-r from-purple-950/70 via-slate-900 to-indigo-950/70 p-5 shadow-xl">
+      <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/70 via-slate-900 to-cyan-950/70 p-5 shadow-xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-purple-500/40 bg-purple-500/20 p-3 text-purple-300">
+            <div className="rounded-xl border border-cyan-500/40 bg-cyan-500/20 p-3 text-cyan-300">
               <Sparkles className="h-6 w-6 animate-pulse" />
             </div>
             <div>
@@ -176,7 +176,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
                     ? 'استوديو تغذية بيانات الدفاع وتدريب الذكاء (AI Threat Intel & Training Studio)'
                     : 'AI Threat Intel & Dataset Training Studio'}
                 </h2>
-                <span className="rounded-full border border-purple-500/40 bg-purple-500/20 px-2 py-0.5 text-xs font-bold text-purple-300">
+                <span className="rounded-full border border-cyan-500/40 bg-cyan-500/20 px-2 py-0.5 text-xs font-bold text-cyan-300">
                   HTTP API: /api/v1/dataset/ingest
                 </span>
               </div>
@@ -189,15 +189,15 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
           </div>
 
           <div className="flex items-center gap-4 font-mono text-xs">
-            <div className="rounded-xl border border-purple-500/30 bg-slate-950/80 px-3.5 py-2">
+            <div className="rounded-xl border border-cyan-500/30 bg-slate-950/80 px-3.5 py-2">
               <span className="block text-[10px] text-slate-400">
                 {isAr ? 'إجمالي السجلات المغذاة:' : 'Total Fed Records:'}
               </span>
-              <span className="text-sm font-bold text-purple-300">
+              <span className="text-sm font-bold text-cyan-300">
                 {metrics.totalIngestedLogs.toLocaleString()} Logs
               </span>
             </div>
-            <div className="rounded-xl border border-purple-500/30 bg-slate-950/80 px-3.5 py-2">
+            <div className="rounded-xl border border-cyan-500/30 bg-slate-950/80 px-3.5 py-2">
               <span className="block text-[10px] text-slate-400">
                 {isAr ? 'بصمات Zero-Day:' : 'Zero-Day Signatures:'}
               </span>
@@ -220,7 +220,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
             <span className="rounded border border-emerald-500/40 bg-emerald-900/60 px-2 py-0.5 text-emerald-300">
               +{successAlert.records} {isAr ? 'سجل تكتيكي' : 'records parsed'}
             </span>
-            <span className="rounded border border-purple-500/40 bg-purple-900/60 px-2 py-0.5 text-purple-300">
+            <span className="rounded border border-cyan-500/40 bg-cyan-900/60 px-2 py-0.5 text-cyan-300">
               +{successAlert.signatures} {isAr ? 'بصمات مستخلصة' : 'signatures'}
             </span>
           </div>
@@ -232,14 +232,14 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
         {/* Left 6 cols: Log Ingestion & Quick Datasets */}
         <div className="space-y-5 lg:col-span-6">
           {/* Quick Pre-Loaded Datasets */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <h3 className="mb-3 flex items-center justify-between text-sm font-bold text-white">
               <span>
                 {isAr
                   ? 'قواعد بيانات ونماذج هجوم جاهزة للتدريب الفوري (1-Click Datasets):'
                   : 'Pre-loaded Threat Datasets (1-Click Ingest):'}
               </span>
-              <span className="font-mono text-[10px] text-purple-400">
+              <span className="font-mono text-[10px] text-cyan-400">
                 POST /api/v1/dataset/ingest
               </span>
             </h3>
@@ -247,10 +247,10 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
               {SAMPLE_DATASETS.map(sample => (
                 <div
                   key={sample.id}
-                  className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800/90 bg-slate-950/80 p-3 transition hover:border-purple-500/50"
+                  className="group flex items-center justify-between gap-3 rounded-xl border border-slate-800/90 bg-slate-950/80 p-3 transition hover:border-cyan-500/50 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <div className="rounded-lg border border-slate-700 bg-slate-800 p-2 text-purple-300 group-hover:bg-purple-950/50">
+                    <div className="rounded-lg border border-slate-700 bg-slate-800 p-2 text-cyan-300 group-hover:bg-cyan-950/50">
                       <FileText className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
@@ -267,7 +267,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
                     type="button"
                     onClick={() => handleQuickLoad(sample)}
                     disabled={isLoading}
-                    className="flex shrink-0 items-center gap-1 rounded-lg border border-purple-500/40 bg-purple-600/30 px-3 py-1.5 text-xs font-bold text-purple-200 transition hover:bg-purple-600 hover:text-white"
+                    className="flex shrink-0 items-center gap-1 rounded-lg border border-cyan-500/40 bg-cyan-600/30 px-3 py-1.5 text-xs font-bold text-cyan-200 transition hover:bg-cyan-600 hover:text-white"
                   >
                     <Zap className="h-3.5 w-3.5" />
                     <span>{isAr ? 'تغذية وتدريب' : 'Feed AI'}</span>
@@ -280,7 +280,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
           {/* Custom File Upload & Raw Parser Form */}
           <form
             onSubmit={handleCustomIngest}
-            className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg"
+            className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           >
             <h3 className="flex items-center gap-2 text-sm font-bold text-white">
               <Upload className="h-4 w-4 text-cyan-400" />
@@ -303,7 +303,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
                   placeholder={
                     isAr ? 'مثال: Production-Nginx-Aug2026' : 'e.g. Production-Nginx-Aug2026'
                   }
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
@@ -314,7 +314,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
                 <select
                   value={datasetType}
                   onChange={e => setDatasetType(e.target.value as any)}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-purple-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <option value="NGINX_LOG">Nginx / Apache Access Combined Log</option>
                   <option value="WAF_JSON">Cloud / AWS / Cloudflare WAF JSON</option>
@@ -326,7 +326,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
             </div>
 
             {/* Drag and Drop Box */}
-            <div className="relative cursor-pointer rounded-xl border-2 border-dashed border-slate-800 bg-slate-950/60 p-4 text-center hover:border-purple-500/50">
+            <div className="relative cursor-pointer rounded-xl border-2 border-dashed border-slate-800 bg-slate-950/60 p-4 text-center hover:border-cyan-500/50 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <input
                 type="file"
                 accept=".log,.txt,.json,.csv"
@@ -354,14 +354,14 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
                 value={rawText}
                 onChange={e => setRawText(e.target.value)}
                 placeholder={`185.220.101.5 - - [29/Aug/2026:11:14:22 +0000] "GET /api/v1/auth?id=1' OR '1'='1 HTTP/1.1" 403 230 "sqlmap/1.7"`}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-emerald-300 focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-emerald-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading || !rawText.trim()}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-purple-950/50 transition hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 sm:text-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-cyan-950/50 transition hover:from-cyan-500 hover:to-cyan-500 disabled:opacity-50 sm:text-sm"
             >
               {isLoading ? (
                 <>
@@ -389,7 +389,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
         {/* Right 6 cols: Threat Intelligence Metrics UI Panel */}
         <div className="space-y-5 lg:col-span-6">
           {/* Top Targeted URLs & Endpoints Panel */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <h3 className="mb-3 flex items-center justify-between text-sm font-bold text-white">
               <span>
                 {isAr
@@ -402,7 +402,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
               {metrics.topTargetedUrls.map((item, idx) => (
                 <div
                   key={`url-${item.url}`}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-950/70 p-2.5"
+                  className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-950/70 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="w-5 font-mono text-[10px] text-slate-500">#{idx + 1}</span>
@@ -428,7 +428,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
           </div>
 
           {/* Malicious Scanner User-Agents Fingerprints */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <h3 className="mb-3 flex items-center justify-between text-sm font-bold text-white">
               <span>
                 {isAr
@@ -441,7 +441,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
               {metrics.topUserAgents.map(ua => (
                 <div
                   key={`ua-${ua.ua}`}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-950/70 p-2.5 text-xs"
+                  className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-950/70 p-2.5 text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="min-w-0">
                     <div className="truncate font-mono text-slate-200">{ua.ua}</div>
@@ -470,7 +470,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
           </div>
 
           {/* IP Reputation Scoreboard */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-bold text-white">
                 {isAr
@@ -483,7 +483,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
                   value={filterIpSearch}
                   onChange={e => setFilterIpSearch(e.target.value)}
                   placeholder={isAr ? 'بحث عن IP...' : 'Search IP...'}
-                  className="w-full rounded border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-[10px] text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded border border-slate-800 bg-slate-950 px-2 py-1 font-mono text-[10px] text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
             </div>
@@ -492,7 +492,7 @@ export const ThreatIntelStudio: React.FC<ThreatIntelStudioProps> = ({
               {filteredIps.map(ipRec => (
                 <div
                   key={`rep-ip-${ipRec.ip}`}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-950/70 p-2.5 font-mono text-xs"
+                  className="flex items-center justify-between gap-2 rounded-xl border border-slate-800/80 bg-slate-950/70 p-2.5 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div>
                     <div className="flex items-center gap-2 font-bold text-white">
@@ -671,7 +671,7 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
 
       {/* Global Defense Stats Strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[11px] text-slate-400">
             {isAr ? 'عقد الدفاع المتصلة:' : 'Active Peer Nodes:'}
           </span>
@@ -683,11 +683,11 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
           </span>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[11px] text-slate-400">
             {isAr ? 'البصمات المتبادلة المزامنة:' : 'Synchronized IOCs:'}
           </span>
-          <span className="font-mono text-lg font-black text-purple-400">
+          <span className="font-mono text-lg font-black text-cyan-400">
             {federatedData?.totalSynchronizedIocs || 184} Signatures
           </span>
           <span className="mt-0.5 block text-[10px] text-slate-400">
@@ -695,7 +695,7 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
           </span>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[11px] text-slate-400">
             {isAr ? 'مؤشر موثوقية الشبكة:' : 'Network Trust Score:'}
           </span>
@@ -705,7 +705,7 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
           <span className="mt-0.5 block text-[10px] text-cyan-400">SHA-256 Verified Consensus</span>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[11px] text-slate-400">
             {isAr ? 'آخر تعميم أمني:' : 'Last Broadcast:'}
           </span>
@@ -740,7 +740,7 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
           ).map((peer: any) => (
             <div
               key={peer.nodeId}
-              className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2.5 font-mono text-xs"
+              className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/80 p-2.5 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             >
               <div>
                 <span className="block text-[11px] font-bold text-cyan-300">{peer.nodeId}</span>
@@ -748,7 +748,7 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
               </div>
               <div className="text-right">
                 <span className="block text-[10px] font-bold text-emerald-400">{peer.latMs}ms</span>
-                <span className="text-[9px] text-purple-300">+{peer.contributedIocs} IOCs</span>
+                <span className="text-[9px] text-cyan-300">+{peer.contributedIocs} IOCs</span>
               </div>
             </div>
           ))}
@@ -784,7 +784,7 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
             <select
               value={newIocVector}
               onChange={e => setNewIocVector(e.target.value)}
-              className="w-full rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             >
               <option value="SQL_INJECTION">SQL Injection (SQLi)</option>
               <option value="REMOTE_CODE_EXECUTION">Remote Code Execution (RCE)</option>
@@ -806,14 +806,14 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
               value={newIocPattern}
               onChange={e => setNewIocPattern(e.target.value)}
               placeholder="e.g. UNION SELECT @@version or /bin/bash -i or DNS Base64 chunk"
-              className="w-full resize-none rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none"
+              className="w-full resize-none rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             />
           </div>
 
           <button
             type="submit"
             disabled={isBroadcasting}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 py-2 text-xs font-bold text-white shadow-lg shadow-cyan-950/50 transition hover:from-cyan-500 hover:to-blue-500"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-600 py-2 text-xs font-bold text-white shadow-lg shadow-cyan-950/50 transition hover:from-cyan-500 hover:to-cyan-500"
           >
             <Zap className="h-3.5 w-3.5" />
             <span>
@@ -845,7 +845,7 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
             {(federatedData?.syncedIocs || []).map((ioc: any) => (
               <div
                 key={ioc.id}
-                className="space-y-1.5 rounded-xl border border-slate-800/90 bg-slate-950/90 p-3 font-mono text-xs transition hover:border-cyan-500/40"
+                className="space-y-1.5 rounded-xl border border-slate-800/90 bg-slate-950/90 p-3 font-mono text-xs transition hover:border-cyan-500/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -860,7 +860,7 @@ const FederatedShieldWidget: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                   </span>
                 </div>
 
-                <div className="truncate rounded border border-slate-800 bg-slate-900/90 p-1.5 text-[11px] text-slate-200">
+                <div className="truncate rounded border border-slate-800 bg-slate-900/90 p-1.5 text-[11px] text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="mr-1 text-slate-400">Hash:</span>
                   <code className="text-cyan-400">{ioc.iocHash}</code>
                 </div>

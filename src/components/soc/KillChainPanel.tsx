@@ -281,7 +281,7 @@ export const KillChainPanel: React.FC<Props> = ({ lang = 'ar' }) => {
                     ? 'border-rose-500/50 bg-rose-500/[0.07]'
                     : verdict === 'DETECTED'
                       ? 'border-amber-500/30 bg-amber-500/[0.04]'
-                      : 'border-slate-800 bg-slate-900/60'
+                      : 'border-slate-800 bg-slate-900/60 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                 }`}
               >
                 {/* stage no + verdict */}

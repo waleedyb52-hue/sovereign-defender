@@ -118,11 +118,11 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 p-6 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/40 p-6 shadow-xl">
         <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="mb-2 flex items-center gap-3">
-              <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/20 p-2.5 text-indigo-400">
+              <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/20 p-2.5 text-cyan-400">
                 <FileSearch className="h-6 w-6" />
               </div>
               <h2 className="text-xl font-black text-white sm:text-2xl">
@@ -130,7 +130,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                   ? 'طبقة التحليل الجنائي والتسجيل (Forensics & PCAP Vault)'
                   : 'Automated Forensics & PCAP Vault'}
               </h2>
-              <span className="rounded-full border border-indigo-500/30 bg-indigo-500/20 px-2.5 py-0.5 text-xs font-bold text-indigo-300">
+              <span className="rounded-full border border-cyan-500/30 bg-cyan-500/20 px-2.5 py-0.5 text-xs font-bold text-cyan-300">
                 SOC TIER-3
               </span>
             </div>
@@ -158,7 +158,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
         {/* Left Column: Incidents Directory (5 cols) */}
         <div className="space-y-4 lg:col-span-5">
           {/* Filters Bar */}
-          <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900 p-4">
+          <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="relative">
               <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-500" />
               <input
@@ -170,7 +170,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                 }
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 py-2 pr-3 pl-9 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-800 bg-slate-950 py-2 pr-3 pl-9 text-xs text-slate-200 placeholder-slate-500 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
 
@@ -178,7 +178,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
               <select
                 value={filterVector}
                 onChange={e => setFilterVector(e.target.value)}
-                className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300 focus:border-indigo-500 focus:outline-none"
+                className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <option value="ALL">{isAr ? 'كافة متجهات الهجوم' : 'All Attack Vectors'}</option>
                 <option value="SQL_INJECTION">SQL Injection</option>
@@ -191,7 +191,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
               <select
                 value={filterSeverity}
                 onChange={e => setFilterSeverity(e.target.value)}
-                className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300 focus:border-indigo-500 focus:outline-none"
+                className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-slate-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <option value="ALL">{isAr ? 'كافة مستويات الخطورة' : 'All Severities'}</option>
                 <option value="CRITICAL">
@@ -205,7 +205,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
           {/* Incidents Scrollable List */}
           <div className="max-h-[640px] space-y-2.5 overflow-y-auto pr-1">
             {filteredIncidents.length === 0 ? (
-              <div className="rounded-xl border border-slate-800/80 bg-slate-900/60 p-8 text-center text-xs text-slate-400">
+              <div className="rounded-xl border border-slate-800/80 bg-slate-900/60 p-8 text-center text-xs text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {isAr
                   ? 'لم يتم العثور على سجلات جنائية مطابقة.'
                   : 'No forensic incidents match the current filters.'}
@@ -220,13 +220,13 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                     onClick={() => setSelectedIncident(inc)}
                     className={`cursor-pointer rounded-xl border p-4 text-left transition ${
                       isSelected
-                        ? 'border-indigo-500/80 bg-indigo-950/30 shadow-lg shadow-indigo-950/30'
-                        : 'hover:bg-slate-850 border-slate-800 bg-slate-900/80 hover:border-slate-700'
+                        ? 'border-cyan-500/80 bg-cyan-950/30 shadow-lg shadow-cyan-950/30'
+                        : 'hover:bg-slate-850 border-slate-800 bg-slate-900/80 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <div className="mb-1.5 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-indigo-400">
+                        <span className="font-mono text-xs font-bold text-cyan-400">
                           {inc.incidentId}
                         </span>
                         <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-[10px] text-slate-300">
@@ -263,7 +263,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
           </div>
 
           {/* Quick Custom Forensic Inspector Sandbox */}
-          <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900 p-4">
+          <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between text-xs font-bold text-slate-200">
               <span className="flex items-center gap-1.5 text-cyan-400">
                 <Zap className="h-3.5 w-3.5" />
@@ -280,7 +280,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                   ? 'الصق حمولة HTTP المشبوهة أو بايتات PCAP...'
                   : 'Paste raw suspicious HTTP payload or PCAP hex...'
               }
-              className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             />
 
             <div className="flex items-center gap-2">
@@ -289,12 +289,12 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                 value={customIp}
                 onChange={e => setCustomIp(e.target.value)}
                 placeholder="Source IP"
-                className="w-1/2 rounded-lg border border-slate-800 bg-slate-950 p-2 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none"
+                className="w-1/2 rounded-lg border border-slate-800 bg-slate-950 p-2 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
               <button
                 onClick={handleAnalyzeCustom}
                 disabled={isAnalyzingCustom || !customPayload}
-                className="flex w-1/2 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 px-3 py-2 text-xs font-bold text-white transition hover:from-cyan-500 hover:to-indigo-500 disabled:opacity-50"
+                className="flex w-1/2 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-600 px-3 py-2 text-xs font-bold text-white transition hover:from-cyan-500 hover:to-cyan-500 disabled:opacity-50"
               >
                 {isAnalyzingCustom ? (
                   <RefreshCw className="h-3.5 w-3.5 animate-spin" />
@@ -310,12 +310,12 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
         {/* Right Column: Deep Forensic Dossier (7 cols) */}
         <div className="lg:col-span-7">
           {selectedIncident ? (
-            <div className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-xl">
+            <div className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               {/* Dossier Header & Actions */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
                 <div>
                   <div className="flex items-center gap-2.5">
-                    <span className="rounded border border-indigo-500/30 bg-indigo-500/20 px-2.5 py-1 font-mono text-xs font-bold text-indigo-300">
+                    <span className="rounded border border-cyan-500/30 bg-cyan-500/20 px-2.5 py-1 font-mono text-xs font-bold text-cyan-300">
                       INCIDENT #{selectedIncident.incidentId}
                     </span>
                     <span className="font-mono text-xs text-slate-400">
@@ -330,7 +330,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleExportJson(selectedIncident.incidentId)}
-                    className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-950 transition hover:bg-indigo-500"
+                    className="flex items-center gap-1.5 rounded-xl bg-cyan-600 px-3.5 py-2 text-xs font-bold text-white shadow-lg shadow-cyan-950 transition hover:bg-cyan-500"
                   >
                     <Download className="h-3.5 w-3.5" />
                     <span>{isAr ? 'تصدير تقرير SOC (JSON)' : 'Export SOC Log'}</span>
@@ -340,11 +340,11 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
 
               {/* Tactical Overview Badges */}
               <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
-                <div className="rounded-xl border border-slate-800/80 bg-slate-950 p-3">
+                <div className="rounded-xl border border-slate-800/80 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="mb-1 block text-[10px] text-slate-400">
                     {isAr ? 'مصفوفة MITRE:' : 'MITRE ATT&CK:'}
                   </span>
-                  <span className="font-mono font-bold text-indigo-400">
+                  <span className="font-mono font-bold text-cyan-400">
                     {selectedIncident.mitreId}
                   </span>
                   <span className="block truncate text-[10px] text-slate-500">
@@ -352,7 +352,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                   </span>
                 </div>
 
-                <div className="rounded-xl border border-slate-800/80 bg-slate-950 p-3">
+                <div className="rounded-xl border border-slate-800/80 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="mb-1 block text-[10px] text-slate-400">
                     {isAr ? 'درجة الخطورة:' : 'Threat Severity:'}
                   </span>
@@ -364,7 +364,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                   </span>
                 </div>
 
-                <div className="rounded-xl border border-slate-800/80 bg-slate-950 p-3">
+                <div className="rounded-xl border border-slate-800/80 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="mb-1 block text-[10px] text-slate-400">
                     {isAr ? 'المصدر والجغرافيا:' : 'Source & GeoIP:'}
                   </span>
@@ -376,7 +376,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                   </span>
                 </div>
 
-                <div className="rounded-xl border border-slate-800/80 bg-slate-950 p-3">
+                <div className="rounded-xl border border-slate-800/80 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="mb-1 block text-[10px] text-slate-400">
                     {isAr ? 'الإنتروبيا والتشتت:' : 'Shannon Entropy:'}
                   </span>
@@ -418,7 +418,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                     </span>
                   </button>
                 </div>
-                <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 font-mono text-xs leading-relaxed break-all text-rose-300 select-all">
+                <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 font-mono text-xs leading-relaxed break-all text-rose-300 select-all shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   {selectedIncident.payloadDump}
                 </div>
               </div>
@@ -430,7 +430,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                     <Code2 className="h-3.5 w-3.5 text-cyan-400" />
                     {isAr ? 'ترويسة الطلب (Raw Request Header):' : 'Raw Request Header Evidence:'}
                   </span>
-                  <div className="max-h-36 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] whitespace-pre-wrap text-slate-300">
+                  <div className="max-h-36 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] whitespace-pre-wrap text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     {selectedIncident.forensicEvidence.rawRequestHeader}
                   </div>
                 </div>
@@ -440,29 +440,29 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                     <Layers className="h-3.5 w-3.5 text-amber-400" />
                     {isAr ? 'عينة بايتات PCAP (Hex Dissection):' : 'PCAP Byte Hex Sample:'}
                   </span>
-                  <div className="max-h-36 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] break-all text-amber-300">
+                  <div className="max-h-36 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-[11px] break-all text-amber-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     {selectedIncident.forensicEvidence.pcapHexSample}
                   </div>
                 </div>
               </div>
 
               {/* Section 3: Anomaly Indicators & Threat Actor Attribution */}
-              <div className="space-y-2.5 rounded-xl border border-slate-800/80 bg-slate-950 p-4">
+              <div className="space-y-2.5 rounded-xl border border-slate-800/80 bg-slate-950 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="flex items-center gap-1.5 text-indigo-400">
+                  <span className="flex items-center gap-1.5 text-cyan-400">
                     <ShieldAlert className="h-3.5 w-3.5" />
                     {isAr
                       ? 'مؤشرات الشذوذ ونسب التهديد (Threat Attribution):'
                       : 'Forensic Anomaly Indicators & Attribution:'}
                   </span>
-                  <span className="rounded border border-purple-500/30 bg-purple-950/40 px-2 py-0.5 font-mono text-[11px] text-purple-300">
+                  <span className="rounded border border-cyan-500/30 bg-cyan-950/40 px-2 py-0.5 font-mono text-[11px] text-cyan-300">
                     {selectedIncident.forensicEvidence.threatActorAttribution}
                   </span>
                 </div>
                 <ul className="space-y-1.5 text-xs text-slate-300">
                   {selectedIncident.forensicEvidence.anomalyIndicators.map(ind => (
                     <li key={`ind-${ind}`} className="flex items-start gap-2">
-                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-indigo-400"></span>
+                      <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-cyan-400"></span>
                       <span>{ind}</span>
                     </li>
                   ))}
@@ -496,7 +496,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                 </span>
                 <div className="grid grid-cols-1 gap-2 font-mono text-[11px] sm:grid-cols-3">
                   {selectedIncident.generatedRules.iptables && (
-                    <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+                    <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="mb-0.5 block text-[9px] text-slate-500">IPTables:</span>
                       <code className="block truncate text-rose-300">
                         {selectedIncident.generatedRules.iptables}
@@ -504,7 +504,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                     </div>
                   )}
                   {selectedIncident.generatedRules.suricata && (
-                    <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+                    <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="mb-0.5 block text-[9px] text-slate-500">Suricata:</span>
                       <code className="block truncate text-amber-300">
                         {selectedIncident.generatedRules.suricata}
@@ -512,7 +512,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
                     </div>
                   )}
                   {selectedIncident.generatedRules.ebpf && (
-                    <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+                    <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="mb-0.5 block text-[9px] text-slate-500">eBPF XDP:</span>
                       <code className="block truncate text-cyan-300">
                         {selectedIncident.generatedRules.ebpf}
@@ -523,7 +523,7 @@ export const ForensicsVault: React.FC<ForensicsVaultProps> = ({ lang, onSimulate
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-12 text-center text-sm text-slate-400">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-12 text-center text-sm text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               {isAr
                 ? 'اختر حادثة من القائمة لعرض تفاصيل التحقيق الجنائي.'
                 : 'Select an incident from the directory to review complete forensic analysis.'}

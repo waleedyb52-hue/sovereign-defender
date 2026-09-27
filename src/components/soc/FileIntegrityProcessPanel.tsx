@@ -83,21 +83,21 @@ export interface FileIntegrityProcessPanelProps {
 
 const SEVERITY_STYLES: Record<FimSeverity, string> = {
   CRITICAL: 'bg-rose-950/80 text-rose-300 border-rose-600/50',
-  HIGH: 'bg-orange-950/80 text-orange-300 border-orange-600/50',
+  HIGH: 'bg-amber-950/80 text-amber-300 border-amber-600/50',
   MEDIUM: 'bg-amber-950/80 text-amber-300 border-amber-600/50',
-  LOW: 'bg-sky-950/80 text-sky-300 border-sky-600/50'
+  LOW: 'bg-cyan-950/80 text-cyan-300 border-cyan-600/50'
 };
 
 const FILE_STATUS_STYLES: Record<FimMonitoredFile['status'], string> = {
   INTACT: 'bg-emerald-950/70 text-emerald-300 border-emerald-700/50',
   TAMPERED: 'bg-rose-950/70 text-rose-300 border-rose-700/50',
-  QUARANTINED: 'bg-purple-950/70 text-purple-300 border-purple-700/50',
+  QUARANTINED: 'bg-cyan-950/70 text-cyan-300 border-cyan-700/50',
   DELETED: 'bg-slate-800 text-slate-400 border-slate-700'
 };
 
 const ALERT_STATUS_STYLES: Record<FimAlertStatus, string> = {
   DETECTED: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-  QUARANTINED: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+  QUARANTINED: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
   ROLLEDBACK: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
   DISMISSED: 'bg-slate-700/40 text-slate-400 border-slate-600/40'
 };
@@ -338,7 +338,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
   // Render
   // ---------------------------------------------------------------------
   return (
-    <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md">
+    <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-800 pb-4 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
@@ -411,7 +411,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
 
       {/* Metric tiles */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <Layers className="h-3.5 w-3.5 text-cyan-400" />
             <span>{isAr ? 'ملفات مراقبة' : 'Monitored'}</span>
@@ -421,7 +421,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
             <span>{isAr ? 'سليمة' : 'Intact'}</span>
@@ -429,7 +429,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
           <div className="mt-1 font-mono text-xl font-bold text-emerald-300">{intactCount}</div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <FileWarning className="h-3.5 w-3.5 text-rose-400" />
             <span>{isAr ? 'تم العبث بها' : 'Tampered'}</span>
@@ -437,17 +437,17 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
           <div className="mt-1 font-mono text-xl font-bold text-rose-300">{tamperedCount}</div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <Lock className="h-3.5 w-3.5 text-purple-400" />
+            <Lock className="h-3.5 w-3.5 text-cyan-400" />
             <span>{isAr ? 'معزولة' : 'Quarantined'}</span>
           </div>
-          <div className="mt-1 font-mono text-xl font-bold text-purple-300">
+          <div className="mt-1 font-mono text-xl font-bold text-cyan-300">
             {status?.quarantinedCount ?? 0}
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <Activity className="h-3.5 w-3.5 text-amber-400" />
             <span>{isAr ? 'نسبة التكامل' : 'Integrity'}</span>
@@ -467,7 +467,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
       </div>
 
       {/* Adversarial tamper drills */}
-      <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/80 p-4">
+      <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
             <Terminal className="h-4 w-4 text-cyan-400" />
@@ -504,9 +504,9 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
           <button
             onClick={() => handleSimulateTamper('BACKDOOR')}
             disabled={isSimulating}
-            className="flex items-center gap-1.5 rounded-lg border border-purple-800/60 bg-purple-950/60 px-3 py-1.5 text-xs font-semibold text-purple-200 transition hover:bg-purple-900/80 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-cyan-800/60 bg-cyan-950/60 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-900/80 disabled:opacity-50"
           >
-            <ShieldAlert className="h-3.5 w-3.5 text-purple-400" />
+            <ShieldAlert className="h-3.5 w-3.5 text-cyan-400" />
             <span>{isAr ? 'تثبيت باب خلفي' : 'Install Backdoor'}</span>
           </button>
 
@@ -665,13 +665,13 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder={isAr ? 'بحث في التنبيهات…' : 'Search alerts…'}
-                className="w-44 rounded-lg border border-slate-800 bg-slate-950 py-1.5 ps-8 pe-3 text-xs text-slate-200 placeholder:text-slate-600 focus:border-cyan-700 focus:outline-none"
+                className="w-44 rounded-lg border border-slate-800 bg-slate-950 py-1.5 ps-8 pe-3 text-xs text-slate-200 placeholder:text-slate-600 focus:border-cyan-700 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
             <select
               value={severityFilter}
               onChange={e => setSeverityFilter(e.target.value as 'ALL' | FimSeverity)}
-              className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1.5 text-xs text-slate-300 focus:border-cyan-700 focus:outline-none"
+              className="rounded-lg border border-slate-800 bg-slate-950 px-2 py-1.5 text-xs text-slate-300 focus:border-cyan-700 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             >
               <option value="ALL">{isAr ? 'كل الدرجات' : 'All severities'}</option>
               <option value="CRITICAL">CRITICAL</option>
@@ -686,7 +686,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
           {/* Alert list */}
           <div className="max-h-[430px] space-y-2 overflow-y-auto pe-1">
             {filteredAlerts.length === 0 && (
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-6 text-center text-xs text-slate-500">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-6 text-center text-xs text-slate-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {isLoading
                   ? isAr
                     ? 'جارٍ التحميل…'
@@ -707,7 +707,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
                   className={`cursor-pointer rounded-xl border p-3 transition ${
                     isSelected
                       ? 'border-cyan-600/60 bg-slate-800/70'
-                      : 'border-slate-800 bg-slate-950/70 hover:border-slate-700'
+                      : 'border-slate-800 bg-slate-950/70 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -759,7 +759,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
                           handleAlertAction(alert.id, 'quarantine');
                         }}
                         disabled={isBusy}
-                        className="flex items-center gap-1 rounded-lg border border-purple-800/60 bg-purple-950/60 px-2 py-1 text-[11px] font-semibold text-purple-200 transition hover:bg-purple-900/80 disabled:opacity-50"
+                        className="flex items-center gap-1 rounded-lg border border-cyan-800/60 bg-cyan-950/60 px-2 py-1 text-[11px] font-semibold text-cyan-200 transition hover:bg-cyan-900/80 disabled:opacity-50"
                       >
                         <Lock className="h-3 w-3" />
                         {isAr ? 'عزل' : 'Quarantine'}
@@ -795,7 +795,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
           </div>
 
           {/* Detail pane */}
-          <div className="max-h-[430px] overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/70 p-4">
+          <div className="max-h-[430px] overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/70 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             {selectedAlert ? (
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
@@ -841,7 +841,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
                   <div className="text-[11px] text-slate-500">
                     {isAr ? 'تغيّر البصمة التشفيرية' : 'Cryptographic Hash Transition'}
                   </div>
-                  <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900 p-2 font-mono text-[10px]">
+                  <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900 p-2 font-mono text-[10px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div className="flex items-center gap-1.5">
                       <span className="w-12 shrink-0 text-slate-600">
                         {isAr ? 'قبل' : 'before'}
@@ -865,7 +865,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
                     <div className="text-[11px] text-slate-500">
                       {isAr ? 'مقتطف التغيير' : 'Change Diff'}
                     </div>
-                    <pre className="max-h-40 overflow-x-auto rounded-lg border border-slate-800 bg-slate-900 p-2 text-[10px] break-all whitespace-pre-wrap text-slate-300">
+                    <pre className="max-h-40 overflow-x-auto rounded-lg border border-slate-800 bg-slate-900 p-2 text-[10px] break-all whitespace-pre-wrap text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       {selectedAlert.diffSnippet}
                     </pre>
                   </div>
@@ -884,7 +884,7 @@ export const FileIntegrityProcessPanel: React.FC<FileIntegrityProcessPanelProps>
                 </div>
 
                 {selectedAlert.quarantinedPath && (
-                  <div className="flex items-start gap-1.5 rounded-lg border border-purple-800/50 bg-purple-950/40 p-2 text-[11px] text-purple-200">
+                  <div className="flex items-start gap-1.5 rounded-lg border border-cyan-800/50 bg-cyan-950/40 p-2 text-[11px] text-cyan-200">
                     <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                     <span className="font-mono break-all">{selectedAlert.quarantinedPath}</span>
                   </div>

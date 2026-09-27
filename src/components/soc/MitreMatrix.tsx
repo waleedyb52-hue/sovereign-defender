@@ -188,7 +188,7 @@ export const MitreMatrix: React.FC<Props> = ({ lang = 'ar' }) => {
                       return (
                         <div
                           key={r}
-                          className="h-8 rounded border border-slate-800/60 bg-slate-900/30"
+                          className="h-8 rounded border border-slate-800/60 bg-slate-900/30 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                         />
                       );
                     }

@@ -251,7 +251,7 @@ export const IncidentQueue: React.FC<Props> = ({ lang = 'ar' }) => {
               className={`rounded-md border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
                 filter === f
                   ? 'border-slate-600 bg-slate-700 text-slate-100'
-                  : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                  : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
               }`}
             >
               {f === 'ALL'
@@ -346,7 +346,7 @@ export const IncidentQueue: React.FC<Props> = ({ lang = 'ar' }) => {
         </div>
 
         {/* ---- detail of the selected row ---- */}
-        <aside className="border-t border-slate-800 bg-slate-900/40 p-5 xl:border-s xl:border-t-0">
+        <aside className="border-t border-slate-800 bg-slate-900/40 p-5 xl:border-s xl:border-t-0 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           {!selected && (
             <p className="text-xs text-slate-500">
               {isAr ? 'اختر حادثة لعرض تفاصيلها.' : 'Select an incident.'}
@@ -401,7 +401,7 @@ export const IncidentQueue: React.FC<Props> = ({ lang = 'ar' }) => {
               {/* Related activity from the same actor — the context that turns
                   a single alert into an assessment. */}
               {selected.actorIp && (
-                <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
+                <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div className="soc-label mb-2">
                     {isAr ? 'نشاط المصدر نفسه' : 'Same-actor activity'}
                   </div>

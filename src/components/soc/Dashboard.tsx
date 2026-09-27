@@ -79,7 +79,7 @@ export const Dashboard: React.FC<Props> = ({ lang = 'ar' }) => {
         {/* Header */}
         <header className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <Activity className="h-5 w-5 text-[#38BDF8]" aria-hidden />
+            <Activity className="h-5 w-5 text-[#22d3ee]" aria-hidden />
             <div>
               <h1
                 className="text-base leading-tight font-semibold text-slate-100"

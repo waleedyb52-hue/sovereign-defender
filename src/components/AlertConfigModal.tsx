@@ -104,11 +104,11 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
       dir={isAr ? 'rtl' : 'ltr'}
       className="w-full max-w-xl"
     >
-      <div className="animate-in fade-in zoom-in-95 w-full max-w-xl space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-2xl duration-200">
+      <div className="animate-in fade-in zoom-in-95 w-full max-w-xl space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-2xl duration-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/20 p-2 text-indigo-400">
+            <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/20 p-2 text-cyan-400">
               <Bell className="h-5 w-5" />
             </div>
             <div>
@@ -146,8 +146,8 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
                   onClick={() => setConfig(prev => ({ ...prev, provider: p }))}
                   className={`flex items-center justify-center gap-2 rounded-xl border p-2.5 text-xs font-bold transition ${
                     config.provider === p
-                      ? 'border-indigo-500 bg-indigo-600/30 text-indigo-200 shadow-md shadow-indigo-950'
-                      : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
+                      ? 'border-cyan-500 bg-cyan-600/30 text-cyan-200 shadow-md shadow-cyan-950'
+                      : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <MessageSquare className="h-3.5 w-3.5" />
@@ -172,7 +172,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
                 }
                 value={config.webhookUrl}
                 onChange={e => setConfig(prev => ({ ...prev, webhookUrl: e.target.value }))}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
           ) : (
@@ -186,7 +186,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
                   placeholder="123456789:ABCdef..."
                   value={config.telegramBotToken || ''}
                   onChange={e => setConfig(prev => ({ ...prev, telegramBotToken: e.target.value }))}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -198,7 +198,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
                   placeholder="-1001234567890"
                   value={config.telegramChatId || ''}
                   onChange={e => setConfig(prev => ({ ...prev, telegramChatId: e.target.value }))}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
             </div>
@@ -229,8 +229,8 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
                   onClick={() => setConfig(prev => ({ ...prev, minSeverity: item.key as any }))}
                   className={`rounded-lg border p-2 text-center font-medium transition ${
                     config.minSeverity === item.key
-                      ? 'border-indigo-500 bg-indigo-600/20 font-bold text-indigo-300'
-                      : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700'
+                      ? 'border-cyan-500 bg-cyan-600/20 font-bold text-cyan-300'
+                      : 'border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   {isAr ? item.labelAr : item.labelEn}
@@ -240,7 +240,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
           </div>
 
           {/* Active Switch */}
-          <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div>
               <span className="block font-bold text-slate-200">
                 {isAr ? 'تفعيل الإرسال التلقائي للويب هوك' : 'Enable Automatic Webhook Dispatch'}
@@ -255,7 +255,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
               type="button"
               onClick={() => setConfig(prev => ({ ...prev, enabled: !prev.enabled }))}
               className={`flex h-6 w-12 items-center rounded-full p-1 transition ${
-                config.enabled ? 'justify-end bg-indigo-600' : 'justify-start bg-slate-800'
+                config.enabled ? 'justify-end bg-cyan-600' : 'justify-start bg-slate-800'
               }`}
             >
               <span className="h-4 w-4 transform rounded-full bg-white shadow-md transition" />
@@ -320,7 +320,7 @@ export const AlertConfigModal: React.FC<AlertConfigModalProps> = ({ isOpen, onCl
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-950 transition hover:bg-indigo-500 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-xl bg-cyan-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-cyan-950 transition hover:bg-cyan-500 disabled:opacity-50"
             >
               {isSaving ? (
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />

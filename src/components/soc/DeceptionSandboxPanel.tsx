@@ -226,17 +226,17 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
           onClick={() => setActiveSection('credential_stuffing')}
           className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
             activeSection === 'credential_stuffing'
-              ? 'border border-orange-500/50 bg-orange-950/80 text-orange-200 shadow-md'
-              : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200'
+              ? 'border border-amber-500/50 bg-amber-950/80 text-amber-200 shadow-md'
+              : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
           }`}
         >
-          <Key className="h-3.5 w-3.5 text-orange-400" />
+          <Key className="h-3.5 w-3.5 text-amber-400" />
           <span>
             {isAr
               ? '1. تعقب هجمات التخمين وقفل الحسابات'
               : '1. Credential Stuffing & Velocity Tracker'}
           </span>
-          <span className="py-0.2 rounded bg-orange-900/50 px-1.5 font-mono text-[10px] text-orange-300">
+          <span className="py-0.2 rounded bg-amber-900/50 px-1.5 font-mono text-[10px] text-amber-300">
             {credEvents.length}
           </span>
         </button>
@@ -246,7 +246,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
           className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
             activeSection === 'honeytokens'
               ? 'border border-amber-500/50 bg-amber-950/80 text-amber-200 shadow-md'
-              : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200'
+              : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
           }`}
         >
           <Flame className="h-3.5 w-3.5 text-amber-400" />
@@ -262,17 +262,17 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
           onClick={() => setActiveSection('malware_sandbox')}
           className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition ${
             activeSection === 'malware_sandbox'
-              ? 'border border-purple-500/50 bg-purple-950/80 text-purple-200 shadow-md'
-              : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200'
+              ? 'border border-cyan-500/50 bg-cyan-950/80 text-cyan-200 shadow-md'
+              : 'border border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
           }`}
         >
-          <FileCode className="h-3.5 w-3.5 text-purple-400" />
+          <FileCode className="h-3.5 w-3.5 text-cyan-400" />
           <span>
             {isAr
               ? '3. فحص وتدقيق رفع الملفات (Malware Sandbox)'
               : '3. File Upload & Sandbox Inspector'}
           </span>
-          <span className="py-0.2 rounded bg-purple-900/50 px-1.5 font-mono text-[10px] text-purple-300">
+          <span className="py-0.2 rounded bg-cyan-900/50 px-1.5 font-mono text-[10px] text-cyan-300">
             {uploads.length}
           </span>
         </button>
@@ -284,11 +284,11 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
       {activeSection === 'credential_stuffing' && (
         <div className="space-y-4">
           {/* Top Banner / Simulator */}
-          <div className="rounded-xl border border-orange-500/30 bg-slate-900/90 p-3.5 shadow-lg">
+          <div className="rounded-xl border border-amber-500/30 bg-slate-900/90 p-3.5 shadow-lg">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h4 className="flex items-center gap-1.5 text-xs font-bold text-orange-300">
-                  <Key className="h-4 w-4 text-orange-400" />
+                <h4 className="flex items-center gap-1.5 text-xs font-bold text-amber-300">
+                  <Key className="h-4 w-4 text-amber-400" />
                   {isAr
                     ? 'محرك مراقبة سرعة تسجيل الدخول وكشف شبكات البوت الموزعة'
                     : 'Adaptive Authentication Velocity & Distributed Botnet Sensor'}
@@ -306,12 +306,12 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                   value={simTargetUser}
                   onChange={e => setSimTargetUser(e.target.value)}
                   placeholder="Target user email..."
-                  className="w-52 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-orange-500 focus:outline-none"
+                  className="w-52 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-amber-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
                 <button
                   onClick={handleSimulateCredentialStuffing}
                   disabled={isSimulatingBrute}
-                  className="flex items-center gap-1.5 rounded-lg bg-orange-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-orange-950/50 transition hover:bg-orange-500 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-lg bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-md shadow-amber-950/50 transition hover:bg-amber-500 disabled:opacity-50"
                 >
                   <Play className="h-3.5 w-3.5 fill-white" />
                   <span>
@@ -329,10 +329,10 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
           </div>
 
           {/* Events Table */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 shadow-md">
+          <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 shadow-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="mb-3 flex items-center justify-between border-b border-slate-800 pb-2">
               <h4 className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                <Radio className="h-4 w-4 animate-pulse text-orange-400" />
+                <Radio className="h-4 w-4 animate-pulse text-amber-400" />
                 {isAr
                   ? 'سجل هجمات التخمين المكتشفة وتدابير الحماية التلقائية'
                   : 'Intercepted Credential Stuffing & Velocity Anomalies'}
@@ -364,25 +364,25 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                   {credEvents.map(evt => (
                     <tr
                       key={evt.id}
-                      className="border-b border-slate-800/50 text-slate-300 transition hover:bg-slate-950/40"
+                      className="border-b border-slate-800/50 text-slate-300 transition hover:bg-slate-950/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                     >
                       <td className="px-2 py-2 text-slate-500">{evt.id}</td>
                       <td className="px-2 py-2 text-slate-400">
                         {new Date(evt.timestamp).toLocaleTimeString()}
                       </td>
                       <td className="px-2 py-2 font-bold text-cyan-300">{evt.targetEndpoint}</td>
-                      <td className="px-2 py-2 font-bold text-red-400">{evt.sourceIp}</td>
+                      <td className="px-2 py-2 font-bold text-rose-400">{evt.sourceIp}</td>
                       <td className="px-2 py-2 text-amber-300">{evt.usernameAttempted}</td>
-                      <td className="px-2 py-2 font-bold text-orange-400">
+                      <td className="px-2 py-2 font-bold text-amber-400">
                         {evt.velocityPerMinute} req/min
                       </td>
                       <td className="px-2 py-2">
-                        <span className="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-purple-300">
+                        <span className="rounded border border-slate-700 bg-slate-800 px-2 py-0.5 text-[10px] text-cyan-300">
                           {evt.botnetClusterName || 'Distributed Swarm'}
                         </span>
                       </td>
                       <td className="px-2 py-2 text-right">
-                        <span className="rounded border border-red-500 bg-red-950 px-2 py-0.5 text-[10px] font-bold text-red-200">
+                        <span className="rounded border border-rose-500 bg-rose-950 px-2 py-0.5 text-[10px] font-bold text-rose-200">
                           {evt.actionTaken}
                         </span>
                       </td>
@@ -420,13 +420,13 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                 value={newTrapPath}
                 onChange={e => setNewTrapPath(e.target.value)}
                 placeholder="/path/to/honeytoken (e.g. /.aws/credentials)..."
-                className="min-w-[200px] flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-amber-500 focus:outline-none"
+                className="min-w-[200px] flex-1 rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-amber-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
 
               <select
                 value={newTrapType}
                 onChange={e => setNewTrapType(e.target.value)}
-                className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-amber-300 focus:border-amber-500 focus:outline-none"
+                className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-mono text-xs text-amber-300 focus:border-amber-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <option value="ENV_SECRETS">Environment Secrets (.env)</option>
                 <option value="GIT_CONFIG">Git Config Trap (.git/config)</option>
@@ -460,7 +460,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
             {honeytokens.map(trap => (
               <div
                 key={trap.id}
-                className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 shadow-md transition hover:border-amber-500/40"
+                className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 shadow-md transition hover:border-amber-500/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <div>
                   <div className="mb-2 flex items-center justify-between">
@@ -482,7 +482,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                 <div className="flex items-center justify-between border-t border-slate-800/80 pt-2 text-xs">
                   <div className="flex items-center gap-1.5">
                     <AlertTriangle
-                      className={`h-3.5 w-3.5 ${trap.hitsCount > 0 ? 'animate-pulse text-red-400' : 'text-slate-600'}`}
+                      className={`h-3.5 w-3.5 ${trap.hitsCount > 0 ? 'animate-pulse text-rose-400' : 'text-slate-600'}`}
                     />
                     <span className="font-mono text-[11px] text-slate-300">
                       {trap.hitsCount} {isAr ? 'محاولات رصد' : 'trips'}
@@ -490,7 +490,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                   </div>
 
                   {trap.lastAttackerIp && (
-                    <span className="rounded border border-red-900 bg-red-950/60 px-2 py-0.5 font-mono text-[10px] text-red-400">
+                    <span className="rounded border border-rose-900 bg-rose-950/60 px-2 py-0.5 font-mono text-[10px] text-rose-400">
                       Last: {trap.lastAttackerIp}
                     </span>
                   )}
@@ -507,15 +507,15 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
       {activeSection === 'malware_sandbox' && (
         <div className="space-y-4">
           {/* Live File Upload & AI Audit Tester */}
-          <div className="rounded-xl border border-purple-500/30 bg-slate-900/90 p-3.5 shadow-lg">
+          <div className="rounded-xl border border-cyan-500/30 bg-slate-900/90 p-3.5 shadow-lg">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-              <h4 className="flex items-center gap-1.5 text-xs font-bold text-purple-300">
-                <Sparkles className="h-4 w-4 text-purple-400" />
+              <h4 className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
+                <Sparkles className="h-4 w-4 text-cyan-400" />
                 {isAr
                   ? 'فاحص رفع الملفات التفاعلي والتحليل الذكي للنوايا (Gemini AI Sandbox)'
                   : 'Interactive File Upload & Gemini AI Intent Audit'}
               </h4>
-              <span className="rounded border border-purple-800 bg-purple-950 px-2 py-0.5 font-mono text-[10px] text-purple-300">
+              <span className="rounded border border-cyan-800 bg-cyan-950 px-2 py-0.5 font-mono text-[10px] text-cyan-300">
                 MAGIC-BYTE & POLYGLOT SHIELD
               </span>
             </div>
@@ -526,7 +526,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                 value={testFileName}
                 onChange={e => setTestFileName(e.target.value)}
                 placeholder="Filename (e.g. image.jpg.php)..."
-                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-purple-500 focus:outline-none"
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
 
               <input
@@ -534,13 +534,13 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                 value={testMime}
                 onChange={e => setTestMime(e.target.value)}
                 placeholder="Declared MIME (e.g. image/jpeg)..."
-                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-purple-500 focus:outline-none"
+                className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs text-slate-200 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
 
               <button
                 onClick={handleInspectSandboxFile}
                 disabled={isAnalyzingFile || !testFileName || !testContent}
-                className="flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-purple-950/50 transition hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-600 px-4 py-1.5 text-xs font-bold text-white shadow-md shadow-cyan-950/50 transition hover:from-cyan-500 hover:to-cyan-500 disabled:opacity-50"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 <span>
@@ -561,7 +561,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                 onChange={e => setTestContent(e.target.value)}
                 rows={3}
                 placeholder="Raw file content or snippet to inspect in sandbox..."
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 font-mono text-xs text-purple-200 focus:border-purple-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 p-2.5 font-mono text-xs text-cyan-200 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
           </div>
@@ -569,10 +569,10 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
           {/* Sandbox Inspections Split-View */}
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
             {/* List (5 cols) */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 shadow-md lg:col-span-5">
+            <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-3 shadow-md lg:col-span-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <h4 className="mb-2 flex items-center justify-between border-b border-slate-800 pb-2 text-xs font-bold text-slate-200">
                 <span>{isAr ? 'الملفات المحجوزة والمفحوصة' : 'Analyzed & Quarantined Files'}</span>
-                <span className="font-mono text-[10px] text-purple-400">
+                <span className="font-mono text-[10px] text-cyan-400">
                   {uploads.length} files
                 </span>
               </h4>
@@ -586,10 +586,10 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                       onClick={() => setSelectedUpload(up)}
                       className={`flex cursor-pointer items-center justify-between rounded-lg border p-2.5 transition ${
                         isSelected
-                          ? 'border-purple-400/60 bg-purple-950/70 text-purple-200 shadow-md'
+                          ? 'border-cyan-400/60 bg-cyan-950/70 text-cyan-200 shadow-md'
                           : up.verdict !== 'SAFE'
-                            ? 'border-red-900/40 bg-red-950/20 text-slate-300 hover:bg-red-950/40'
-                            : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:bg-slate-900/60'
+                            ? 'border-rose-900/40 bg-rose-950/20 text-slate-300 hover:bg-rose-950/40'
+                            : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:bg-slate-900/60 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                       }`}
                     >
                       <div className="truncate">
@@ -603,7 +603,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                         className={`rounded px-2 py-0.5 text-[10px] font-bold ${
                           up.verdict === 'SAFE'
                             ? 'bg-emerald-950 text-emerald-300'
-                            : 'border border-red-800 bg-red-950 text-red-300'
+                            : 'border border-rose-800 bg-rose-950 text-rose-300'
                         }`}
                       >
                         {up.verdict}
@@ -615,7 +615,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
             </div>
 
             {/* Details (7 cols) */}
-            <div className="flex flex-col justify-between rounded-xl border border-purple-500/30 bg-slate-900/90 p-3.5 shadow-md lg:col-span-7">
+            <div className="flex flex-col justify-between rounded-xl border border-cyan-500/30 bg-slate-900/90 p-3.5 shadow-md lg:col-span-7">
               {selectedUpload ? (
                 <div className="space-y-3 font-mono text-xs">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -629,7 +629,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                       className={`rounded px-2.5 py-1 text-xs font-bold ${
                         selectedUpload.verdict === 'SAFE'
                           ? 'border border-emerald-500 bg-emerald-950 text-emerald-300'
-                          : 'animate-pulse border border-red-500 bg-red-950 text-red-300'
+                          : 'animate-pulse border border-rose-500 bg-rose-950 text-rose-300'
                       }`}
                     >
                       {selectedUpload.status}
@@ -637,7 +637,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                   </div>
 
                   {/* Magic Bytes vs Declared MIME */}
-                  <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-[11px]">
+                  <div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-[11px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div>
                       <span className="block text-slate-500">Declared MIME:</span>
                       <span className="text-slate-300">{selectedUpload.declaredMimeType}</span>
@@ -651,7 +651,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                     <div>
                       <span className="block text-slate-500">Polyglot WebShell:</span>
                       <span
-                        className={`font-bold ${selectedUpload.isPolyglot ? 'text-red-400' : 'text-emerald-400'}`}
+                        className={`font-bold ${selectedUpload.isPolyglot ? 'text-rose-400' : 'text-emerald-400'}`}
                       >
                         {selectedUpload.isPolyglot ? 'DETECTED (SPOOFED)' : 'NEGATIVE'}
                       </span>
@@ -659,7 +659,7 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                     <div>
                       <span className="block text-slate-500">Threat Score:</span>
                       <span
-                        className={`font-bold ${selectedUpload.threatScore > 80 ? 'text-red-400' : 'text-emerald-400'}`}
+                        className={`font-bold ${selectedUpload.threatScore > 80 ? 'text-rose-400' : 'text-emerald-400'}`}
                       >
                         {selectedUpload.threatScore} / 100
                       </span>
@@ -667,9 +667,9 @@ export const DeceptionSandboxPanel: React.FC<DeceptionSandboxPanelProps> = ({
                   </div>
 
                   {/* Gemini AI Summary */}
-                  <div className="rounded-lg border border-purple-500/40 bg-purple-950/40 p-3">
-                    <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-purple-300">
-                      <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                  <div className="rounded-lg border border-cyan-500/40 bg-cyan-950/40 p-3">
+                    <div className="mb-1 flex items-center gap-1.5 text-xs font-bold text-cyan-300">
+                      <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
                       <span>
                         {isAr
                           ? 'تقرير الذكاء الاصطناعي الجنائي (Gemini AI Audit):'

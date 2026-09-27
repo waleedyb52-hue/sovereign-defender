@@ -71,7 +71,7 @@ export const GaugeAnalyticsView: React.FC<Props> = ({ d, isAr, reduce }) => {
             <Stat
               label={isAr ? 'نسبة الحجب' : 'Block share'}
               value={d.derived.blockShare != null ? `${(d.derived.blockShare * 100).toFixed(2)}%` : null}
-              accent="#7dd3fc"
+              accent="#67e8f9"
             />
             <Stat
               label={isAr ? 'كثافة التهديد' : 'Threat density'}
@@ -168,8 +168,8 @@ export const GaugeAnalyticsView: React.FC<Props> = ({ d, isAr, reduce }) => {
                     width: `${Math.min(100, (d.derived.threatDensity / 500) * 100)}%`,
                     background:
                       d.derived.threatDensity >= 300
-                        ? 'linear-gradient(90deg, #F59E0B, #EF4444)'
-                        : 'linear-gradient(90deg, #38BDF8, #10B981)'
+                        ? 'linear-gradient(90deg, #F59E0B, #f43f5e)'
+                        : 'linear-gradient(90deg, #22d3ee, #10B981)'
                   }}
                 />
               )}
@@ -196,7 +196,7 @@ export const GaugeAnalyticsView: React.FC<Props> = ({ d, isAr, reduce }) => {
         <Glass className="p-3 lg:col-span-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Layers className="h-3.5 w-3.5 text-[#38BDF8]" aria-hidden />
+            <Layers className="h-3.5 w-3.5 text-[#22d3ee]" aria-hidden />
             <Label>{isAr ? 'توزّع عائلات الهجوم المحتفظ بها' : 'Retained attack family distribution'}</Label>
           </div>
           <span className="text-[8px] text-slate-500">

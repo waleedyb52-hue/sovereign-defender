@@ -372,7 +372,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
         if (d.status === 'UNDER_ATTACK') return '#f43f5e';
         if (d.status === 'SUSPICIOUS') return '#f59e0b';
         if (d.status === 'ISOLATED') return '#94a3b8';
-        return '#38bdf8';
+        return '#22d3ee';
       })
       .attr('stroke-width', 2.5);
 
@@ -435,11 +435,11 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
   const isolatedCount = nodes.filter(n => n.status === 'ISOLATED').length;
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md">
+    <div className="rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Header & Controls */}
       <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-800 pb-4 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg border border-cyan-500/30 bg-gradient-to-br from-cyan-500/20 to-indigo-500/20 p-2.5">
+          <div className="rounded-lg border border-cyan-500/30 bg-gradient-to-br from-cyan-500/20 to-cyan-500/20 p-2.5">
             <Radio className="h-5 w-5 animate-pulse text-cyan-400" />
           </div>
           <div>
@@ -480,7 +480,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
           <select
             value={filterType}
             onChange={e => setFilterType(e.target.value)}
-            className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-cyan-500 focus:outline-none"
+            className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           >
             <option value="ALL">{isAr ? 'جميع العقد' : 'All Nodes'}</option>
             <option value="GATEWAY">{isAr ? 'بوابات eBPF' : 'Gateways'}</option>
@@ -493,7 +493,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
 
       {/* Quick Status Bar */}
       <div className="my-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+        <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div>
             <span className="text-[11px] text-slate-400">
               {isAr ? 'العقد الخاضعة للهجوم' : 'Under Attack'}
@@ -503,7 +503,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
           <ShieldAlert className="h-5 w-5 text-rose-400" />
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+        <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div>
             <span className="text-[11px] text-slate-400">
               {isAr ? 'نشاط جانبي مشبوه' : 'Suspicious Movement'}
@@ -513,7 +513,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
           <AlertTriangle className="h-5 w-5 text-amber-400" />
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+        <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div>
             <span className="text-[11px] text-slate-400">
               {isAr ? 'العقد المعزولة' : 'Isolated Nodes'}
@@ -523,7 +523,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
           <Lock className="h-5 w-5 text-slate-400" />
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+        <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/60 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div>
             <span className="text-[11px] text-slate-400">
               {isAr ? 'سلامة الشبكة السيادية' : 'Network Posture'}
@@ -535,7 +535,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
       </div>
 
       {/* SVG Canvas Map Area */}
-      <div className="relative flex min-h-[480px] items-center justify-center overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/80">
+      <div className="relative flex min-h-[480px] items-center justify-center overflow-hidden rounded-xl border border-slate-800/80 bg-slate-950/80 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Subtle grid background */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px] opacity-40" />
 
@@ -546,7 +546,7 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
         />
 
         {/* Legend Overlay */}
-        <div className="absolute bottom-3 left-3 space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 text-[11px] text-slate-400 backdrop-blur-md">
+        <div className="absolute bottom-3 left-3 space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 text-[11px] text-slate-400 backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-1 font-semibold text-slate-200">
             {isAr ? 'دلالات الرموز' : 'Legend'}
           </div>
@@ -571,19 +571,19 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
 
       {/* Slide-out Drill-Down Drawer for Node Telemetry (Pitch-Black Cyber-Ops Surface) */}
       {isDrillDownOpen && selectedNode && (
-        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-end bg-[#0d1117]/85 p-4 backdrop-blur-sm">
-          <div className="animate-in slide-in-from-right w-full max-w-md space-y-4 rounded-xl border border-[#1e2733] bg-[#131a24] p-5 font-mono text-[#e6edf3] shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#1e2733] pb-3">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-end bg-[#000000]/85 p-4 backdrop-blur-sm">
+          <div className="animate-in slide-in-from-right w-full max-w-md space-y-4 rounded-xl border border-[#0e3a44] bg-[#03070c] p-5 font-mono text-[#e6edf3] shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#0e3a44] pb-3">
               <div className="flex items-center gap-2.5">
                 <div
                   className={`rounded border p-2 ${
                     selectedNode.status === 'UNDER_ATTACK'
-                      ? 'border-[#f85149] bg-[#0d1117] text-[#f85149]'
+                      ? 'border-[#f43f5e] bg-[#000000] text-[#f43f5e]'
                       : selectedNode.status === 'SUSPICIOUS'
-                        ? 'border-[#fab219] bg-[#0d1117] text-[#fab219]'
+                        ? 'border-[#f59e0b] bg-[#000000] text-[#f59e0b]'
                         : selectedNode.status === 'ISOLATED'
-                          ? 'border-[#93a1b3] bg-[#0d1117] text-[#93a1b3]'
-                          : 'border-[#3fb950] bg-[#0d1117] text-[#3fb950]'
+                          ? 'border-[#8aa4b8] bg-[#000000] text-[#8aa4b8]'
+                          : 'border-[#10b981] bg-[#000000] text-[#10b981]'
                   }`}
                 >
                   <Server className="h-5 w-5" />
@@ -592,14 +592,14 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
                   <h4 className="text-sm font-bold text-[#e6edf3]">
                     {isAr ? selectedNode.labelAr : selectedNode.label}
                   </h4>
-                  <span className="text-xs text-[#93a1b3]">
+                  <span className="text-xs text-[#8aa4b8]">
                     {selectedNode.ip} • {selectedNode.vlan}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setIsDrillDownOpen(false)}
-                className="rounded p-1 text-[#93a1b3] hover:bg-[#1a2230] hover:text-[#e6edf3]"
+                className="rounded p-1 text-[#8aa4b8] hover:bg-[#061019] hover:text-[#e6edf3]"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -607,39 +607,39 @@ export const InteractiveNetworkTopologyMap: React.FC<InteractiveNetworkTopologyM
 
             {/* Drill-down telemetry metrics */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded border border-[#1e2733] bg-[#0d1117] p-3">
-                <span className="text-[10px] text-[#93a1b3]">
+              <div className="rounded border border-[#0e3a44] bg-[#000000] p-3">
+                <span className="text-[10px] text-[#8aa4b8]">
                   {isAr ? 'درجة الخطورة' : 'Threat Score'}
                 </span>
                 <div
-                  className={`text-base font-bold ${selectedNode.threatScore > 70 ? 'text-[#f85149]' : 'text-[#3fb950]'}`}
+                  className={`text-base font-bold ${selectedNode.threatScore > 70 ? 'text-[#f43f5e]' : 'text-[#10b981]'}`}
                 >
                   {selectedNode.threatScore}/100
                 </div>
               </div>
-              <div className="rounded border border-[#1e2733] bg-[#0d1117] p-3">
-                <span className="text-[10px] text-[#93a1b3]">
+              <div className="rounded border border-[#0e3a44] bg-[#000000] p-3">
+                <span className="text-[10px] text-[#8aa4b8]">
                   {isAr ? 'ضغط المعالج' : 'CPU Load'}
                 </span>
                 <div className="text-base font-bold text-[#e6edf3]">{selectedNode.cpuLoad}%</div>
               </div>
-              <div className="rounded border border-[#1e2733] bg-[#0d1117] p-3">
-                <span className="text-[10px] text-[#93a1b3]">{isAr ? 'جلسات TCP' : 'Sockets'}</span>
-                <div className="text-base font-bold text-[#3fb950]">
+              <div className="rounded border border-[#0e3a44] bg-[#000000] p-3">
+                <span className="text-[10px] text-[#8aa4b8]">{isAr ? 'جلسات TCP' : 'Sockets'}</span>
+                <div className="text-base font-bold text-[#10b981]">
                   {selectedNode.activeSockets}
                 </div>
               </div>
             </div>
 
             {/* Security Diagnosis */}
-            <div className="space-y-2 rounded border border-[#1e2733] bg-[#0d1117] p-3.5 text-xs">
+            <div className="space-y-2 rounded border border-[#0e3a44] bg-[#000000] p-3.5 text-xs">
               <div className="flex items-center gap-2 font-semibold text-[#e6edf3]">
-                <Activity className="h-4 w-4 text-[#3fb950]" />
+                <Activity className="h-4 w-4 text-[#10b981]" />
                 <span>
                   {isAr ? 'التشخيص الأمني بنواة eBPF' : 'eBPF Kernel Security Diagnostics'}
                 </span>
               </div>
-              <p className="leading-relaxed text-[#93a1b3]">
+              <p className="leading-relaxed text-[#8aa4b8]">
                 {selectedNode.status === 'UNDER_ATTACK'
                   ? isAr
                     ? 'تم رصد محاولات استغلال واستدعاء غير مصرح به للشل. تم تطبيق إسقاط الحزم عند خطاف XDP.'

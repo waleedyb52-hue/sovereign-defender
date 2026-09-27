@@ -327,7 +327,7 @@ export const ExhibitionMode: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
     st === 'done'
       ? 'text-[#10B981]'
       : st === 'failed'
-        ? 'text-[#EF4444]'
+        ? 'text-[#f43f5e]'
         : st === 'active'
           ? 'text-[#F59E0B]'
           : st === 'skipped'
@@ -338,7 +338,7 @@ export const ExhibitionMode: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
     <Card dir={isAr ? 'rtl' : 'ltr'} className="overflow-hidden">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Radio className="h-4 w-4 text-[#38BDF8]" aria-hidden />
+          <Radio className="h-4 w-4 text-[#22d3ee]" aria-hidden />
           <CardTitle>
             {isAr ? 'وضع العرض — محاكاة بنقرة واحدة' : 'EXHIBITION MODE — ONE-CLICK SIMULATION'}
           </CardTitle>
@@ -412,9 +412,9 @@ export const ExhibitionMode: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                 disabled={running}
                 className={cn(
                   'w-full rounded border px-3 py-2 text-start transition-colors disabled:opacity-50',
-                  'focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none',
+                  'focus-visible:ring-2 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none',
                   selected
-                    ? 'border-[#38BDF8]/45 bg-[#38BDF8]/8'
+                    ? 'border-[#22d3ee]/45 bg-[#22d3ee]/8'
                     : 'border-slate-800 bg-black/20 hover:border-slate-700'
                 )}
               >
@@ -422,7 +422,7 @@ export const ExhibitionMode: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                   <span className="text-[11px] font-medium text-slate-200">
                     {isAr ? sc.titleAr : sc.titleEn}
                   </span>
-                  <Mono className="shrink-0 text-[9px] text-[#7dd3fc]">{sc.mitre}</Mono>
+                  <Mono className="shrink-0 text-[9px] text-[#67e8f9]">{sc.mitre}</Mono>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-1">
                   {sc.payload ? (
@@ -484,7 +484,7 @@ export const ExhibitionMode: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                       <CheckCircle2 className="h-4 w-4 text-[#10B981]" aria-hidden />
                     )}
                     {st.state === 'failed' && (
-                      <XCircle className="h-4 w-4 text-[#EF4444]" aria-hidden />
+                      <XCircle className="h-4 w-4 text-[#f43f5e]" aria-hidden />
                     )}
                     {st.state === 'active' && (
                       <Loader2 className="h-4 w-4 animate-spin text-[#F59E0B]" aria-hidden />
@@ -534,7 +534,7 @@ export const ExhibitionMode: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                     ? 'border-[#10B981]/30 bg-[#10B981]/5'
                     : outcome === 'NO_SENSOR'
                       ? 'border-[#F59E0B]/30 bg-[#F59E0B]/5'
-                      : 'border-[#EF4444]/30 bg-[#EF4444]/5'
+                      : 'border-[#f43f5e]/30 bg-[#f43f5e]/5'
                 )}
               >
                 <div className="flex items-center gap-1.5">
@@ -542,7 +542,7 @@ export const ExhibitionMode: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                     <CheckCircle2 className="h-3.5 w-3.5 text-[#10B981]" aria-hidden />
                   )}
                   {outcome === 'FAIL' && (
-                    <XCircle className="h-3.5 w-3.5 text-[#EF4444]" aria-hidden />
+                    <XCircle className="h-3.5 w-3.5 text-[#f43f5e]" aria-hidden />
                   )}
                   {outcome === 'NO_SENSOR' && (
                     <AlertTriangle className="h-3.5 w-3.5 text-[#F59E0B]" aria-hidden />
@@ -554,7 +554,7 @@ export const ExhibitionMode: React.FC<Props> = ({ lang = 'ar', apiKey }) => {
                         ? 'text-[#6ee7b7]'
                         : outcome === 'NO_SENSOR'
                           ? 'text-[#fcd34d]'
-                          : 'text-[#fca5a5]'
+                          : 'text-[#fda4af]'
                     )}
                   >
                     {outcome === 'PASS'
@@ -601,7 +601,7 @@ const Stat: React.FC<{
       : tone === 'tarpit'
         ? 'text-[#fcd34d]'
         : tone === 'ebpf'
-          ? 'text-[#7dd3fc]'
+          ? 'text-[#67e8f9]'
           : 'text-slate-300';
   return (
     <div className="rounded border border-slate-800/60 bg-black/25 px-2.5 py-2">

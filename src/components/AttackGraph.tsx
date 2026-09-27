@@ -104,13 +104,13 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
       case 'GATEWAY':
         return <Router className="h-4 w-4 text-cyan-400" />;
       case 'WEB_SERVER':
-        return <Server className="h-4 w-4 text-sky-400" />;
+        return <Server className="h-4 w-4 text-cyan-400" />;
       case 'DATABASE':
         return <Database className="h-4 w-4 text-amber-400" />;
       case 'HONEYPOT':
-        return <Radio className="h-4 w-4 text-purple-400" />;
+        return <Radio className="h-4 w-4 text-cyan-400" />;
       case 'BASTION':
-        return <Lock className="h-4 w-4 text-indigo-400" />;
+        return <Lock className="h-4 w-4 text-cyan-400" />;
       default:
         return <Server className="h-4 w-4 text-slate-400" />;
     }
@@ -131,13 +131,13 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
       case 'DEFENDER':
         return 'bg-emerald-950/70 border-emerald-500/80 hover:border-emerald-400 text-emerald-300 ring-1 ring-emerald-500/30';
       case 'HONEYPOT':
-        return 'bg-purple-950/70 border-purple-500/70 hover:border-purple-400 text-purple-300';
+        return 'bg-cyan-950/70 border-cyan-500/70 hover:border-cyan-400 text-cyan-300';
       case 'DATABASE':
         return 'bg-amber-950/60 border-amber-500/70 hover:border-amber-400 text-amber-300';
       case 'GATEWAY':
         return 'bg-cyan-950/60 border-cyan-500/70 hover:border-cyan-400 text-cyan-300';
       default:
-        return 'bg-slate-900/80 border-slate-700 hover:border-slate-500 text-slate-300';
+        return 'bg-slate-900/80 border-slate-700 hover:border-slate-500 text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]';
     }
   };
 
@@ -152,9 +152,9 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
   });
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl">
+    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Top Header with Multi-View Topology Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-slate-950/80 px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-slate-950/80 px-5 py-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex items-center gap-3">
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-emerald-400">
             <Layers className="h-5 w-5 animate-pulse" />
@@ -179,7 +179,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
         </div>
 
         {/* View Mode Tabs */}
-        <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs font-medium">
+        <div className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs font-medium shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <button
             onClick={() => setActiveViewMode('ARCHITECTURE')}
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition ${
@@ -220,7 +220,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
             onClick={() => setActiveViewMode('BLAST_RADIUS_RADAR')}
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition ${
               activeViewMode === 'BLAST_RADIUS_RADAR'
-                ? 'border border-purple-500/40 bg-purple-500/20 font-bold text-purple-300'
+                ? 'border border-cyan-500/40 bg-cyan-500/20 font-bold text-cyan-300'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -231,7 +231,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
       </div>
 
       {/* Sub-toolbar with filtering and quick metrics */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/40 px-5 py-2.5 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/40 px-5 py-2.5 text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex items-center gap-2">
           <span className="text-slate-400">{isAr ? 'تصفية العقد:' : 'Filter Nodes:'}</span>
           <div className="flex items-center gap-1">
@@ -256,8 +256,8 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
             <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
             {isAr ? 'وكيل eBPF: نشط (0ns Overhead)' : 'eBPF Shield: Active'}
           </span>
-          <span className="flex items-center gap-1.5 text-purple-400">
-            <span className="h-2 w-2 rounded-full bg-purple-500"></span>
+          <span className="flex items-center gap-1.5 text-cyan-400">
+            <span className="h-2 w-2 rounded-full bg-cyan-500"></span>
             {isAr ? 'المصيدة: 10.0.99.5 جاهزة' : 'Honeypot: Armed'}
           </span>
           <span className="flex items-center gap-1.5 text-rose-400">
@@ -416,7 +416,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                       node.type === 'DEFENDER'
                         ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
                         : node.type === 'HONEYPOT'
-                          ? 'border-purple-500/40 bg-purple-500/20 text-purple-300'
+                          ? 'border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
                           : node.type === 'ATTACKER'
                             ? 'border-rose-500/40 bg-rose-500/20 text-rose-300'
                             : 'border-slate-700 bg-slate-800 text-slate-300'
@@ -462,8 +462,8 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                     isSevered
                       ? 'border-emerald-500/50 bg-emerald-950/30'
                       : isHoneypot
-                        ? 'border-purple-500/50 bg-purple-950/30'
-                        : 'border-slate-800 bg-slate-900/60'
+                        ? 'border-cyan-500/50 bg-cyan-950/30'
+                        : 'border-slate-800 bg-slate-900/60 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <div className="mb-2 flex items-center justify-between">
@@ -475,7 +475,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                         isSevered
                           ? 'border-emerald-500/40 bg-emerald-500/20 text-emerald-300'
                           : isHoneypot
-                            ? 'border-purple-500/40 bg-purple-500/20 text-purple-300'
+                            ? 'border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
                             : 'animate-pulse border-rose-500/40 bg-rose-500/20 text-rose-300'
                       }`}
                     >
@@ -529,7 +529,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
             {geoThreats.map(geo => (
               <div
                 key={geo.id || `geo-${crypto.randomUUID()}`}
-                className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 transition hover:border-slate-700"
+                className="rounded-xl border border-slate-800 bg-slate-900/80 p-3.5 transition hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -567,7 +567,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                     <span className="text-slate-500">Decoy:</span>
                     <span
                       className={
-                        geo.divertedToHoneypot ? 'font-bold text-purple-400' : 'text-slate-400'
+                        geo.divertedToHoneypot ? 'font-bold text-cyan-400' : 'text-slate-400'
                       }
                     >
                       {geo.divertedToHoneypot ? 'Diverted to Honeypot' : 'Direct eBPF Block'}
@@ -585,7 +585,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
         <div className="min-h-[410px] space-y-4 bg-slate-950/95 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Radio className="h-5 w-5 text-purple-400" />
+              <Radio className="h-5 w-5 text-cyan-400" />
               <h4 className="text-sm font-bold text-white">
                 {isAr
                   ? 'رادار محاكاة نطاق الأثر وعزل التجزئة الميكروية (Blast Radius & Microsegmentation)'
@@ -601,7 +601,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
 
           <div className="grid grid-cols-1 gap-4 pt-2 lg:grid-cols-3">
             {/* Target Node Selector */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <label className="block text-xs font-bold text-slate-300">
                 {isAr ? 'اختر العقدة لمحاكاة نطاق الخطر:' : 'Select Node to Simulate Blast Radius:'}
               </label>
@@ -614,8 +614,8 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                       onClick={() => setSimulatedBlastRadius(node.id)}
                       className={`flex w-full items-center justify-between rounded-lg p-2 text-left font-mono text-xs transition ${
                         simulatedBlastRadius === node.id
-                          ? 'border border-purple-500 bg-purple-950/70 font-bold text-purple-200'
-                          : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white'
+                          ? 'border border-cyan-500 bg-cyan-950/70 font-bold text-cyan-200'
+                          : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                       }`}
                     >
                       <div className="flex items-center gap-2">
@@ -629,7 +629,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
             </div>
 
             {/* Assessment Panel */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 lg:col-span-2">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 lg:col-span-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
                   <h5 className="text-sm font-bold text-white">
@@ -650,7 +650,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center font-mono text-xs">
-                <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-400">
                     {isAr ? 'احتمالية الاختراق:' : 'Lateral Probability:'}
                   </span>
@@ -662,7 +662,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                         : '12%'}
                   </span>
                 </div>
-                <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-400">
                     {isAr ? 'العقد المهددة مباشرة:' : 'Adjacent Assets at Risk:'}
                   </span>
@@ -672,7 +672,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
                       : '1 Node (eBPF Shield)'}
                   </span>
                 </div>
-                <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-400">
                     {isAr ? 'زمن الاستجابة التلقائية:' : 'SOAR Playbook TTL:'}
                   </span>
@@ -681,7 +681,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               </div>
 
               {/* Automated Playbook Steps */}
-              <div className="space-y-1.5 rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-xs">
+              <div className="space-y-1.5 rounded-lg border border-slate-800 bg-slate-950 p-3 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <div className="flex items-center gap-1.5 font-bold text-slate-300">
                   <Zap className="h-3.5 w-3.5 text-emerald-400" />
                   <span>
@@ -716,7 +716,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
 
       {/* Selected Node Details Drawer */}
       {selectedNode && (
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-800/80 bg-slate-950 px-5 py-3.5 font-mono text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-800/80 bg-slate-950 px-5 py-3.5 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center gap-3">
             <div className="rounded-lg border border-slate-700 bg-slate-800 p-2 text-white">
               {getNodeIcon(selectedNode.type)}
@@ -763,7 +763,7 @@ export const AttackGraph: React.FC<AttackGraphProps> = ({
               </span>
             </button>
 
-            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5">
+            <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="text-slate-400">{isAr ? 'مؤشر الخطر:' : 'Risk Level:'}</span>
               <span
                 className={`font-bold ${selectedNode.riskScore > 50 ? 'text-rose-400' : 'text-emerald-400'}`}

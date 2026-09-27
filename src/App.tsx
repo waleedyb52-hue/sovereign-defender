@@ -613,7 +613,7 @@ export default function App() {
    * TACTICAL C2 takes the whole viewport.
    *
    * Returned before the chrome rather than inside <main>: the navbar, the sidebar
-   * offset, the p-8 padding and the #0d1117 root would each box the scene in, and a
+   * offset, the p-8 padding and the #000000 root would each box the scene in, and a
    * HUD that is boxed in is just a card with a globe in it.
    *
    * The other consoles stay reachable through the ALL CONSOLES control. They are not

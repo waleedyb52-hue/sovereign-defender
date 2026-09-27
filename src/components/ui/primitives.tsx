@@ -27,10 +27,10 @@ type ButtonVariant = 'default' | 'secondary' | 'ghost' | 'danger' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
-  default: 'bg-[#38BDF8]/15 text-[#7dd3fc] border-[#38BDF8]/35 hover:bg-[#38BDF8]/25',
+  default: 'bg-[#22d3ee]/15 text-[#67e8f9] border-[#22d3ee]/35 hover:bg-[#22d3ee]/25',
   secondary: 'bg-slate-700/40 text-slate-200 border-slate-600/50 hover:bg-slate-700/60',
   ghost: 'bg-transparent text-slate-300 border-transparent hover:bg-slate-800/60',
-  danger: 'bg-[#EF4444]/15 text-[#fca5a5] border-[#EF4444]/40 hover:bg-[#EF4444]/25',
+  danger: 'bg-[#f43f5e]/15 text-[#fda4af] border-[#f43f5e]/40 hover:bg-[#f43f5e]/25',
   outline: 'bg-transparent text-slate-200 border-slate-700 hover:border-slate-500'
 };
 
@@ -55,7 +55,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         'transition-colors duration-150 select-none',
         // A visible focus ring is not optional: this console is operated under
         // pressure and keyboard-first by people who cannot hunt for focus.
-        'focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none',
+        'focus-visible:ring-2 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none',
         'disabled:pointer-events-none disabled:opacity-40',
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
@@ -109,8 +109,8 @@ export type BadgeTone = 'secure' | 'tarpit' | 'quarantine' | 'ebpf' | 'neutral';
 const BADGE_TONES: Record<BadgeTone, string> = {
   secure: 'bg-[#10B981]/12 text-[#6ee7b7] border-[#10B981]/35',
   tarpit: 'bg-[#F59E0B]/12 text-[#fcd34d] border-[#F59E0B]/35',
-  quarantine: 'bg-[#EF4444]/12 text-[#fca5a5] border-[#EF4444]/40',
-  ebpf: 'bg-[#38BDF8]/12 text-[#7dd3fc] border-[#38BDF8]/35',
+  quarantine: 'bg-[#f43f5e]/12 text-[#fda4af] border-[#f43f5e]/40',
+  ebpf: 'bg-[#22d3ee]/12 text-[#67e8f9] border-[#22d3ee]/35',
   neutral: 'bg-slate-700/30 text-slate-300 border-slate-600/40'
 };
 

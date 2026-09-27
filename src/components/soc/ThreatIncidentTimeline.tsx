@@ -506,7 +506,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
             .attr('height', 16)
             .attr('rx', 8)
             .attr('fill', '#0f172a')
-            .attr('stroke', isHovered ? '#f59e0b' : '#38bdf8')
+            .attr('stroke', isHovered ? '#f59e0b' : '#22d3ee')
             .attr('stroke-width', 1);
 
           tagGroup
@@ -514,7 +514,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
             .attr('x', 0)
             .attr('y', 3.5)
             .attr('text-anchor', 'middle')
-            .attr('fill', isHovered ? '#fef08a' : '#38bdf8')
+            .attr('fill', isHovered ? '#fef08a' : '#22d3ee')
             .attr('font-size', '9px')
             .attr('font-family', 'monospace')
             .attr('font-weight', 'bold')
@@ -800,7 +800,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
               className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-xs font-bold transition ${
                 isLiveSync
                   ? 'border-emerald-500/50 bg-emerald-950/70 text-emerald-300 shadow-md'
-                  : 'border-slate-700 bg-slate-900 text-slate-400'
+                  : 'border-slate-700 bg-slate-900 text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
               }`}
             >
               {isLiveSync ? (
@@ -817,7 +817,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
             <button
               onClick={fetchTimelineData}
               disabled={isLoading}
-              className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-300 transition hover:bg-slate-800"
+              className="rounded-lg border border-slate-700 bg-slate-900 p-1.5 text-slate-300 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               title={isAr ? 'تحديث البيانات' : 'Refresh Timeline'}
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -829,7 +829,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
       {/* ===================================================================== */}
       {/* 2. FILTER & D3 INTERACTIVE CONTROLS BAR                                */}
       {/* ===================================================================== */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Left Filter Group: Time & Type */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Search Input */}
@@ -840,12 +840,12 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder={isAr ? 'بحث في التهديدات أو الـ IP...' : 'Search payload, IP, vector...'}
-              className="w-48 rounded-lg border border-slate-700 bg-slate-950 py-1 pr-3 pl-8 text-xs text-slate-200 outline-none focus:border-cyan-400"
+              className="w-48 rounded-lg border border-slate-700 bg-slate-950 py-1 pr-3 pl-8 text-xs text-slate-200 outline-none focus:border-cyan-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             />
           </div>
 
           {/* Time Horizon Pills */}
-          <div className="flex items-center rounded-lg border border-slate-800 bg-slate-950 p-0.5">
+          <div className="flex items-center rounded-lg border border-slate-800 bg-slate-950 p-0.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             {(['ALL', '15M', '1H', '6H'] as const).map(h => (
               <button
                 key={h}
@@ -865,7 +865,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
           <select
             value={typeFilter}
             onChange={e => setTypeFilter(e.target.value as any)}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 font-mono text-xs text-slate-300 outline-none"
+            className="rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 font-mono text-xs text-slate-300 outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           >
             <option value="ALL">
               {isAr ? 'جميع الفئات (المترابطة)' : 'Filter: All Incidents'}
@@ -890,7 +890,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
         </div>
 
         {/* Right Controls: D3 Zoom & Pan controls */}
-        <div className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950 p-1">
+        <div className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-950 p-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <button
             onClick={handleZoomIn}
             className="rounded p-1 text-slate-400 transition hover:bg-slate-800 hover:text-slate-100"
@@ -919,9 +919,9 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
       {/* ===================================================================== */}
       {/* 3. D3 VERTICAL TIMELINE STAGE WITH LANE HEADERS                       */}
       {/* ===================================================================== */}
-      <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-2xl">
+      <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Lane Headers Ribbon */}
-        <div className="z-10 grid grid-cols-12 border-b border-slate-800 bg-slate-900/90 px-4 py-2.5 font-mono text-xs font-bold text-slate-400">
+        <div className="z-10 grid grid-cols-12 border-b border-slate-800 bg-slate-900/90 px-4 py-2.5 font-mono text-xs font-bold text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           {/* Left Lane: Blocked Attacks */}
           <div className="col-span-5 flex items-center gap-2 text-rose-400">
             <ShieldAlert className="h-4 w-4 text-rose-400" />
@@ -982,7 +982,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
           )}
 
           {/* Live Instruction Tip in Bottom Corner */}
-          <div className="pointer-events-none absolute right-3 bottom-3 flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1 font-mono text-[10px] text-slate-400">
+          <div className="pointer-events-none absolute right-3 bottom-3 flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1 font-mono text-[10px] text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <span>🖱️ Scroll to Zoom / Pan</span>
             <span>•</span>
             <span>Click any node to inspect payload & MITRE</span>
@@ -1060,7 +1060,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
 
             {/* Incident Metadata Grid */}
             <div className="grid grid-cols-2 gap-2.5 font-mono text-xs sm:grid-cols-4">
-              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'الوقت الدقيق' : 'TIMESTAMP'}
                 </span>
@@ -1068,7 +1068,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
                   {new Date(selectedIncident.timestamp).toLocaleTimeString()}
                 </span>
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'مصدر الهجوم' : 'ACTOR IP / ORIGIN'}
                 </span>
@@ -1076,7 +1076,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
                   {selectedIncident.actorIp || 'Host Subsystem'}
                 </span>
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'الموقع المستهدف' : 'TARGET ASSET'}
                 </span>
@@ -1084,7 +1084,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
                   {selectedIncident.target || '/'}
                 </span>
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5">
+              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'مؤشر الخطورة' : 'THREAT IMPACT'}
                 </span>
@@ -1093,7 +1093,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
             </div>
 
             {/* Description Details */}
-            <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs leading-relaxed text-slate-300">
+            <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3 text-xs leading-relaxed text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="mb-1 block font-mono text-[10px] font-bold text-slate-400 uppercase">
                 {isAr ? 'تفاصيل الحادث والتحليل الأمني' : 'Forensic Incident Analysis'}
               </span>
@@ -1106,7 +1106,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
 
             {/* MITRE & Action Taken */}
             <div className="grid grid-cols-1 gap-3 font-mono text-xs sm:grid-cols-2">
-              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3">
+              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="mb-1 block text-[10px] text-slate-400">MITRE ATT&CK MATRIX</span>
                 <span className="block font-bold text-cyan-400">
                   {selectedIncident.mitreTactic || 'Initial Access'}
@@ -1115,7 +1115,7 @@ export const ThreatIncidentTimeline: React.FC<ThreatIncidentTimelineProps> = ({ 
                   {selectedIncident.mitreTechnique || 'T1190 - Exploit Public-Facing Application'}
                 </span>
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3">
+              <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="mb-1 block text-[10px] text-slate-400">
                   {isAr ? 'الإجراء الدفاعي المتخذ' : 'DEFENSIVE ACTION COMMITTED'}
                 </span>

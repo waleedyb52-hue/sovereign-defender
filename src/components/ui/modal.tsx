@@ -106,7 +106,7 @@ export const Modal: React.FC<ModalProps> = ({
           'fixed top-1/2 left-1/2 z-[121] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2',
           'max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border backdrop-blur-md',
           'bg-[#0F1420]/95 shadow-2xl shadow-black/60 focus:outline-none',
-          tone === 'danger' ? 'border-[#EF4444]/45' : 'border-slate-700/70',
+          tone === 'danger' ? 'border-[#f43f5e]/45' : 'border-slate-700/70',
           SIZES[size],
           className
         )}
@@ -114,14 +114,14 @@ export const Modal: React.FC<ModalProps> = ({
         <div
           className={cn(
             'flex items-center justify-between gap-3 border-b px-4 py-3',
-            tone === 'danger' ? 'border-[#EF4444]/25' : 'border-slate-800/80',
+            tone === 'danger' ? 'border-[#f43f5e]/25' : 'border-slate-800/80',
             !showTitle && 'sr-only'
           )}
         >
           <RadixDialog.Title
             className={cn(
               'text-[13px] font-semibold tracking-wide',
-              tone === 'danger' ? 'text-[#fca5a5]' : 'text-slate-200'
+              tone === 'danger' ? 'text-[#fda4af]' : 'text-slate-200'
             )}
             style={{ fontFamily: 'var(--font-sans)' }}
           >
@@ -130,7 +130,7 @@ export const Modal: React.FC<ModalProps> = ({
           {dismissible && showTitle && (
             <RadixDialog.Close
               aria-label={dir === 'rtl' ? 'إغلاق' : 'Close'}
-              className="rounded p-0.5 text-slate-500 transition-colors hover:text-slate-200 focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none"
+              className="rounded p-0.5 text-slate-500 transition-colors hover:text-slate-200 focus-visible:ring-2 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none"
             >
               <X className="h-3.5 w-3.5" />
             </RadixDialog.Close>

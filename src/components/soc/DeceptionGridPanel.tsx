@@ -292,12 +292,12 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
   return (
     <div
       className="space-y-5 rounded-xl border p-5 shadow-2xl"
-      style={{ background: '#050914', borderColor: '#1B2338' }}
+      style={{ background: '#050914', borderColor: '#061019' }}
     >
       {/* Header */}
       <div
         className="flex flex-col items-start justify-between gap-4 border-b pb-4 lg:flex-row lg:items-center"
-        style={{ borderColor: '#1B2338' }}
+        style={{ borderColor: '#061019' }}
       >
         <div className="flex items-center gap-3">
           <div
@@ -335,7 +335,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
         <button
           onClick={() => fetchGrid(true)}
           className="rounded-lg border p-1.5 transition"
-          style={{ background: '#0C1322', borderColor: '#1B2338', color: '#7A8AA8' }}
+          style={{ background: '#0C1322', borderColor: '#061019', color: '#7A8AA8' }}
           title={isAr ? 'تحديث' : 'Refresh'}
         >
           <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -361,7 +361,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
             icon: Layers,
             label: isAr ? 'تفاعلات' : 'Interactions',
             value: stats?.router.totalInteractions ?? 0,
-            color: '#00F0FF'
+            color: '#00f3ff'
           },
           {
             icon: KeyRound,
@@ -385,7 +385,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
           <div
             key={i}
             className="rounded-lg border p-2.5"
-            style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+            style={{ background: '#0A0F1E', borderColor: '#061019' }}
           >
             <div
               className="flex items-center gap-1.5 font-mono text-[10px]"
@@ -405,13 +405,13 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
       {stats?.router.latencyProfile && (
         <div
           className="rounded-lg border p-3"
-          style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+          style={{ background: '#0A0F1E', borderColor: '#061019' }}
         >
           <div
             className="mb-2 flex items-center gap-2 font-mono text-[11px] font-bold"
             style={{ color: '#B9C6DC' }}
           >
-            <Timer className="h-3.5 w-3.5" style={{ color: '#00F0FF' }} />
+            <Timer className="h-3.5 w-3.5" style={{ color: '#00f3ff' }} />
             <span>
               {isAr
                 ? 'مطابقة زمن الاستجابة (دفاع ضد البصمة الزمنية)'
@@ -429,13 +429,13 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
                 className="rounded px-2 py-1.5"
                 style={{ background: '#060B16', border: '1px solid #16203A' }}
               >
-                <div className="font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+                <div className="font-mono text-[9px]" style={{ color: '#2c4a57' }}>
                   {bucket}
                 </div>
-                <div className="font-mono text-[11px]" style={{ color: '#00F0FF' }}>
+                <div className="font-mono text-[11px]" style={{ color: '#00f3ff' }}>
                   p50 {p.p50}ms · p95 {p.p95}ms
                 </div>
-                <div className="font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+                <div className="font-mono text-[9px]" style={{ color: '#2c4a57' }}>
                   {p.samples} {isAr ? 'عينة حقيقية' : 'real samples'}
                 </div>
               </div>
@@ -447,7 +447,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
       {/* Drill bar */}
       <div
         className="space-y-2 rounded-lg border p-3"
-        style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+        style={{ background: '#0A0F1E', borderColor: '#061019' }}
       >
         <div
           className="flex items-center gap-2 font-mono text-xs font-bold"
@@ -527,7 +527,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
       {/* Deception flow graph */}
       <div
         className="space-y-2 rounded-lg border p-4"
-        style={{ background: '#0A0F1E', borderColor: '#1B2338' }}
+        style={{ background: '#0A0F1E', borderColor: '#061019' }}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div
@@ -537,7 +537,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
             <Network className="h-4 w-4" style={{ color: VIOLET }} />
             <span>{isAr ? 'رسم تدفق الخداع' : 'Deception Flow Graph'}</span>
           </div>
-          <span className="font-mono text-[10px]" style={{ color: '#4B5B78' }}>
+          <span className="font-mono text-[10px]" style={{ color: '#2c4a57' }}>
             {isAr
               ? 'المهاجم ← الأصل الوهمي ← الطُعم ← تقنية MITRE'
               : 'Actor → Decoy Asset → Canary → MITRE Technique'}
@@ -580,7 +580,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
             {actors.length === 0 && (
               <div
                 className="rounded-lg border p-6 text-center font-mono text-[11px]"
-                style={{ background: '#0A0F1E', borderColor: '#1B2338', color: '#4B5B78' }}
+                style={{ background: '#0A0F1E', borderColor: '#061019', color: '#2c4a57' }}
               >
                 {isAr
                   ? 'لا يوجد فاعلون محتجزون حالياً. الشبكة في وضع الترقب.'
@@ -599,7 +599,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
                   className="cursor-pointer rounded-lg border p-2.5 transition"
                   style={{
                     background: selected ? 'rgba(138,43,226,0.09)' : '#0A0F1E',
-                    borderColor: selected ? 'rgba(138,43,226,0.5)' : '#1B2338'
+                    borderColor: selected ? 'rgba(138,43,226,0.5)' : '#061019'
                   }}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -622,7 +622,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
                         >
                           {a.actorIp}
                         </span>
-                        <span className="font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+                        <span className="font-mono text-[9px]" style={{ color: '#2c4a57' }}>
                           {timeAgo(a.lastInteractionAt, isAr)}
                         </span>
                       </div>
@@ -632,7 +632,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
                         className="mt-1.5 rounded px-2 py-1.5"
                         style={{ background: '#060B16', border: '1px solid #16203A' }}
                       >
-                        <div className="font-mono text-[9px]" style={{ color: '#4B5B78' }}>
+                        <div className="font-mono text-[9px]" style={{ color: '#2c4a57' }}>
                           {isAr
                             ? 'الهوية المستنسخة (حالة تركيبية معزولة)'
                             : 'Cloned identity (isolated synthetic state)'}
@@ -724,7 +724,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
             </div>
             <label
               className="flex cursor-pointer items-center gap-1 font-mono text-[9px]"
-              style={{ color: '#4B5B78' }}
+              style={{ color: '#2c4a57' }}
             >
               <input
                 type="checkbox"
@@ -741,7 +741,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
             style={{ background: '#060B16', borderColor: '#16203A' }}
           >
             {visibleTranscript.length === 0 && (
-              <div className="py-8 text-center" style={{ color: '#4B5B78' }}>
+              <div className="py-8 text-center" style={{ color: '#2c4a57' }}>
                 {isAr
                   ? 'لا توجد أوامر مرصودة داخل الصندوق الوهمي بعد.'
                   : 'No commands observed inside the sandbox yet.'}
@@ -764,7 +764,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
 
                 {e.decodedPayload && e.decodedPayload !== e.rawPayload && (
                   <div className="mt-1 ps-3 break-all" style={{ color: '#C89BFF' }}>
-                    <span style={{ color: '#4B5B78' }}>
+                    <span style={{ color: '#2c4a57' }}>
                       {isAr ? 'بعد فك التمويه: ' : 'deobfuscated: '}
                     </span>
                     {e.decodedPayload.slice(0, 150)}
@@ -773,9 +773,9 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
 
                 <div
                   className="mt-1 flex flex-wrap items-center gap-2 ps-3"
-                  style={{ color: '#4B5B78' }}
+                  style={{ color: '#2c4a57' }}
                 >
-                  <span style={{ color: '#00F0FF' }}>{e.decoyResponseKind}</span>
+                  <span style={{ color: '#00f3ff' }}>{e.decoyResponseKind}</span>
                   <span>{e.decoyStatusCode}</span>
                   <span>{e.appliedLatencyMs}ms</span>
                   {e.obfuscationDepth > 0 && (
@@ -798,7 +798,7 @@ export const DeceptionGridPanel: React.FC<DeceptionGridPanelProps> = ({ lang }) 
       {/* Footer: mitigation posture */}
       <div
         className="flex flex-wrap items-center gap-3 border-t pt-3 font-mono text-[10px]"
-        style={{ borderColor: '#1B2338', color: '#5C6E8C' }}
+        style={{ borderColor: '#061019', color: '#5C6E8C' }}
       >
         <ShieldQuestion className="h-3.5 w-3.5" style={{ color: VIOLET }} />
         <span>{isAr ? 'دفاعات مقاومة كشف المصيدة:' : 'Anti-fingerprinting posture:'}</span>

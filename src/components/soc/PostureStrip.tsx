@@ -90,7 +90,7 @@ export const PostureStrip: React.FC<Props> = ({ lang = 'ar', flightMode, threats
           </span>
         </div>
         <div className="mt-3">
-          {series ? <Sparkline values={req} color="#58a6ff" /> : <Skeleton />}
+          {series ? <Sparkline values={req} color="#22d3ee" /> : <Skeleton />}
         </div>
       </div>
 

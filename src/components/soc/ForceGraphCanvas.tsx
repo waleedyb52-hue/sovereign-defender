@@ -27,8 +27,8 @@ export interface GraphEdge {
 /** Palette required by the SOC spec. */
 export const NODE_PALETTE: Record<GraphNodeType, string> = {
   ACTOR: '#FF0055', // attacker
-  FILE_OBJECT: '#00F0FF', // target resource / file
-  ENDPOINT: '#00F0FF', // target endpoint shares the resource colour
+  FILE_OBJECT: '#00f3ff', // target resource / file
+  ENDPOINT: '#00f3ff', // target endpoint shares the resource colour
   TECHNIQUE: '#FFB800', // MITRE technique
   STATE: '#00FF66' // applied mitigation
 };
@@ -36,7 +36,7 @@ export const NODE_PALETTE: Record<GraphNodeType, string> = {
 const EDGE_PALETTE: Record<GraphRelationship, string> = {
   ATTACKED: '#FF0055',
   TAMPERED_WITH: '#FF7A00',
-  EXFILTRATING: '#00F0FF',
+  EXFILTRATING: '#00f3ff',
   MITIGATED_BY: '#00FF66'
 };
 
@@ -527,7 +527,7 @@ export const ForceGraphCanvas: React.FC<ForceGraphCanvasProps> = ({
       {/* Physics telemetry */}
       <div
         className="pointer-events-none absolute right-2 bottom-2 font-mono text-[9px]"
-        style={{ color: '#4B5B78' }}
+        style={{ color: '#2c4a57' }}
       >
         {nodes.length}N · {edges.length}E · {fps}fps ·{' '}
         {settled ? (isAr ? 'مستقر' : 'settled') : isAr ? 'يتقارب' : 'converging'}
@@ -536,7 +536,7 @@ export const ForceGraphCanvas: React.FC<ForceGraphCanvasProps> = ({
       {nodes.length === 0 && (
         <div
           className="absolute inset-0 flex items-center justify-center font-mono text-[11px]"
-          style={{ color: '#4B5B78' }}
+          style={{ color: '#2c4a57' }}
         >
           {isAr ? 'لا توجد حوادث نشطة لرسمها.' : 'No active incidents to plot.'}
         </div>

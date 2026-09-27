@@ -61,7 +61,7 @@ export const EndpointRiskScatter: React.FC<Props> = ({ d, isAr, reduce }) => {
   const yOf = (share: number) => 150 - Math.min(1, share) * 128;
 
   const bandOf = (share: number) =>
-    share >= CRITICAL_SHARE ? '#EF4444' : share >= WARN_SHARE ? '#F59E0B' : '#10B981';
+    share >= CRITICAL_SHARE ? '#f43f5e' : share >= WARN_SHARE ? '#F59E0B' : '#10B981';
 
   const W = 300;
   const H = 172;
@@ -115,7 +115,7 @@ export const EndpointRiskScatter: React.FC<Props> = ({ d, isAr, reduce }) => {
                   strokeWidth="0.7"
                   strokeDasharray="3 3"
                 />
-                <text x="36" y={yOf(t) + 3} fill="#6b7a90" fontSize="6" textAnchor="end"
+                <text x="36" y={yOf(t) + 3} fill="#5c7484" fontSize="6" textAnchor="end"
                   style={{ fontFamily: 'var(--font-mono)' }}>
                   {(t * 100).toFixed(0)}%
                 </text>
@@ -125,10 +125,10 @@ export const EndpointRiskScatter: React.FC<Props> = ({ d, isAr, reduce }) => {
             {/* Axes */}
             <line x1="42" y1="150" x2="278" y2="150" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8" />
             <line x1="42" y1="22" x2="42" y2="150" stroke="rgba(255,255,255,0.12)" strokeWidth="0.8" />
-            <text x="160" y="166" fill="#6b7a90" fontSize="6.5" textAnchor="middle">
+            <text x="160" y="166" fill="#5c7484" fontSize="6.5" textAnchor="middle">
               {isAr ? 'حجم الطلبات (لوغاريتمي)' : 'request volume (log)'}
             </text>
-            <text x="12" y="88" fill="#6b7a90" fontSize="6.5" textAnchor="middle" transform="rotate(-90 12 88)">
+            <text x="12" y="88" fill="#5c7484" fontSize="6.5" textAnchor="middle" transform="rotate(-90 12 88)">
               {isAr ? 'نسبة العدائية' : 'hostile share'}
             </text>
 
@@ -180,7 +180,7 @@ export const EndpointRiskScatter: React.FC<Props> = ({ d, isAr, reduce }) => {
                     <Mono className="text-white">{formatCount(points[hover].hits)}</Mono> {isAr ? 'طلب' : 'requests'}
                   </span>
                   <span>
-                    <Mono className="text-[#fca5a5]">{formatCount(points[hover].threatHits)}</Mono>{' '}
+                    <Mono className="text-[#fda4af]">{formatCount(points[hover].threatHits)}</Mono>{' '}
                     {isAr ? 'عدائي' : 'hostile'}
                   </span>
                   <span>

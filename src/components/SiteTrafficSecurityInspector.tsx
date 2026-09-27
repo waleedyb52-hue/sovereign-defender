@@ -496,7 +496,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
   return (
     <div className="space-y-5" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Top Header & Tactical Action Bar */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl sm:p-6">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl sm:p-6 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           {/* Title & Description */}
           <div className="flex items-start gap-4">
@@ -569,7 +569,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             <button
               onClick={handleEnforceSiteHardening}
               disabled={isHardeningInProgress}
-              className="flex items-center gap-1.5 rounded-xl border border-emerald-400/40 bg-gradient-to-r from-emerald-600 to-teal-600 px-3.5 py-2 text-xs font-black text-white shadow-lg shadow-emerald-950/60 transition hover:from-emerald-500 hover:to-teal-500 active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-xl border border-emerald-400/40 bg-gradient-to-r from-emerald-600 to-cyan-600 px-3.5 py-2 text-xs font-black text-white shadow-lg shadow-emerald-950/60 transition hover:from-emerald-500 hover:to-cyan-500 active:scale-95 disabled:opacity-50"
             >
               <ShieldCheck
                 className={`h-3.5 w-3.5 text-white ${isHardeningInProgress ? 'animate-spin' : ''}`}
@@ -646,7 +646,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
         </div>
 
         {/* Metric 2: Traffic Volume (RPS) */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               {isAr ? 'حجم حركة المرور (RPS)' : 'Traffic Volume'}
@@ -665,7 +665,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
         </div>
 
         {/* Metric 3: Active Blocked Threats */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               {isAr ? 'التهديدات المحجوبة' : 'Active Blocked Threats'}
@@ -686,7 +686,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
         </div>
 
         {/* Metric 4: eBPF Filter Status */}
-        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg sm:p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               {isAr ? 'مرشح النواة (eBPF)' : 'eBPF Filter Status'}
@@ -734,11 +734,11 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             onClick={() => setIsSimulatorExpanded(!isSimulatorExpanded)}
             className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
               isSimulatorExpanded
-                ? 'border-purple-500/40 bg-purple-950/60 text-purple-300'
-                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                ? 'border-cyan-500/40 bg-cyan-950/60 text-cyan-300'
+                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
-            <Crosshair className="h-3 w-3 text-purple-400" />
+            <Crosshair className="h-3 w-3 text-cyan-400" />
             <span>{isAr ? 'مختبر المحاكاة' : 'Attack Simulator Lab'}</span>
           </button>
 
@@ -748,7 +748,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             className={`flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
               isOwaspMatrixExpanded
                 ? 'border-cyan-500/40 bg-cyan-950/60 text-cyan-300'
-                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <Layers className="h-3 w-3 text-cyan-400" />
@@ -759,7 +759,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
       {/* Advanced Secondary Metrics Collapsible Section */}
       {showAdvancedMetrics && (
-        <div className="animate-fadeIn grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-xs sm:grid-cols-4">
+        <div className="animate-fadeIn grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-4 text-xs sm:grid-cols-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="space-y-1">
             <span className="block text-[10px] font-bold text-slate-500 uppercase">
               {isAr ? 'إجمالي الطلبات' : 'Total Ingested'}
@@ -795,10 +795,10 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
       {/* MODULAR COLLAPSIBLE SECTION: ATTACK SIMULATOR */}
       {isSimulatorExpanded && (
-        <div className="animate-fadeIn space-y-3 rounded-2xl border border-purple-500/30 bg-slate-900/90 p-4 shadow-lg">
+        <div className="animate-fadeIn space-y-3 rounded-2xl border border-cyan-500/30 bg-slate-900/90 p-4 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Crosshair className="h-4 w-4 text-purple-400" />
+              <Crosshair className="h-4 w-4 text-cyan-400" />
               <h2 className="text-xs font-bold tracking-wider text-white uppercase">
                 {isAr ? 'مختبر محاكاة الهجمات وحقن الحزم' : 'Live Attack Simulation Lab'}
               </h2>
@@ -828,7 +828,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             <button
               onClick={() => handleSimulateAttack('COMMAND_INJECTION')}
               disabled={isLoading}
-              className="rounded-lg border border-purple-500/40 bg-purple-500/20 px-3 py-1.5 text-xs font-bold text-purple-300 transition hover:bg-purple-500/30"
+              className="rounded-lg border border-cyan-500/40 bg-cyan-500/20 px-3 py-1.5 text-xs font-bold text-cyan-300 transition hover:bg-cyan-500/30"
             >
               {isAr ? 'اختبار حقن الأوامر RCE' : 'Test RCE Command'}
             </button>
@@ -852,7 +852,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
       {/* MODULAR COLLAPSIBLE SECTION: OWASP ENFORCEMENT MATRIX */}
       {isOwaspMatrixExpanded && (
-        <div className="animate-fadeIn space-y-3 rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg">
+        <div className="animate-fadeIn space-y-3 rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-cyan-400" />
@@ -870,37 +870,37 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             </button>
           </div>
           <div className="grid grid-cols-1 gap-2.5 text-xs sm:grid-cols-3">
-            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="font-bold text-slate-300">SQL Injection (A03)</span>
               <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                 ACTIVE
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="font-bold text-slate-300">XSS Filter (A03)</span>
               <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                 ACTIVE
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="font-bold text-slate-300">RCE Command Shield</span>
               <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                 ACTIVE
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="font-bold text-slate-300">Path Traversal / LFI</span>
               <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                 ACTIVE
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="font-bold text-slate-300">Honeytoken Decoys (6)</span>
               <span className="rounded border border-amber-500/40 bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-300">
                 ARMED
               </span>
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5">
+            <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="font-bold text-slate-300">Rate Limiter (60 RPM)</span>
               <span className="rounded border border-emerald-500/40 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                 ENFORCING
@@ -913,11 +913,11 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
       {/* ========================================================================= */}
       {/* 2. SOAR AUTOMATED PLAYBOOKS & THREAT CONTAINMENT PANEL                     */}
       {/* ========================================================================= */}
-      <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl sm:p-5">
+      <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl sm:p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex flex-col gap-3 border-b border-slate-800 pb-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg border border-indigo-500/40 bg-indigo-500/20 p-2 text-indigo-300">
-              <Workflow className="h-5 w-5 text-indigo-400" />
+            <div className="rounded-lg border border-cyan-500/40 bg-cyan-500/20 p-2 text-cyan-300">
+              <Workflow className="h-5 w-5 text-cyan-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -926,7 +926,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                     ? 'محرك الاستجابة التلقائية المتقدم (SOAR Playbooks)'
                     : 'SOAR Autonomous Defense Playbooks'}
                 </h2>
-                <span className="rounded border border-indigo-500/40 bg-indigo-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-indigo-300">
+                <span className="rounded border border-cyan-500/40 bg-cyan-500/20 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300">
                   {soarExecutionCount} {isAr ? 'إجراء مُنفّذ' : 'Executed'}
                 </span>
               </div>
@@ -953,13 +953,13 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             onClick={() => setSoarAutoBan(!soarAutoBan)}
             className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3.5 transition select-none ${
               soarAutoBan
-                ? 'border-indigo-500/50 bg-indigo-950/40 shadow-lg shadow-indigo-950/40'
-                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                ? 'border-cyan-500/50 bg-cyan-950/40 shadow-lg shadow-cyan-950/40'
+                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <div className="flex items-start gap-2.5">
               <Ban
-                className={`mt-0.5 h-4 w-4 shrink-0 ${soarAutoBan ? 'text-indigo-400' : 'text-slate-500'}`}
+                className={`mt-0.5 h-4 w-4 shrink-0 ${soarAutoBan ? 'text-cyan-400' : 'text-slate-500'}`}
               />
               <div>
                 <div className="text-xs font-bold text-slate-200">
@@ -974,7 +974,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             </div>
             <span
               className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
-                soarAutoBan ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
+                soarAutoBan ? 'bg-cyan-500 text-white' : 'bg-slate-800 text-slate-400'
               }`}
             >
               {soarAutoBan ? (isAr ? 'مُفعّل' : 'ON') : isAr ? 'معطل' : 'OFF'}
@@ -987,7 +987,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3.5 transition select-none ${
               soarAutoRollback
                 ? 'border-cyan-500/50 bg-cyan-950/40 shadow-lg shadow-cyan-950/40'
-                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <div className="flex items-start gap-2.5">
@@ -1019,13 +1019,13 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             onClick={() => setSoarAutoIsolate(!soarAutoIsolate)}
             className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3.5 transition select-none ${
               soarAutoIsolate
-                ? 'border-purple-500/50 bg-purple-950/40 shadow-lg shadow-purple-950/40'
-                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                ? 'border-cyan-500/50 bg-cyan-950/40 shadow-lg shadow-cyan-950/40'
+                : 'border-slate-800 bg-slate-950/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <div className="flex items-start gap-2.5">
               <Lock
-                className={`mt-0.5 h-4 w-4 shrink-0 ${soarAutoIsolate ? 'text-purple-400' : 'text-slate-500'}`}
+                className={`mt-0.5 h-4 w-4 shrink-0 ${soarAutoIsolate ? 'text-cyan-400' : 'text-slate-500'}`}
               />
               <div>
                 <div className="text-xs font-bold text-slate-200">
@@ -1038,7 +1038,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             </div>
             <span
               className={`rounded px-2 py-0.5 font-mono text-[10px] font-bold ${
-                soarAutoIsolate ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'
+                soarAutoIsolate ? 'bg-cyan-500 text-white' : 'bg-slate-800 text-slate-400'
               }`}
             >
               {soarAutoIsolate ? (isAr ? 'مُفعّل' : 'ON') : isAr ? 'معطل' : 'OFF'}
@@ -1047,10 +1047,10 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
         </div>
 
         {/* Live SOAR Execution Log Strip */}
-        <div className="rounded-xl border border-slate-800/80 bg-slate-950/80 p-3">
+        <div className="rounded-xl border border-slate-800/80 bg-slate-950/80 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="mb-2 flex items-center justify-between font-mono text-[11px] text-slate-400">
             <span className="flex items-center gap-1.5 font-bold text-slate-300">
-              <History className="h-3.5 w-3.5 text-indigo-400" />
+              <History className="h-3.5 w-3.5 text-cyan-400" />
               {isAr
                 ? 'أحدث الإجراءات المنفذة ذاتياً بواسطة SOAR:'
                 : 'Recent Autonomous SOAR Triggers:'}
@@ -1061,11 +1061,11 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
             {soarLogs.map(log => (
               <div
                 key={log.id}
-                className="flex flex-col justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-2 sm:flex-row sm:items-center"
+                className="flex flex-col justify-between gap-2 rounded-lg border border-slate-800 bg-slate-900/60 p-2 sm:flex-row sm:items-center shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] text-slate-500">{log.time}</span>
-                  <span className="font-bold text-indigo-300">{log.playbook}</span>
+                  <span className="font-bold text-cyan-300">{log.playbook}</span>
                   <span className="text-slate-400">
                     → Target: <strong className="text-cyan-300">{log.target}</strong>
                   </span>
@@ -1090,9 +1090,9 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
       {/* ========================================================================= */}
       {/* 3. CLEAN & STREAMLINED TELEMETRY STREAM & ACTOR IP GROUPING               */}
       {/* ========================================================================= */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
+      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Table Header: Filters, View Mode Toggle, and Fast Category Chips */}
-        <div className="space-y-3 border-b border-slate-800 bg-slate-950/60 p-3.5 sm:p-4">
+        <div className="space-y-3 border-b border-slate-800 bg-slate-950/60 p-3.5 sm:p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
             <div className="flex w-full items-center gap-2.5 md:w-auto">
               {/* Search Bar */}
@@ -1107,12 +1107,12 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                       ? 'بحث بالـ IP أو المسار أو الحمولة...'
                       : 'Search IP, endpoint, or payload...'
                   }
-                  className="w-full rounded-xl border border-slate-700 bg-slate-900 py-1.5 pr-3 pl-8 text-xs text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900 py-1.5 pr-3 pl-8 text-xs text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
               {/* View Mode Toggle: Flat Stream vs Group by Actor IP */}
-              <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1 text-xs">
+              <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1 text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <button
                   onClick={() => setViewMode('FLAT')}
                   className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-bold transition ${
@@ -1129,7 +1129,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                   onClick={() => setViewMode('GROUP_BY_IP')}
                   className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-bold transition ${
                     viewMode === 'GROUP_BY_IP'
-                      ? 'bg-indigo-600 text-white shadow-md'
+                      ? 'bg-cyan-600 text-white shadow-md'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                   title={isAr ? 'تجميع الهجمات حسب عنوان IP المهاجم' : 'Group by Actor IP'}
@@ -1142,7 +1142,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
             {/* Verdict Filter Buttons & Total Count */}
             <div className="flex w-full items-center justify-between gap-2 text-xs md:w-auto md:justify-end">
-              <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1 text-xs">
+              <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-800 bg-slate-900 p-1 text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <button
                   onClick={() => setSelectedVerdict('ALL')}
                   className={`rounded-lg px-2 py-0.5 font-bold transition ${
@@ -1201,7 +1201,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                 className={`rounded-lg border px-2.5 py-1 font-bold whitespace-nowrap transition ${
                   selectedCategory === chip.id
                     ? 'border-cyan-400/60 bg-cyan-500/20 text-cyan-300 shadow-sm'
-                    : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                    : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                 }`}
               >
                 {chip.label}
@@ -1214,7 +1214,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
         {viewMode === 'FLAT' ? (
           <div className="max-h-[500px] overflow-x-auto overflow-y-auto">
             <table className="w-full border-collapse text-left">
-              <thead className="sticky top-0 z-10 border-b border-slate-800 bg-slate-950/95 font-mono text-[11px] font-bold tracking-wider text-slate-400 uppercase backdrop-blur-md">
+              <thead className="sticky top-0 z-10 border-b border-slate-800 bg-slate-950/95 font-mono text-[11px] font-bold tracking-wider text-slate-400 uppercase backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <tr>
                   <th className="w-28 px-4 py-2.5">{isAr ? 'الوقت' : 'Time'}</th>
                   <th className="w-44 px-4 py-2.5">{isAr ? 'عنوان IP العميل' : 'Client IP'}</th>
@@ -1270,7 +1270,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                             <span
                               className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-black ${
                                 frame.method === 'GET'
-                                  ? 'border border-blue-500/30 bg-blue-500/20 text-blue-300'
+                                  ? 'border border-cyan-500/30 bg-cyan-500/20 text-cyan-300'
                                   : frame.method === 'POST'
                                     ? 'border border-emerald-500/30 bg-emerald-500/20 text-emerald-300'
                                     : frame.method === 'PUT'
@@ -1360,7 +1360,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                       className="flex cursor-pointer flex-col justify-between gap-3 p-3.5 select-none md:flex-row md:items-center"
                     >
                       <div className="flex items-center gap-3">
-                        <button className="rounded-md border border-slate-800 bg-slate-900 p-1 text-slate-400 hover:text-white">
+                        <button className="rounded-md border border-slate-800 bg-slate-900 p-1 text-slate-400 hover:text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           {isExpanded ? (
                             <ChevronUp className="h-4 w-4" />
                           ) : (
@@ -1438,7 +1438,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
 
                     {/* Expandable Nested Child Logs */}
                     {isExpanded && (
-                      <div className="space-y-1.5 border-t border-slate-800 bg-slate-950/90 p-3 pr-4 pl-10">
+                      <div className="space-y-1.5 border-t border-slate-800 bg-slate-950/90 p-3 pr-4 pl-10 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         <div className="mb-2 flex items-center justify-between text-[11px] font-bold text-slate-400">
                           <span>
                             {isAr
@@ -1450,7 +1450,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                           <div
                             key={subFrame.id}
                             onClick={() => handleOpenInspector(subFrame)}
-                            className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-800/80 bg-slate-900/70 p-2 transition hover:bg-slate-800/80"
+                            className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-800/80 bg-slate-900/70 p-2 transition hover:bg-slate-800/80 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                           >
                             <div className="flex items-center gap-2.5 truncate">
                               <span className="text-[10px] text-slate-500">
@@ -1459,7 +1459,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                               <span
                                 className={`py-0.2 rounded px-1.5 text-[9px] font-bold ${
                                   subFrame.method === 'GET'
-                                    ? 'bg-blue-500/20 text-blue-300'
+                                    ? 'bg-cyan-500/20 text-cyan-300'
                                     : 'bg-emerald-500/20 text-emerald-300'
                                 }`}
                               >
@@ -1511,7 +1511,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
           }}
           className="animate-fadeIn fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
         >
-          <div className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+          <div className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             {/* Modal Header */}
             <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-3">
               <div className="flex items-center gap-3">
@@ -1546,14 +1546,14 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
               className={`rounded-xl border p-3.5 ${
                 selectedFrame.threatScore >= 80
                   ? 'border-rose-500/40 bg-rose-950/30 text-rose-200'
-                  : 'border-slate-800 bg-slate-950 text-slate-300'
+                  : 'border-slate-800 bg-slate-950 text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
               }`}
             >
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="font-mono text-[11px] font-bold tracking-wider uppercase">
                   {isAr ? 'القرار والتقييم الأمني' : 'Threat Intelligence Verdict'}
                 </span>
-                <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-xs font-bold">
+                <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-xs font-bold shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   Threat Score: {selectedFrame.threatScore}/100
                 </span>
               </div>
@@ -1588,7 +1588,7 @@ export const SiteTrafficSecurityInspector: React.FC<SiteTrafficSecurityInspector
                   </span>
                 </button>
               </div>
-              <pre className="max-h-40 overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-relaxed text-emerald-300 select-all">
+              <pre className="max-h-40 overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs leading-relaxed text-emerald-300 select-all shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {`METHOD: ${selectedFrame.method}
 ENDPOINT: ${selectedFrame.uriPath}
 QUERY: ${selectedFrame.queryString || 'NONE'}
@@ -1606,7 +1606,7 @@ PAYLOAD_SNIPPET: ${selectedFrame.rawPayloadSnippet || 'N/A'}`}
                   ? 'قاعدة الإسقاط السريعة في النواة (eBPF / XDP)'
                   : 'Synthesized Kernel eBPF Drop Rule'}
               </span>
-              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-cyan-300">
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-cyan-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <code className="truncate">{`bpf_xdp_drop_src_ip(0x${selectedFrame.clientIp
                   .split('.')
                   .map(n => parseInt(n).toString(16).padStart(2, '0'))

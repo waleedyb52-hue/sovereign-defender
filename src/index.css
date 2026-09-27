@@ -2,52 +2,75 @@
 @import './fonts.css';
 
 /* =========================================================================
-   SOVEREIGN DEFENDER — SOC ANALYST THEME
-   Built to match how real security-operations platforms are designed
-   (CrowdStrike Falcon / Cortex XSIAM / MS Sentinel conventions):
+   SOVEREIGN DEFENDER — TACTICAL C2 THEME
 
-   1. Deep NEUTRAL grey-blue base, not pure black and not a saturated navy.
-      Analysts sit in front of this for full shifts; a low-saturation surface
-      avoids the contrast strain and colour vibration that cause eye fatigue.
-   2. A strict THREE-colour severity language (red / amber / green) plus one
-      muted blue for interactive affordances. Colour is reserved for meaning
-      — decorative colour is what turns a console into visual chaos.
-   3. No ambient glow on ordinary containers. Emphasis comes from contrast,
-      weight and spacing, and a glow is spent only on a genuine live alert.
+   This theme was retoned from an analyst-console palette (neutral grey-blue
+   base, desaturated severity, no ambient glow) to the cinematic Dark SOC HUD
+   identity of the reference boards. The change was a deliberate instruction,
+   not drift, and the old rationale is recorded here so it is not reinstated by
+   accident: it argued that a low-saturation surface reduces contrast strain
+   over a full shift, which is true, and it is the cost this identity accepts.
 
-   The `slate` scale below overrides Tailwind's built-in one, which the app
-   uses ~2,000 times (bg/text/border-slate-*), so the whole console adopts
-   this surface system without per-component edits.
+   The identity, and the whole of it:
+
+   1. The void is TRUE BLACK. Not a navy, not a grey-blue. Every surface is a
+      near-black plate lifted off it by a cyan edge, so depth comes from the
+      edge rather than from a lighter fill.
+   2. FIVE hues, each with one meaning, and no sixth:
+        cyan     structure, health, measured telemetry
+        rose     threats, criticals, eBPF drops
+        amber    warnings and degraded states
+        emerald  confirmed-safe only
+        slate    text and inert chrome
+      purple, indigo, blue, sky, teal and green were folded into this grammar
+      because the references contain none of them, and a hue an operator cannot
+      name is noise wearing the costume of information.
+   3. Glow is STRUCTURAL here, not an alarm: a cyan edge halo marks a panel as
+      instrumentation. Rose glow stays reserved for live criticals, so an alert
+      is still the brightest thing on the screen.
+
+   The `slate`, `cyan`, `rose`, `amber` and `emerald` scales below override
+   Tailwind's built-ins, which the app uses roughly 7,500 times. That is the
+   point: the identity reaches every console through this block instead of
+   through 75 files of per-component edits.
    ========================================================================= */
 @theme {
   --color-slate-50: #f7f9fc;
   --color-slate-100: #eef2f7;
   --color-slate-200: #dde4ec;
   --color-slate-300: #c2ccd9;
-  --color-slate-400: #93a1b3;
-  --color-slate-500: #6b7a90;
+  --color-slate-400: #8aa4b8;
+  --color-slate-500: #5c7484;
   --color-slate-600: #48566a;
-  --color-slate-700: #2d3948;
-  --color-slate-800: #1e2733;
-  --color-slate-900: #131a24;
-  --color-slate-950: #0d1117;
+  --color-slate-700: #155e6b;
+  --color-slate-800: #0e3a44;
+  --color-slate-900: #03070c;
+  --color-slate-950: #000000;
 
-  /* Severity language — desaturated so it reads as authoritative, not alarming.
-     These deliberately replace the old neon values (#39FF14 / #FF003C) which
-     vibrate against a dark surface and are a known source of fatigue. */
-  --color-rose-300: #ff9d97;
-  --color-rose-400: #fa7970;
-  --color-rose-500: #f85149;
-  --color-rose-600: #da3633;
-  --color-amber-300: #e9c46a;
-  --color-amber-400: #dbab3a;
-  --color-amber-500: #fab219;
-  --color-emerald-300: #6fd08a;
-  --color-emerald-400: #56b96a;
-  --color-emerald-500: #3fb950;
-  --color-cyan-300: #79c0ff;
-  --color-cyan-400: #58a6ff;
-  --color-cyan-500: #388bfd;
+  /* Severity and accent ramps.
+
+     cyan-300 and cyan-500 previously held #79c0ff and #388bfd, which are BLUE.
+     Roughly 800 cyan-* utilities were therefore painting blue while the identity
+     asked for cyan — the single largest reason the consoles read as off-identity
+     even after the surfaces went black. They now sit on the real cyan ramp. */
+  --color-rose-300: #fda4af;
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+  --color-rose-600: #e11d48;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-cyan-200: #a5f3fc;
+  --color-cyan-300: #67e8f9;
+  --color-cyan-400: #22d3ee;
+  --color-cyan-500: #06b6d4;
+  --color-cyan-600: #0891b2;
+  --color-cyan-700: #0e7490;
 
   /* ------------------------------------------------------------------------
      Semantic surface and status tokens.
@@ -59,12 +82,29 @@
      the named semantics the design system asks for, used by the components that
      ask for them, and they do not redefine the slate/rose/amber scales.
      ------------------------------------------------------------------------ */
-  --color-deep-space: #080b11;
-  --color-midnight: #0f1420;
+  --color-deep-space: #000000;
+  --color-midnight: #03070c;
   --color-secure: #10b981;
   --color-tarpit: #f59e0b;
-  --color-quarantine: #ef4444;
-  --color-ebpf: #38bdf8;
+  --color-quarantine: #f43f5e;
+  --color-ebpf: #22d3ee;
+
+  /* Corner radius.
+
+     The reference boards read as machined plate: corners are cut or sharp, never
+     soft. Flattening the scale here retires several hundred rounded-lg / rounded-xl
+     / rounded-2xl utilities in one place. A true chamfer would be closer still, but
+     clip-path clips every descendant, so chamfering shared containers would cut off
+     the dropdowns and tooltips opened inside them. The chamfer therefore stays in
+     TacticalPrimitives, where the contents are known, and everything else goes
+     sharp. */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 3px;
+  --radius-2xl: 3px;
+  --radius-3xl: 4px;
 
   /* Typography split: mono is reserved for machine data (IPs, digests, ports,
      CLI), sans for everything a person reads as prose. Cairo stays in the
@@ -75,20 +115,20 @@
 
 @layer base {
   :root {
-    --bg-root: #0d1117;
-    --surface-panel: #131a24;
-    --surface-raised: #1a2230;
-    --border-subtle: #1e2733;
-    --border-strong: #2d3948;
+    --bg-root: #000000;
+    --surface-panel: #03070c;
+    --surface-raised: #061019;
+    --border-subtle: #0e3a44;
+    --border-strong: #155e6b;
     --text-primary: #e6edf3;
-    --text-secondary: #93a1b3;
-    --text-muted: #6b7a90;
+    --text-secondary: #8aa4b8;
+    --text-muted: #5c7484;
 
     /* Severity tokens (three-colour system) */
-    --sev-critical: #f85149;
-    --sev-warning: #fab219;
-    --sev-safe: #3fb950;
-    --sev-info: #58a6ff;
+    --sev-critical: #f43f5e;
+    --sev-warning: #f59e0b;
+    --sev-safe: #10b981;
+    --sev-info: #22d3ee;
   }
 
   html,
@@ -100,7 +140,7 @@
   }
 
   /* TACTICAL C2 owns the void.
-     The console default (#0d1117) is a blue-grey. Behind a black-space scene it
+     The console default (#000000) is a blue-grey. Behind a black-space scene it
      reads as haze at every edge the fixed HUD does not cover — overscroll, the
      scrollbar gutter, the moment before the canvas paints. So the HUD blacks the
      root out while it is mounted and hands it straight back on unmount, rather
@@ -130,7 +170,7 @@
        that has to stay readable for hours. */
     background-image: radial-gradient(
       ellipse 90% 55% at 50% -10%,
-      rgba(56, 139, 253, 0.06),
+      rgba(34, 211, 238, 0.06),
       transparent 70%
     );
     background-attachment: fixed;
@@ -154,7 +194,7 @@
   }
 
   ::selection {
-    background-color: rgba(56, 139, 253, 0.3);
+    background-color: rgba(34, 211, 238, 0.3);
     color: #ffffff;
   }
 
@@ -183,15 +223,15 @@
    ========================================================================= */
 .sev-critical {
   border-left: 3px solid var(--sev-critical);
-  background: linear-gradient(90deg, rgba(248, 81, 73, 0.07), transparent 55%);
+  background: linear-gradient(90deg, rgba(244, 63, 94, 0.07), transparent 55%);
 }
 .sev-warning {
   border-left: 3px solid var(--sev-warning);
-  background: linear-gradient(90deg, rgba(250, 178, 25, 0.07), transparent 55%);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.07), transparent 55%);
 }
 .sev-safe {
   border-left: 3px solid var(--sev-safe);
-  background: linear-gradient(90deg, rgba(63, 185, 80, 0.06), transparent 55%);
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.06), transparent 55%);
 }
 [dir='rtl'] .sev-critical,
 [dir='rtl'] .sev-warning,
@@ -201,15 +241,15 @@
 }
 [dir='rtl'] .sev-critical {
   border-right-color: var(--sev-critical);
-  background: linear-gradient(-90deg, rgba(248, 81, 73, 0.07), transparent 55%);
+  background: linear-gradient(-90deg, rgba(244, 63, 94, 0.07), transparent 55%);
 }
 [dir='rtl'] .sev-warning {
   border-right-color: var(--sev-warning);
-  background: linear-gradient(-90deg, rgba(250, 178, 25, 0.07), transparent 55%);
+  background: linear-gradient(-90deg, rgba(245, 158, 11, 0.07), transparent 55%);
 }
 [dir='rtl'] .sev-safe {
   border-right-color: var(--sev-safe);
-  background: linear-gradient(-90deg, rgba(63, 185, 80, 0.06), transparent 55%);
+  background: linear-gradient(-90deg, rgba(16, 185, 129, 0.06), transparent 55%);
 }
 
 /* =========================================================================
@@ -275,29 +315,51 @@ html[data-motion='calm'] .animate-spin {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgba(248, 81, 73, 0.5),
-      0 0 18px -6px rgba(248, 81, 73, 0.55);
+      0 0 0 1px rgba(244, 63, 94, 0.5),
+      0 0 18px -6px rgba(244, 63, 94, 0.55);
   }
   50% {
     box-shadow:
-      0 0 0 1px rgba(248, 81, 73, 0.85),
-      0 0 26px -4px rgba(248, 81, 73, 0.8);
+      0 0 0 1px rgba(244, 63, 94, 0.85),
+      0 0 26px -4px rgba(244, 63, 94, 0.8);
   }
 }
 .alert-live {
   animation: sd-alert-pulse 2.4s ease-in-out infinite;
 }
 
-/* Panel surface: flat, defined by border + elevation, never by a halo. */
+/* Panel surface: near-black glass, a cyan edge, and a halo that marks it as
+   instrumentation. Radius is 2px rather than a chamfer on purpose — a clip-path
+   chamfer clips every descendant, which would cut off each dropdown and tooltip
+   the consoles open inside a panel. The chamfer lives in TacticalPrimitives,
+   where the contents are known. */
 .soc-panel {
-  background: var(--surface-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
+  background: rgba(3, 7, 12, 0.72);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  border-radius: 2px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
 }
 .soc-panel-raised {
-  background: var(--surface-raised);
-  border: 1px solid var(--border-strong);
-  border-radius: 10px;
+  background: rgba(6, 16, 25, 0.8);
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  border-radius: 2px;
+  box-shadow: 0 0 24px rgba(0, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+/* Section labels pick up the cyan so a group header reads as machine chrome. */
+.soc-label {
+  color: #22d3ee;
+}
+
+/* The identity's panel treatment, for containers that style themselves inline
+   rather than through .soc-panel. */
+.tac-glass {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(6, 182, 212, 0.4) !important;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
 }
 
 /* Section label: the quiet, consistent header used above every data group. */

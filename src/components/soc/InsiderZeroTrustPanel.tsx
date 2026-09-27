@@ -174,7 +174,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
   const frozenPendingCount = actions.filter(a => a.status === 'FROZEN_PENDING_APPROVAL').length;
 
   return (
-    <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md">
+    <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-800 pb-4 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
@@ -219,7 +219,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
       </div>
 
       {/* Adversarial Simulation Bar */}
-      <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/80 p-4">
+      <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
             <Terminal className="h-4 w-4 text-cyan-400" />
@@ -260,9 +260,9 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
           <button
             onClick={() => handleTriggerSimulation('ROOT_LOG_DELETION')}
             disabled={isLoading}
-            className="flex items-center gap-1.5 rounded-lg border border-purple-800/60 bg-purple-950/60 px-3 py-1.5 text-xs font-semibold text-purple-200 transition hover:bg-purple-900/80"
+            className="flex items-center gap-1.5 rounded-lg border border-cyan-800/60 bg-cyan-950/60 px-3 py-1.5 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-900/80"
           >
-            <Trash2 className="h-3.5 w-3.5 text-purple-400" />
+            <Trash2 className="h-3.5 w-3.5 text-cyan-400" />
             <span>
               {isAr ? 'حساب Root يحاول إتلاف السجلات الجنائية' : 'Root Shredd Audit Logs'}
             </span>
@@ -315,7 +315,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
                   className={`cursor-pointer space-y-2 rounded-xl border p-3.5 text-xs transition ${
                     isSelected
                       ? 'border-cyan-500 bg-slate-800/90 shadow-md'
-                      : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                      : 'border-slate-800 bg-slate-950/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -348,7 +348,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
                     </span>
                   </div>
 
-                  <div className="truncate rounded border border-slate-800/80 bg-slate-900/80 px-2 py-1 font-mono text-[11px] text-cyan-300">
+                  <div className="truncate rounded border border-slate-800/80 bg-slate-900/80 px-2 py-1 font-mono text-[11px] text-cyan-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     $ {act.commandSnippet}
                   </div>
 
@@ -367,7 +367,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
         </div>
 
         {/* Right Column: Selected Action Deep Dive & Team Lead OTP Approval Terminal */}
-        <div className="space-y-5 rounded-xl border border-slate-800 bg-slate-950/90 p-5 lg:col-span-7">
+        <div className="space-y-5 rounded-xl border border-slate-800 bg-slate-950/90 p-5 lg:col-span-7 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           {selectedAction ? (
             <>
               {/* Header Details */}
@@ -404,7 +404,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
 
               {/* Actor & Execution Blueprint */}
               <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-                <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-500">
                     {isAr ? 'المستخدم' : 'Actor'}
                   </span>
@@ -412,7 +412,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
                     {selectedAction.actor.username}
                   </strong>
                 </div>
-                <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-500">
                     {isAr ? 'الصلاحية' : 'Elevation'}
                   </span>
@@ -420,7 +420,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
                     {selectedAction.actor.role} ({selectedAction.actor.elevationMethod})
                   </strong>
                 </div>
-                <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-500">
                     {isAr ? 'عنوان IP' : 'Client IP'}
                   </span>
@@ -428,7 +428,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
                     {selectedAction.actor.ipAddress}
                   </strong>
                 </div>
-                <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5">
+                <div className="rounded-lg border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <span className="block text-[10px] text-slate-500">
                     {isAr ? 'تقنية MITRE' : 'MITRE'}
                   </span>
@@ -522,7 +522,7 @@ export const InsiderZeroTrustPanel: React.FC<InsiderZeroTrustPanelProps> = ({ la
                   </div>
                 </div>
               ) : (
-                <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 text-xs">
+                <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div className="flex items-center gap-2 font-semibold text-slate-300">
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                     <span>

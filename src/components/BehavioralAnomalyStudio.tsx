@@ -120,11 +120,11 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
   return (
     <div className="space-y-6">
       {/* Top Banner: Behavioral Anomaly Header */}
-      <div className="rounded-2xl border border-blue-500/40 bg-gradient-to-r from-blue-950/80 via-slate-900 to-indigo-950/80 p-6 shadow-2xl">
+      <div className="rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/80 via-slate-900 to-cyan-950/80 p-6 shadow-2xl">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="rounded-2xl border border-blue-500/40 bg-blue-500/20 p-4 text-blue-300 shadow-inner">
-              <Activity className="h-8 w-8 animate-pulse text-blue-400" />
+            <div className="rounded-2xl border border-cyan-500/40 bg-cyan-500/20 p-4 text-cyan-300 shadow-inner">
+              <Activity className="h-8 w-8 animate-pulse text-cyan-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -133,7 +133,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                     ? 'محرك كشف الشذوذ السلوكي وضبط الحساسية (Behavioral Anomaly & Baseline Tuning)'
                     : 'Behavioral Anomaly & Gaussian Baseline Engine'}
                 </h2>
-                <span className="rounded-full border border-blue-500/40 bg-blue-500/20 px-2.5 py-0.5 font-mono text-xs font-bold text-blue-300">
+                <span className="rounded-full border border-cyan-500/40 bg-cyan-500/20 px-2.5 py-0.5 font-mono text-xs font-bold text-cyan-300">
                   Z-Score Heuristics
                 </span>
               </div>
@@ -145,7 +145,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
             </div>
           </div>
 
-          <div className="flex items-center gap-4 rounded-2xl border border-blue-500/30 bg-slate-950/90 p-3.5 text-center font-mono">
+          <div className="flex items-center gap-4 rounded-2xl border border-cyan-500/30 bg-slate-950/90 p-3.5 text-center font-mono">
             <div>
               <span className="block font-sans text-[10px] text-slate-400">
                 {isAr ? 'العينات المتعلمة:' : 'Learned Samples:'}
@@ -160,7 +160,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
               <span className="block font-sans text-[10px] text-slate-400">
                 {isAr ? 'حد الانحراف المعياري:' : 'Anomaly Cutoff:'}
               </span>
-              <span className="text-2xl font-black text-blue-400">{zThreshold.toFixed(1)}σ</span>
+              <span className="text-2xl font-black text-cyan-400">{zThreshold.toFixed(1)}σ</span>
               <span className="block text-[9px] text-slate-400">Z-Score Deviation</span>
             </div>
           </div>
@@ -179,10 +179,10 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
         {/* Left Column: Baseline Statistical Profile & Threshold Tuner (6 Cols) */}
         <div className="space-y-5 lg:col-span-6">
           {/* Baseline Metric Cards */}
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl">
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
-                <BarChart3 className="h-4 w-4 text-blue-400" />
+                <BarChart3 className="h-4 w-4 text-cyan-400" />
                 <span>
                   {isAr
                     ? 'المؤشرات الإحصائية للمرور الطبيعي (Gaussian Baseline):'
@@ -200,7 +200,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
             </div>
 
             <div className="grid grid-cols-3 gap-3 text-center font-mono">
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block font-sans text-[10px] text-slate-400">
                   {isAr ? 'معدل الطلبات/ث:' : 'Mean Req Rate (μ):'}
                 </span>
@@ -212,11 +212,11 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                 </span>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block font-sans text-[10px] text-slate-400">
                   {isAr ? 'إنتروبيا شانون:' : 'Mean Entropy (μ):'}
                 </span>
-                <span className="text-lg font-bold text-purple-300">
+                <span className="text-lg font-bold text-cyan-300">
                   {baseline?.meanEntropy || 3.8} bits
                 </span>
                 <span className="block text-[9px] text-slate-500">
@@ -224,7 +224,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                 </span>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block font-sans text-[10px] text-slate-400">
                   {isAr ? 'حجم الحزم الطبيعي:' : 'Mean Pkt Size (μ):'}
                 </span>
@@ -238,17 +238,17 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
             </div>
 
             {/* Threshold Slider */}
-            <div className="space-y-3 rounded-xl border border-blue-500/30 bg-slate-950 p-4">
+            <div className="space-y-3 rounded-xl border border-cyan-500/30 bg-slate-950 p-4">
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
-                  <Sliders className="h-3.5 w-3.5 text-blue-400" />
+                  <Sliders className="h-3.5 w-3.5 text-cyan-400" />
                   <span>
                     {isAr
                       ? 'حساسية كشف الشذوذ (Anomaly Z-Score Threshold):'
                       : 'Anomaly Threshold (Z-Score):'}
                   </span>
                 </label>
-                <span className="rounded border border-blue-500/40 bg-blue-950 px-2.5 py-0.5 font-mono text-xs font-bold text-blue-300">
+                <span className="rounded border border-cyan-500/40 bg-cyan-950 px-2.5 py-0.5 font-mono text-xs font-bold text-cyan-300">
                   {zThreshold.toFixed(1)} σ
                 </span>
               </div>
@@ -260,7 +260,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                 step="0.1"
                 value={zThreshold}
                 onChange={e => handleTuneThreshold(parseFloat(e.target.value))}
-                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-blue-500"
+                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-800 accent-cyan-500"
               />
 
               <div className="flex items-center justify-between font-mono text-[10px] text-slate-400">
@@ -272,7 +272,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
           </div>
 
           {/* Active Drift Flags Log */}
-          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl">
+          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
@@ -291,7 +291,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
               {(baseline?.activeDriftFlags || []).map((flag: any) => (
                 <div
                   key={flag.id}
-                  className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs"
+                  className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div>
                     <div className="flex items-center gap-2 font-bold text-white">
@@ -321,10 +321,10 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
         <div className="space-y-5 lg:col-span-6">
           <form
             onSubmit={handleEvaluateTelemetry}
-            className="space-y-4 rounded-2xl border border-blue-500/40 bg-slate-900/95 p-5 shadow-2xl"
+            className="space-y-4 rounded-2xl border border-cyan-500/40 bg-slate-900/95 p-5 shadow-2xl"
           >
             <h3 className="flex items-center gap-2 text-sm font-bold text-white">
-              <Sparkles className="h-4 w-4 text-blue-400" />
+              <Sparkles className="h-4 w-4 text-cyan-400" />
               <span>
                 {isAr
                   ? 'اختبار وتقييم بيانات حية فوراً (Live Telemetry Evaluator):'
@@ -344,7 +344,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                   step="0.1"
                   value={testReqRate}
                   onChange={e => setTestReqRate(parseFloat(e.target.value))}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
@@ -359,7 +359,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                   step="0.01"
                   value={testEntropy}
                   onChange={e => setTestEntropy(parseFloat(e.target.value))}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
@@ -371,7 +371,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                   type="number"
                   value={testPacketSize}
                   onChange={e => setTestPacketSize(parseInt(e.target.value))}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
             </div>
@@ -379,7 +379,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
             <button
               type="submit"
               disabled={isEvaluating}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-950/50 transition hover:from-blue-500 hover:to-indigo-500"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-cyan-950/50 transition hover:from-cyan-500 hover:to-cyan-500"
             >
               <Zap className="h-3.5 w-3.5" />
               <span>
@@ -430,7 +430,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                 </div>
                 <div className="rounded bg-slate-950/80 p-2">
                   <span className="block text-[10px] text-slate-400">Δ Z(Entropy):</span>
-                  <span className="font-bold text-purple-300">
+                  <span className="font-bold text-cyan-300">
                     {evalResult.deviations.zEntropy}σ
                   </span>
                 </div>

@@ -132,7 +132,7 @@ export const IsolationProtocol: React.FC<Props> = ({
               reduce ? { duration: 0.2 } : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }
             }
             className="pointer-events-none fixed inset-0 z-[200]"
-            style={{ boxShadow: 'inset 0 0 0 3px #EF4444, inset 0 0 44px rgba(239,68,68,0.28)' }}
+            style={{ boxShadow: 'inset 0 0 0 3px #f43f5e, inset 0 0 44px rgba(239,68,68,0.28)' }}
             aria-hidden
           />
         )}
@@ -205,9 +205,9 @@ export const IsolationProtocol: React.FC<Props> = ({
       >
         {!armed && (
           <div className="space-y-3">
-            <div className="flex items-start gap-2 rounded border border-[#EF4444]/25 bg-[#EF4444]/5 px-3 py-2">
-              <ShieldAlert className="mt-px h-4 w-4 shrink-0 text-[#EF4444]" aria-hidden />
-              <p className="text-[11px] leading-relaxed text-[#fca5a5]">
+            <div className="flex items-start gap-2 rounded border border-[#f43f5e]/25 bg-[#f43f5e]/5 px-3 py-2">
+              <ShieldAlert className="mt-px h-4 w-4 shrink-0 text-[#f43f5e]" aria-hidden />
+              <p className="text-[11px] leading-relaxed text-[#fda4af]">
                 {isAr
                   ? 'سيُثبَّت حجب على مستوى النواة لكل حركة غير إدارية من هذا العنوان. إن كان العنوان لعقدة إنتاج، سينقطع مرورها.'
                   : 'A kernel-level blackhole will be installed for all non-management traffic from this address. If it belongs to a production node, its traffic will stop.'}
@@ -238,7 +238,7 @@ export const IsolationProtocol: React.FC<Props> = ({
                     'placeholder:text-slate-700 focus:outline-none',
                     confirmed
                       ? 'border-[#10B981]/50 focus:border-[#10B981]'
-                      : 'border-slate-700 focus:border-[#EF4444]/60'
+                      : 'border-slate-700 focus:border-[#f43f5e]/60'
                   )}
                   style={{ fontFamily: 'var(--font-mono)' }}
                 />
@@ -271,7 +271,7 @@ export const IsolationProtocol: React.FC<Props> = ({
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F59E0B]" aria-hidden />
                   )}
                   {s.state === 'failed' && (
-                    <XCircle className="h-3.5 w-3.5 text-[#EF4444]" aria-hidden />
+                    <XCircle className="h-3.5 w-3.5 text-[#f43f5e]" aria-hidden />
                   )}
                   {s.state === 'pending' && (
                     <div className="h-3.5 w-3.5 rounded-full border border-slate-700" />
@@ -284,7 +284,7 @@ export const IsolationProtocol: React.FC<Props> = ({
                       s.state === 'done'
                         ? 'text-slate-300'
                         : s.state === 'failed'
-                          ? 'text-[#fca5a5]'
+                          ? 'text-[#fda4af]'
                           : s.state === 'active'
                             ? 'text-[#fcd34d]'
                             : 'text-slate-600'
@@ -305,7 +305,7 @@ export const IsolationProtocol: React.FC<Props> = ({
                   'mt-3 rounded border px-3 py-2 text-[11px]',
                   result.ok
                     ? 'border-[#10B981]/30 bg-[#10B981]/5 text-[#6ee7b7]'
-                    : 'border-[#EF4444]/30 bg-[#EF4444]/5 text-[#fca5a5]'
+                    : 'border-[#f43f5e]/30 bg-[#f43f5e]/5 text-[#fda4af]'
                 )}
               >
                 <p className="font-medium">

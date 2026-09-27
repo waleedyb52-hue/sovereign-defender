@@ -38,10 +38,10 @@ export const FimForensicsCenter: React.FC<FimForensicsCenterProps> = ({
   return (
     <div className="space-y-6" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Top Header & View Selector */}
-      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl sm:p-6">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl sm:p-6 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-4">
-            <div className="shrink-0 rounded-xl border border-indigo-400/30 bg-gradient-to-br from-indigo-600 to-cyan-700 p-3 text-white shadow-lg shadow-indigo-950/60">
+            <div className="shrink-0 rounded-xl border border-cyan-400/30 bg-gradient-to-br from-cyan-600 to-cyan-700 p-3 text-white shadow-lg shadow-cyan-950/60">
               <FileSearch className="h-6 w-6" />
             </div>
             <div>
@@ -51,8 +51,8 @@ export const FimForensicsCenter: React.FC<FimForensicsCenterProps> = ({
                     ? 'مركز سلامة الملفات والتحليل الجنائي الرقمي'
                     : 'File Integrity (FIM) & Digital Forensics'}
                 </h1>
-                <span className="flex items-center gap-1.5 rounded-full border border-indigo-500/40 bg-indigo-500/20 px-2.5 py-0.5 font-mono text-xs font-bold text-indigo-300">
-                  <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
+                <span className="flex items-center gap-1.5 rounded-full border border-cyan-500/40 bg-cyan-500/20 px-2.5 py-0.5 font-mono text-xs font-bold text-cyan-300">
+                  <ShieldCheck className="h-3.5 w-3.5 text-cyan-400" />
                   {isAr ? 'مُفعّل (Merkle Tree)' : 'MERKLE TREE ACTIVE'}
                 </span>
               </div>
@@ -65,16 +65,16 @@ export const FimForensicsCenter: React.FC<FimForensicsCenterProps> = ({
           </div>
 
           {/* Sub-View Navigation Pills */}
-          <div className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/80 p-1.5">
+          <div className="flex shrink-0 items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/80 p-1.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <button
               onClick={() => setActiveTab('FIM_WATCHER')}
               className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition ${
                 activeTab === 'FIM_WATCHER'
-                  ? 'border border-indigo-400/60 bg-gradient-to-r from-indigo-600/40 to-cyan-600/40 text-indigo-200 shadow-lg'
+                  ? 'border border-cyan-400/60 bg-gradient-to-r from-cyan-600/40 to-cyan-600/40 text-cyan-200 shadow-lg'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <FileCode className="h-4 w-4 text-indigo-400" />
+              <FileCode className="h-4 w-4 text-cyan-400" />
               <span>
                 {isAr ? 'سلامة الملفات والذاكرة (FIM)' : 'File Integrity & Process Memory'}
               </span>

@@ -201,7 +201,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
 
   if (isLoading && !drillData) {
     return (
-      <div className="animate-pulse rounded-2xl border border-slate-800 bg-slate-950 p-8 text-center font-mono text-sm text-slate-400">
+      <div className="animate-pulse rounded-2xl border border-slate-800 bg-slate-950 p-8 text-center font-mono text-sm text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {isAr
           ? 'جاري استدعاء مصفوفة المراحل الشاملة لوزارة الدفاع...'
           : 'Loading MoD Sovereign Master Defense Matrix...'}
@@ -252,7 +252,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
           <button
             onClick={handleExecuteAllPhasesDrill}
             disabled={isExecutingDrill}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 via-purple-600 to-cyan-600 px-4 py-2 font-mono text-xs font-black tracking-wider text-white uppercase shadow-xl shadow-rose-950/50 transition hover:from-rose-500 hover:to-cyan-500 active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 via-cyan-600 to-cyan-600 px-4 py-2 font-mono text-xs font-black tracking-wider text-white uppercase shadow-xl shadow-rose-950/50 transition hover:from-rose-500 hover:to-cyan-500 active:scale-95 disabled:opacity-50"
           >
             <Zap
               className={`h-4 w-4 text-amber-300 ${isExecutingDrill ? 'animate-spin' : 'animate-bounce'}`}
@@ -270,7 +270,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
 
           <button
             onClick={() => setActiveTab('PHASE_5_REPORT')}
-            className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2 font-mono text-xs font-bold text-slate-200 transition hover:bg-slate-800"
+            className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2 font-mono text-xs font-bold text-slate-200 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           >
             <FileCheck2 className="h-4 w-4 text-cyan-400" />
             <span>{isAr ? 'تقرير وزارة الدفاع الجنائي' : 'MoD Forensic Audit'}</span>
@@ -303,7 +303,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             className={`relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition ${
               activeTab === 'PHASE_1'
                 ? 'border-rose-500/80 bg-rose-950/40 shadow-lg shadow-rose-950/40'
-                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <div className="mb-1 flex items-center justify-between text-[11px] font-bold text-rose-400">
@@ -334,7 +334,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             className={`relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition ${
               activeTab === 'PHASE_2'
                 ? 'border-amber-500/80 bg-amber-950/40 shadow-lg shadow-amber-950/40'
-                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <div className="mb-1 flex items-center justify-between text-[11px] font-bold text-amber-400">
@@ -350,7 +350,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                 <strong className="text-cyan-300">{d.phases.phase2.tcpSocketsSevered} RST</strong>
               </div>
               <div>
-                Node: <span className="text-purple-300">{d.phases.phase2.nodeQuarantined}</span>
+                Node: <span className="text-cyan-300">{d.phases.phase2.nodeQuarantined}</span>
               </div>
             </div>
             <div className="mt-2 flex items-center gap-1 text-[9px] font-bold text-emerald-400">
@@ -364,13 +364,13 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             onClick={() => setActiveTab('PHASE_3')}
             className={`relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition ${
               activeTab === 'PHASE_3'
-                ? 'border-purple-500/80 bg-purple-950/40 shadow-lg shadow-purple-950/40'
-                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                ? 'border-cyan-500/80 bg-cyan-950/40 shadow-lg shadow-cyan-950/40'
+                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
-            <div className="mb-1 flex items-center justify-between text-[11px] font-bold text-purple-400">
+            <div className="mb-1 flex items-center justify-between text-[11px] font-bold text-cyan-400">
               <span>{isAr ? 'المرحلة 3: ربط الهجوم' : 'Phase 3: Attack Graph'}</span>
-              <span className="py-0.2 rounded border border-purple-500/40 bg-purple-950 px-1.5 text-[9px] text-purple-300">
+              <span className="py-0.2 rounded border border-cyan-500/40 bg-cyan-950 px-1.5 text-[9px] text-cyan-300">
                 A* Path
               </span>
             </div>
@@ -397,7 +397,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             className={`relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition ${
               activeTab === 'PHASE_4'
                 ? 'border-cyan-500/80 bg-cyan-950/40 shadow-lg shadow-cyan-950/40'
-                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <div className="mb-1 flex items-center justify-between text-[11px] font-bold text-cyan-400">
@@ -430,7 +430,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             className={`relative cursor-pointer overflow-hidden rounded-xl border p-3.5 transition ${
               activeTab === 'PHASE_5_REPORT'
                 ? 'border-emerald-500/80 bg-emerald-950/40 shadow-lg shadow-emerald-950/40'
-                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
             }`}
           >
             <div className="mb-1 flex items-center justify-between text-[11px] font-bold text-emerald-400">
@@ -474,7 +474,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
           onClick={() => setActiveTab('TIMELINE')}
           className={`flex items-center gap-2 rounded-lg px-3 py-1.5 transition ${
             activeTab === 'TIMELINE'
-              ? 'border border-purple-500/60 bg-purple-950 font-bold text-purple-300 shadow-sm'
+              ? 'border border-cyan-500/60 bg-cyan-950 font-bold text-cyan-300 shadow-sm'
               : 'bg-slate-900 text-slate-400 hover:text-white'
           }`}
         >
@@ -510,7 +510,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
           onClick={() => setActiveTab('PHASE_3')}
           className={`flex items-center gap-2 rounded-lg px-3 py-1.5 transition ${
             activeTab === 'PHASE_3'
-              ? 'border border-purple-500/60 bg-purple-950 font-bold text-purple-300 shadow-sm'
+              ? 'border border-cyan-500/60 bg-cyan-950 font-bold text-cyan-300 shadow-sm'
               : 'bg-slate-900 text-slate-400 hover:text-white'
           }`}
         >
@@ -552,7 +552,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
         <div className="animate-fadeIn space-y-4">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {/* Operational State Box */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 font-mono text-xs">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <span className="text-slate-400 uppercase">
                   {isAr ? 'حالة المنظومة الدفاعية' : 'Sovereign Defense State'}
@@ -589,7 +589,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                   <span className="text-slate-400">
                     {isAr ? 'العقدة المعزولة أفقياً:' : 'Isolated Node:'}
                   </span>
-                  <span className="font-bold text-purple-300">{d.targetNode}</span>
+                  <span className="font-bold text-cyan-300">{d.targetNode}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">
@@ -601,7 +601,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             </div>
 
             {/* Microsecond Reaction Benchmark */}
-            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 font-mono text-xs">
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/80 p-4 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <span className="text-slate-400 uppercase">
                   {isAr ? 'مقارنة سرعة التدخل' : 'Intervention Latency Benchmarks'}
@@ -641,10 +641,10 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                     <span className="text-slate-300">
                       {isAr ? 'ربط متجهات A* (المرحلة 3):' : 'A* Kill-Chain Correlation (Phase 3):'}
                     </span>
-                    <span className="font-bold text-purple-400">1.22 ms</span>
+                    <span className="font-bold text-cyan-400">1.22 ms</span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-950">
-                    <div className="h-1.5 rounded-full bg-purple-500" style={{ width: '60%' }} />
+                    <div className="h-1.5 rounded-full bg-cyan-500" style={{ width: '60%' }} />
                   </div>
                 </div>
 
@@ -692,7 +692,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                 </p>
               </div>
 
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-[10px]">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-2.5 text-[10px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <div className="text-slate-400">Digital Seal:</div>
                 <div className="font-bold text-emerald-300">{d.phases.phase5.digitalSeal}</div>
                 <div className="mt-1 text-slate-400">Audit Verification Hash:</div>
@@ -714,7 +714,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
           </div>
 
           {/* Quick Execution Log Snippet */}
-          <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5">
+          <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between font-mono text-xs text-slate-400">
               <span className="font-bold text-slate-300">
                 {isAr
@@ -730,7 +730,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
               {d.timelineEvents.map(evt => (
                 <div
                   key={`timeline-evt-${evt.phaseNumber}-${evt.timeOffsetMs}-${evt.title.replace(/[^a-zA-Z0-9]/g, '_')}`}
-                  className="flex flex-col justify-between gap-2 rounded-lg border border-slate-800/80 bg-slate-950/80 p-2.5 font-mono text-xs sm:flex-row sm:items-center"
+                  className="flex flex-col justify-between gap-2 rounded-lg border border-slate-800/80 bg-slate-950/80 p-2.5 font-mono text-xs sm:flex-row sm:items-center shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
@@ -777,11 +777,11 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-cyan-400">+{evt.timeOffsetMs} ms</span>
                   <span className="text-slate-500">•</span>
-                  <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-bold text-slate-200">
+                  <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-bold text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     {isAr ? evt.titleAr : evt.title}
                   </span>
                 </div>
-                <p className="rounded-lg border border-slate-800 bg-slate-900/50 p-2.5 leading-relaxed text-slate-300">
+                <p className="rounded-lg border border-slate-800 bg-slate-900/50 p-2.5 leading-relaxed text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   {isAr ? evt.detailsAr : evt.details}
                 </p>
                 <div className="text-[10px] text-emerald-400">
@@ -810,13 +810,13 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             </div>
 
             <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'اسم الملف المحقون:' : 'Target Filename:'}
                 </span>
                 <span className="font-bold text-rose-400">{d.phases.phase1.filename}</span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'إنتروبيا شانون (Shannon Entropy):' : 'Shannon Entropy H:'}
                 </span>
@@ -824,13 +824,13 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                   {d.phases.phase1.entropy} / 8.0 (Threshold: {d.phases.phase1.entropyThreshold})
                 </span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'قاعدة YARA المتطابقة بالذاكرة:' : 'Matched In-Memory YARA Rule:'}
                 </span>
                 <span className="font-bold text-cyan-400">{d.phases.phase1.yaraMatched}</span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'زمن الاعتراض قبل ملامسة القرص:' : 'RAM Intercept Latency:'}
                 </span>
@@ -866,19 +866,19 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             </div>
 
             <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'العنوان المعزول بالنواة:' : 'Kernel Blackholed IP:'}
                 </span>
                 <span className="font-bold text-rose-400">{d.actorIp}</span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'مفتاح جدول eBPF BPF_MAP:' : 'eBPF Map Key:'}
                 </span>
                 <span className="font-bold text-cyan-400">{d.phases.phase2.bpfMapKey}</span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'جلسات TCP المقطوعة فورياً:' : 'TCP Sessions Severed via RST:'}
                 </span>
@@ -886,7 +886,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                   {d.phases.phase2.tcpSocketsSevered} Connections
                 </span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'سرعة استجابة النواة XDP:' : 'Kernel Drop Latency:'}
                 </span>
@@ -908,48 +908,48 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
       {/* PHASE 3 DETAILED TAB */}
       {activeTab === 'PHASE_3' && d && (
         <div className="animate-fadeIn space-y-3 font-mono text-xs">
-          <div className="space-y-3 rounded-xl border border-purple-900/40 bg-slate-900/80 p-4">
+          <div className="space-y-3 rounded-xl border border-cyan-900/40 bg-slate-900/80 p-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-2">
               <div className="flex items-center gap-2">
-                <Share2 className="h-4 w-4 text-purple-400" />
+                <Share2 className="h-4 w-4 text-cyan-400" />
                 <span className="text-sm font-bold text-white">
                   {isAr ? d.phases.phase3.nameAr : d.phases.phase3.name}
                 </span>
               </div>
-              <span className="rounded border border-purple-500/50 bg-purple-950 px-2 py-0.5 text-[10px] font-bold text-purple-300">
+              <span className="rounded border border-cyan-500/50 bg-cyan-950 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
                 A* GRAPH CORRELATED
               </span>
             </div>
 
-            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span className="block text-[10px] text-slate-400">
                 {isAr ? 'ملخص مسار الهجوم (A* Critical Path):' : 'A* Critical Attack Path:'}
               </span>
-              <span className="text-xs font-bold text-purple-300">
+              <span className="text-xs font-bold text-cyan-300">
                 {isAr ? d.phases.phase3.criticalPathSummaryAr : d.phases.phase3.criticalPathSummary}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-center text-xs sm:grid-cols-4">
-              <div className="rounded-lg border border-slate-800 bg-slate-950 p-2">
+              <div className="rounded-lg border border-slate-800 bg-slate-950 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">Kill Chain Stages:</span>
                 <span className="font-bold text-cyan-400">
                   {d.phases.phase3.killChainStagesCount} Stages
                 </span>
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-950 p-2">
+              <div className="rounded-lg border border-slate-800 bg-slate-950 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">Threat Velocity:</span>
                 <span className="font-bold text-rose-400">
                   {d.phases.phase3.threatVelocityScore}/100
                 </span>
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-950 p-2">
+              <div className="rounded-lg border border-slate-800 bg-slate-950 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">A* Confidence:</span>
                 <span className="font-bold text-emerald-400">
                   {d.phases.phase3.aStarConfidence}%
                 </span>
               </div>
-              <div className="rounded-lg border border-slate-800 bg-slate-950 p-2">
+              <div className="rounded-lg border border-slate-800 bg-slate-950 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">MITRE Techniques:</span>
                 <span className="font-bold text-amber-400">
                   {d.phases.phase3.mitreTechniques.length} Techniques
@@ -961,7 +961,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
               {d.phases.phase3.mitreTechniques.map(t => (
                 <span
                   key={`mitre-${t}`}
-                  className="rounded border border-slate-700 bg-slate-950 px-2 py-0.5 text-[10px] text-slate-300"
+                  className="rounded border border-slate-700 bg-slate-950 px-2 py-0.5 text-[10px] text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   {t}
                 </span>
@@ -988,7 +988,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             </div>
 
             <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'دفتر الاستجابة المنفذ (Playbook):' : 'Executed Playbook:'}
                 </span>
@@ -996,7 +996,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                   {isAr ? d.phases.phase4.playbookNameAr : d.phases.phase4.playbookName}
                 </span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'الاسترجاع التشفيري للسلامة (FIM Rollback):' : 'Cryptographic Rollback:'}
                 </span>
@@ -1004,7 +1004,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                   {d.phases.phase4.selfHealingRollback ? 'ACTIVE & VERIFIED' : 'PENDING'}
                 </span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'فخاخ التضليل السيادية (Honeypot Decoy):' : 'Deception Honeypot Armed:'}
                 </span>
@@ -1012,7 +1012,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                   {d.phases.phase4.honeypotDiverted ? 'DIVERTED TO 10.0.99.5' : 'NONE'}
                 </span>
               </div>
-              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3">
+              <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <span className="block text-[10px] text-slate-400">
                   {isAr ? 'خطوات الاستجابة المكتملة:' : 'Steps Executed Autonomously:'}
                 </span>
@@ -1044,7 +1044,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                     ? 'المملكة العربية السعودية • وزارة الدفاع'
                     : 'Kingdom of Saudi Arabia • Ministry of Defense'}
                 </div>
-                <div className="text-xs text-slate-400 print:text-gray-700">
+                <div className="text-xs text-slate-400 print:text-slate-700">
                   {isAr
                     ? 'مركز قيادة العمليات السيبرانية السيادية (Sovereign Cyber Command)'
                     : 'Sovereign Cyber Operations & Defense Command'}
@@ -1060,17 +1060,17 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                 <div className="font-black tracking-wider text-rose-400 print:text-black">
                   {d.classification}
                 </div>
-                <div className="text-slate-400 print:text-gray-700">{d.phases.phase5.reportId}</div>
-                <div className="text-[10px] text-slate-500 print:text-gray-500">
+                <div className="text-slate-400 print:text-slate-700">{d.phases.phase5.reportId}</div>
+                <div className="text-[10px] text-slate-500 print:text-slate-500">
                   {new Date(d.timestamp).toLocaleString()}
                 </div>
               </div>
             </div>
 
             {/* Verification Hash & Signature Bar */}
-            <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-900/90 p-3 text-xs print:border-black print:bg-gray-100 print:text-black">
+            <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-900/90 p-3 text-xs print:border-black print:bg-slate-100 print:text-black shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-slate-400 print:text-gray-700">
+                <span className="text-slate-400 print:text-slate-700">
                   {isAr ? 'بصمة التحقق التشفيري (SHA-256):' : 'Cryptographic Verification Hash:'}
                 </span>
                 <div className="flex items-center gap-1">
@@ -1092,7 +1092,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                <span className="text-slate-400 print:text-gray-700">
+                <span className="text-slate-400 print:text-slate-700">
                   {isAr ? 'التوقيع العسكري الرقمي (HMAC):' : 'Digital Military Signature:'}
                 </span>
                 <span className="max-w-xs truncate font-bold text-cyan-300">
@@ -1101,7 +1101,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-0.5 text-[11px]">
-                <span className="text-slate-400 print:text-gray-700">
+                <span className="text-slate-400 print:text-slate-700">
                   {isAr ? 'معيار التوافق الوطني والعسكري:' : 'Compliance Standard:'}
                 </span>
                 <span className="font-bold text-amber-300">
@@ -1117,7 +1117,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                   ? '1. ملخص التدقيق العملياتي وسرعة الاحتواء'
                   : '1. Operational Executive Summary'}
               </h3>
-              <p className="text-slate-300 print:text-gray-800">
+              <p className="text-slate-300 print:text-slate-800">
                 {isAr
                   ? `أثبتت الفحوصات الجنائية الرقمية نجاح منظومة الحماية السيادية في احتواء هجوم مركب متعدد المراحل صادر من العنوان ${d.actorIp} ضد العقدة ${d.targetNode}. تم إسقاط الحمولة الخبيثة فورياً بالذاكرة RAM بإنتروبيا شانون (${d.phases.phase1.entropy})، وحظر الفاعل بنواة eBPF XDP بزمن قدره 0.34µs، وقطع ${d.phases.phase2.tcpSocketsSevered} جلسات TCP نشطة. استغرقت كافة مراحل الدفاع من 1 إلى 5 زمناً إجمالياً قدره ${d.durationMs}ms فقط.`
                   : `Forensic audit confirms the autonomous containment of a complex multi-vector intrusion staged by actor IP ${d.actorIp} against target cluster node ${d.targetNode}. In-memory deep inspection blocked the payload at Shannon entropy ${d.phases.phase1.entropy}, kernel eBPF XDP enforced sub-microsecond isolation (0.34µs), and 4 active TCP sockets were severed via synthetic TCP-RST packets. All 5 defensive phases executed in a cumulative ${d.durationMs}ms.`}
@@ -1134,7 +1134,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
 
               <div className="overflow-x-auto">
                 <table className="w-full border border-slate-800 text-left text-xs print:border-black">
-                  <thead className="bg-slate-900 text-slate-300 print:bg-gray-200 print:text-black">
+                  <thead className="bg-slate-900 text-slate-300 print:bg-slate-200 print:text-black">
                     <tr>
                       <th className="border-b border-slate-800 p-2">Phase</th>
                       <th className="border-b border-slate-800 p-2">Core Engine</th>
@@ -1163,7 +1163,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
                       <td className="p-2 font-bold text-emerald-400">KERNEL BLACKHOLE</td>
                     </tr>
                     <tr>
-                      <td className="p-2 font-bold text-purple-400">Phase 3</td>
+                      <td className="p-2 font-bold text-cyan-400">Phase 3</td>
                       <td className="p-2">A* Attack Graph Correlator</td>
                       <td className="p-2">T1595 → T1190 → T1059 → T1548 → T1048</td>
                       <td className="p-2 font-mono text-cyan-400">1.22 ms</td>
@@ -1193,16 +1193,16 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
             {/* Officer Sign-off Block */}
             <div className="flex flex-col items-end justify-between gap-4 border-t-2 border-slate-800 pt-4 font-mono text-xs sm:flex-row print:border-black">
               <div className="space-y-1">
-                <div className="text-slate-400 print:text-gray-700">
+                <div className="text-slate-400 print:text-slate-700">
                   {isAr ? 'الختم الأمني المشفر:' : 'Security Officer Seal:'}
                 </div>
-                <div className="rounded border border-emerald-500/40 bg-slate-900 p-2 text-[10px] font-bold text-emerald-300 print:bg-gray-100 print:text-black">
+                <div className="rounded border border-emerald-500/40 bg-slate-900 p-2 text-[10px] font-bold text-emerald-300 print:bg-slate-100 print:text-black">
                   {d.phases.phase5.digitalSeal}
                 </div>
               </div>
 
               <div className="space-y-1 text-right">
-                <div className="text-slate-400 print:text-gray-700">
+                <div className="text-slate-400 print:text-slate-700">
                   {isAr ? 'اعتماد قائد العمليات السيبرانية:' : 'Cyber Defense Commander Clearance:'}
                 </div>
                 <div className="font-bold text-white print:text-black">SOV-OFFICER-CMD-942</div>
@@ -1217,7 +1217,7 @@ export const SovereignPhasesMasterConsole: React.FC<SovereignPhasesMasterConsole
           <div className="flex flex-wrap items-center justify-end gap-3 print:hidden">
             <button
               onClick={handlePrintReport}
-              className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 font-mono text-xs font-bold text-slate-200 transition hover:bg-slate-800"
+              className="flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2 font-mono text-xs font-bold text-slate-200 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             >
               <Printer className="h-4 w-4 text-cyan-400" />
               <span>

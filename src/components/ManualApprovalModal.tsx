@@ -64,7 +64,7 @@ export const ManualApprovalModal: React.FC<ManualApprovalModalProps> = ({
       overlayClassName="bg-black/80"
       className="w-full max-w-2xl"
     >
-      <div className="animate-in fade-in zoom-in-95 flex max-h-[85vh] w-full max-w-2xl flex-col space-y-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-2xl duration-200">
+      <div className="animate-in fade-in zoom-in-95 flex max-h-[85vh] w-full max-w-2xl flex-col space-y-4 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 p-6 text-left shadow-2xl duration-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         {/* Header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ export const ManualApprovalModal: React.FC<ManualApprovalModalProps> = ({
         {/* Queue Items List */}
         <div className="flex-1 space-y-3 overflow-y-auto pr-1">
           {pendingItems.length === 0 ? (
-            <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-12 text-center text-xs text-slate-400">
+            <div className="rounded-xl border border-slate-800/80 bg-slate-950/60 p-12 text-center text-xs text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <ShieldCheck className="mx-auto mb-2 h-8 w-8 text-emerald-400 opacity-80" />
               <span>
                 {isAr
@@ -115,7 +115,7 @@ export const ManualApprovalModal: React.FC<ManualApprovalModalProps> = ({
               return (
                 <div
                   key={item.id}
-                  className="space-y-3 rounded-xl border border-slate-800/80 bg-slate-950 p-4"
+                  className="space-y-3 rounded-xl border border-slate-800/80 bg-slate-950 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -144,7 +144,7 @@ export const ManualApprovalModal: React.FC<ManualApprovalModalProps> = ({
                   </div>
 
                   {/* Proposed Rules */}
-                  <div className="space-y-1.5 rounded-lg border border-slate-800/60 bg-slate-900 p-2.5 font-mono text-[10px]">
+                  <div className="space-y-1.5 rounded-lg border border-slate-800/60 bg-slate-900 p-2.5 font-mono text-[10px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <span className="block text-slate-500">
                       {isAr ? 'القواعد المقترحة للتطبيق:' : 'Proposed Kernel Rules:'}
                     </span>

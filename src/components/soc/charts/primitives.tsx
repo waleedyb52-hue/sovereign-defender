@@ -12,21 +12,21 @@ import React, { useMemo, useState } from 'react';
  *
  * Severity colours are the platform's reserved status palette. They were
  * validated for colour-vision deficiency against the console surface
- * (#0d1117): worst adjacent pair critical/high ΔE 15.2 deutan, comfortably
+ * (#000000): worst adjacent pair critical/high ΔE 15.2 deutan, comfortably
  * clear of the ΔE 8 target. They always ship with a written label, never
  * hue alone.
  */
 
 export const SEV_COLOR = {
-  CRITICAL: '#f85149',
-  HIGH: '#fab219',
-  MEDIUM: '#58a6ff',
-  LOW: '#3fb950'
+  CRITICAL: '#f43f5e',
+  HIGH: '#f59e0b',
+  MEDIUM: '#22d3ee',
+  LOW: '#10b981'
 } as const;
 
-export const SURFACE = '#131a24';
-export const GRID = '#1e2733';
-export const INK_MUTED = '#6b7a90';
+export const SURFACE = '#03070c';
+export const GRID = '#0e3a44';
+export const INK_MUTED = '#5c7484';
 
 /* ------------------------------------------------------------------ */
 /* Sparkline — one series, no legend (the tile's title names it).      */
@@ -38,7 +38,7 @@ export const Sparkline: React.FC<{
   height?: number;
   /** Fill under the line, for volume-like measures. */
   area?: boolean;
-}> = ({ values, color = '#58a6ff', width = 120, height = 32, area = true }) => {
+}> = ({ values, color = '#22d3ee', width = 120, height = 32, area = true }) => {
   if (!values.length) return null;
   const max = Math.max(...values);
   const min = Math.min(...values);
@@ -178,7 +178,7 @@ export const StackedBars: React.FC<{
           </div>
 
           <div
-            className="relative flex items-end gap-[3px] rounded focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none"
+            className="relative flex items-end gap-[3px] rounded focus-visible:ring-2 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none"
             style={{ height }}
             dir="ltr"
             // One tab stop for the series, arrow keys within it.
@@ -231,7 +231,7 @@ export const StackedBars: React.FC<{
               library that would need it rebuilt. */}
           {hover !== null && buckets[hover] && (
             <div
-              className="pointer-events-none absolute -top-1 z-20 rounded-md border border-slate-700 bg-slate-900 px-2.5 py-2 shadow-xl"
+              className="pointer-events-none absolute -top-1 z-20 rounded-md border border-slate-700 bg-slate-900 px-2.5 py-2 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               style={
                 {
                   [isAr ? 'right' : 'left']: `${(hover / buckets.length) * 100}%`
@@ -318,7 +318,7 @@ export const RankedBar: React.FC<{
   value: number;
   max: number;
   color?: string;
-}> = ({ value, max, color = '#58a6ff' }) => (
+}> = ({ value, max, color = '#22d3ee' }) => (
   <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
     <div
       className="h-full rounded-full transition-[width] duration-500"

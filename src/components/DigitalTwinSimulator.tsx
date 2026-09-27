@@ -121,7 +121,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
   return (
     <div className="space-y-6">
       {/* Top Banner: Digital Twin Resilience Index */}
-      <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/80 via-slate-900 to-teal-950/80 p-6 shadow-2xl">
+      <div className="rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/80 via-slate-900 to-cyan-950/80 p-6 shadow-2xl">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/20 p-4 text-emerald-300 shadow-inner">
@@ -153,7 +153,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
                 {isAr ? 'مؤشر الصمود الدفاعي:' : 'Resilience Index:'}
               </span>
               <span className="text-2xl font-black text-emerald-400">{overallResilience}%</span>
-              <span className="block text-[9px] font-bold text-teal-300">HARDENED KERNEL</span>
+              <span className="block text-[9px] font-bold text-cyan-300">HARDENED KERNEL</span>
             </div>
             <div className="h-10 w-px bg-slate-800"></div>
             <div className="text-center font-mono">
@@ -171,7 +171,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left Column: Scenario Selector & Live Trigger (5 Cols) */}
         <div className="space-y-5 lg:col-span-5">
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl">
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <Flame className="h-4 w-4 text-rose-400" />
@@ -194,7 +194,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
                     className={`cursor-pointer rounded-xl border p-3.5 transition ${
                       isSelected
                         ? 'border-emerald-500/60 bg-emerald-950/40 shadow-md shadow-emerald-950/30'
-                        : 'border-slate-800 bg-slate-950/80 hover:border-slate-700'
+                        : 'border-slate-800 bg-slate-950/80 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2">
@@ -221,7 +221,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
                       {isAr ? scen.descriptionAr : scen.descriptionEn}
                     </p>
 
-                    <div className="mt-2 truncate rounded border border-slate-800/80 bg-slate-900 p-1 font-mono text-[10px] text-slate-500">
+                    <div className="mt-2 truncate rounded border border-slate-800/80 bg-slate-900 p-1 font-mono text-[10px] text-slate-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       Payload: <code className="text-slate-300">{scen.simulatedPayload}</code>
                     </div>
                   </div>
@@ -233,7 +233,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
               type="button"
               onClick={() => handleRunSimulation()}
               disabled={isRunning}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 py-3 text-xs font-bold text-white shadow-xl shadow-emerald-950/60 transition hover:from-emerald-500 hover:to-cyan-500 disabled:opacity-50 sm:text-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-cyan-600 to-cyan-600 py-3 text-xs font-bold text-white shadow-xl shadow-emerald-950/60 transition hover:from-emerald-500 hover:to-cyan-500 disabled:opacity-50 sm:text-sm"
             >
               {isRunning ? (
                 <>
@@ -258,7 +258,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
           </div>
 
           {/* Real-Time Simulation Execution Logs Terminal */}
-          <div className="space-y-2 rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs shadow-xl">
+          <div className="space-y-2 rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
               <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
                 <Terminal className="h-3.5 w-3.5 text-emerald-400" />
@@ -305,7 +305,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                     {activeSimulationResult.status}
                   </span>
-                  <span className="rounded-xl border border-slate-800 bg-slate-950 px-2.5 py-1 font-mono text-xs text-slate-300">
+                  <span className="rounded-xl border border-slate-800 bg-slate-950 px-2.5 py-1 font-mono text-xs text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     {activeSimulationResult.durationMs} ms
                   </span>
                 </div>
@@ -322,11 +322,11 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
                   </span>
                 </div>
 
-                <div className="rounded-xl border border-teal-500/30 bg-slate-950 p-3">
+                <div className="rounded-xl border border-cyan-500/30 bg-slate-950 p-3">
                   <span className="block font-sans text-[10px] text-slate-400">
                     {isAr ? 'مقاومة التخفي:' : 'Evasion Resistance:'}
                   </span>
-                  <span className="text-xl font-bold text-teal-300">
+                  <span className="text-xl font-bold text-cyan-300">
                     {activeSimulationResult.evasionResistanceScore}%
                   </span>
                 </div>
@@ -342,17 +342,17 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
               </div>
 
               {/* AI Generated Mitigation Playbook */}
-              <div className="space-y-3 rounded-xl border border-purple-500/30 bg-slate-950 p-4">
+              <div className="space-y-3 rounded-xl border border-cyan-500/30 bg-slate-950 p-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="flex items-center gap-2 text-xs font-bold text-purple-300">
-                    <Sparkles className="h-4 w-4 animate-pulse text-purple-400" />
+                  <h4 className="flex items-center gap-2 text-xs font-bold text-cyan-300">
+                    <Sparkles className="h-4 w-4 animate-pulse text-cyan-400" />
                     <span>
                       {isAr
                         ? activeSimulationResult.aiPlaybook.titleAr
                         : activeSimulationResult.aiPlaybook.titleEn}
                     </span>
                   </h4>
-                  <span className="font-mono text-[10px] text-purple-400">Gemini 3.7 Flash</span>
+                  <span className="font-mono text-[10px] text-cyan-400">Gemini 3.7 Flash</span>
                 </div>
 
                 <p className="text-xs leading-relaxed text-slate-200">
@@ -381,14 +381,14 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
 
                 {/* Kernel Hardening Sysctl Commands */}
                 <div className="space-y-1.5 border-t border-slate-800 pt-2">
-                  <span className="block text-[11px] font-bold text-teal-400">
+                  <span className="block text-[11px] font-bold text-cyan-400">
                     {isAr
                       ? 'أوامر تحصين نواة لينكس (Kernel Hardening Directives):'
                       : 'Linux Kernel Hardening Directives:'}
                   </span>
-                  <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900 p-2 font-mono text-[11px]">
+                  <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900 p-2 font-mono text-[11px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     {activeSimulationResult.aiPlaybook.kernelHardeningSteps.map(kStep => (
-                      <div key={`kstep-${kStep}`} className="text-teal-300">
+                      <div key={`kstep-${kStep}`} className="text-cyan-300">
                         <code># {kStep}</code>
                       </div>
                     ))}
@@ -410,7 +410,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
                 </h4>
 
                 {/* IPTables */}
-                <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-mono font-bold text-amber-400">IPTABLES KERNEL DROP</span>
                     <button
@@ -434,7 +434,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
                 </div>
 
                 {/* Suricata */}
-                <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div className="flex items-center justify-between text-[11px]">
                     <span className="font-mono font-bold text-cyan-400">SURICATA SIGNATURE</span>
                     <button
@@ -458,9 +458,9 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
                 </div>
 
                 {/* eBPF */}
-                <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3">
+                <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-mono font-bold text-purple-400">
+                    <span className="font-mono font-bold text-cyan-400">
                       eBPF XDP KERNEL PROGRAM
                     </span>
                     <button
@@ -483,7 +483,7 @@ export const DigitalTwinSimulator: React.FC<DigitalTwinSimulatorProps> = ({ lang
               </div>
             </div>
           ) : (
-            <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/50 p-12 text-center">
+            <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/50 p-12 text-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <Shield className="mx-auto h-12 w-12 text-slate-600" />
               <h4 className="text-sm font-bold text-slate-300">
                 {isAr ? 'لم يتم تشغيل أي اختبار بعد' : 'No Simulation Executed Yet'}

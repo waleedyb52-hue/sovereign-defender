@@ -234,9 +234,9 @@ export const TelemetryHud: React.FC<Props> = ({ telemetry: t, lang = 'ar' }) => 
   return (
     <div dir={isAr ? 'rtl' : 'ltr'}>
       {t.error && (
-        <div className="mb-3 flex items-start gap-2 rounded border border-[#EF4444]/30 bg-[#EF4444]/5 px-3 py-2">
-          <ShieldOff className="mt-px h-4 w-4 shrink-0 text-[#EF4444]" aria-hidden />
-          <div className="text-[11px] text-[#fca5a5]">
+        <div className="mb-3 flex items-start gap-2 rounded border border-[#f43f5e]/30 bg-[#f43f5e]/5 px-3 py-2">
+          <ShieldOff className="mt-px h-4 w-4 shrink-0 text-[#f43f5e]" aria-hidden />
+          <div className="text-[11px] text-[#fda4af]">
             <p className="font-medium">{isAr ? 'تعذّر قراءة القياسات' : 'Telemetry unavailable'}</p>
             <Mono className="text-[10px] text-slate-500">{t.error}</Mono>
           </div>
@@ -272,7 +272,7 @@ export const TelemetryHud: React.FC<Props> = ({ telemetry: t, lang = 'ar' }) => 
           icon={Cpu}
           label={isAr ? 'حزم مُسقَطة (eBPF)' : 'Packets dropped (eBPF)'}
           value={t.ebpf.packetsDropped}
-          accent="#38BDF8"
+          accent="#22d3ee"
           series={t.series.packetsDropped ?? []}
           collecting={t.collecting}
           unavailableNote={noSource}
@@ -285,7 +285,7 @@ export const TelemetryHud: React.FC<Props> = ({ telemetry: t, lang = 'ar' }) => 
               <div className="flex items-center justify-between text-[10px]">
                 <span className="text-slate-500">{isAr ? 'زمن النواة' : 'kernel latency'}</span>
                 {t.ebpf.kernelLatencyUs != null ? (
-                  <Mono className="text-[#7dd3fc]">{t.ebpf.kernelLatencyUs.toFixed(2)} µs</Mono>
+                  <Mono className="text-[#67e8f9]">{t.ebpf.kernelLatencyUs.toFixed(2)} µs</Mono>
                 ) : (
                   <span
                     className="text-[9px] text-slate-600"

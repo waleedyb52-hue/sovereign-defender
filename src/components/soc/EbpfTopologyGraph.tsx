@@ -72,10 +72,10 @@ const SdNode: React.FC<NodeProps> = ({ data, selected }) => {
       className={cn(
         'min-w-[136px] rounded-md border px-2.5 py-2 backdrop-blur-sm transition-shadow',
         threat
-          ? 'border-[#EF4444]/55 bg-[#EF4444]/8'
+          ? 'border-[#f43f5e]/55 bg-[#f43f5e]/8'
           : d.isolated
             ? 'border-[#F59E0B]/55 bg-[#F59E0B]/8'
-            : 'border-[#38BDF8]/40 bg-[#0F1420]/90',
+            : 'border-[#22d3ee]/40 bg-[#0F1420]/90',
         selected && 'ring-2 ring-white/25'
       )}
       style={{
@@ -99,9 +99,9 @@ const SdNode: React.FC<NodeProps> = ({ data, selected }) => {
 
       <div className="mb-1 flex items-center gap-1.5">
         {threat ? (
-          <Crosshair className="h-3 w-3 shrink-0 text-[#fca5a5]" aria-hidden />
+          <Crosshair className="h-3 w-3 shrink-0 text-[#fda4af]" aria-hidden />
         ) : (
-          <Server className="h-3 w-3 shrink-0 text-[#7dd3fc]" aria-hidden />
+          <Server className="h-3 w-3 shrink-0 text-[#67e8f9]" aria-hidden />
         )}
         <span
           className="truncate text-[10px] font-medium text-slate-200"
@@ -185,10 +185,10 @@ export const EbpfTopologyGraph: React.FC<Props> = ({
           target: ingress.id,
           animated: !blocked,
           style: blocked
-            ? { stroke: '#EF4444', strokeWidth: 1.8 }
+            ? { stroke: '#f43f5e', strokeWidth: 1.8 }
             : { stroke: '#F59E0B', strokeWidth: 1.2, strokeDasharray: '4 3' },
           label: blocked ? 'XDP_DROP' : undefined,
-          labelStyle: { fill: '#fca5a5', fontSize: 9, fontFamily: 'var(--font-mono)' },
+          labelStyle: { fill: '#fda4af', fontSize: 9, fontFamily: 'var(--font-mono)' },
           labelBgStyle: { fill: '#0F1420', fillOpacity: 0.85 }
         });
       }
@@ -234,7 +234,7 @@ export const EbpfTopologyGraph: React.FC<Props> = ({
             onNodeClick={(_e, n) => setSelected(n.data as unknown as SdNodeData)}
             className="bg-[#080B11]"
           >
-            <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="#1e2733" />
+            <Background variant={BackgroundVariant.Dots} gap={18} size={1} color="#0e3a44" />
             <Controls
               showInteractive={false}
               className="!border !border-slate-800 !bg-[#0F1420]/90 [&>button]:!border-slate-800 [&>button]:!bg-transparent [&>button]:!fill-slate-400"
@@ -342,7 +342,7 @@ export const EbpfTopologyGraph: React.FC<Props> = ({
         </span>
         <span className="flex items-center gap-1.5">
           <svg width="18" height="4" aria-hidden>
-            <line x1="0" y1="2" x2="18" y2="2" stroke="#EF4444" strokeWidth="2" />
+            <line x1="0" y1="2" x2="18" y2="2" stroke="#f43f5e" strokeWidth="2" />
           </svg>
           {isAr ? 'مسار محجوب في النواة (XDP_DROP)' : 'kernel-blocked route (XDP_DROP)'}
         </span>

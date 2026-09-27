@@ -17,7 +17,7 @@ describe('cn', () => {
     // emitted and the winner depends on stylesheet order, which is how override
     // props silently stop working.
     expect(cn('p-2', 'p-4')).toBe('p-4');
-    expect(cn('text-slate-500', 'text-red-400')).toBe('text-red-400');
+    expect(cn('text-slate-500', 'text-rose-400')).toBe('text-rose-400');
   });
 
   it('drops falsy conditionals without leaving stray whitespace', () => {

@@ -33,13 +33,13 @@ interface Props {
 const SEVERITY_ORDER = ['CRITICAL', 'HIGH', 'MEDIUM', 'MODERATE', 'LOW', 'INFO', 'UNKNOWN'];
 
 const SEVERITY_STYLE: Record<string, { rail: string; text: string; bg: string }> = {
-  CRITICAL: { rail: '#EF4444', text: 'text-[#fca5a5]', bg: 'bg-[#EF4444]/10' },
-  HIGH: { rail: '#EF4444', text: 'text-[#fca5a5]', bg: 'bg-[#EF4444]/8' },
+  CRITICAL: { rail: '#f43f5e', text: 'text-[#fda4af]', bg: 'bg-[#f43f5e]/10' },
+  HIGH: { rail: '#f43f5e', text: 'text-[#fda4af]', bg: 'bg-[#f43f5e]/8' },
   MEDIUM: { rail: '#F59E0B', text: 'text-[#fcd34d]', bg: 'bg-[#F59E0B]/8' },
   MODERATE: { rail: '#F59E0B', text: 'text-[#fcd34d]', bg: 'bg-[#F59E0B]/8' },
   LOW: { rail: '#10B981', text: 'text-[#6ee7b7]', bg: 'bg-[#10B981]/8' },
-  INFO: { rail: '#38BDF8', text: 'text-[#7dd3fc]', bg: 'bg-[#38BDF8]/8' },
-  UNKNOWN: { rail: '#6b7a90', text: 'text-slate-400', bg: 'bg-white/[0.03]' }
+  INFO: { rail: '#22d3ee', text: 'text-[#67e8f9]', bg: 'bg-[#22d3ee]/8' },
+  UNKNOWN: { rail: '#5c7484', text: 'text-slate-400', bg: 'bg-white/[0.03]' }
 };
 
 export const AlertsView: React.FC<Props> = ({ d, isAr, reduce }) => {
@@ -56,9 +56,9 @@ export const AlertsView: React.FC<Props> = ({ d, isAr, reduce }) => {
     <div className="space-y-3">
       {/* Emergency banner, driven by the real lockdown flag */}
       {d.emergencyLockdown && (
-        <div className="flex items-center gap-2 rounded-2xl border border-[#EF4444]/40 bg-[#EF4444]/8 px-3 py-2">
-          <ShieldAlert className="h-4 w-4 shrink-0 text-[#EF4444]" aria-hidden />
-          <p className="text-[11px] font-semibold text-[#fca5a5]">
+        <div className="flex items-center gap-2 rounded-2xl border border-[#f43f5e]/40 bg-[#f43f5e]/8 px-3 py-2">
+          <ShieldAlert className="h-4 w-4 shrink-0 text-[#f43f5e]" aria-hidden />
+          <p className="text-[11px] font-semibold text-[#fda4af]">
             {isAr ? 'إغلاق طارئ نشط على المنصّة' : 'EMERGENCY LOCKDOWN ACTIVE ON THE PLATFORM'}
           </p>
         </div>
@@ -78,7 +78,7 @@ export const AlertsView: React.FC<Props> = ({ d, isAr, reduce }) => {
             key={sev}
             label={sev}
             value={counts[sev]}
-            rail={SEVERITY_STYLE[sev]?.rail ?? '#6b7a90'}
+            rail={SEVERITY_STYLE[sev]?.rail ?? '#5c7484'}
             active={filter === sev}
             onClick={() => setFilter(filter === sev ? null : sev)}
           />
@@ -88,7 +88,7 @@ export const AlertsView: React.FC<Props> = ({ d, isAr, reduce }) => {
       <Glass>
         <div className="flex items-center justify-between gap-2 border-b border-white/5 px-3 py-2.5">
           <div className="flex items-center gap-1.5">
-            <Bell className="h-3.5 w-3.5 text-[#38BDF8]" aria-hidden />
+            <Bell className="h-3.5 w-3.5 text-[#22d3ee]" aria-hidden />
             <Label>{isAr ? 'تيّار التنبيهات' : 'Alert stream'}</Label>
           </div>
           <div className="flex items-center gap-2 text-[9px] text-slate-500">
@@ -150,7 +150,7 @@ export const AlertsView: React.FC<Props> = ({ d, isAr, reduce }) => {
                     <div className="mt-1 flex flex-wrap items-center gap-2 text-[8px]">
                       <Mono className="text-slate-600">{a.at.slice(0, 19).replace('T', ' ')}</Mono>
                       {a.mitre ? (
-                        <Mono className="text-[#7dd3fc]">{a.mitre}</Mono>
+                        <Mono className="text-[#67e8f9]">{a.mitre}</Mono>
                       ) : (
                         <span className="tracking-wider text-slate-600">UNMAPPED</span>
                       )}
@@ -187,7 +187,7 @@ const SummaryTile: React.FC<{
     aria-pressed={active}
     className={cn(
       'rounded-xl border px-2.5 py-2 text-start transition-colors',
-      'focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none',
+      'focus-visible:ring-2 focus-visible:ring-[#22d3ee]/60 focus-visible:outline-none',
       active ? 'border-white/25 bg-white/[0.07]' : 'border-white/8 bg-white/[0.02] hover:border-white/15'
     )}
   >

@@ -335,7 +335,7 @@ export const calculateNodeThroughputProfile = (
             ]
           : nodeId === 'node-honeypot'
             ? [
-                { protocol: 'Decoy SMBv2 / SMBv3', percent: 44, color: '#ef4444' },
+                { protocol: 'Decoy SMBv2 / SMBv3', percent: 44, color: '#f43f5e' },
                 { protocol: 'SSH Decoy Probe', percent: 32, color: '#f97316' },
                 { protocol: 'Decoy HTTP Admin', percent: 24, color: '#eab308' }
               ]
@@ -882,7 +882,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         return {
           name: 'Inferno Neon',
           nameAr: 'جحيم نيون',
-          gradientCss: 'from-purple-600 via-pink-500 via-orange-500 to-yellow-300',
+          gradientCss: 'from-cyan-600 via-rose-500 via-amber-500 to-amber-300',
           getColorStops: (alpha: number = 1.0) => [
             { stop: 0.0, color: `rgba(20, 5, 45, 0)` },
             { stop: 0.2, color: `rgba(139, 92, 246, ${0.4 * alpha})` },
@@ -898,7 +898,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         return {
           name: 'Toxic FLIR Radar',
           nameAr: 'رادار الأشعة التكتيكي',
-          gradientCss: 'from-emerald-600 via-lime-500 via-yellow-400 to-rose-600',
+          gradientCss: 'from-emerald-600 via-emerald-500 via-amber-400 to-rose-600',
           getColorStops: (alpha: number = 1.0) => [
             { stop: 0.0, color: `rgba(2, 44, 34, 0)` },
             { stop: 0.2, color: `rgba(16, 185, 129, ${0.4 * alpha})` },
@@ -915,7 +915,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         return {
           name: 'Plasma Thermal',
           nameAr: 'بلازما حرارية',
-          gradientCss: 'from-cyan-500 via-blue-500 via-amber-400 to-rose-500',
+          gradientCss: 'from-cyan-500 via-cyan-500 via-amber-400 to-rose-500',
           getColorStops: (alpha: number = 1.0) => [
             { stop: 0.0, color: `rgba(0, 20, 60, 0)` },
             { stop: 0.2, color: `rgba(6, 182, 212, ${0.4 * alpha})` },
@@ -1396,7 +1396,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       const height = canvas.height;
 
       // Tactical navy-blue background with clearly visible grid
-      ctx.fillStyle = '#0d1117';
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, width, height);
 
       // Draw Grid Matrix Lines
@@ -1426,7 +1426,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           'node-app-core': { x: width * 0.42, y: height * 0.72, color: '#3b82f6' },
           'node-storage-fim': { x: width * 0.68, y: height * 0.28, color: '#f59e0b' },
           'node-database': { x: width * 0.68, y: height * 0.72, color: '#10b981' },
-          'node-honeypot': { x: width * 0.88, y: height * 0.5, color: '#ef4444' }
+          'node-honeypot': { x: width * 0.88, y: height * 0.5, color: '#f43f5e' }
         };
 
         const connections = [
@@ -1546,7 +1546,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           const curY = from.y + (to.y - from.y) * particleOffset;
 
           const grad = ctx.createRadialGradient(curX, curY, 0, curX, curY, 8);
-          grad.addColorStop(0, '#00f0ff');
+          grad.addColorStop(0, '#00f3ff');
           grad.addColorStop(1, 'rgba(0, 240, 255, 0)');
           ctx.fillStyle = grad;
           ctx.beginPath();
@@ -1601,26 +1601,26 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           ctx.fill();
 
           ctx.strokeStyle = isIsolated
-            ? '#ef4444'
+            ? '#f43f5e'
             : isUnderAttack
               ? '#f59e0b'
               : isSelected
-                ? '#00f0ff'
+                ? '#00f3ff'
                 : isHovered
-                  ? '#38bdf8'
+                  ? '#22d3ee'
                   : '#4d6fa0';
           ctx.lineWidth = isSelected ? 3.5 : isHovered ? 3 : 2;
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2);
           ctx.stroke();
 
-          ctx.fillStyle = isIsolated ? '#7f1d1d' : isUnderAttack ? '#78350f' : '#131a24';
+          ctx.fillStyle = isIsolated ? '#7f1d1d' : isUnderAttack ? '#78350f' : '#03070c';
           ctx.beginPath();
           ctx.arc(pos.x, pos.y, 16, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.font = 'bold 11px monospace';
-          ctx.fillStyle = isSelected ? '#00f0ff' : '#e2e8f0';
+          ctx.fillStyle = isSelected ? '#00f3ff' : '#e2e8f0';
           ctx.textAlign = 'center';
           ctx.fillText(node.label.split(' ')[0], pos.x, pos.y + 36);
 
@@ -1633,7 +1633,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             const density = segmentDensityMetrics[node.id]?.densityScore || 0.2;
             const pct = Math.round(density * 100);
             ctx.font = 'bold 9px monospace';
-            ctx.fillStyle = density >= 0.7 ? '#fca5a5' : density >= 0.4 ? '#fde047' : '#67e8f9';
+            ctx.fillStyle = density >= 0.7 ? '#fda4af' : density >= 0.4 ? '#fde047' : '#67e8f9';
             ctx.fillText(`🔥 ${pct}%`, pos.x, pos.y - 30);
           }
         }
@@ -1722,13 +1722,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           ctx.restore();
         }
 
-        ctx.fillStyle = '#00f0ff';
+        ctx.fillStyle = '#00f3ff';
         ctx.beginPath();
         ctx.arc(targetX, targetY, 7, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.font = 'bold 11px monospace';
-        ctx.fillStyle = '#00f0ff';
+        ctx.fillStyle = '#00f3ff';
         ctx.textAlign = 'left';
         ctx.fillText('⚡ SOVEREIGN HUB (London DC)', targetX + 12, targetY + 4);
 
@@ -1740,7 +1740,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           ctx.fill();
 
           ctx.font = '10px monospace';
-          ctx.fillStyle = '#fca5a5';
+          ctx.fillStyle = '#fda4af';
           ctx.textAlign = 'right';
           ctx.fillText(org.name, org.x - 8, org.y + 3);
 
@@ -1847,7 +1847,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               ? 'border-rose-900/60 bg-rose-950/20'
               : node.status === 'EXPOSED'
                 ? 'border-amber-900/60 bg-amber-950/20'
-                : 'border-slate-800 bg-slate-900/80'
+                : 'border-slate-800 bg-slate-900/80 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
           }`}
           style={{ marginLeft: `${level * 20}px` }}
         >
@@ -1865,7 +1865,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <code className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-xs font-bold text-cyan-300">
+                <code className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-xs font-bold text-cyan-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   {node.path}
                 </code>
                 <span className="text-xs font-bold text-slate-200">
@@ -1905,7 +1905,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               onClick={() =>
                 handleSimulateAttackVector('node-app-core', `Exploit on ${node.path}`, 'HIGH')
               }
-              className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-[11px] font-bold text-slate-300 hover:bg-slate-800 hover:text-white"
+              className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1 text-[11px] font-bold text-slate-300 hover:bg-slate-800 hover:text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               title="Simulate Ingress Attack"
             >
               <Zap className="h-3 w-3 text-amber-400" />
@@ -1989,7 +1989,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
             <button
               onClick={handleFlushSockets}
-              className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-xs font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white"
+              className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-xs font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               title="Flush Active Sockets"
             >
               <Zap className="h-4 w-4 text-cyan-400" />
@@ -2012,7 +2012,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 fetchSiteTree();
                 fetchDeceptionTraps();
               }}
-              className="rounded-xl border border-slate-800 bg-slate-950 p-2 text-slate-300 transition hover:bg-slate-800"
+              className="rounded-xl border border-slate-800 bg-slate-950 p-2 text-slate-300 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               title="Refresh All Telemetry"
             >
               <RefreshCw className="h-4 w-4" />
@@ -2173,7 +2173,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Visual Canvas Stage (2 cols) */}
-            <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-2xl lg:col-span-2">
+            <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-2xl lg:col-span-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400" />
@@ -2209,15 +2209,15 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               </div>
 
               {/* HEATMAP INTERACTIVE CONTROL TOOLBAR */}
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-slate-800/90 bg-slate-900/90 p-2.5 font-mono text-xs">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2.5 rounded-xl border border-slate-800/90 bg-slate-900/90 p-2.5 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {/* Master Heatmap Switch */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setHeatmapEnabled(!heatmapEnabled)}
                     className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-bold transition ${
                       heatmapEnabled
-                        ? 'bg-gradient-to-r from-orange-600 to-rose-600 text-white shadow-lg ring-1 shadow-orange-950/50 ring-orange-400'
-                        : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
+                        ? 'bg-gradient-to-r from-amber-600 to-rose-600 text-white shadow-lg ring-1 shadow-amber-950/50 ring-amber-400'
+                        : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <Flame
@@ -2238,7 +2238,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 {heatmapEnabled && (
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Metric Selector */}
-                    <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 p-1">
+                    <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 p-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="px-1 font-sans text-[10px] text-slate-500">
                         {isAr ? 'المعيار:' : 'Metric:'}
                       </span>
@@ -2276,7 +2276,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                         onClick={() => setHeatmapMetric('ANOMALY_INDEX')}
                         className={`rounded px-2 py-0.5 text-[11px] font-bold ${
                           heatmapMetric === 'ANOMALY_INDEX'
-                            ? 'border border-purple-500/50 bg-purple-500/20 text-purple-300'
+                            ? 'border border-cyan-500/50 bg-cyan-500/20 text-cyan-300'
                             : 'text-slate-400 hover:text-white'
                         }`}
                       >
@@ -2285,7 +2285,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     {/* Palette Selector */}
-                    <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 p-1">
+                    <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-950 p-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="px-1 font-sans text-[10px] text-slate-500">
                         {isAr ? 'النمط:' : 'Palette:'}
                       </span>
@@ -2303,7 +2303,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                         onClick={() => setHeatmapPalette('INFERNO')}
                         className={`rounded px-2 py-0.5 text-[11px] font-bold ${
                           heatmapPalette === 'INFERNO'
-                            ? 'border border-orange-400 bg-orange-500/30 text-orange-200'
+                            ? 'border border-amber-400 bg-amber-500/30 text-amber-200'
                             : 'text-slate-400 hover:text-white'
                         }`}
                       >
@@ -2313,7 +2313,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                         onClick={() => setHeatmapPalette('TOXIC_RADAR')}
                         className={`rounded px-2 py-0.5 text-[11px] font-bold ${
                           heatmapPalette === 'TOXIC_RADAR'
-                            ? 'border border-lime-400 bg-lime-500/30 text-lime-200'
+                            ? 'border border-emerald-400 bg-emerald-500/30 text-emerald-200'
                             : 'text-slate-400 hover:text-white'
                         }`}
                       >
@@ -2327,7 +2327,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       className={`rounded-lg border p-1.5 transition ${
                         showHeatmapSettings
                           ? 'border-cyan-500 bg-slate-800 text-cyan-300'
-                          : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white'
+                          : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                       }`}
                       title="Adjust Heatmap Calibration"
                     >
@@ -2339,12 +2339,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       onClick={() => setShowHeatmapLegend(!showHeatmapLegend)}
                       className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[11px] font-bold transition ${
                         showHeatmapLegend
-                          ? 'border-orange-500/50 bg-orange-500/20 text-orange-300 shadow-sm'
-                          : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white'
+                          ? 'border-amber-500/50 bg-amber-500/20 text-amber-300 shadow-sm'
+                          : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                       }`}
                       title={isAr ? 'تبديل دليل الشدة الحرارية' : 'Toggle Heatmap Intensity Legend'}
                     >
-                      <Info className="h-3.5 w-3.5 text-orange-400" />
+                      <Info className="h-3.5 w-3.5 text-amber-400" />
                       <span className="hidden sm:inline">{isAr ? 'دليل الشدة' : 'Legend'}</span>
                     </button>
                   </div>
@@ -2372,7 +2372,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   <div>
                     <div className="mb-1 flex justify-between text-[11px] text-slate-400">
                       <span>{isAr ? 'كثافة الإشعاع:' : 'Heat Intensity:'}</span>
-                      <span className="font-bold text-orange-300">
+                      <span className="font-bold text-amber-300">
                         {Math.round(heatmapIntensity * 100)}%
                       </span>
                     </div>
@@ -2383,7 +2383,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       step={0.05}
                       value={heatmapIntensity}
                       onChange={e => setHeatmapIntensity(Number(e.target.value))}
-                      className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-950 accent-orange-400"
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-950 accent-amber-400"
                     />
                   </div>
 
@@ -2472,7 +2472,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                 }}
                               />
                               <div
-                                className="pointer-events-none absolute h-16 w-16 rounded-full border border-orange-400"
+                                className="pointer-events-none absolute h-16 w-16 rounded-full border border-amber-400"
                                 style={{
                                   animation:
                                     'cyberAlertSonarRing 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite 1.6s'
@@ -2527,7 +2527,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                 }}
                               />
                               <div
-                                className="pointer-events-none absolute h-14 w-14 rounded-full border border-yellow-400"
+                                className="pointer-events-none absolute h-14 w-14 rounded-full border border-amber-400"
                                 style={{
                                   animation:
                                     'cyberElevatedSonarRing 2.6s cubic-bezier(0, 0.2, 0.8, 1) infinite 1.3s'
@@ -2609,7 +2609,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   >
                     <div className="mb-2 flex items-center justify-between border-b border-slate-800 pb-1.5">
                       <div className="flex items-center gap-1.5 font-bold text-white">
-                        <Flame className="h-3.5 w-3.5 animate-pulse text-orange-400" />
+                        <Flame className="h-3.5 w-3.5 animate-pulse text-amber-400" />
                         <span>{isAr ? hoveredHeatPoint.labelAr : hoveredHeatPoint.label}</span>
                       </div>
                       <span className="rounded border border-cyan-500/40 bg-cyan-950 px-1.5 py-0.5 text-[10px] font-bold text-cyan-300">
@@ -2667,9 +2667,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     className={`absolute bottom-3 ${isAr ? 'right-3' : 'left-3'} z-20 max-w-[340px] overflow-hidden rounded-xl border border-slate-700/80 bg-slate-950/95 font-mono text-xs shadow-2xl backdrop-blur-md transition-all duration-300 select-none sm:max-w-[385px]`}
                   >
                     {/* Legend Header */}
-                    <div className="flex items-center justify-between gap-2 border-b border-slate-800 bg-slate-900/90 p-2.5">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-800 bg-slate-900/90 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <div className="flex items-center gap-2">
-                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border border-orange-500/40 bg-orange-500/20 text-orange-300">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border border-amber-500/40 bg-amber-500/20 text-amber-300">
                           <Flame className="h-3.5 w-3.5 animate-pulse" />
                         </div>
                         <div>
@@ -2731,7 +2731,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                         <span className="font-sans text-slate-400">
                           {isAr ? 'النمط اللوني الفعال:' : 'Active Thermal Palette:'}
                         </span>
-                        <span className="rounded border border-slate-800 bg-slate-900 px-1.5 py-0.5 font-bold text-cyan-300">
+                        <span className="rounded border border-slate-800 bg-slate-900 px-1.5 py-0.5 font-bold text-cyan-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           {isAr
                             ? getPaletteConfig(heatmapPalette).nameAr
                             : getPaletteConfig(heatmapPalette).name}
@@ -2758,20 +2758,20 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
                       {/* 4-Tier Qualitative Range Spectrum */}
                       <div className="grid grid-cols-4 gap-1 pt-0.5 text-center text-[9px]">
-                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1">
+                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           <span className="font-bold text-cyan-300">
                             {isAr ? 'طبيعي' : 'Nominal'}
                           </span>
                           <span className="mt-0.5 text-[8px] text-slate-400">&lt;25% Sat</span>
                         </div>
-                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1">
+                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           <span className="font-bold text-amber-300">
                             {isAr ? 'مرتفع' : 'Elevated'}
                           </span>
                           <span className="mt-0.5 text-[8px] text-slate-400">25-50% Sat</span>
                         </div>
-                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1">
-                          <span className="font-bold text-orange-400">
+                        <div className="flex flex-col rounded border border-slate-800 bg-slate-900/80 p-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+                          <span className="font-bold text-amber-400">
                             {isAr ? 'شديد' : 'Surge'}
                           </span>
                           <span className="mt-0.5 text-[8px] text-slate-400">50-75% Sat</span>
@@ -2797,7 +2797,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           </div>
 
                           <div className="space-y-1.5 text-[10px] leading-relaxed text-slate-400">
-                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2">
+                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                               <div className="flex items-center justify-between font-bold text-slate-200">
                                 <span className="flex items-center gap-1">
                                   <span className="h-2 w-2 rounded-full bg-cyan-400" />
@@ -2814,15 +2814,15 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               </p>
                             </div>
 
-                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2">
+                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                               <div className="flex items-center justify-between font-bold text-slate-200">
                                 <span className="flex items-center gap-1">
-                                  <span className="h-2 w-2 rounded-full bg-orange-400" />
+                                  <span className="h-2 w-2 rounded-full bg-amber-400" />
                                   {isAr
                                     ? 'نصف القطر الحراري والتشتت:'
                                     : 'Thermal Radius & Dissipation:'}
                                 </span>
-                                <span className="text-orange-300">30px → 120px</span>
+                                <span className="text-amber-300">30px → 120px</span>
                               </div>
                               <p className="text-[9px] text-slate-400">
                                 {isAr
@@ -2831,7 +2831,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               </p>
                             </div>
 
-                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2">
+                            <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                               <div className="flex items-center justify-between font-bold text-slate-200">
                                 <span className="flex items-center gap-1">
                                   <span className="h-2 w-2 animate-ping rounded-full bg-rose-500" />
@@ -2867,7 +2867,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     onClick={() => setShowHeatmapLegend(true)}
                     className={`absolute bottom-3 ${isAr ? 'right-3' : 'left-3'} z-20 flex items-center gap-1.5 rounded-lg border border-slate-700/80 bg-slate-950/90 px-2.5 py-1.5 font-mono text-xs text-slate-300 shadow-lg backdrop-blur-md transition hover:text-white`}
                   >
-                    <Flame className="h-3.5 w-3.5 text-orange-400" />
+                    <Flame className="h-3.5 w-3.5 text-amber-400" />
                     <span>{isAr ? 'إظهار دليل الشدة' : 'Show Intensity Legend'}</span>
                   </button>
                 )}
@@ -2896,7 +2896,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               ? 'border-amber-500/60 bg-amber-950/40 text-amber-300 shadow-sm'
                               : isIso
                                 ? 'border-rose-800 bg-rose-950/30 text-rose-300'
-                                : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200'
+                                : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                       }`}
                     >
                       {/* Active Alert Zone Ping Dot on High Threat */}
@@ -2933,7 +2933,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             </div>
 
             {/* Node Telemetry & Defensive Controller Sidebar (1 col) */}
-            <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl">
+            <div className="flex flex-col justify-between space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                   <div className="flex items-center gap-2">
@@ -3011,12 +3011,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           {isAr ? selectedNode.labelAr : selectedNode.label}
                         </span>
                       </div>
-                      <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-[10px] text-cyan-400">
+                      <span className="rounded border border-slate-800 bg-slate-950 px-2 py-0.5 font-mono text-[10px] text-cyan-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         {selectedNode.id}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-slate-800 bg-slate-950 p-2.5">
+                    <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <div>
                         <span className="block text-[10px] text-slate-500">Internal IP:</span>
                         <span className="font-bold text-slate-200">{selectedNode.ipAddress}</span>
@@ -3041,7 +3041,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
                     {/* Real-time Ingress & Egress Throughput Snapshot */}
                     {selectedNodeThroughput && (
-                      <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-800 bg-slate-950/90 p-2.5">
+                      <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-800 bg-slate-950/90 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         <div className="space-y-1">
                           <div className="flex items-center gap-1 text-[10px] font-bold text-cyan-400">
                             <ArrowDownLeft className="h-3.5 w-3.5" />
@@ -3079,7 +3079,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
                     {/* Connected Edges Quick Summary */}
                     {selectedNodeThroughput && selectedNodeThroughput.connectedEdges.length > 0 && (
-                      <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
+                      <div className="space-y-1.5 rounded-xl border border-slate-800 bg-slate-950/70 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         <div className="flex items-center justify-between text-[10px]">
                           <span className="flex items-center gap-1 font-bold tracking-wider text-slate-400 uppercase">
                             <Cable className="h-3 w-3 text-cyan-400" />
@@ -3099,7 +3099,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                 setIsNodeExpanded(true);
                                 setExpandedNodeSubTab('EDGES');
                               }}
-                              className="flex items-center gap-1.5 rounded border border-slate-700/80 bg-slate-900 px-2 py-0.5 font-mono text-[10px] text-slate-300 transition hover:bg-slate-800"
+                              className="flex items-center gap-1.5 rounded border border-slate-700/80 bg-slate-900 px-2 py-0.5 font-mono text-[10px] text-slate-300 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                             >
                               <span
                                 className={`h-1.5 w-1.5 rounded-full ${edgeQuarantined[edge.id] ? 'bg-rose-400' : edge.status === 'CONGESTED' ? 'bg-amber-400' : 'bg-emerald-400'}`}
@@ -3146,7 +3146,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     setIsNodeExpanded(true);
                     setExpandedNodeSubTab('THROUGHPUT');
                   }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600/90 to-blue-600/90 px-3 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-950/60 transition hover:scale-[1.01] hover:from-cyan-500 hover:to-blue-500"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600/90 to-cyan-600/90 px-3 py-2 text-xs font-bold text-slate-950 shadow-lg shadow-cyan-950/60 transition hover:scale-[1.01] hover:from-cyan-500 hover:to-cyan-500"
                 >
                   <Maximize2 className="h-4 w-4" />
                   <span>
@@ -3187,7 +3187,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           'CRITICAL'
                         )
                       }
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-2 py-1.5 text-[11px] font-bold text-slate-200 transition hover:bg-slate-800"
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-2 py-1.5 text-[11px] font-bold text-slate-200 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                     >
                       <Flame className="h-3.5 w-3.5 text-rose-400" />
                       <span>Simulate DDoS</span>
@@ -3201,7 +3201,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           'HIGH'
                         )
                       }
-                      className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-2 py-1.5 text-[11px] font-bold text-slate-200 transition hover:bg-slate-800"
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-2 py-1.5 text-[11px] font-bold text-slate-200 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                     >
                       <Zap className="h-3.5 w-3.5 text-amber-400" />
                       <span>Inject Exploit</span>
@@ -3213,10 +3213,10 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           </div>
 
           {/* 3. SEGMENT THREAT DENSITY & THERMAL TELEMETRY MATRIX */}
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl">
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex flex-col items-start justify-between gap-3 border-b border-slate-800 pb-3 sm:flex-row sm:items-center">
               <div className="flex items-center gap-2.5">
-                <Flame className="h-5 w-5 animate-pulse text-orange-400" />
+                <Flame className="h-5 w-5 animate-pulse text-amber-400" />
                 <div>
                   <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                     <span>
@@ -3224,7 +3224,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                         ? 'مصفوفة كثافة التهديدات الحرارية عبر قطاعات الشبكة'
                         : 'Real-Time Threat Traffic Density Matrix Across Network Segments'}
                     </span>
-                    <span className="rounded border border-orange-500/40 bg-orange-500/20 px-2 py-0.5 font-mono text-[10px] text-orange-300">
+                    <span className="rounded border border-amber-500/40 bg-amber-500/20 px-2 py-0.5 font-mono text-[10px] text-amber-300">
                       LIVE RADAR
                     </span>
                   </h3>
@@ -3264,8 +3264,8 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           : isElevated
                             ? 'border-amber-500/40 bg-amber-950/20 hover:border-amber-400'
                             : isCold
-                              ? 'border-slate-800 bg-slate-950/80 opacity-60'
-                              : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                              ? 'border-slate-800 bg-slate-950/80 opacity-60 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
+                              : 'border-slate-800 bg-slate-950/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     {/* Thermal background glow indicator with CSS pulse for Overheat */}
@@ -3274,7 +3274,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                         isOverheat
                           ? 'animate-pulse bg-rose-500 opacity-30'
                           : isElevated
-                            ? 'bg-orange-500 opacity-20'
+                            ? 'bg-amber-500 opacity-20'
                             : 'bg-cyan-500 opacity-20'
                       }`}
                     />
@@ -3322,14 +3322,14 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             {Math.round(metric.densityScore * 100)}%
                           </span>
                         </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full border border-slate-800 bg-slate-900">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full border border-slate-800 bg-slate-900 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           <div
                             className={`h-full transition-all duration-500 ${
                               isOverheat
-                                ? 'bg-gradient-to-r from-orange-500 to-rose-600'
+                                ? 'bg-gradient-to-r from-amber-500 to-rose-600'
                                 : isElevated
-                                  ? 'bg-gradient-to-r from-yellow-400 to-amber-500'
-                                  : 'bg-gradient-to-r from-cyan-400 to-blue-500'
+                                  ? 'bg-gradient-to-r from-amber-400 to-amber-500'
+                                  : 'bg-gradient-to-r from-cyan-400 to-cyan-500'
                             }`}
                             style={{ width: `${Math.round(metric.densityScore * 100)}%` }}
                           />
@@ -3338,11 +3338,11 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
                       {/* Stats Grid */}
                       <div className="grid grid-cols-3 gap-1.5 pt-1 text-center font-mono text-[10px]">
-                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5">
+                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           <div className="text-slate-500">{isAr ? 'المقابس' : 'Sockets'}</div>
                           <div className="mt-0.5 font-bold text-white">{metric.activeSockets}</div>
                         </div>
-                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5">
+                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           <div className="text-slate-500">{isAr ? 'التهديدات' : 'Threats'}</div>
                           <div
                             className={`mt-0.5 font-bold ${metric.threatCount > 0 ? 'text-rose-400' : 'text-slate-300'}`}
@@ -3350,7 +3350,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             {metric.threatCount}
                           </div>
                         </div>
-                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5">
+                        <div className="rounded-lg border border-slate-800 bg-slate-900 p-1.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           <div className="text-slate-500">{isAr ? 'الاستجابة' : 'Latency'}</div>
                           <div className="mt-0.5 font-bold text-emerald-400">
                             {metric.latencyMs}ms
@@ -3370,7 +3370,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {activeSubTab === 'SOCKET_MATRIX' && (
         <div className="space-y-5">
           {/* Controls Bar */}
-          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center">
+          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex w-full items-center gap-3 md:w-auto">
               <div className="relative flex-1 md:w-72">
                 <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-500" />
@@ -3383,12 +3383,12 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   }
                   value={socketFilter}
                   onChange={e => setSocketFilter(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pr-3 pl-9 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 py-2 pr-3 pl-9 text-xs text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
               {/* Protocol Filter */}
-              <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs">
+              <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {(['ALL', 'TCP', 'UDP', 'ICMP'] as const).map(p => (
                   <button
                     key={p}
@@ -3407,7 +3407,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
             <div className="flex items-center gap-2">
               <span className="font-mono text-xs text-slate-400">Threat Verdict:</span>
-              <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs">
+              <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1 text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {(['ALL', 'MALICIOUS', 'SUSPICIOUS', 'BENIGN'] as const).map(t => (
                   <button
                     key={t}
@@ -3432,10 +3432,10 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           </div>
 
           {/* Socket Matrix Table */}
-          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl">
+          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs">
-                <thead className="border-b border-slate-800 bg-slate-900/90 text-[11px] text-slate-400 uppercase">
+                <thead className="border-b border-slate-800 bg-slate-900/90 text-[11px] text-slate-400 uppercase shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <tr>
                     <th className="p-3.5">Socket ID & Protocol</th>
                     <th className="p-3.5">Source IP : Port</th>
@@ -3552,7 +3552,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               <button
                                 onClick={() => handleTraceRoute(s.srcIp)}
                                 disabled={isTracingRoute}
-                                className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                                className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-[11px] font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                                 title="Trace Hop-by-Hop Route"
                               >
                                 <Route className="h-3 w-3 text-cyan-400" />
@@ -3598,7 +3598,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {/* 4. TAB 3: HIERARCHICAL SITE SURVEILLANCE TREE */}
       {activeSubTab === 'SITE_SURVEILLANCE_TREE' && (
         <div className="space-y-5">
-          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center">
+          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div>
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <FolderTree className="h-4 w-4 text-cyan-400" />
@@ -3618,7 +3618,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             <div className="flex items-center gap-2">
               <button
                 onClick={fetchSiteTree}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 <span>Refresh Map</span>
@@ -3627,7 +3627,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
           </div>
 
           {/* Tree View Container */}
-          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-2xl">
+          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             {siteTree ? (
               renderRouteTreeNode(siteTree)
             ) : (
@@ -3642,7 +3642,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {/* 5. TAB 4: DECEPTION TRAPS & HONEYTOKEN MATRIX */}
       {activeSubTab === 'HONEYTOKEN_TRAPS' && (
         <div className="space-y-5">
-          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center">
+          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 md:flex-row md:items-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div>
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <ShieldAlert className="h-4 w-4 text-amber-400" />
@@ -3661,7 +3661,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
             <button
               onClick={fetchDeceptionTraps}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span>Refresh Traps</span>
@@ -3672,7 +3672,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             {deceptionTraps.map(trap => (
               <div
                 key={trap.id}
-                className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-xl transition hover:border-amber-500/40"
+                className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-xl transition hover:border-amber-500/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               >
                 <div className="flex items-center justify-between">
                   <span className="rounded border border-amber-500/40 bg-amber-950/60 px-2 py-0.5 font-mono text-xs font-bold text-amber-400">
@@ -3693,7 +3693,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-800 bg-slate-900/80 p-3 font-mono text-xs">
+                <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-800 bg-slate-900/80 p-3 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div>
                     <span className="block text-[10px] text-slate-500">Tripwire Hits:</span>
                     <span className="text-sm font-black text-rose-400">{trap.hitsCount}</span>
@@ -3728,7 +3728,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {/* 6. MODAL: DEEP PACKET INSPECTION (DPI) & HEX PARSER */}
       {selectedSocket && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
-          <div className="max-h-[90vh] w-full max-w-4xl space-y-6 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+          <div className="max-h-[90vh] w-full max-w-4xl space-y-6 overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-500/40 bg-cyan-950">
@@ -3756,7 +3756,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             </div>
 
             {/* Socket Header Metadata */}
-            <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs sm:grid-cols-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div>
                 <span className="block text-[10px] text-slate-500">Source IP:Port</span>
                 <span className="font-bold text-cyan-400">
@@ -3951,7 +3951,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 </button>
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-[11px] leading-relaxed whitespace-pre text-cyan-300 shadow-inner">
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-[11px] leading-relaxed whitespace-pre text-cyan-300 shadow-inner shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {selectedSocket.hexDump}
               </div>
             </div>
@@ -3964,7 +3964,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 </span>
                 <span className="text-[10px] text-slate-500">UTF-8 / ISO-8859-1 Sanitized</span>
               </div>
-              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3.5 font-mono text-xs leading-relaxed whitespace-pre-wrap text-slate-200">
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3.5 font-mono text-xs leading-relaxed whitespace-pre-wrap text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {selectedSocket.asciiPayload}
               </div>
             </div>
@@ -4007,7 +4007,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {/* 7. MODAL: TRACEROUTE HOP-BY-HOP VISUALIZER */}
       {activeTraceroute && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
-          <div className="w-full max-w-2xl space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-2xl space-y-5 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-3">
                 <Route className="h-5 w-5 text-cyan-400" />
@@ -4029,7 +4029,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               {activeTraceroute.hops.map(hop => (
                 <div
                   key={hop.hop}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950 p-3"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex h-6 w-6 items-center justify-center rounded border border-cyan-500/40 bg-cyan-950 font-bold text-cyan-400">
@@ -4057,7 +4057,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
       {/* 8. MODAL: SUBNECT / CIDR QUARANTINE */}
       {showSubnetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
-          <div className="w-full max-w-md space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-md space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="flex items-center gap-2 text-base font-bold text-white">
                 <Ban className="h-4 w-4 text-rose-400" />
@@ -4078,7 +4078,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                 value={subnetQuarantineInput}
                 onChange={e => setSubnetQuarantineInput(e.target.value)}
                 placeholder="e.g. 194.26.29.0/24"
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-rose-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-800 bg-slate-950 p-2.5 font-mono text-xs text-white focus:border-rose-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
               />
             </div>
 
@@ -4105,7 +4105,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-slate-950/85 p-2 backdrop-blur-md sm:p-4 md:p-6">
           <div className="animate-in fade-in zoom-in-95 flex max-h-[94vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-cyan-500/40 bg-slate-900/95 shadow-2xl shadow-cyan-950/60 duration-200">
             {/* Header with Node Metadata, Switcher, and Controls */}
-            <div className="flex flex-col gap-4 border-b border-slate-800 bg-slate-950/90 p-5">
+            <div className="flex flex-col gap-4 border-b border-slate-800 bg-slate-950/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-500/50 bg-cyan-950 shadow-lg shadow-cyan-950/50">
@@ -4116,7 +4116,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       <h2 className="text-base font-black text-white sm:text-lg">
                         {isAr ? selectedNode.labelAr : selectedNode.label}
                       </h2>
-                      <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-[11px] font-bold text-cyan-300">
+                      <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-[11px] font-bold text-cyan-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         {selectedNode.id}
                       </span>
                       <span
@@ -4187,7 +4187,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   </button>
                   <button
                     onClick={() => handleTraceRoute(selectedNode.ipAddress)}
-                    className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs font-bold text-cyan-300 transition hover:bg-slate-800"
+                    className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-950 px-3 py-1.5 font-mono text-xs font-bold text-cyan-300 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   >
                     <Route className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Trace Route</span>
@@ -4218,7 +4218,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                       className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-1 font-mono text-xs font-bold transition ${
                         isActive
                           ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30'
-                          : 'border border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                          : 'border border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                       }`}
                     >
                       <span
@@ -4247,7 +4247,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
                     expandedNodeSubTab === 'THROUGHPUT'
                       ? 'border border-cyan-500 bg-cyan-950 text-cyan-300 shadow-lg shadow-cyan-950/60'
-                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
+                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <Activity className="h-3.5 w-3.5" />
@@ -4261,7 +4261,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
                     expandedNodeSubTab === 'EDGES'
                       ? 'border border-cyan-500 bg-cyan-950 text-cyan-300 shadow-lg shadow-cyan-950/60'
-                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
+                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <Cable className="h-3.5 w-3.5" />
@@ -4277,7 +4277,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
                     expandedNodeSubTab === 'SOCKETS'
                       ? 'border border-cyan-500 bg-cyan-950 text-cyan-300 shadow-lg shadow-cyan-950/60'
-                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
+                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <Binary className="h-3.5 w-3.5" />
@@ -4293,7 +4293,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
                     expandedNodeSubTab === 'TACTICAL'
                       ? 'border border-cyan-500 bg-cyan-950 text-cyan-300 shadow-lg shadow-cyan-950/60'
-                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200'
+                      : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                   }`}
                 >
                   <ShieldAlert className="h-3.5 w-3.5" />
@@ -4418,13 +4418,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     {/* Cumulative Volume */}
-                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-xl">
+                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-indigo-400">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-cyan-400">
                           <HardDrive className="h-4 w-4" />
                           <span>DATA TRANSFERRED</span>
                         </span>
-                        <span className="rounded border border-indigo-500/30 bg-indigo-950 px-2 py-0.5 text-[10px] text-indigo-300">
+                        <span className="rounded border border-cyan-500/30 bg-cyan-950 px-2 py-0.5 text-[10px] text-cyan-300">
                           TOTAL
                         </span>
                       </div>
@@ -4469,7 +4469,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     {/* Hardware NIC & eBPF Telemetry */}
-                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-xl">
+                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <div className="flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
                           <Cpu className="h-4 w-4" />
@@ -4509,7 +4509,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   </div>
 
                   {/* Dynamic Throughput Waveform (SVG Sparkline & Chart) */}
-                  <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-2xl">
+                  <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-2xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div className="flex flex-col items-start justify-between gap-2 border-b border-slate-800 pb-3 sm:flex-row sm:items-center">
                       <div>
                         <h3 className="flex items-center gap-2 text-sm font-bold text-white">
@@ -4539,7 +4539,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     {/* SVG Waveform Visualizer */}
-                    <div className="relative flex h-44 w-full flex-col justify-end overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 sm:h-52">
+                    <div className="relative flex h-44 w-full flex-col justify-end overflow-hidden rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 sm:h-52 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       {/* Grid guidelines */}
                       <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3 opacity-20">
                         <div className="w-full border-b border-dashed border-slate-400" />
@@ -4580,8 +4580,8 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           >
                             <defs>
                               <linearGradient id="ingressGrad" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#00f0ff" stopOpacity="0.4" />
-                                <stop offset="100%" stopColor="#00f0ff" stopOpacity="0.0" />
+                                <stop offset="0%" stopColor="#00f3ff" stopOpacity="0.4" />
+                                <stop offset="100%" stopColor="#00f3ff" stopOpacity="0.0" />
                               </linearGradient>
                               <linearGradient id="egressGrad" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#10b981" stopOpacity="0.35" />
@@ -4593,7 +4593,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             <polygon points={ingressArea} fill="url(#ingressGrad)" />
                             <polyline
                               fill="none"
-                              stroke="#00f0ff"
+                              stroke="#00f3ff"
                               strokeWidth="2.5"
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -4618,8 +4618,8 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                   cx={getX(i)}
                                   cy={getY(h.ingressMbps)}
                                   r="3"
-                                  fill="#00f0ff"
-                                  stroke="#0d1117"
+                                  fill="#00f3ff"
+                                  stroke="#000000"
                                   strokeWidth="1.5"
                                 />
                                 <circle
@@ -4627,7 +4627,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                                   cy={getY(h.egressMbps)}
                                   r="3"
                                   fill="#10b981"
-                                  stroke="#0d1117"
+                                  stroke="#000000"
                                   strokeWidth="1.5"
                                 />
                               </g>
@@ -4650,7 +4650,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                   {/* Protocol Breakdown and Encryption Matrix */}
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {/* Protocol Breakdown */}
-                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <h4 className="flex items-center gap-2 text-xs font-bold tracking-wider text-white uppercase">
                         <Binary className="h-4 w-4 text-cyan-400" />
                         <span>
@@ -4679,14 +4679,14 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
 
                         <div>
                           <div className="mb-1 flex justify-between text-[11px]">
-                            <span className="text-indigo-300">UDP (QUIC / DNS / RoCE)</span>
+                            <span className="text-cyan-300">UDP (QUIC / DNS / RoCE)</span>
                             <span className="font-bold text-white">
                               {selectedNodeThroughput.protocolBreakdown.udpPercent}%
                             </span>
                           </div>
                           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                             <div
-                              className="h-full bg-indigo-400"
+                              className="h-full bg-cyan-400"
                               style={{
                                 width: `${selectedNodeThroughput.protocolBreakdown.udpPercent}%`
                               }}
@@ -4731,7 +4731,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
 
                     {/* Encryption & Security Pipeline */}
-                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs">
+                    <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <h4 className="flex items-center gap-2 text-xs font-bold tracking-wider text-white uppercase">
                         <Lock className="h-4 w-4 text-emerald-400" />
                         <span>
@@ -4741,7 +4741,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                         </span>
                       </h4>
                       <div className="space-y-2.5">
-                        <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5">
+                        <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           <span className="block text-[10px] text-slate-500">
                             Cryptographic Standard:
                           </span>
@@ -4750,13 +4750,13 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5">
+                          <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                             <span className="block text-[10px] text-slate-500">MTU Size:</span>
                             <span className="font-bold text-white">
                               {selectedNodeThroughput.mtuBytes} Bytes
                             </span>
                           </div>
-                          <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5">
+                          <div className="rounded-xl border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                             <span className="block text-[10px] text-slate-500">
                               Packet Retransmit:
                             </span>
@@ -4765,7 +4765,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             </span>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-2.5">
+                        <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                           <span className="text-slate-400">Zero-Copy Direct Socket:</span>
                           <span className="rounded border border-emerald-500/40 bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                             ENABLED (vmsplice)
@@ -4780,7 +4780,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               {/* TAB 2: CONNECTED EDGES & NEIGHBOR LINKS */}
               {expandedNodeSubTab === 'EDGES' && (
                 <div className="space-y-5">
-                  <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 sm:flex-row sm:items-center">
+                  <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-950 p-4 sm:flex-row sm:items-center shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div>
                       <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                         <Cable className="h-4 w-4 text-cyan-400" />
@@ -4833,7 +4833,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               ? 'border-rose-600/70 bg-rose-950/30 shadow-rose-950/40'
                               : isQoSLimited
                                 ? 'border-amber-500/60 bg-amber-950/30 shadow-amber-950/30'
-                                : 'border-slate-800 bg-slate-950 hover:border-cyan-500/50'
+                                : 'border-slate-800 bg-slate-950 hover:border-cyan-500/50 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                           }`}
                         >
                           {/* Edge Header */}
@@ -4880,7 +4880,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           </div>
 
                           {/* Edge Stats Matrix */}
-                          <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-slate-800/80 bg-slate-900/80 p-3 font-mono text-xs">
+                          <div className="grid grid-cols-2 gap-2.5 rounded-xl border border-slate-800/80 bg-slate-900/80 p-3 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                             <div>
                               <span className="block text-[10px] text-slate-500">
                                 Link Capacity:
@@ -4940,7 +4940,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                           </div>
 
                           {/* Encapsulation and Security Protocol */}
-                          <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/50 p-2.5 font-mono text-[11px] text-slate-300">
+                          <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/50 p-2.5 font-mono text-[11px] text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                             <span className="text-slate-500">Protocol & Encap:</span>
                             <span className="max-w-[200px] truncate font-bold text-cyan-300">
                               {edge.protocol}
@@ -4952,7 +4952,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             <button
                               onClick={() => handleTestEdgePing(edge.id, edge.latencyMs)}
                               disabled={isPingTesting}
-                              className="flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-900 px-2 py-1.5 font-mono text-[11px] font-bold text-slate-200 transition hover:bg-slate-800"
+                              className="flex items-center justify-center gap-1 rounded-xl border border-slate-700 bg-slate-900 px-2 py-1.5 font-mono text-[11px] font-bold text-slate-200 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                             >
                               <Activity
                                 className={`h-3.5 w-3.5 ${isPingTesting ? 'animate-spin text-cyan-400' : 'text-cyan-400'}`}
@@ -4965,7 +4965,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               className={`flex items-center justify-center gap-1 rounded-xl border px-2 py-1.5 font-mono text-[11px] font-bold transition ${
                                 isQoSLimited
                                   ? 'border-amber-500 bg-amber-950 text-amber-300'
-                                  : 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800'
+                                  : 'border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                               }`}
                             >
                               <SlidersHorizontal className="h-3.5 w-3.5 text-amber-400" />
@@ -4994,7 +4994,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
               {/* TAB 3: ACTIVE NODE SOCKETS */}
               {expandedNodeSubTab === 'SOCKETS' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                  <div className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-950 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <div>
                       <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                         <Binary className="h-4 w-4 text-cyan-400" />
@@ -5022,9 +5022,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </span>
                   </div>
 
-                  <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950">
+                  <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <table className="w-full text-left font-mono text-xs">
-                      <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400">
+                      <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                         <tr>
                           <th className="p-3">Stream ID</th>
                           <th className="p-3">Process</th>
@@ -5051,9 +5051,9 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                               <td className="p-3 text-slate-300">
                                 {s.srcIp}:{s.srcPort} → {s.dstIp}:{s.dstPort}
                               </td>
-                              <td className="p-3 text-indigo-300">{s.protocol}</td>
+                              <td className="p-3 text-cyan-300">{s.protocol}</td>
                               <td className="p-3">
-                                <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 text-[10px] text-slate-200">
+                                <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 text-[10px] text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                                   {s.state}
                                 </span>
                               </td>
@@ -5094,7 +5094,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     className={`rounded-2xl border p-5 transition-all ${
                       quickLockedNodes[selectedNode.id]
                         ? 'border-rose-500/60 bg-rose-950/30 shadow-xl shadow-rose-950/40'
-                        : 'border-slate-800 bg-slate-950'
+                        : 'border-slate-800 bg-slate-950 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -5159,7 +5159,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                     </div>
                   </div>
 
-                  <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5">
+                  <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                       <ShieldCheck className="h-4 w-4 text-cyan-400" />
                       <span>
@@ -5198,7 +5198,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             'CRITICAL'
                           )
                         }
-                        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 p-4 text-xs font-bold text-slate-200 transition hover:bg-slate-800"
+                        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 p-4 text-xs font-bold text-slate-200 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                       >
                         <Flame className="h-5 w-5 text-rose-400" />
                         <span>Simulate L4 SYN Flood</span>
@@ -5212,7 +5212,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
                             'HIGH'
                           )
                         }
-                        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 p-4 text-xs font-bold text-slate-200 transition hover:bg-slate-800"
+                        className="flex flex-col items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 p-4 text-xs font-bold text-slate-200 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                       >
                         <Zap className="h-5 w-5 text-amber-400" />
                         <span>Simulate L7 Prompt Injection</span>
@@ -5224,7 +5224,7 @@ export const CyberTopologyMap: React.FC<CyberTopologyMapProps> = ({ lang }) => {
             </div>
 
             {/* Footer with close trigger */}
-            <div className="flex items-center justify-between border-t border-slate-800 bg-slate-950 p-4 font-mono text-xs text-slate-400">
+            <div className="flex items-center justify-between border-t border-slate-800 bg-slate-950 p-4 font-mono text-xs text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <span>Node Inspector Stream: Active • eBPF XDP Hooked</span>
               <button
                 onClick={() => setIsNodeExpanded(false)}

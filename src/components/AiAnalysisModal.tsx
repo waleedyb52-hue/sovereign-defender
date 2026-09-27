@@ -93,11 +93,11 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
       overlayClassName="bg-black/80"
       className="w-full max-w-2xl"
     >
-      <div className="max-h-[90vh] w-full max-w-2xl space-y-5 overflow-y-auto rounded-2xl border border-purple-500/40 bg-slate-900 p-6 text-slate-100 shadow-2xl">
+      <div className="max-h-[90vh] w-full max-w-2xl space-y-5 overflow-y-auto rounded-2xl border border-cyan-500/40 bg-slate-900 p-6 text-slate-100 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-purple-500/40 bg-purple-500/20 p-2.5 text-purple-300">
+            <div className="rounded-xl border border-cyan-500/40 bg-cyan-500/20 p-2.5 text-cyan-300">
               <Sparkles className="h-5 w-5 animate-pulse" />
             </div>
             <div>
@@ -121,34 +121,34 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
 
         {/* Telemetry Summary Cards */}
         <div className="grid grid-cols-2 gap-2.5 font-mono text-xs sm:grid-cols-4">
-          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5">
+          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <span className="block text-[10px] text-slate-400">
               {isAr ? 'مؤشر الخطر:' : 'Threat Score:'}
             </span>
             <span className="text-sm font-bold text-rose-400">{packet.threatScore}%</span>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5">
+          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <span className="block text-[10px] text-slate-400">MITRE Tactic:</span>
             <span className="block truncate text-[11px] font-bold text-cyan-400">
               {packet.mitreTactic}
             </span>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5">
+          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <span className="block text-[10px] text-slate-400">
               {isAr ? 'معدل الحزم:' : 'Rate:'}
             </span>
             <span className="text-sm font-bold text-amber-300">{packet.reqRate} pps</span>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5">
+          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <span className="block text-[10px] text-slate-400">
               {isAr ? 'حجم الحزمة:' : 'Packet Size:'}
             </span>
-            <span className="text-sm font-bold text-purple-300">{packet.packetSize} B</span>
+            <span className="text-sm font-bold text-cyan-300">{packet.packetSize} B</span>
           </div>
         </div>
 
         {/* Payload Snippet */}
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="mb-1 block text-[10px] text-slate-400">
             {isAr ? 'الحمولة المفحوصة (Payload):' : 'Raw Incident Payload:'}
           </span>
@@ -158,9 +158,9 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
         </div>
 
         {/* Gemini AI Deep Reasoning Box */}
-        <div className="space-y-3 rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-950/40 via-slate-950 to-slate-900 p-4">
+        <div className="space-y-3 rounded-xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 via-slate-950 to-slate-900 p-4">
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-xs font-bold text-purple-300">
+            <span className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
               <Sparkles className="h-4 w-4" />
               <span>
                 {isAr ? 'تحليل نموذج Gemini 3.7 Flash المتقدم:' : 'Gemini AI Deep Reasoning:'}
@@ -172,7 +172,7 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
                 type="button"
                 onClick={handleTriggerAnalysis}
                 disabled={isLoading}
-                className="flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-1 text-xs font-bold text-white shadow transition hover:bg-purple-500"
+                className="flex items-center gap-1 rounded-lg bg-cyan-600 px-3 py-1 text-xs font-bold text-white shadow transition hover:bg-cyan-500"
               >
                 {isLoading ? (
                   <Cpu className="h-3.5 w-3.5 animate-spin" />
@@ -197,7 +197,7 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
           </p>
 
           {/* Explainable AI (XAI) Feature Attribution Weights */}
-          <div className="space-y-1.5 border-t border-purple-500/20 pt-2 text-xs">
+          <div className="space-y-1.5 border-t border-cyan-500/20 pt-2 text-xs">
             <span className="mb-1 block text-[11px] font-bold text-slate-300">
               {isAr
                 ? 'أوزان الميزات المفسرة للقرار (Explainable AI Attribution):'
@@ -207,10 +207,10 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
               <div>
                 <div className="mb-0.5 flex justify-between text-slate-400">
                   <span>Payload Entropy:</span>
-                  <span className="font-bold text-purple-300">38%</span>
+                  <span className="font-bold text-cyan-300">38%</span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full w-[38%] bg-purple-500"></div>
+                  <div className="h-full w-[38%] bg-cyan-500"></div>
                 </div>
               </div>
               <div>
@@ -255,7 +255,7 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
             </span>
           </span>
 
-          <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-slate-400">1. Linux IPTables Drop Command:</span>
               <button
@@ -273,7 +273,7 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
             <code className="block break-all text-rose-300">{iptablesRule}</code>
           </div>
 
-          <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-slate-400">
                 2. Suricata / Snort Edge Firewall Rule:
@@ -293,7 +293,7 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
             <code className="block break-all text-amber-300">{suricataRule}</code>
           </div>
 
-          <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3">
+          <div className="space-y-1 rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-slate-400">3. eBPF XDP Kernel Filter:</span>
               <button

@@ -133,7 +133,7 @@ export const DefenseLayersPanel: React.FC<Props> = ({ lang = 'ar' }) => {
           return (
             <div
               key={l.id}
-              className="flex flex-col rounded-lg border border-slate-800 bg-slate-900/50 p-3.5 transition-colors hover:border-slate-700"
+              className="flex flex-col rounded-lg border border-slate-800 bg-slate-900/50 p-3.5 transition-colors hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
             >
               {/* depth index + live state */}
               <div className="mb-2.5 flex items-center justify-between">

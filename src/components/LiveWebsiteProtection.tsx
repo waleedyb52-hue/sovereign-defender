@@ -349,7 +349,7 @@ curl -X POST "${endpointUrl}" \\
   return (
     <div className="space-y-6">
       {/* API Key Credentials & Integration Header */}
-      <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/70 via-slate-900 to-teal-950/70 p-5 shadow-xl">
+      <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/70 via-slate-900 to-cyan-950/70 p-5 shadow-xl">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="rounded-xl border border-cyan-500/40 bg-cyan-500/20 p-3 text-cyan-300">
@@ -387,7 +387,7 @@ curl -X POST "${endpointUrl}" \\
 
         {/* API Credentials Box */}
         <div className="mt-4 grid grid-cols-1 gap-3 font-mono text-xs md:grid-cols-2">
-          <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-950/90 p-3">
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-950/90 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="min-w-0">
               <span className="block text-[10px] text-slate-400">
                 {isAr ? 'مسار الاستدعاء المباشر (Webhook Endpoint):' : 'Live Webhook API Endpoint:'}
@@ -407,7 +407,7 @@ curl -X POST "${endpointUrl}" \\
             </button>
           </div>
 
-          <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-950/90 p-3">
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-800 bg-slate-950/90 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="min-w-0">
               <span className="block text-[10px] text-slate-400">
                 {isAr
@@ -435,7 +435,7 @@ curl -X POST "${endpointUrl}" \\
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* Left 6 cols: Live Request Playground & Active Response Engine */}
         <div className="space-y-5 lg:col-span-6">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <Send className="h-4 w-4 text-cyan-400" />
@@ -478,21 +478,21 @@ curl -X POST "${endpointUrl}" \\
                 <button
                   type="button"
                   onClick={() => loadPresetTest('honeypot')}
-                  className="rounded-lg border border-purple-600/50 bg-purple-950/60 px-2.5 py-1 text-xs font-bold text-purple-300 transition hover:bg-purple-900/60"
+                  className="rounded-lg border border-cyan-600/50 bg-cyan-950/60 px-2.5 py-1 text-xs font-bold text-cyan-300 transition hover:bg-cyan-900/60"
                 >
                   🍯 Honeypot Probe
                 </button>
                 <button
                   type="button"
                   onClick={() => loadPresetTest('prompt_injection')}
-                  className="flex items-center gap-1 rounded-lg border border-red-500/60 bg-red-950/60 px-2.5 py-1 text-xs font-bold text-red-300 transition hover:bg-red-900/60"
+                  className="flex items-center gap-1 rounded-lg border border-rose-500/60 bg-rose-950/60 px-2.5 py-1 text-xs font-bold text-rose-300 transition hover:bg-rose-900/60"
                 >
                   🛡️ Prompt Injection
                 </button>
                 <button
                   type="button"
                   onClick={() => loadPresetTest('flood_dos')}
-                  className="flex items-center gap-1 rounded-lg border border-orange-500/60 bg-orange-950/60 px-2.5 py-1 text-xs font-bold text-orange-300 transition hover:bg-orange-900/60"
+                  className="flex items-center gap-1 rounded-lg border border-amber-500/60 bg-amber-950/60 px-2.5 py-1 text-xs font-bold text-amber-300 transition hover:bg-amber-900/60"
                 >
                   🌊 DoS Flood Burst
                 </button>
@@ -514,7 +514,7 @@ curl -X POST "${endpointUrl}" \\
                   <select
                     value={testMethod}
                     onChange={e => setTestMethod(e.target.value as any)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-bold text-white"
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 font-bold text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   >
                     <option value="GET">GET</option>
                     <option value="POST">POST</option>
@@ -528,7 +528,7 @@ curl -X POST "${endpointUrl}" \\
                     type="text"
                     value={testUrl}
                     onChange={e => setTestUrl(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-white"
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   />
                 </div>
               </div>
@@ -540,7 +540,7 @@ curl -X POST "${endpointUrl}" \\
                     type="text"
                     value={testClientIp}
                     onChange={e => setTestClientIp(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-white"
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   />
                 </div>
                 <div>
@@ -549,7 +549,7 @@ curl -X POST "${endpointUrl}" \\
                     type="text"
                     value={testUserAgent}
                     onChange={e => setTestUserAgent(e.target.value)}
-                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-white"
+                    className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-1.5 text-white shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   />
                 </div>
               </div>
@@ -562,7 +562,7 @@ curl -X POST "${endpointUrl}" \\
                   rows={3}
                   value={testBody}
                   onChange={e => setTestBody(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-emerald-300 focus:border-cyan-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-emerald-300 focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                 />
               </div>
 
@@ -570,7 +570,7 @@ curl -X POST "${endpointUrl}" \\
                 type="button"
                 onClick={handleExecuteTest}
                 disabled={isLoadingTest}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-cyan-950/50 transition hover:from-cyan-500 hover:to-teal-500 sm:text-sm"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-cyan-600 py-2.5 text-xs font-bold text-white shadow-lg shadow-cyan-950/50 transition hover:from-cyan-500 hover:to-cyan-500 sm:text-sm"
               >
                 {isLoadingTest ? (
                   <>
@@ -596,7 +596,7 @@ curl -X POST "${endpointUrl}" \\
 
             {/* Test Evaluation Result Card */}
             {lastTestResult && (
-              <div className="mt-5 space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs">
+              <div className="mt-5 space-y-3 rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 {/* Result Header */}
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
                   <div className="flex items-center gap-2">
@@ -608,11 +608,11 @@ curl -X POST "${endpointUrl}" \\
                         lastTestResult.verdict === 'BLOCK'
                           ? 'bg-rose-500 text-white'
                           : lastTestResult.verdict === 'DIVERT_HONEYPOT'
-                            ? 'bg-purple-500 text-white'
+                            ? 'bg-cyan-500 text-white'
                             : lastTestResult.verdict === 'CHALLENGE'
                               ? 'bg-amber-500 text-slate-950'
                               : lastTestResult.verdict === 'RATE_LIMIT'
-                                ? 'bg-orange-500 text-white'
+                                ? 'bg-amber-500 text-white'
                                 : 'bg-emerald-500 text-white'
                       }`}
                     >
@@ -639,7 +639,7 @@ curl -X POST "${endpointUrl}" \\
                     className={`rounded-lg border p-1.5 text-[10px] ${
                       lastTestResult.cached
                         ? 'border-cyan-500/40 bg-cyan-950/40 text-cyan-300'
-                        : 'border-slate-800 bg-slate-900 text-slate-400'
+                        : 'border-slate-800 bg-slate-900 text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <span className="block font-bold">1. LRU Cache:</span>
@@ -671,8 +671,8 @@ curl -X POST "${endpointUrl}" \\
                   <div
                     className={`rounded-lg border p-1.5 text-[10px] ${
                       lastTestResult.selfDosProtectionActive
-                        ? 'border-orange-500/40 bg-orange-950/40 text-orange-300'
-                        : 'border-slate-800 bg-slate-900 text-slate-400'
+                        ? 'border-amber-500/40 bg-amber-950/40 text-amber-300'
+                        : 'border-slate-800 bg-slate-900 text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                     }`}
                   >
                     <span className="block font-bold">4. Self-DoS Protector:</span>
@@ -725,7 +725,7 @@ curl -X POST "${endpointUrl}" \\
                     </span>
                   </span>
 
-                  <div className="rounded border border-slate-800 bg-slate-900 p-2 text-[11px]">
+                  <div className="rounded border border-slate-800 bg-slate-900 p-2 text-[11px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <span className="block text-[9px] text-slate-400">
                       1. Linux IPTables Drop Rule:
                     </span>
@@ -734,7 +734,7 @@ curl -X POST "${endpointUrl}" \\
                     </code>
                   </div>
 
-                  <div className="rounded border border-slate-800 bg-slate-900 p-2 text-[11px]">
+                  <div className="rounded border border-slate-800 bg-slate-900 p-2 text-[11px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <span className="block text-[9px] text-slate-400">
                       2. Suricata / Snort Signature:
                     </span>
@@ -743,7 +743,7 @@ curl -X POST "${endpointUrl}" \\
                     </code>
                   </div>
 
-                  <div className="rounded border border-slate-800 bg-slate-900 p-2 text-[11px]">
+                  <div className="rounded border border-slate-800 bg-slate-900 p-2 text-[11px] shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                     <span className="block text-[9px] text-slate-400">
                       3. eBPF XDP Kernel Drop:
                     </span>
@@ -759,7 +759,7 @@ curl -X POST "${endpointUrl}" \\
 
         {/* Right 6 cols: Integration Code Snippets Panel */}
         <div className="space-y-4 lg:col-span-6">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-lg shadow-[0_0_20px_rgba(0,255,255,0.08)]">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <Code className="h-4 w-4 text-emerald-400" />
@@ -814,7 +814,7 @@ curl -X POST "${endpointUrl}" \\
                 onClick={() => setActiveCodeTab('nginx')}
                 className={`rounded-lg px-3 py-1.5 transition ${
                   activeCodeTab === 'nginx'
-                    ? 'border border-purple-500/40 bg-purple-500/20 text-purple-300'
+                    ? 'border border-cyan-500/40 bg-cyan-500/20 text-cyan-300'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -843,7 +843,7 @@ curl -X POST "${endpointUrl}" \\
             </div>
 
             {/* Code Block Container */}
-            <div className="relative max-h-[480px] overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs text-slate-300">
+            <div className="relative max-h-[480px] overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
               <pre className="whitespace-pre">{codeSnippets[activeCodeTab]}</pre>
             </div>
           </div>

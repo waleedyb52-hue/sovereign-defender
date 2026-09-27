@@ -120,11 +120,11 @@ export const OmnichannelSanitizerPanel: React.FC<OmnichannelSanitizerPanelProps>
   ).length;
 
   return (
-    <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md">
+    <div className="space-y-6 rounded-xl border border-slate-800 bg-slate-900/90 p-5 shadow-2xl backdrop-blur-md shadow-[0_0_20px_rgba(0,255,255,0.08)]">
       {/* Header */}
       <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-800 pb-4 md:flex-row md:items-center">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg border border-emerald-500/30 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 p-2.5">
+          <div className="rounded-lg border border-emerald-500/30 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 p-2.5">
             <Mail className="h-5 w-5 text-emerald-400" />
           </div>
           <div>
@@ -151,7 +151,7 @@ export const OmnichannelSanitizerPanel: React.FC<OmnichannelSanitizerPanelProps>
           <select
             value={protocolFilter}
             onChange={e => setProtocolFilter(e.target.value)}
-            className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-emerald-500 focus:outline-none"
+            className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-emerald-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           >
             <option value="ALL">{isAr ? 'جميع البروتوكولات' : 'All Protocols'}</option>
             <option value="SMTP">SMTP (Email Relay)</option>
@@ -171,7 +171,7 @@ export const OmnichannelSanitizerPanel: React.FC<OmnichannelSanitizerPanelProps>
       </div>
 
       {/* Action Simulator Bar */}
-      <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/80 p-4">
+      <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/80 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
             <Zap className="h-4 w-4 text-emerald-400" />
@@ -230,13 +230,13 @@ export const OmnichannelSanitizerPanel: React.FC<OmnichannelSanitizerPanelProps>
 
       {/* Stream Metrics Banner */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[10px] text-slate-400">
             {isAr ? 'إجمالي التدفقات المفحوصة' : 'Streams Inspected'}
           </span>
           <span className="font-mono text-lg font-bold text-slate-200">{transfers.length}</span>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[10px] text-slate-400">
             {isAr ? 'ملفات مطهرة عبر CDR' : 'CDR Disarmed & Cleared'}
           </span>
@@ -244,13 +244,13 @@ export const OmnichannelSanitizerPanel: React.FC<OmnichannelSanitizerPanelProps>
             {totalSanitizedCount}
           </span>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[10px] text-slate-400">
             {isAr ? 'تهديدات معزولة بالكامل' : 'Quarantined & Blocked'}
           </span>
           <span className="font-mono text-lg font-bold text-rose-400">{totalQuarantinedCount}</span>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[10px] text-slate-400">
             {isAr ? 'معدل خفض الإنتروبيا' : 'Mean Entropy Reduction'}
           </span>
@@ -271,7 +271,7 @@ export const OmnichannelSanitizerPanel: React.FC<OmnichannelSanitizerPanelProps>
                 className={`cursor-pointer space-y-1.5 rounded-xl border p-3 text-xs transition ${
                   isSelected
                     ? 'border-emerald-500 bg-slate-800 shadow-md'
-                    : 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                    : 'border-slate-800 bg-slate-950/60 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -311,7 +311,7 @@ export const OmnichannelSanitizerPanel: React.FC<OmnichannelSanitizerPanelProps>
         </div>
 
         {/* Deep Dive & CDR Breakdown */}
-        <div className="space-y-5 rounded-xl border border-slate-800 bg-slate-950/90 p-5 lg:col-span-7">
+        <div className="space-y-5 rounded-xl border border-slate-800 bg-slate-950/90 p-5 lg:col-span-7 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           {selectedTransfer ? (
             <>
               <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-3">
@@ -342,7 +342,7 @@ export const OmnichannelSanitizerPanel: React.FC<OmnichannelSanitizerPanelProps>
               </div>
 
               {/* Entropy Transformation Comparison */}
-              <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900 p-4">
+              <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
                   <span>
                     {isAr

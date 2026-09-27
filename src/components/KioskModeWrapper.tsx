@@ -86,20 +86,20 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({ lang = 'ar',
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col justify-between overflow-hidden bg-[#0d1117] font-mono text-[#e6edf3] select-none">
+    <div className="fixed inset-0 z-[9999] flex flex-col justify-between overflow-hidden bg-[#000000] font-mono text-[#e6edf3] select-none">
       {/* Top SOC Wall Display Minimalist Banner */}
-      <div className="absolute top-0 right-0 left-0 z-40 flex items-center justify-between border-b border-[#1e2733] bg-[#0d1117]/85 px-6 py-2.5 text-xs backdrop-blur-md">
+      <div className="absolute top-0 right-0 left-0 z-40 flex items-center justify-between border-b border-[#0e3a44] bg-[#000000]/85 px-6 py-2.5 text-xs backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 animate-ping rounded-full bg-[#3fb950]" />
+            <span className="h-2.5 w-2.5 animate-ping rounded-full bg-[#10b981]" />
             <span className="font-bold tracking-wider text-[#e6edf3]">
               {isAr
                 ? 'شاشة جدارية سيادية للتحكم (SOC WALL KIOSK)'
                 : 'SOVEREIGN DEFENDER • ZERO-TOUCH SOC WALL DISPLAY'}
             </span>
           </div>
-          <span className="text-[#93a1b3]">|</span>
-          <span className="rounded border border-[#3fb950]/30 bg-[#3fb950]/15 px-2 py-0.5 text-[11px] text-[#3fb950]">
+          <span className="text-[#8aa4b8]">|</span>
+          <span className="rounded border border-[#10b981]/30 bg-[#10b981]/15 px-2 py-0.5 text-[11px] text-[#10b981]">
             {isAr
               ? 'تتبع آلي عالي الدقة (K-Means Auto-Tracking)'
               : 'K-MEANS AUTONOMOUS TRACKING ACTIVE'}
@@ -107,14 +107,14 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({ lang = 'ar',
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-[11px] text-[#93a1b3]">
-            <Clock className="h-3.5 w-3.5 text-[#3fb950]" />
+          <div className="flex items-center gap-1.5 text-[11px] text-[#8aa4b8]">
+            <Clock className="h-3.5 w-3.5 text-[#10b981]" />
             <span className="font-mono text-[#e6edf3]">{currentTime} UTC</span>
           </div>
 
           <button
             onClick={onExitKiosk}
-            className="flex items-center gap-1.5 rounded border border-[#1e2733] bg-[#1a2230] px-3 py-1 text-xs font-bold transition hover:border-[#f85149] hover:text-[#f85149]"
+            className="flex items-center gap-1.5 rounded border border-[#0e3a44] bg-[#061019] px-3 py-1 text-xs font-bold transition hover:border-[#f43f5e] hover:text-[#f43f5e]"
             title="Press Esc to Exit"
           >
             <Minimize2 className="h-3.5 w-3.5" />
@@ -129,9 +129,9 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({ lang = 'ar',
       </div>
 
       {/* Bottom Autonomous Mitigation Marquee / Auto-Ticker */}
-      <div className="absolute right-0 bottom-0 left-0 z-40 flex h-12 items-center overflow-hidden border-t border-[#1e2733] bg-[#131a24] px-4">
+      <div className="absolute right-0 bottom-0 left-0 z-40 flex h-12 items-center overflow-hidden border-t border-[#0e3a44] bg-[#03070c] px-4">
         {/* Ticker Header Tag */}
-        <div className="z-10 mr-3 flex shrink-0 items-center gap-2 rounded border border-[#f85149]/40 bg-[#f85149]/20 px-3 py-1 text-[11px] font-bold text-[#f85149] shadow-lg">
+        <div className="z-10 mr-3 flex shrink-0 items-center gap-2 rounded border border-[#f43f5e]/40 bg-[#f43f5e]/20 px-3 py-1 text-[11px] font-bold text-[#f43f5e] shadow-lg">
           <ShieldAlert className="h-4 w-4 animate-pulse" />
           <span>
             {isAr ? 'شريط التدخل الآلي (eBPF Mitigation Stream)' : 'AUTONOMOUS MITIGATION STREAM'}
@@ -147,14 +147,14 @@ export const KioskModeWrapper: React.FC<KioskModeWrapperProps> = ({ lang = 'ar',
             ].map(log => (
               <div
                 key={`kiosk-ticker-${log.itemUuid}`}
-                className="flex items-center gap-2.5 rounded border border-[#1e2733] bg-[#1a2230] px-3 py-1 text-xs text-[#e6edf3]"
+                className="flex items-center gap-2.5 rounded border border-[#0e3a44] bg-[#061019] px-3 py-1 text-xs text-[#e6edf3]"
               >
-                <span className="text-[10px] text-[#93a1b3]">{log.timestamp}</span>
-                <span className="py-0.2 rounded border border-[#f85149]/40 bg-[#f85149]/20 px-1.5 text-[10px] font-bold text-[#f85149]">
+                <span className="text-[10px] text-[#8aa4b8]">{log.timestamp}</span>
+                <span className="py-0.2 rounded border border-[#f43f5e]/40 bg-[#f43f5e]/20 px-1.5 text-[10px] font-bold text-[#f43f5e]">
                   {log.threatScore}%
                 </span>
-                <span className="font-semibold text-[#3fb950]">{log.ip}</span>
-                <span className="text-[11px] text-[#93a1b3]">{log.reason}</span>
+                <span className="font-semibold text-[#10b981]">{log.ip}</span>
+                <span className="text-[11px] text-[#8aa4b8]">{log.reason}</span>
               </div>
             ))}
           </div>

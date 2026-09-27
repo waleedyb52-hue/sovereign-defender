@@ -133,7 +133,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
 
   return (
     <div
-      className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl sm:p-5"
+      className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl sm:p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
       dir={isAr ? 'rtl' : 'ltr'}
     >
       {/* 1. Header & Live Indicator */}
@@ -206,7 +206,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
 
       {/* 2. Key Inspection Metrics */}
       <div className="grid grid-cols-2 gap-2.5 font-mono text-xs sm:grid-cols-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[10px] text-slate-400">
             {isAr ? 'الملفات المحجورة أمنياً' : 'QUARANTINED FILES'}
           </span>
@@ -217,7 +217,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[10px] text-slate-400">
             {isAr ? 'الملفات المفحوصة والسليمة' : 'CLEAN FILES VERIFIED'}
           </span>
@@ -228,7 +228,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[10px] text-slate-400">
             {isAr ? 'متوسط إنتروبيا شانون' : 'AVG SHANNON ENTROPY'}
           </span>
@@ -238,13 +238,13 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5">
+        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
           <span className="block text-[10px] text-slate-400">
             {isAr ? 'زمن فحص الذاكرة' : 'PRE-COMMIT SCAN SPEED'}
           </span>
           <div className="mt-1 flex items-center gap-2">
-            <Zap className="h-4 w-4 text-purple-400" />
-            <span className="text-base font-bold text-purple-300">
+            <Zap className="h-4 w-4 text-cyan-400" />
+            <span className="text-base font-bold text-cyan-300">
               {stats.preTransitLatencyUs} µs
             </span>
           </div>
@@ -252,7 +252,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
       </div>
 
       {/* 3. Search & Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/70 p-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/70 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
         <div className="relative">
           <Search className="absolute top-2.5 left-2.5 h-3.5 w-3.5 text-slate-400" />
           <input
@@ -264,7 +264,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
                 ? 'بحث باسم الملف، العنوان، أو القاعدة المطابقة...'
                 : 'Filter filename, IP, YARA rule...'
             }
-            className="w-64 rounded-lg border border-slate-700 bg-slate-900 py-1 pr-3 pl-8 font-mono text-xs text-slate-200 outline-none focus:border-cyan-400"
+            className="w-64 rounded-lg border border-slate-700 bg-slate-900 py-1 pr-3 pl-8 font-mono text-xs text-slate-200 outline-none focus:border-cyan-400 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
           />
         </div>
 
@@ -318,7 +318,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
                   ? 'border-rose-500/40 bg-rose-950/20 shadow-md shadow-rose-950/30 hover:border-rose-400'
                   : isScanning
                     ? 'animate-pulse border-cyan-500/40 bg-cyan-950/20'
-                    : 'border-slate-800 bg-slate-950 hover:border-slate-700'
+                    : 'border-slate-800 bg-slate-950 hover:border-slate-700 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
               }`}
             >
               <div className="flex flex-col justify-between gap-2.5 sm:flex-row sm:items-center">
@@ -371,7 +371,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
                             ? 'border-rose-500/50 bg-rose-950 text-rose-300'
                             : file.entropyScore >= 6.0
                               ? 'border-amber-500/50 bg-amber-950 text-amber-300'
-                              : 'border-slate-700 bg-slate-900 text-slate-300'
+                              : 'border-slate-700 bg-slate-900 text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
                         }`}
                       >
                         Entropy: {file.entropyScore}/8.00{' '}
@@ -399,7 +399,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
                 <div className="flex items-center gap-2 self-end sm:self-center">
                   <button
                     onClick={() => setExpandedFileId(isExpanded ? null : file.id)}
-                    className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1 font-mono text-xs text-slate-300 transition hover:bg-slate-800"
+                    className="flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-900 px-2.5 py-1 font-mono text-xs text-slate-300 transition hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
                   >
                     <span>
                       {isExpanded
@@ -436,7 +436,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
 
               {/* Expanded Sandbox & Forensics Drawer */}
               {isExpanded && (
-                <div className="animate-fadeIn space-y-2.5 rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs">
+                <div className="animate-fadeIn space-y-2.5 rounded-xl border border-slate-800 bg-slate-950 p-3 font-mono text-xs shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div className="grid grid-cols-1 gap-2 text-slate-300 sm:grid-cols-2">
                     <div>
                       <span className="block text-[10px] text-slate-400">SHA-256 Hash:</span>
@@ -470,7 +470,7 @@ export const InTransitFilesSecurityInspector: React.FC<InTransitFilesTelemetryPr
                   </div>
 
                   {file.sandboxAnalysis && (
-                    <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2.5">
+                    <div className="space-y-1 rounded-lg border border-slate-800 bg-slate-900/90 p-2.5 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                       <span className="block text-[10px] font-bold tracking-wider text-slate-400 uppercase">
                         {isAr
                           ? 'تقرير بيئة التحليل الرملية (Cyber Threat Sandbox)'
