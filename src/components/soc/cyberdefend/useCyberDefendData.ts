@@ -75,6 +75,34 @@ const AnalyticsResponse = z.object({
     .default({})
 });
 
+/**
+ * Alert feed. The fourth tab needs events, and this is the only endpoint that
+ * carries them with a MITRE tactic and the action actually taken.
+ */
+const AlertEvent = z.object({
+  id: z.string(),
+  timestamp: z.string(),
+  source: z.string().nullish(),
+  severity: z.string().nullish(),
+  title: z.string().nullish(),
+  titleAr: z.string().nullish(),
+  details: z.string().nullish(),
+  detailsAr: z.string().nullish(),
+  mitreTactic: z.string().nullish(),
+  mitreId: z.string().nullish(),
+  actionTaken: z.string().nullish(),
+  actionTakenAr: z.string().nullish(),
+  srcIp: z.string().nullish(),
+  sourceIp: z.string().nullish()
+});
+
+const TelemetryResponse = z.object({
+  success: z.boolean().nullish(),
+  total: z.number().nullish(),
+  emergencyLockdown: z.boolean().nullish(),
+  events: z.array(AlertEvent).default([])
+});
+
 const ClusterNode = z.object({
   nodeName: z.string(),
   nodeIp: z.string(),
@@ -229,6 +257,13 @@ export interface CyberDefendData {
 
   families: Array<{ family: string; count: number }>;
 
+  /** Alert feed for the Alerts view. */
+  alerts: Array<{
+    id: string; at: string; severity: string; title: string; details: string;
+    mitre: string | null; action: string | null; srcIp: string | null; source: string | null;
+  }>;
+  emergencyLockdown: boolean;
+
   /** Derived, and only where both inputs are real. */
   derived: {
     /** Requests per second, from successive deltas of the protected counter. */
@@ -259,6 +294,7 @@ export function useCyberDefendData(apiKey?: string, pollMs = 5000): CyberDefendD
   const [posture, setPosture] = useState<z.infer<typeof PostureResponse> | null>(null);
   const [drift, setDrift] = useState<z.infer<typeof DriftResponse> | null>(null);
   const [retention, setRetention] = useState<z.infer<typeof RetentionResponse> | null>(null);
+  const [telemetry, setTelemetry] = useState<z.infer<typeof TelemetryResponse> | null>(null);
   const lastProtected = useRef<{ n: number; at: number } | null>(null);
   const [requestRate, setRequestRate] = useState<number | null>(null);
 
@@ -269,7 +305,8 @@ export function useCyberDefendData(apiKey?: string, pollMs = 5000): CyberDefendD
       ['/agent/status', getJson('/api/v1/agent/status', AgentResponse, apiKey)],
       ['/soc/inference-posture', getJson(`${API}/inference-posture`, PostureResponse, apiKey)],
       ['/soc/learning/drift', getJson(`${API}/learning/drift`, DriftResponse, apiKey)],
-      ['/soc/learning/retention', getJson(`${API}/learning/retention`, RetentionResponse, apiKey)]
+      ['/soc/learning/retention', getJson(`${API}/learning/retention`, RetentionResponse, apiKey)],
+      ['/soc/unified-telemetry', getJson(`${API}/unified-telemetry`, TelemetryResponse, apiKey)]
     ];
 
     const settled = await Promise.allSettled(jobs.map(j => j[1]));
@@ -299,6 +336,7 @@ export function useCyberDefendData(apiKey?: string, pollMs = 5000): CyberDefendD
         case 3: setPosture(r.value as any); break;
         case 4: setDrift(r.value as any); break;
         case 5: setRetention(r.value as any); break;
+        case 6: setTelemetry(r.value as any); break;
       }
     });
     setMissing(failed);
@@ -397,6 +435,25 @@ export function useCyberDefendData(apiKey?: string, pollMs = 5000): CyberDefendD
     families: Object.entries(retention?.statistics.byFamily ?? {})
       .map(([family, count]) => ({ family, count }))
       .sort((a, b) => b.count - a.count),
+
+    alerts: (telemetry?.events ?? []).map(e => ({
+      id: e.id,
+      at: e.timestamp,
+      severity: (e.severity ?? 'UNKNOWN').toUpperCase(),
+      title: e.title ?? e.source ?? '',
+      details: e.details ?? '',
+      // Only an ID the event actually carried, or one embedded in the tactic
+      // string. Never inferred — an analyst pivots on T-numbers and a plausible
+      // wrong one sends them into the wrong playbook.
+      mitre:
+        e.mitreId && /^T\d{4}(\.\d{3})?$/.test(e.mitreId)
+          ? e.mitreId
+          : (e.mitreTactic?.match(/T\d{4}(\.\d{3})?/i)?.[0]?.toUpperCase() ?? null),
+      action: e.actionTaken ?? null,
+      srcIp: e.srcIp ?? e.sourceIp ?? null,
+      source: e.source ?? null
+    })),
+    emergencyLockdown: Boolean(telemetry?.emergencyLockdown),
 
     derived: {
       requestRate,

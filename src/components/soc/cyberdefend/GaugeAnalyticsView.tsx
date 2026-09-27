@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Layers } from 'lucide-react';
 import { Glass, Label, Row, Stat, Value } from './parts';
 import { formatCount } from '../../../lib/utils';
+import { EndpointRiskScatter } from './EndpointRiskScatter';
 import type { CyberDefendData } from './useCyberDefendData';
 
 /**
@@ -138,8 +139,61 @@ export const GaugeAnalyticsView: React.FC<Props> = ({ d, isAr, reduce }) => {
         </Glass>
       </div>
 
-      {/* Distribution bars — the fuel-source position */}
-      <Glass className="p-3">
+      {/* Bottom triptych, as the reference has it: an index on the left, the scatter
+          in the centre, the distribution bars on the right. */}
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        {/* Threat intensity — the energy-intensity-index position */}
+        <Glass className="p-3 lg:col-span-3">
+          <Label>{isAr ? 'مؤشّر كثافة التهديد' : 'Threat intensity index'}</Label>
+          <div className="mt-2.5 text-center">
+            <Value
+              v={d.derived.threatDensity}
+              className="text-3xl font-bold text-white"
+              reason="needs requestsProtected and threatsBlocked"
+            />
+            <p className="mt-0.5 text-[8px] text-slate-500">
+              {isAr ? 'تهديد لكل 10,000 طلب' : 'threats per 10,000 requests'}
+            </p>
+          </div>
+
+          {/* Intensity bar. Scaled against 500/10k, which is a stated reference
+              point rather than the observed maximum — a bar that rescales to its
+              own peak always looks full and stops carrying information. */}
+          <div className="mt-3">
+            <div className="h-2.5 overflow-hidden rounded-full bg-white/5">
+              {d.derived.threatDensity != null && (
+                <div
+                  className="h-full rounded-full transition-[width] duration-700"
+                  style={{
+                    width: `${Math.min(100, (d.derived.threatDensity / 500) * 100)}%`,
+                    background:
+                      d.derived.threatDensity >= 300
+                        ? 'linear-gradient(90deg, #F59E0B, #EF4444)'
+                        : 'linear-gradient(90deg, #38BDF8, #10B981)'
+                  }}
+                />
+              )}
+            </div>
+            <div className="mt-1 flex justify-between text-[7px] text-slate-600">
+              <span>0</span>
+              <span>{isAr ? 'مرجع 500' : 'ref 500'}</span>
+            </div>
+          </div>
+
+          <dl className="mt-3 space-y-1 border-t border-white/5 pt-2">
+            <Row k={isAr ? 'تقييمات' : 'Evaluations'} v={d.posture.evaluations} />
+            <Row k={isAr ? 'مصائد' : 'Trapped'} v={d.agent.trapped} />
+            <Row k={isAr ? 'عناوين معزولة' : 'Quarantined'} v={d.agent.quarantined} />
+          </dl>
+        </Glass>
+
+        {/* Scatter — the costs-per-household position */}
+        <div className="lg:col-span-5">
+          <EndpointRiskScatter d={d} isAr={isAr} reduce={reduce} />
+        </div>
+
+        {/* Distribution bars — the fuel-source position */}
+        <Glass className="p-3 lg:col-span-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Layers className="h-3.5 w-3.5 text-[#38BDF8]" aria-hidden />
@@ -186,7 +240,8 @@ export const GaugeAnalyticsView: React.FC<Props> = ({ d, isAr, reduce }) => {
             })}
           </div>
         )}
-      </Glass>
+        </Glass>
+      </div>
     </div>
   );
 };

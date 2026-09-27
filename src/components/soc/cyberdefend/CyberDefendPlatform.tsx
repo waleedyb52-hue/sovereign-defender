@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { Hexagon, Network, Settings, Bell, ShieldAlert } from 'lucide-react';
 import { EarthGlobeView } from './EarthGlobeView';
 import { AlluvialFlowView } from './AlluvialFlowView';
+import { AlertsView } from './AlertsView';
 import { GaugeAnalyticsView } from './GaugeAnalyticsView';
 import { useCyberDefendData } from './useCyberDefendData';
 import { FIELD, Mono } from './parts';
@@ -28,7 +29,7 @@ import type { ThreatOrigin } from './ThreatGlobeCanvas';
  * is quiet is distinguishable from a platform that is idle.
  */
 
-type Tab = 'overview' | 'firewall' | 'attacks';
+type Tab = 'overview' | 'firewall' | 'alerts' | 'attacks';
 
 interface Props {
   lang?: 'ar' | 'en';
@@ -46,6 +47,7 @@ export const CyberDefendPlatform: React.FC<Props> = ({ lang = 'ar', apiKey }) =>
   const TABS: Array<{ id: Tab; en: string; ar: string }> = [
     { id: 'overview', en: 'Overview', ar: 'النظرة العامة' },
     { id: 'firewall', en: 'Firewall', ar: 'الجدار الناري' },
+    { id: 'alerts', en: 'Alerts', ar: 'التنبيهات' },
     { id: 'attacks', en: 'Attacks', ar: 'الهجمات' }
   ];
 
@@ -141,7 +143,7 @@ export const CyberDefendPlatform: React.FC<Props> = ({ lang = 'ar', apiKey }) =>
               className="relative rounded-full border border-white/10 bg-white/5 p-1.5 text-slate-400 transition-colors hover:text-slate-100 focus-visible:ring-2 focus-visible:ring-[#38BDF8]/60 focus-visible:outline-none"
             >
               <Bell className="h-3.5 w-3.5" />
-              {(d.kernel.blackholes ?? 0) > 0 && (
+              {d.alerts.some(a => /CRITICAL|HIGH/.test(a.severity)) && (
                 <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#EF4444]" aria-hidden />
               )}
             </button>
@@ -184,6 +186,7 @@ export const CyberDefendPlatform: React.FC<Props> = ({ lang = 'ar', apiKey }) =>
               />
             )}
             {tab === 'firewall' && <AlluvialFlowView d={d} isAr={isAr} reduce={reduce} />}
+            {tab === 'alerts' && <AlertsView d={d} isAr={isAr} reduce={reduce} />}
             {tab === 'attacks' && <GaugeAnalyticsView d={d} isAr={isAr} reduce={reduce} />}
           </motion.div>
         </AnimatePresence>
