@@ -1,81 +1,85 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import {
-  Crosshair, ShieldAlert, Radio, Waves, LayoutGrid, Cpu, ShieldCheck,
-  FileLock2, Gauge, Network, Binary, ArrowUpDown
-} from 'lucide-react';
-import { GlowSparkline } from '../cyberdefend/GlowSparkline';
+import { Crosshair, LayoutGrid, Radio, Waves, ArrowUpDown } from 'lucide-react';
 import { useCyberDefendData } from '../cyberdefend/useCyberDefendData';
-import {
-  CornerAccents, Readout, HudLabel, HudValue, RadialGauge, LinearGauge,
-  CyberGridBackdrop, CYAN, CRIMSON, type Tone
-} from './TacticalPrimitives';
-import { SectionHead, LeaderDonut, DataTable, type DonutSlice } from './BigScreenParts';
+import { CornerAccents, Readout, HudLabel, CYAN, CRIMSON, type Tone } from './TacticalPrimitives';
+import { SectionHead, DataTable } from './BigScreenParts';
 import { TacticalTheater } from './TacticalTheater';
-import { KillChainRail, HudButton } from './KillChainRail';
-import { RibbonCell, type Provenance } from './DefenseRibbon';
+import { KillChainRail } from './KillChainRail';
+import { CyberButton } from './CyberButton';
+import { EbpfModule, WafModule, FimModule, ScannerModule, IntelModule, ZtnaModule } from './ArsenalModules';
+import { TelemetryTimeline } from './TelemetryTimeline';
+import { WargamePanel } from './WargamePanel';
+import {
+  DefconBadge, EnvironmentToggle, ResourceTicker, SimulationFrame, deriveDefcon, type Environment
+} from './EnvironmentBar';
 import { useDefenseRibbon } from './useDefenseRibbon';
 import { useLiveAttackStream } from './useLiveAttackStream';
-import { formatCount } from '../../../lib/utils';
+import { useArsenal } from './useArsenal';
+import { useWargames } from './useWargames';
 
 /**
- * UNIFIED TACTICAL COCKPIT — the platform's single operational surface.
+ * UNIFIED TACTICAL COCKPIT — single pane of glass, Z-axis layout.
  *
- * Four zones around a deep central theatre, which is what a C2 room is:
+ *   LAYER 0   pure black, hex grid, CRT scanlines
+ *   LAYER 1   the threat theatre: live radar topology, real coordinates, real packets
+ *   LAYER 2   floating glass HUDs — header, kill chain left, arsenal right, telemetry
+ *             and the live threat table across the bottom
  *
- *   ribbon    live counters for every defence stage — kernel XDP, L7 WAF, FIM,
- *             latency — each declaring whether its figure is measured or seeded
- *   left      the MITRE kill chain and the containment pipeline, moved out of its
- *             own page and into the scene
- *   centre    a live radar topology fed by the telemetry socket
- *   bottom    the live attack feed and the traffic curve, full width, with sort
- *             and response controls
+ * ENVIRONMENT SEPARATION is the load-bearing feature here, and it is a safety property
+ * rather than a styling one. An operator who cannot tell a drill from an intrusion will
+ * either ignore a real one or escalate an exercise; both have happened in real SOCs. So:
  *
- * The panels are glass over the theatre — bg-[#030712]/75, backdrop-blur-xl, a
- * cyan-500/30 edge, a 25px shadow — with the four military corner brackets on each.
+ *   LIVE mode renders only real telemetry. The drill launchers are not in the DOM at
+ *   all — not disabled, not hidden by CSS, absent. A disabled launcher is one prop away
+ *   from firing a synthetic APT at a production board.
  *
- * On data integrity, which this surface makes harder rather than easier:
+ *   WARGAME mode frames the entire surface in amber, banners itself, and blocks the
+ *   return to LIVE while the server reports a phase running. The banner follows
+ *   `/wargames/status`, not local state, so a reload mid-drill still warns.
  *
- *   A single-pane HUD puts measured and seeded figures side by side at the same size,
- *   in the same neon, inside the same glass. That is exactly the arrangement in which
- *   a fabricated number is most convincing, so every cell here carries its provenance
- *   at the size the figure is shown, nulls render as an em dash with the reason on
- *   hover, and the radar's sweep stops dead when the socket drops instead of animating
- *   traffic nobody observed. Stillness is a reading. Motion has to be earned.
+ * ON DATA INTEGRITY, which this layout makes harder rather than easier: a single pane
+ * puts measured and emulated figures side by side, at the same size, in the same neon,
+ * inside the same glass. That is the arrangement in which a fabricated number is most
+ * convincing. So the eBPF module labels itself from the driver's own CONTAINER_EMULATION
+ * report, the IOC ticker states that its store is local because the platform is
+ * zero-egress, DEFCON discloses its inputs and reads UNKNOWN rather than 5 when nothing
+ * has reported, the scanner refuses to draw ports nothing scanned for, and the radar's
+ * sweep stops dead when the socket drops. Stillness is a reading. Motion is earned.
  *
- * No endpoint, schema, socket path or hook contract was changed to build this. The
- * cockpit is a second reader of feeds that already existed: `useCyberDefendData` for
- * the seven core endpoints, `useDefenseRibbon` for WAF, FIM, kernel integrity and
- * attack chains, and `useLiveAttackStream` for `/ws/telemetry`.
+ * No endpoint, schema, socket path or hook contract was changed. Every module reads a
+ * feed the backend already served.
  */
 
 interface Props {
   lang?: 'ar' | 'en';
   apiKey?: string;
-  /** Opens the remaining consoles. Absent, the control is not rendered. */
   onExit?: () => void;
 }
 
-/** The brief's glass panel, with the four corner brackets. */
+/** LAYER 2 glass: deep transparency, micro-border, corner brackets. */
 const Glass: React.FC<{
   children: React.ReactNode;
   className?: string;
   tone?: Tone;
+  amber?: boolean;
   delay?: number;
   reduce: boolean;
-}> = ({ children, className = '', tone = 'cyan', delay = 0, reduce }) => (
+}> = ({ children, className = '', tone = 'cyan', amber, delay = 0, reduce }) => (
   <motion.div
-    className={`relative border border-cyan-500/30 bg-[#030712]/75 shadow-[0_0_25px_rgba(0,0,0,0.85)] backdrop-blur-xl ${className}`}
+    className={`relative border bg-[#030712]/60 shadow-[0_0_25px_rgba(0,0,0,0.85)] backdrop-blur-2xl ${className}`}
+    style={{ borderColor: amber ? 'rgba(245,158,11,0.5)' : 'rgba(22,78,99,0.5)' }}
     initial={reduce ? false : { opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.35, delay, ease: 'easeOut' }}
   >
-    <CornerAccents tone={tone} inset={-1} />
+    <CornerAccents tone={amber ? 'amber' : tone} inset={-1} />
     {children}
   </motion.div>
 );
 
 type SortKey = 'TIME' | 'SEVERITY' | 'MITRE';
+const SEV_RANK: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, UNKNOWN: 4 };
 
 export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }) => {
   const isAr = lang === 'ar';
@@ -83,73 +87,100 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
 
   const d = useCyberDefendData(apiKey);
   const r = useDefenseRibbon(apiKey);
+  const a = useArsenal(apiKey);
+  const w = useWargames(apiKey);
   const stream = useLiveAttackStream();
 
+  const [env, setEnv] = React.useState<Environment>('LIVE');
   const [utc, setUtc] = React.useState(() => new Date().toISOString());
   const [sortBy, setSortBy] = React.useState<SortKey>('TIME');
-  const [dropsOnly, setDropsOnly] = React.useState(false);
-  const [action, setAction] = React.useState<string | null>(null);
+  const [critOnly, setCritOnly] = React.useState(false);
+  const [isolateBusy, setIsolateBusy] = React.useState(false);
+  const [isolateResult, setIsolateResult] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     const t = setInterval(() => setUtc(new Date().toISOString()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  /** The console default is a blue-grey; the theatre needs a true black void. */
+  /** The app paints #0d1117 on the root with !important; the theatre needs black. */
   React.useEffect(() => {
     document.documentElement.setAttribute('data-surface', 'tactical');
     return () => document.documentElement.removeAttribute('data-surface');
   }, []);
 
-  const critical = d.alerts.filter(a => /CRITICAL|HIGH/.test(a.severity));
+  const sim = env === 'WARGAME';
+  const critical = d.alerts.filter(x => /CRITICAL|HIGH/.test(x.severity));
+  const isolatedNodes = d.nodes.filter(n => n.isolated).length;
 
-  const SEV_RANK: Record<string, number> = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, UNKNOWN: 4 };
+  const defcon = deriveDefcon(
+    {
+      emergencyLockdown: d.emergencyLockdown,
+      criticalAlerts: critical.length,
+      activeHardBans: a.ztna.activeHardBans,
+      fimCritical: r.fim.critical,
+      isolatedNodes,
+      anySourceReporting: d.missing.length + r.missing.length + a.missing.length < 20 && !d.loading
+    },
+    isAr
+  );
+
   const feed = React.useMemo(() => {
-    const rows = dropsOnly ? d.alerts.filter(a => /CRITICAL|HIGH/.test(a.severity)) : d.alerts;
-    const sorted = rows.slice();
-    if (sortBy === 'SEVERITY') sorted.sort((a, b) => (SEV_RANK[a.severity] ?? 9) - (SEV_RANK[b.severity] ?? 9));
-    else if (sortBy === 'MITRE') sorted.sort((a, b) => (a.mitre ?? 'zzz').localeCompare(b.mitre ?? 'zzz'));
-    else sorted.sort((a, b) => b.at.localeCompare(a.at));
-    return sorted;
-  }, [d.alerts, sortBy, dropsOnly]);
-
-  const familySlices: DonutSlice[] = d.families.map(f => ({
-    label: f.family,
-    value: f.count,
-    tone: f.family === 'CLEAN_TRAFFIC' ? ('cyan' as Tone) : ('crimson' as Tone)
-  }));
+    const rows = critOnly ? d.alerts.filter(x => /CRITICAL|HIGH/.test(x.severity)) : d.alerts;
+    const s = rows.slice();
+    if (sortBy === 'SEVERITY') s.sort((x, y) => (SEV_RANK[x.severity] ?? 9) - (SEV_RANK[y.severity] ?? 9));
+    else if (sortBy === 'MITRE') s.sort((x, y) => (x.mitre ?? 'zzz').localeCompare(y.mitre ?? 'zzz'));
+    else s.sort((x, y) => y.at.localeCompare(x.at));
+    return s;
+  }, [d.alerts, sortBy, critOnly]);
 
   /**
-   * XDP drop provenance.
-   *
-   * Live socket counters are measured. Otherwise the cluster statistics distinguish
-   * seeded from observed, and on a host without a kernel path the figure is seeded —
-   * which the cell must say, because the number is large and looks authoritative.
+   * Real containment, against the real endpoint. The result is reported verbatim —
+   * a refused isolation reported as success would leave an operator believing a host
+   * was cut off while it is still talking.
    */
-  const xdpValue = stream.kernel?.droppedPackets ?? r.waf.droppedPackets ?? d.kernel.packetsDropped;
-  const xdpProv: Provenance =
-    stream.kernel?.droppedPackets != null
-      ? 'MEASURED'
-      : xdpValue == null
-        ? 'UNAVAILABLE'
-        : d.kernel.countersReadable === true
-          ? 'MEASURED'
-          : 'SEEDED';
+  const isolate = async (ip: string) => {
+    setIsolateBusy(true);
+    setIsolateResult(null);
+    try {
+      const res = await fetch('/api/v1/soc/ebpf/contain-ip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-api-key': apiKey } : {}) },
+        body: JSON.stringify({ ip, reason: 'Operator isolation from unified cockpit' })
+      });
+      const body = await res.json().catch(() => null);
+      setIsolateResult(res.ok ? (body?.message ?? `${ip} contained`) : `rejected (${res.status})`);
+    } catch (err) {
+      setIsolateResult(`failed: ${err instanceof Error ? err.message : 'network error'}`);
+    } finally {
+      setIsolateBusy(false);
+      a.refresh();
+    }
+  };
 
-  const latencyUs = stream.kernel?.avgLatencyNs != null ? stream.kernel.avgLatencyNs / 1000 : d.kernel.latencyUs;
-  const latencyProv: Provenance =
-    stream.kernel?.avgLatencyNs != null ? 'MEASURED' : latencyUs == null ? 'UNAVAILABLE' : 'SEEDED';
-
-  const allMissing = [...d.missing, ...r.missing];
-
-  const contain = (kind: 'ISOLATE' | 'BLACKHOLE' | 'TARPIT', ip: string) =>
-    setAction(`${kind} → ${ip}`);
+  const allMissing = [...d.missing, ...r.missing, ...a.missing];
+  const accent = sim ? '#fbbf24' : CYAN;
 
   return (
-    <div className="fixed inset-0 z-0 flex flex-col overflow-hidden bg-black" dir={isAr ? 'rtl' : 'ltr'}>
-      {/* ── The theatre. Behind everything, full viewport. ─────────────────── */}
+    <div className="fixed inset-0 z-0 flex h-screen w-screen flex-col overflow-hidden bg-black" dir={isAr ? 'rtl' : 'ltr'}>
+      {/* ── LAYER 0: void, hex grid, CRT scanlines ──────────────────────────── */}
+      <div className="absolute inset-0 z-0" aria-hidden>
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(34,211,238,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.045) 1px, transparent 1px)',
+            backgroundSize: '46px 46px'
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.045]"
+          style={{ backgroundImage: 'repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px)' }}
+        />
+      </div>
+
+      {/* ── LAYER 1: the threat theatre ─────────────────────────────────────── */}
       <div className="absolute inset-0 z-0">
-        <CyberGridBackdrop reduce={reduce} />
         <TacticalTheater
           contacts={d.geo.map(g => ({ code: g.code, country: g.country, count: g.count }))}
           nodes={d.nodes.map(n => ({ name: n.name, ip: n.ip, isolated: n.isolated, threatScore: n.threatScore }))}
@@ -161,32 +192,59 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
         />
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse at center, transparent 38%, rgba(0,0,0,0.86) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse at center, transparent 36%, rgba(0,0,0,0.88) 100%)' }}
           aria-hidden
         />
       </div>
 
-      {/* ── Identity bar ───────────────────────────────────────────────────── */}
-      <div className="relative z-10 flex shrink-0 items-center gap-3 border-b border-cyan-500/20 bg-[#030712]/75 px-4 py-1.5 backdrop-blur-xl">
+      {sim && <SimulationFrame isAr={isAr} drillActive={w.drillActive} detail={w.activePhase ? `PHASE ${w.activePhase}` : null} />}
+
+      {/* ── LAYER 2 · TOP HEADER ────────────────────────────────────────────── */}
+      <header
+        className="relative z-20 flex shrink-0 flex-wrap items-center gap-2 border-b bg-[#030712]/60 px-3 py-1.5 backdrop-blur-2xl"
+        style={{ borderColor: sim ? 'rgba(245,158,11,0.4)' : 'rgba(22,78,99,0.5)' }}
+      >
         <span
-          className="grid h-6 w-6 shrink-0 place-items-center border border-cyan-500/40"
-          style={{ clipPath: 'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)' }}
+          className="grid h-6 w-6 shrink-0 place-items-center border"
+          style={{
+            borderColor: `${accent}66`,
+            clipPath: 'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)'
+          }}
         >
-          <Crosshair className="h-3 w-3 text-cyan-400" strokeWidth={1.25} aria-hidden />
+          <Crosshair className="h-3 w-3" strokeWidth={1.25} style={{ color: accent }} aria-hidden />
         </span>
         <p
-          className="shrink-0 text-[12px] font-bold tracking-[0.2em] text-white"
-          style={{ fontFamily: 'var(--font-mono)', textShadow: `0 0 14px ${CYAN}66` }}
+          className="shrink-0 font-mono text-[11px] font-bold tracking-widest text-white uppercase"
+          style={{ textShadow: `0 0 12px ${accent}aa` }}
         >
-          SOVEREIGN DEFENDER
+          Sovereign Defender
         </p>
-        <span className="text-[6.5px] tracking-[0.3em] text-cyan-400/70" style={{ fontFamily: 'var(--font-mono)' }}>
-          UNIFIED TACTICAL C2
-        </span>
 
-        <span className="h-px flex-1" style={{ background: `linear-gradient(90deg, ${CYAN}44, transparent)` }} />
+        <DefconBadge d={defcon} isAr={isAr} />
 
-        {/* Socket state, stated where it cannot be missed */}
+        <EnvironmentToggle
+          env={env}
+          isAr={isAr}
+          lockedReason={
+            w.drillActive
+              ? isAr
+                ? 'محاكاة جارية — صفّر الصندوق قبل العودة إلى الوضع الحيّ'
+                : 'a drill is running — reset the sandbox before returning to live'
+              : null
+          }
+          onChange={setEnv}
+        />
+
+        <span className="h-px flex-1" style={{ background: `linear-gradient(90deg, ${accent}44, transparent)` }} />
+
+        <ResourceTicker
+          heapMb={d.posture.heapMb}
+          rssMb={d.posture.rssMb}
+          uptimeSec={d.posture.uptimeSec}
+          rps={a.waf.rps ?? d.derived.requestRate}
+          isAr={isAr}
+        />
+
         <span className="flex shrink-0 items-center gap-1.5">
           {!reduce && stream.status === 'LIVE' && (
             <motion.span
@@ -197,365 +255,191 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
             />
           )}
           <span
-            className={`text-[7.5px] tracking-[0.16em] ${
+            className={`font-mono text-[7px] tracking-widest uppercase ${
               stream.status === 'LIVE' ? 'text-emerald-400' : stream.status === 'CONNECTING' ? 'text-amber-400' : 'text-rose-500'
             }`}
-            style={{ fontFamily: 'var(--font-mono)' }}
           >
             {stream.status === 'LIVE'
-              ? `${isAr ? 'بثّ حيّ' : 'WS LIVE'} · ${stream.packetsSeen}`
+              ? `WS · ${stream.packetsSeen}`
               : stream.status === 'CONNECTING'
-                ? isAr ? 'جارٍ الوصل' : 'CONNECTING'
-                : isAr ? 'البثّ مقطوع' : 'WS DOWN'}
+                ? isAr ? 'وصل…' : 'LINKING'
+                : isAr ? 'مقطوع' : 'WS DOWN'}
           </span>
         </span>
 
-        {d.emergencyLockdown && (
-          <span className="flex shrink-0 items-center gap-1 text-rose-500">
-            <ShieldAlert className="h-3 w-3" aria-hidden />
-            <span className="text-[8px] font-bold tracking-[0.16em]" style={{ fontFamily: 'var(--font-mono)' }}>
-              {isAr ? 'إغلاق طارئ' : 'LOCKDOWN'}
-            </span>
-          </span>
-        )}
-
-        <Readout className="shrink-0 text-[12px] font-bold text-cyan-400">{utc.slice(11, 19)}</Readout>
+        <Readout className="shrink-0 font-mono text-[12px] font-bold" tone={sim ? 'amber' : 'cyan'} glow>
+          {utc.slice(11, 19)}
+        </Readout>
         <HudLabel tone="cyan">UTC</HudLabel>
 
         {onExit && (
-          <button
-            type="button"
-            onClick={onExit}
-            className="flex shrink-0 items-center gap-1.5 border border-cyan-500/40 px-2 py-0.5 text-[8px] tracking-[0.14em] text-cyan-400 transition-colors hover:bg-cyan-500/10"
-            style={{ fontFamily: 'var(--font-mono)' }}
-          >
-            <LayoutGrid className="h-2.5 w-2.5" aria-hidden />
-            {isAr ? 'الكونسولات' : 'CONSOLES'}
-          </button>
+          <CyberButton tone="cyan" size="sm" onClick={onExit}>
+            <span className="flex items-center gap-1">
+              <LayoutGrid className="h-2.5 w-2.5" aria-hidden />
+              {isAr ? '[ الكونسولات ]' : '[ CONSOLES ]'}
+            </span>
+          </CyberButton>
         )}
-      </div>
+      </header>
 
-      {/* ── Global defence ribbon ──────────────────────────────────────────── */}
-      <div className="relative z-10 flex shrink-0 items-stretch border-b border-cyan-500/20 bg-[#030712]/75 backdrop-blur-xl">
-        <RibbonCell
-          icon={Cpu}
-          label={isAr ? 'حجب النواة XDP' : 'KERNEL XDP DROP'}
-          value={xdpValue}
-          tone={xdpProv === 'MEASURED' ? 'cyan' : 'amber'}
-          provenance={xdpProv}
-          reason={d.kernel.reason}
-          sub={stream.kernel?.driverMode ?? d.kernel.mode?.replace(/_/g, ' ') ?? undefined}
-          isAr={isAr}
-        />
-        <RibbonCell
-          icon={ShieldCheck}
-          label={isAr ? 'قواعد WAF L7' : 'WAF L7 RULES'}
-          value={r.waf.l7Active != null && r.waf.l7Total != null ? `${r.waf.l7Active}/${r.waf.l7Total}` : null}
-          tone={r.waf.l7Active != null && r.waf.l7Active === r.waf.l7Total ? 'emerald' : 'amber'}
-          provenance={r.waf.l7Active == null ? 'UNAVAILABLE' : 'MEASURED'}
-          reason={r.missing.includes('/traffic/waf/metrics') ? '/traffic/waf/metrics unreachable' : null}
-          sub={isAr ? 'مفعّلة' : 'ENABLED'}
-          isAr={isAr}
-        />
-        <RibbonCell
-          icon={FileLock2}
-          label={isAr ? 'سلامة الملفات FIM' : 'FIM INTEGRITY'}
-          value={r.fim.files}
-          tone={r.fim.critical != null && r.fim.critical > 0 ? 'crimson' : r.fim.active ? 'emerald' : 'amber'}
-          provenance={r.fim.files == null ? 'UNAVAILABLE' : 'MEASURED'}
-          reason={r.missing.includes('/fim/status') ? '/fim/status unreachable' : null}
-          sub={
-            r.fim.critical != null
-              ? `${r.fim.critical} ${isAr ? 'حرِج' : 'CRIT'}`
-              : undefined
-          }
-          isAr={isAr}
-        />
-        <RibbonCell
-          icon={Gauge}
-          label={isAr ? 'زمن الاستجابة' : 'KERNEL LATENCY'}
-          value={latencyUs != null ? latencyUs.toFixed(2) : null}
-          unit="µs"
-          tone={latencyProv === 'MEASURED' ? 'cyan' : 'amber'}
-          provenance={latencyProv}
-          reason={d.kernel.reason}
-          isAr={isAr}
-        />
-        <RibbonCell
-          icon={Network}
-          label={isAr ? 'معدّل الطلبات' : 'REQUEST RATE'}
-          value={r.waf.rps ?? d.derived.requestRate}
-          unit={isAr ? '/ث' : '/s'}
-          tone="cyan"
-          provenance={r.waf.rps != null || d.derived.requestRate != null ? 'MEASURED' : 'UNAVAILABLE'}
-          reason="awaiting a second sample"
-          sub={r.waf.blockedSubnets != null ? `${r.waf.blockedSubnets} ${isAr ? 'شبكة محجوبة' : 'SUBNETS'}` : undefined}
-          isAr={isAr}
-        />
-        <RibbonCell
-          icon={Binary}
-          label={isAr ? 'سلامة النواة' : 'SYSCALL INTEGRITY'}
-          value={r.integrity.status === 'UNAVAILABLE' ? null : (r.integrity.status ?? null)}
-          tone={r.integrity.status === 'VERIFIED' ? 'emerald' : 'amber'}
-          provenance={r.integrity.status === 'UNAVAILABLE' || r.integrity.status == null ? 'UNAVAILABLE' : 'MEASURED'}
-          reason={r.integrity.reason}
-          sub={r.integrity.mitre ?? undefined}
-          isAr={isAr}
-        />
-      </div>
-
-      {/* ── Main band: rail · theatre · instruments ────────────────────────── */}
+      {/* ── LAYER 2 · MAIN BAND ─────────────────────────────────────────────── */}
       <div className="relative z-10 grid min-h-0 flex-1 grid-cols-12 gap-2 p-2">
-        {/* Left: kill chain and containment */}
-        <Glass className="col-span-3 flex min-h-0 flex-col px-2.5 py-2 xl:col-span-2" reduce={reduce} delay={0.04}>
-          <SectionHead tone={critical.length ? 'crimson' : 'cyan'}>
-            {isAr ? 'سلسلة القتل والاحتواء' : 'KILL CHAIN'}
-          </SectionHead>
-          <div className="mt-1.5 min-h-0 flex-1">
-            <KillChainRail
-              chains={r.chains}
-              isAr={isAr}
-              chainsUnavailable={r.missing.includes('/soc/attack-chains')}
-              onContain={contain}
-            />
-          </div>
-          {action && (
-            <p className="mt-1.5 border-t pt-1.5 text-[7px] text-amber-400" style={{ borderColor: `${CYAN}1a`, fontFamily: 'var(--font-mono)' }}>
-              {isAr ? 'طُلب: ' : 'REQUESTED: '}
-              {action}
-            </p>
+        {/* LEFT: kill chain in live mode, drill control in the sandbox */}
+        <Glass
+          className="col-span-3 flex min-h-0 flex-col px-2.5 py-2 xl:col-span-2"
+          amber={sim}
+          reduce={reduce}
+          delay={0.04}
+        >
+          {sim ? (
+            <WargamePanel w={w} isAr={isAr} />
+          ) : (
+            <>
+              <SectionHead tone={critical.length ? 'crimson' : 'cyan'}>
+                {isAr ? 'سلسلة القتل والاحتواء' : 'KILL CHAIN'}
+              </SectionHead>
+              <div className="mt-1.5 min-h-0 flex-1">
+                <KillChainRail
+                  chains={r.chains}
+                  isAr={isAr}
+                  chainsUnavailable={r.missing.includes('/soc/attack-chains')}
+                  onContain={(_kind, ip) => void isolate(ip)}
+                />
+              </div>
+            </>
           )}
         </Glass>
 
-        {/* Centre: the theatre stays visible; this column only holds its labels */}
+        {/* CENTRE: the theatre shows through; only its labels sit here */}
         <div className="pointer-events-none col-span-6 flex min-h-0 flex-col justify-between xl:col-span-7">
-          <div className="flex justify-center">
+          <div className="flex justify-center pt-4">
             <span
-              className="border border-cyan-500/30 bg-[#030712]/75 px-2.5 py-0.5 text-[7.5px] tracking-[0.2em] text-cyan-400 shadow-[0_0_25px_rgba(0,0,0,0.85)] backdrop-blur-xl"
-              style={{ fontFamily: 'var(--font-mono)' }}
+              className="border bg-[#030712]/60 px-3 py-0.5 font-mono text-[7px] tracking-widest uppercase backdrop-blur-2xl"
+              style={{ borderColor: `${accent}55`, color: accent, textShadow: `0 0 8px ${accent}cc` }}
             >
-              {isAr ? 'مسرح التهديد التكتيكي' : 'TACTICAL THREAT THEATRE'}
+              {sim
+                ? isAr ? 'مسرح المحاكاة' : 'SIMULATION THEATRE'
+                : isAr ? 'مسرح التهديد التكتيكي' : 'TACTICAL THREAT THEATRE'}
             </span>
           </div>
 
           {d.geo[0] && (
-            <div className="flex justify-center">
+            <div className="flex justify-center pb-1">
               <span
-                className="border border-rose-500/40 bg-[#030712]/75 px-2.5 py-0.5 text-[8px] text-rose-400 shadow-[0_0_25px_rgba(0,0,0,0.85)] backdrop-blur-xl"
-                style={{ fontFamily: 'var(--font-mono)' }}
+                className="border border-rose-900/60 bg-[#030712]/60 px-3 py-0.5 font-mono text-[7.5px] text-rose-400 backdrop-blur-2xl"
+                style={{ textShadow: '0 0 8px rgba(225,29,72,0.8)' }}
               >
-                {isAr ? 'أعلى مصدر' : 'TOP ORIGIN'} · {d.geo[0].code} · {formatCount(d.geo[0].count)}
+                {isAr ? 'أعلى مصدر' : 'TOP ORIGIN'} · {d.geo[0].code} · {d.geo[0].count.toLocaleString('en-US')}
               </span>
             </div>
           )}
         </div>
 
-        {/* Right: instruments */}
-        <div className="col-span-3 flex min-h-0 flex-col gap-2">
-          <Glass className="px-2.5 py-2" reduce={reduce} delay={0.08}>
-            <SectionHead tone="cyan">{isAr ? 'المقاييس' : 'GAUGES'}</SectionHead>
-            <div className="mt-1.5 grid grid-cols-2 gap-1">
-              <RadialGauge
-                value={r.waf.rps ?? d.derived.requestRate}
-                max={200}
-                label={isAr ? 'طلب/ث' : 'RPS'}
-                tone="cyan"
-                size={56}
-                reason="awaiting a second sample"
-              />
-              <RadialGauge
-                value={latencyUs}
-                max={2}
-                label={isAr ? 'نواة' : 'KERNEL'}
-                unit="µs"
-                tone={latencyProv === 'MEASURED' ? 'cyan' : 'amber'}
-                size={56}
-                reason={d.kernel.reason ?? undefined}
-              />
-            </div>
-            <div className="mt-1.5 space-y-1.5">
-              <LinearGauge
-                value={d.derived.threatDensity}
-                max={500}
-                label={isAr ? 'كثافة /10k' : 'DENSITY /10k'}
-                tone="amber"
-                segments={16}
-                reason="needs both counters"
-              />
-              <LinearGauge
-                value={d.posture.heapMb}
-                max={d.posture.rssMb ?? 512}
-                label={isAr ? 'ذاكرة' : 'HEAP'}
-                unit="MB"
-                tone="cyan"
-                segments={16}
-              />
-            </div>
-          </Glass>
-
-          <Glass className="px-2.5 py-2" reduce={reduce} delay={0.12}>
-            <SectionHead tone="cyan">{isAr ? 'عائلات الهجوم' : 'ATTACK FAMILIES'}</SectionHead>
-            <div className="mt-1">
-              <LeaderDonut
-                slices={familySlices}
-                isAr={isAr}
-                size={100}
-                centreLabel={String(d.families.reduce((a, f) => a + f.count, 0) || '')}
-              />
-            </div>
-          </Glass>
-
-          <Glass className="min-h-0 flex-1 px-2.5 py-2" reduce={reduce} delay={0.16}>
-            <SectionHead
-              tone={
-                d.drift.maxPsi != null && d.drift.thresholds && d.drift.maxPsi >= d.drift.thresholds.significant
-                  ? 'crimson'
-                  : 'cyan'
-              }
-            >
-              {isAr ? 'انحراف التوزيع' : 'DISTRIBUTION DRIFT'}
-            </SectionHead>
-            {d.drift.verdict === 'INSUFFICIENT_DATA' ? (
-              <p className="mt-1.5 text-[7px] leading-relaxed text-slate-500">{d.drift.insufficientReason}</p>
-            ) : (
-              <>
-                <div className="mt-1.5 flex items-baseline gap-1.5">
-                  <HudValue v={d.drift.maxPsi} tone="cyan" glow className="text-[15px] font-bold" />
-                  <HudLabel tone="cyan">PSI</HudLabel>
-                </div>
-                <div className="mt-1.5 space-y-[3px]">
-                  {d.drift.features
-                    .slice()
-                    .sort((a, b) => b.psi - a.psi)
-                    .slice(0, 4)
-                    .map(f => {
-                      const sig = d.drift.thresholds?.significant ?? 0.25;
-                      const c = f.psi >= sig ? CRIMSON : CYAN;
-                      return (
-                        <div key={f.feature} className="flex items-center gap-1.5">
-                          <span className="w-[56px] shrink-0 truncate text-[6.5px] text-slate-500">{f.feature}</span>
-                          <span className="h-[2px] flex-1 bg-white/5">
-                            <span
-                              className="block h-full"
-                              style={{
-                                width: `${Math.min(100, (f.psi / Math.max(sig * 2, 0.5)) * 100)}%`,
-                                background: c,
-                                boxShadow: `0 0 6px ${c}`
-                              }}
-                            />
-                          </span>
-                        </div>
-                      );
-                    })}
-                </div>
-              </>
-            )}
-          </Glass>
+        {/* RIGHT: the arsenal stack */}
+        <div className="col-span-3 flex min-h-0 flex-col gap-1.5 overflow-y-auto pe-0.5">
+          <EbpfModule a={a} isAr={isAr} />
+          <WafModule a={a} isAr={isAr} />
+          <FimModule a={a} isAr={isAr} />
+          <ScannerModule a={a} isAr={isAr} />
+          <IntelModule a={a} isAr={isAr} />
+          <ZtnaModule
+            a={a}
+            isAr={isAr}
+            onIsolate={ip => void isolate(ip)}
+            busy={isolateBusy}
+            lastAction={isolateResult}
+          />
         </div>
       </div>
 
-      {/* ── Bottom band: live attack feed and traffic curve ────────────────── */}
-      <div className="relative z-10 grid shrink-0 grid-cols-12 gap-2 px-2 pb-2">
-        <Glass className="col-span-7 px-2.5 py-2" tone={critical.length ? 'crimson' : 'cyan'} reduce={reduce} delay={0.2}>
+      {/* ── LAYER 2 · BOTTOM BAND ───────────────────────────────────────────── */}
+      <div className="relative z-10 grid shrink-0 grid-cols-12 gap-2 px-2 pb-1.5">
+        <Glass
+          className="col-span-7 px-2.5 py-1.5"
+          tone={critical.length ? 'crimson' : 'cyan'}
+          amber={sim}
+          reduce={reduce}
+          delay={0.16}
+        >
           <div className="flex items-center gap-2">
             <SectionHead tone={critical.length ? 'crimson' : 'cyan'}>
-              {isAr ? 'تغذية الهجوم الحيّة' : 'LIVE ATTACK FEED'}
+              {isAr ? 'تغذية التهديدات الحيّة' : 'LIVE THREAT DATA'}
             </SectionHead>
-            <div className="flex shrink-0 items-center gap-1">
-              <ArrowUpDown className="h-2.5 w-2.5 text-cyan-400/60" aria-hidden />
+            <span className="flex shrink-0 items-center gap-1">
+              <ArrowUpDown className="h-2.5 w-2.5 text-cyan-400/50" aria-hidden />
               {(['TIME', 'SEVERITY', 'MITRE'] as const).map(k => (
-                <button
-                  key={k}
-                  type="button"
-                  onClick={() => setSortBy(k)}
-                  className="px-1.5 py-0.5 text-[6.5px] tracking-[0.12em] transition-colors"
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    clipPath: 'polygon(4px 0,100% 0,100% calc(100% - 4px),calc(100% - 4px) 100%,0 100%,0 4px)',
-                    border: `1px solid ${sortBy === k ? CYAN + '88' : 'rgba(255,255,255,0.08)'}`,
-                    color: sortBy === k ? CYAN : '#5c7484',
-                    background: sortBy === k ? `${CYAN}14` : 'transparent'
-                  }}
-                >
+                <CyberButton key={k} tone="cyan" size="sm" active={sortBy === k} onClick={() => setSortBy(k)}>
                   {k}
-                </button>
+                </CyberButton>
               ))}
-              <span className="w-16">
-                <HudButton tone={dropsOnly ? 'rose' : 'cyan'} onClick={() => setDropsOnly(v => !v)}>
-                  {dropsOnly ? (isAr ? 'الحرِج' : 'CRIT') : isAr ? 'الكل' : 'ALL'}
-                </HudButton>
-              </span>
-            </div>
+              <CyberButton tone={critOnly ? 'rose' : 'cyan'} size="sm" active={critOnly} onClick={() => setCritOnly(v => !v)}>
+                {critOnly ? (isAr ? '[ الحرِج ]' : '[ CRIT ]') : isAr ? '[ الكل ]' : '[ ALL ]'}
+              </CyberButton>
+            </span>
           </div>
 
           <DataTable
             rows={feed.slice(0, 60)}
             isAr={isAr}
             emptyEndpoint="/soc/unified-telemetry"
-            maxHeight={132}
+            maxHeight={124}
             columns={[
-              { key: 'time', header: isAr ? 'الوقت' : 'TIME', width: '50px', render: a => <span className="text-slate-500">{a.at.slice(11, 19)}</span> },
+              { key: 'time', header: isAr ? 'الوقت' : 'TIME', width: '48px', render: x => <span className="text-slate-500">{x.at.slice(11, 19)}</span> },
               {
                 key: 'sev',
                 header: isAr ? 'الخطورة' : 'SEV',
-                width: '46px',
-                render: a => (
-                  <span className={/CRITICAL|HIGH/.test(a.severity) ? 'text-rose-500' : 'text-cyan-400'}>{a.severity.slice(0, 4)}</span>
+                width: '44px',
+                render: x => (
+                  <span className={/CRITICAL|HIGH/.test(x.severity) ? 'text-rose-500' : 'text-cyan-400'}>{x.severity.slice(0, 4)}</span>
                 )
               },
               {
                 key: 'mitre',
                 header: 'MITRE',
                 width: '54px',
-                render: a => (a.mitre ? <span className="text-cyan-400">{a.mitre}</span> : <span className="text-slate-700">UNMAPPED</span>)
+                render: x => (x.mitre ? <span className="text-cyan-400">{x.mitre}</span> : <span className="text-slate-700">UNMAPPED</span>)
               },
-              { key: 'src', header: isAr ? 'المصدر' : 'SOURCE', width: '90px', render: a => <span className="text-slate-500">{a.srcIp ?? '—'}</span> },
-              { key: 'title', header: isAr ? 'الحدث' : 'EVENT', render: a => <span className="text-slate-300">{a.title}</span> },
+              { key: 'src', header: isAr ? 'المصدر' : 'SOURCE', width: '88px', render: x => <span className="text-slate-500">{x.srcIp ?? '—'}</span> },
+              { key: 'title', header: isAr ? 'الحدث' : 'EVENT', render: x => <span className="text-slate-300">{x.title}</span> },
               {
                 key: 'act',
                 header: isAr ? 'الإجراء' : 'ACTION',
-                width: '74px',
-                render: a => (a.action ? <span className="text-emerald-400">{a.action}</span> : <span className="text-slate-700">—</span>)
+                width: '70px',
+                render: x => (x.action ? <span className="text-emerald-400">{x.action}</span> : <span className="text-slate-700">—</span>)
               }
             ]}
           />
         </Glass>
 
-        <Glass className="col-span-5 px-2.5 py-2" reduce={reduce} delay={0.24}>
+        <Glass className="col-span-5 px-2.5 py-1.5" amber={sim} reduce={reduce} delay={0.2}>
           <SectionHead
             tone="cyan"
             right={
-              <Readout className="text-[7px] text-slate-500">
+              <Readout className="font-mono text-[7px] text-slate-500">
                 {d.frequency.length} {isAr ? 'عيّنة' : 'SAMPLES'}
               </Readout>
             }
           >
-            {isAr ? 'منحنى حركة الحِزَم' : 'TRAFFIC CURVE'}
+            {isAr ? 'الجدول الزمني للقياسات' : 'TELEMETRY TIMELINE'}
           </SectionHead>
-          {d.frequency.length >= 2 ? (
-            <GlowSparkline
-              points={d.frequency.map(f => ({ label: f.label, value: f.value, secondary: f.threats }))}
-              isAr={isAr}
-              height={118}
-              accent={CYAN}
-              secondaryAccent={CRIMSON}
-              unit={isAr ? '' : '/s'}
-            />
-          ) : (
-            <p className="py-10 text-center text-[8px] text-slate-600" style={{ fontFamily: 'var(--font-mono)' }}>
-              {isAr ? 'لا بيانات من /soc/analytics' : 'no data from /soc/analytics'}
-            </p>
-          )}
+          <TelemetryTimeline
+            points={d.frequency.map(f => ({ label: f.label, value: f.value, threats: f.threats }))}
+            isAr={isAr}
+            height={126}
+          />
         </Glass>
       </div>
 
-      {/* ── Status strip ──────────────────────────────────────────────────── */}
-      <div className="relative z-10 flex shrink-0 items-center justify-between gap-3 border-t border-cyan-500/20 bg-[#030712]/75 px-4 py-1 backdrop-blur-xl">
+      {/* ── LAYER 2 · STATUS STRIP ──────────────────────────────────────────── */}
+      <footer
+        className="relative z-20 flex shrink-0 items-center justify-between gap-3 border-t bg-[#030712]/60 px-3 py-1 backdrop-blur-2xl"
+        style={{ borderColor: sim ? 'rgba(245,158,11,0.4)' : 'rgba(22,78,99,0.5)' }}
+      >
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <Radio className="h-2.5 w-2.5 text-cyan-400" aria-hidden />
             <HudLabel tone="cyan">{isAr ? 'المحرّك' : 'ENGINE'}</HudLabel>
-            <Readout className="text-[8px] text-slate-400">{d.posture.engine?.replace(/_/g, ' ') ?? '—'}</Readout>
+            <Readout className="font-mono text-[8px] text-slate-400">{d.posture.engine?.replace(/_/g, ' ') ?? '—'}</Readout>
           </span>
           <span className="flex items-center gap-1.5">
             <Waves className={`h-2.5 w-2.5 ${d.posture.zeroEgress ? 'text-cyan-400' : 'text-rose-500'}`} aria-hidden />
@@ -569,21 +453,31 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
           </span>
           <span className="flex items-center gap-1.5">
             <HudLabel tone="cyan">{isAr ? 'عقد' : 'NODES'}</HudLabel>
-            <Readout className="text-[8px] text-cyan-400">{d.nodes.length}</Readout>
+            <Readout className="font-mono text-[8px] text-cyan-400">
+              {d.nodes.length}
+              {isolatedNodes > 0 && <span className="ms-1 text-rose-500">({isolatedNodes})</span>}
+            </Readout>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <HudLabel tone="cyan">{isAr ? 'وضع النواة' : 'KERNEL'}</HudLabel>
+            <Readout className="font-mono text-[8px]" tone={d.kernel.countersReadable ? 'emerald' : 'amber'}>
+              {d.kernel.mode?.replace(/_/g, ' ') ?? '—'}
+            </Readout>
           </span>
         </div>
 
         {allMissing.length > 0 ? (
-          <span className="text-[7px] text-rose-500/90" style={{ fontFamily: 'var(--font-mono)' }}>
+          <span className="truncate font-mono text-[7px] text-rose-500/90" title={allMissing.join(' · ')}>
             {isAr ? 'مصادر صامتة: ' : 'SILENT: '}
-            {allMissing.join(' · ')}
+            {allMissing.slice(0, 4).join(' · ')}
+            {allMissing.length > 4 && ` +${allMissing.length - 4}`}
           </span>
         ) : (
-          <span className="text-[7px] text-cyan-400/60" style={{ fontFamily: 'var(--font-mono)' }}>
+          <span className="font-mono text-[7px] text-cyan-400/60">
             {isAr ? 'كل المصادر تستجيب' : 'ALL SOURCES RESPONDING'}
           </span>
         )}
-      </div>
+      </footer>
     </div>
   );
 };
