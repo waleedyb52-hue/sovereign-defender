@@ -826,6 +826,49 @@ const auth = { 'x-api-key': KEY };
     return 'Tag follows the value; readability is proven by a probe; the toolchain-present-but-unreadable case has its own state.';
   });
 
+  await run(86, 'CONTAMINATION', 'Evaluation payloads cannot enter the adjudication corpus', async () => {
+    // The leak that actually happened: harnesses post to /ai-analyze, which also
+    // queues for adjudication, so 69 of the first 80 labels were Set A or Set B
+    // literals. A learner trained on that corpus would have seen Set B, making
+    // every later Set B score on it meaningless. The fold guard was in place and
+    // did nothing, because the leak was upstream of folds entirely.
+    const svc = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
+    assert(/EVALUATION_SOURCE_PREFIXES/.test(svc), 'no reserved evaluation source ranges');
+    assert(/isEvaluationSource\(input\.srcIp\)/.test(svc),
+      'recordPending does not refuse evaluation sources at the queue entry point');
+
+    // Filtering later would be too late: the label would already exist, and the
+    // label is what contaminates.
+    const idx = svc.indexOf('isEvaluationSource(input.srcIp)');
+    const insertIdx = svc.indexOf('INSERT INTO pending_detections');
+    assert(idx > 0 && insertIdx > idx, 'the guard does not precede the queue insert');
+
+    // Retraction must be insert-only; a corpus that can be silently pruned is
+    // worse than one that is wrong.
+    assert(/retraction_reason/.test(svc), 'no retraction mechanism');
+    assert(!/UPDATE labels\s+SET/i.test(svc), 'labels are mutated in place');
+    assert(!/DELETE FROM labels/i.test(svc), 'a label deletion path exists');
+    assert(/RETRACTION_REASON_REQUIRED/.test(svc), 'retraction does not require a reason');
+
+    // And the live corpus must be clean of harness literals.
+    const lits = new Set<string>();
+    for (const f of ['audit/eval_harness.ts', 'audit/eval_holdout_b.ts']) {
+      const src = fs.readFileSync(path.join(ROOT, f), 'utf-8');
+      for (const m of src.matchAll(/payload:\s*(['"])([\s\S]*?)/g)) {
+        if (m[2].trim()) lits.add(m[2].replace(/\s+/g, ' ').slice(0, 60));
+      }
+    }
+    const r = await http('GET', '/api/v1/soc/adjudication/export/tuning', undefined, auth);
+    if (r.status === 200) {
+      const leaked = (r.json?.samples ?? []).filter((x: any) =>
+        lits.has(String(x.payload).replace(/\s+/g, ' ').slice(0, 60)));
+      assert(leaked.length === 0,
+        `${leaked.length} evaluation payload(s) are in the tuning export; Set A/B are no longer held out`);
+    }
+    const st = await http('GET', '/api/v1/soc/adjudication/stats', undefined, auth);
+    return `Guard precedes the queue insert; retraction is insert-only with a mandatory reason; ${st.json?.retractions ?? 0} label(s) withdrawn and auditable.`;
+  });
+
   // ---- Report ----
   const pass = results.filter(r => r.status === 'PASS').length;
   const warn = results.filter(r => r.status === 'WARN').length;

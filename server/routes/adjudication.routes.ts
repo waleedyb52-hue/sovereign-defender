@@ -170,6 +170,32 @@ adjudicationRouter.get('/export/test', (req, res) => {
   });
 });
 
+/**
+ * Withdraw a label from the corpus.
+ *
+ * Not a delete. A retraction row is inserted that supersedes the target and carries
+ * the reason, so both remain readable. The reason is mandatory: a label that
+ * disappears without one is indistinguishable from data pruned to improve a
+ * number, and this store exists to make that impossible.
+ */
+adjudicationRouter.post('/retract', (req, res) => {
+  const b = req.body ?? {};
+  const result = globalAdjudication.retract(
+    String(b.labelId ?? ''),
+    String(b.reason ?? ''),
+    String(b.retractedBy ?? '')
+  );
+  if ('retractionId' in result) {
+    return res.json({ success: true, retractionId: result.retractionId, labelId: String(b.labelId) });
+  }
+  const err = 'error' in result ? result.error : 'RETRACTION_FAILED';
+  const status =
+    err === 'LABEL_NOT_FOUND' ? 404 :
+    err === 'RETRACTION_REASON_REQUIRED' || err === 'RETRACTOR_IDENTITY_REQUIRED' ? 400 :
+    err === 'LABEL_ALREADY_SUPERSEDED_OR_RETRACTED' || err === 'CANNOT_RETRACT_A_RETRACTION' ? 409 : 500;
+  return res.status(status).json({ success: false, error: err });
+});
+
 /** Audit trail, superseded rows included. */
 adjudicationRouter.get('/history', (req, res) => {
   const limit = Number(req.query.limit ?? 200);

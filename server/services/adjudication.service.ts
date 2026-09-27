@@ -64,6 +64,41 @@ export const MIN_PER_FOLD = 20;
 export const DEFAULT_FOLDS = 4;
 /** Payload text is bounded before storage — an analyst needs a sample, not a corpus. */
 const PAYLOAD_SAMPLE_MAX = 2048;
+/**
+ * SOURCE RANGES RESERVED FOR EVALUATION HARNESSES
+ *
+ * Traffic from these prefixes never enters the adjudication queue.
+ *
+ * This exists because of a contamination that actually happened. The evaluation
+ * harnesses send their payloads to /api/v1/agent/ai-analyze, which is the correct
+ * way to test the live classifier — and that endpoint also queues what it sees for
+ * adjudication. So Set A and Set B payloads flowed into the queue, and 36 of the
+ * first 80 labels written turned out to be Set B strings. A learner trained on that
+ * corpus would have seen Set B, which would make every later Set B score on the
+ * learner meaningless.
+ *
+ * Nobody was watching that path. The guard protecting the newest temporal fold from
+ * tuning was in place and did nothing here, because the leak was upstream of folds
+ * entirely: evaluation data was becoming training data before any fold existed.
+ *
+ * The prefixes match what the harnesses already use, so no harness had to change:
+ *   10.20.x  eval_harness.ts        (Set A)
+ *   10.30.x  eval_holdout_b.ts      (Set B)
+ *   10.80.x  eval_from_adjudicated.ts
+ *   10.90.x  seed_adjudication_drill.ts
+ *
+ * A header is honoured too, for a harness that cannot control its source address.
+ * Both are checked; either one excludes.
+ */
+export const EVALUATION_SOURCE_PREFIXES = ['10.20.', '10.30.', '10.80.', '10.90.'] as const;
+export const EVALUATION_SOURCE_HEADER = 'x-sd-evaluation-source';
+
+/** Whether this source is an evaluation harness rather than traffic to learn from. */
+export function isEvaluationSource(srcIp: string): boolean {
+  const ip = String(srcIp ?? '');
+  return EVALUATION_SOURCE_PREFIXES.some(p => ip.startsWith(p));
+}
+
 /** Ceiling on the unadjudicated queue, so live traffic cannot grow it without limit. */
 const PENDING_CAP = 5000;
 
@@ -120,6 +155,8 @@ export interface AdjudicationStats {
   machineFalsePositives: number;
   machineFalseNegatives: number;
   revisions: number;
+  /** Count of retracted labels. Visible so a shrinking corpus is never silent. */
+  retractions: number;
   distinctAdjudicators: number;
   /**
    * Label counts by origin. Reported prominently because a corpus built from
@@ -133,6 +170,8 @@ export interface AdjudicationStats {
   earliestDetectedAt: string | null;
   latestDetectedAt: string | null;
   pendingCount: number;
+  /** Detections refused as evaluation traffic, so the filter can be audited. */
+  evaluationSourcesRejected: number;
   sufficient: boolean;
   /** Present only when insufficient — states plainly what is missing. */
   shortfall?: string;
@@ -149,6 +188,8 @@ export class AdjudicationService {
   private db: DatabaseSync;
   private ready = false;
   private persistent = false;
+  /** Detections refused as evaluation traffic. Reported, so the filter is auditable. */
+  private evaluationSourcesRejected = 0;
 
   constructor(dbPath?: string) {
     const target = dbPath ?? path.join(process.cwd(), 'data', 'adjudication.db');
@@ -201,10 +242,23 @@ export class AdjudicationService {
           notes           TEXT,
           detected_at     TEXT NOT NULL,
           adjudicated_at  TEXT NOT NULL,
-          supersedes      TEXT
+          supersedes      TEXT,
+          -- Non-null marks a row as a RETRACTION rather than a label. See the
+          -- retract() method for why this exists: superseding replaces one label
+          -- with another and leaves a label active, which cannot express
+          -- withdrawing one from the corpus entirely.
+          retraction_reason TEXT
         )
       `);
       // Temporal ordering is the hot path for every fold computation.
+      // Additive migration for stores created before retraction existed.
+      try {
+        const cols = this.db.prepare('PRAGMA table_info(labels)').all() as any[];
+        if (!cols.some(c => String(c.name) === 'retraction_reason')) {
+          this.db.exec('ALTER TABLE labels ADD COLUMN retraction_reason TEXT');
+        }
+      } catch { /* fresh store already has it */ }
+
       this.db.exec('CREATE INDEX IF NOT EXISTS idx_labels_detected ON labels(detected_at)');
       this.db.exec('CREATE INDEX IF NOT EXISTS idx_labels_supersedes ON labels(supersedes)');
       this.db.exec('CREATE INDEX IF NOT EXISTS idx_pending_detected ON pending_detections(detected_at)');
@@ -238,10 +292,20 @@ export class AdjudicationService {
     machineSignatures: string[];
     srcIp: string;
     detectedAt?: string;
+    /** Set by a caller that knows it is an evaluation harness, whatever its address. */
+    isEvaluationSource?: boolean;
   }): string | null {
     if (!this.ready) return null;
     const payload = String(input.payload ?? '');
     if (!payload.trim()) return null;
+
+    // Evaluation traffic is refused here, at the only entry point into the queue.
+    // Filtering later — in the export, or in a fold — would be too late: the label
+    // would already exist, and a label is the thing that contaminates.
+    if (isEvaluationSource(input.srcIp) || input.isEvaluationSource) {
+      this.evaluationSourcesRejected++;
+      return null;
+    }
 
     const hash = AdjudicationService.sha256(payload);
     try {
@@ -407,6 +471,63 @@ export class AdjudicationService {
     }
   }
 
+  /**
+   * Withdraw a label from the corpus, permanently and auditably.
+   *
+   * Inserts a retraction row that supersedes the target. The target leaves the
+   * active set because it is superseded; the retraction leaves it because its
+   * `retraction_reason` is non-null. Nothing is updated and nothing is deleted, so
+   * a reviewer can still see what was withdrawn and why.
+   *
+   * A reason is mandatory. A label that vanishes without a recorded reason is
+   * indistinguishable from data being quietly dropped to improve a number, which
+   * is the behaviour this entire store exists to make impossible.
+   */
+  retract(labelId: string, reason: string, retractedBy: string): { ok: true; retractionId: string } | { ok: false; error: string } {
+    if (!this.ready) return { ok: false, error: 'ADJUDICATION_STORE_UNAVAILABLE' };
+    if (!reason?.trim()) return { ok: false, error: 'RETRACTION_REASON_REQUIRED' };
+    if (!retractedBy?.trim()) return { ok: false, error: 'RETRACTOR_IDENTITY_REQUIRED' };
+
+    try {
+      const target = this.db.prepare('SELECT * FROM labels WHERE id = ?').get(labelId) as any;
+      if (!target) return { ok: false, error: 'LABEL_NOT_FOUND' };
+      if (target.retraction_reason) return { ok: false, error: 'CANNOT_RETRACT_A_RETRACTION' };
+
+      const already = this.db.prepare('SELECT id FROM labels WHERE supersedes = ?').get(labelId);
+      if (already) return { ok: false, error: 'LABEL_ALREADY_SUPERSEDED_OR_RETRACTED' };
+
+      const id = 'ret_' + crypto.randomBytes(9).toString('hex');
+      this.db.prepare(`
+        INSERT INTO labels
+          (id, detection_id, payload_sha256, payload_sample, machine_verdict, machine_score,
+           machine_family, analyst_label, agreed, adjudicated_by, actor_kind, source,
+           notes, detected_at, adjudicated_at, supersedes, retraction_reason)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        id,
+        String(target.detection_id),
+        String(target.payload_sha256),
+        String(target.payload_sample),
+        String(target.machine_verdict),
+        Number(target.machine_score),
+        String(target.machine_family),
+        String(target.analyst_label),
+        Number(target.agreed),
+        String(retractedBy).slice(0, 120),
+        String(target.actor_kind),
+        String(target.source),
+        `RETRACTED: ${String(reason).slice(0, 800)}`,
+        String(target.detected_at),
+        new Date().toISOString(),
+        labelId,
+        String(reason).slice(0, 800)
+      );
+      return { ok: true, retractionId: id };
+    } catch (err: any) {
+      return { ok: false, error: 'RETRACTION_FAILED: ' + (err?.message ?? 'unknown') };
+    }
+  }
+
   /** Unsuperseded labels in temporal order. The basis of every figure below. */
   private activeLabels(): any[] {
     if (!this.ready) return [];
@@ -414,6 +535,7 @@ export class AdjudicationService {
       return this.db.prepare(`
         SELECT * FROM labels
         WHERE id NOT IN (SELECT supersedes FROM labels WHERE supersedes IS NOT NULL)
+          AND retraction_reason IS NULL
         ORDER BY detected_at ASC
       `).all() as any[];
     } catch { return []; }
@@ -434,9 +556,10 @@ export class AdjudicationService {
     const fp = rows.filter(r => r.machine_verdict === 'BLOCK' && r.analyst_label === 'BENIGN').length;
     const fn = rows.filter(r => r.machine_verdict !== 'BLOCK' && r.analyst_label === 'MALICIOUS').length;
 
-    let revisions = 0, pending = 0;
+    let revisions = 0, pending = 0, retractions = 0;
     try {
-      revisions = Number((this.db.prepare('SELECT COUNT(*) AS n FROM labels WHERE supersedes IS NOT NULL').get() as any)?.n ?? 0);
+      revisions = Number((this.db.prepare('SELECT COUNT(*) AS n FROM labels WHERE supersedes IS NOT NULL AND retraction_reason IS NULL').get() as any)?.n ?? 0);
+      retractions = Number((this.db.prepare('SELECT COUNT(*) AS n FROM labels WHERE retraction_reason IS NOT NULL').get() as any)?.n ?? 0);
       pending = Number((this.db.prepare('SELECT COUNT(*) AS n FROM pending_detections').get() as any)?.n ?? 0);
     } catch { /* degraded store: counts stay zero rather than guessed */ }
 
@@ -451,6 +574,8 @@ export class AdjudicationService {
       machineFalsePositives: fp,
       machineFalseNegatives: fn,
       revisions,
+      /** Labels withdrawn from the corpus, each with a recorded reason. */
+      retractions,
       distinctAdjudicators: new Set(rows.map(r => String(r.adjudicated_by))).size,
       bySource: tally(rows.map(r => String(r.source))),
       byActorKind: tally(rows.map(r => String(r.actor_kind))),
@@ -458,6 +583,12 @@ export class AdjudicationService {
       earliestDetectedAt: total ? String(rows[0].detected_at) : null,
       latestDetectedAt: total ? String(rows[total - 1].detected_at) : null,
       pendingCount: pending,
+      /**
+       * Detections refused because they came from an evaluation harness.
+       * Surfaced rather than hidden: a filter nobody can see is a filter nobody
+       * can check, and this one is load-bearing for every held-out claim.
+       */
+      evaluationSourcesRejected: this.evaluationSourcesRejected,
       sufficient
     };
     if (!sufficient) {
