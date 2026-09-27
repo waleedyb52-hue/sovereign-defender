@@ -8,6 +8,8 @@ import { TacticalTheater } from './TacticalTheater';
 import { KillChainRail } from './KillChainRail';
 import { CyberButton } from './CyberButton';
 import { EbpfModule, WafModule, FimModule, ScannerModule, IntelModule, ZtnaModule } from './ArsenalModules';
+import { AssetFleetPanel, AssetDrawer } from './AssetFleetPanel';
+import { useAssets, type AssetRow } from './useAssets';
 import { TelemetryTimeline } from './TelemetryTimeline';
 import { WargamePanel } from './WargamePanel';
 import {
@@ -90,11 +92,13 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
   const a = useArsenal(apiKey);
   const w = useWargames(apiKey);
   const stream = useLiveAttackStream();
+  const fleet = useAssets(apiKey);
 
   const [env, setEnv] = React.useState<Environment>('LIVE');
   const [utc, setUtc] = React.useState(() => new Date().toISOString());
   const [sortBy, setSortBy] = React.useState<SortKey>('TIME');
   const [critOnly, setCritOnly] = React.useState(false);
+  const [selectedAsset, setSelectedAsset] = React.useState<AssetRow | null>(null);
   const [isolateBusy, setIsolateBusy] = React.useState(false);
   const [isolateResult, setIsolateResult] = React.useState<string | null>(null);
 
@@ -337,6 +341,7 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
 
         {/* RIGHT: the arsenal stack */}
         <div className="col-span-3 flex min-h-0 flex-col gap-1.5 overflow-y-auto pe-0.5">
+          <AssetFleetPanel f={fleet} isAr={isAr} onSelect={setSelectedAsset} />
           <EbpfModule a={a} isAr={isAr} />
           <WafModule a={a} isAr={isAr} />
           <FimModule a={a} isAr={isAr} />
@@ -430,6 +435,20 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
         </Glass>
       </div>
 
+      {/* ── LAYER 3 · ENTITY DRAWER ─────────────────────────────────────────── */}
+      {/* The drill-down. Every readout in this cockpit used to be a dead end — a number
+          an operator could see and not act on — which is most of what "not professional"
+          meant. An asset row now opens its full record and its containment controls in
+          the same place as the evidence. */}
+      {selectedAsset && (
+        <AssetDrawer
+          asset={fleet.assets.find(x => x.id === selectedAsset.id) ?? selectedAsset}
+          f={fleet}
+          isAr={isAr}
+          onClose={() => setSelectedAsset(null)}
+        />
+      )}
+
       {/* ── LAYER 2 · STATUS STRIP ──────────────────────────────────────────── */}
       <footer
         className="relative z-20 flex shrink-0 items-center justify-between gap-3 border-t bg-[#030712]/60 px-3 py-1 backdrop-blur-2xl"
@@ -450,6 +469,20 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
                   ? isAr ? 'خروج ممكن' : 'EGRESS POSSIBLE'
                   : '—'}
             </HudLabel>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <HudLabel tone="cyan">{isAr ? 'أصول' : 'ASSETS'}</HudLabel>
+            <Readout className="font-mono text-[8px] text-cyan-400">
+              {fleet.summary ? (
+                <>
+                  <span className="text-emerald-400">{fleet.summary.online}</span>
+                  <span className="text-slate-600">/</span>
+                  {fleet.summary.hosts}
+                </>
+              ) : (
+                '—'
+              )}
+            </Readout>
           </span>
           <span className="flex items-center gap-1.5">
             <HudLabel tone="cyan">{isAr ? 'عقد' : 'NODES'}</HudLabel>

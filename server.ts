@@ -16,6 +16,7 @@ import { globalTelemetryWsServer } from './server/wsServer';
 import { globalFimService } from './server/services/fim.service';
 import { globalTargetScannerService } from './server/services/targetScanner.service';
 import { globalUnifiedTelemetryService } from './server/services/unifiedTelemetry.service';
+import { globalAssetRegistry } from './server/services/assetRegistry.service';
 import { globalThreatLabsService } from './server/services/threatLabs.service';
 import { globalTopologyService } from './server/services/topology.service';
 import { globalBlueTeamForensicsService } from './server/services/blueTeamForensics.service';
@@ -7226,6 +7227,125 @@ app.post('/api/v1/performance/simulate-ddos-spike', (req, res) => {
     tokenBucket: globalTokenBucket.getStats()
   });
 });
+
+// -----------------------------------------------------------------------------
+// ASSET REGISTRY — real machines and networks
+// -----------------------------------------------------------------------------
+// The platform's link to actual hardware. A host enrols by running the sensor in
+// `sensor/sovereign-sensor.mjs`, then heartbeats its measured posture and ships real
+// connection flows into /soc/ingest-telemetry, where the existing AI agent scores them.
+// Nothing here fabricates a device: an empty fleet means nothing enrolled, and the UI
+// is expected to say so rather than showing sample hosts.
+
+// Enrolment tokens are admin-gated. An open enrolment endpoint lets an attacker flood
+// the inventory with fake hosts and bury the real one, which is a denial of visibility
+// rather than a denial of service, and far harder to notice.
+app.post('/api/v1/assets/enrollment-token', adminAuthMiddleware, (req, res) => {
+  const { note } = req.body || {};
+  const t = globalAssetRegistry.createToken(typeof note === 'string' ? note.slice(0, 200) : undefined);
+  return res.json({
+    success: true,
+    ...t,
+    // Said plainly, because it is the only time the plaintext exists.
+    warning: 'This token is shown once and stored only as a SHA-256 digest. It is single-use and expires in 24h.',
+    sensorCommand: `node sensor/sovereign-sensor.mjs --server http://<this-host>:${PORT} --token ${t.token}`
+  });
+});
+
+app.get('/api/v1/assets/enrollment-tokens', adminAuthMiddleware, (_req, res) =>
+  res.json({ success: true, tokens: globalAssetRegistry.listTokens() })
+);
+
+app.post('/api/v1/assets/enrollment-token/revoke', adminAuthMiddleware, (req, res) => {
+  const { id } = req.body || {};
+  if (typeof id !== 'string') return res.status(400).json({ success: false, error: '"id" is required.' });
+  return res.json({ success: globalAssetRegistry.revokeToken(id) });
+});
+
+// Enrolment itself is token-gated rather than admin-gated: the sensor runs on a host
+// that must not hold the admin secret. The token is the whole authority it needs.
+app.post('/api/v1/assets/enroll', (req, res) => {
+  const r = globalAssetRegistry.enroll(req.body || {});
+  if ('reason' in r) return res.status(401).json({ success: false, error: r.reason });
+  return res.json({ success: true, asset: r.asset });
+});
+
+app.post('/api/v1/assets/:id/heartbeat', (req, res) => {
+  const r = globalAssetRegistry.heartbeat(req.params.id, req.body || {});
+  if ('reason' in r) return res.status(404).json({ success: false, error: r.reason });
+  return res.json({ success: true, asset: r.asset });
+});
+
+app.get('/api/v1/assets', (_req, res) =>
+  res.json({
+    success: true,
+    summary: globalAssetRegistry.summary(),
+    assets: globalAssetRegistry.list()
+  })
+);
+
+app.get('/api/v1/assets/:id', (req, res) => {
+  const a = globalAssetRegistry.get(req.params.id);
+  if (!a) return res.status(404).json({ success: false, error: `Unknown asset ${req.params.id}.` });
+  return res.json({ success: true, asset: a });
+});
+
+app.post('/api/v1/assets/network', adminAuthMiddleware, (req, res) => {
+  const { cidr, label } = req.body || {};
+  if (typeof cidr !== 'string') return res.status(400).json({ success: false, error: '"cidr" is required.' });
+  const r = globalAssetRegistry.declareNetwork(cidr, typeof label === 'string' ? label : undefined);
+  if ('reason' in r) return res.status(400).json({ success: false, error: r.reason });
+  return res.json({ success: true, asset: r.asset });
+});
+
+// Isolation records the operator's decision AND drives the kernel containment path, so
+// the registry can never claim a host is cut off while traffic still reaches it. If the
+// kernel layer refuses, that is reported rather than swallowed.
+app.post('/api/v1/assets/:id/isolate', adminAuthMiddleware, (req, res) => {
+  const asset = globalAssetRegistry.get(req.params.id);
+  if (!asset) return res.status(404).json({ success: false, error: `Unknown asset ${req.params.id}.` });
+
+  const { isolate } = req.body || {};
+  const want = isolate !== false;
+  let containment: unknown = null;
+  let containmentError: string | null = null;
+
+  if (asset.primaryIp) {
+    try {
+      containment = want
+        ? globalEbpfContainmentService.containIpAutonomously({
+            targetIp: asset.primaryIp,
+            reason: `Operator isolation of enrolled asset ${asset.id} (${asset.label})`,
+            reasonAr: `عزل تشغيلي للأصل المسجّل ${asset.id} (${asset.label})`,
+            triggeredByIoc: 'OPERATOR_DECISION',
+            nodeName: asset.hostname ?? asset.label,
+            severity: 'CRITICAL'
+          })
+        : globalEbpfContainmentService.releaseIp(asset.primaryIp);
+    } catch (err: any) {
+      containmentError = err?.message || 'kernel containment path failed';
+    }
+  } else {
+    containmentError = 'Asset has no primary IP, so no kernel rule could be applied.';
+  }
+
+  const r = globalAssetRegistry.setIsolated(req.params.id, want);
+  if ('reason' in r) return res.status(404).json({ success: false, error: r.reason });
+
+  return res.json({
+    success: true,
+    asset: r.asset,
+    containment,
+    // Surfaced, not hidden. A registry flag without an enforced rule is a claim the
+    // network does not honour, and an operator must be told which of the two happened.
+    containmentError,
+    enforced: containmentError == null
+  });
+});
+
+app.delete('/api/v1/assets/:id', adminAuthMiddleware, (req, res) =>
+  res.json({ success: globalAssetRegistry.remove(req.params.id) })
+);
 
 // -----------------------------------------------------------------------------
 // VITE MIDDLEWARE & SERVER STARTUP

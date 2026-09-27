@@ -9,3 +9,6 @@ coverage/
 
 # Local threat-memory corpus (operator data, never committed)
 data/
+data/*.db
+data/*.db-wal
+data/*.db-shm
