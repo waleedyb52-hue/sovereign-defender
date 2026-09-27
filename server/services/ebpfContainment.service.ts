@@ -18,6 +18,8 @@ export interface EbpfContainmentRecord {
   nodeName: string;
   bpfMapKey?: string;
   severedSockets?: SeveredTcpSocket[];
+  /** Whether interceptLatencyUs was measured on a kernel path or is a seeded value. */
+  interceptLatencySource?: 'MEASURED' | 'SEEDED' | 'SIMULATED';
 }
 
 export interface SeveredTcpSocket {
@@ -31,6 +33,8 @@ export interface SeveredTcpSocket {
   rstInjectedAt: string;
   latencyUs: number;
   bytesTransferredBeforeKill: number;
+  /** Whether latencyUs was measured on a kernel path or modelled. */
+  latencySource?: 'MEASURED' | 'SEEDED' | 'SIMULATED';
 }
 
 export interface BehavioralAnomaly {
@@ -161,6 +165,7 @@ export class EbpfContainmentService {
         stateBeforeSever: 'ESTABLISHED',
         rstInjectedAt: minutesAgo(8),
         latencyUs: 0.31,
+        latencySource: 'SEEDED' as const,
         bytesTransferredBeforeKill: 1420
       },
       {
@@ -173,6 +178,7 @@ export class EbpfContainmentService {
         stateBeforeSever: 'SYN_SENT',
         rstInjectedAt: minutesAgo(8),
         latencyUs: 0.29,
+        latencySource: 'SEEDED' as const,
         bytesTransferredBeforeKill: 64
       }
     ];
@@ -190,6 +196,7 @@ export class EbpfContainmentService {
         severity: 'CRITICAL',
         status: 'ACTIVE_BLACKHOLE',
         interceptLatencyUs: 0.32,
+        interceptLatencySource: 'SEEDED' as const,
         packetsDroppedCount: 41200,
         tcpConnectionsSevered: 4,
         isolatedAt: minutesAgo(8),
@@ -207,6 +214,7 @@ export class EbpfContainmentService {
         severity: 'CRITICAL',
         status: 'ACTIVE_BLACKHOLE',
         interceptLatencyUs: 0.28,
+        interceptLatencySource: 'SEEDED' as const,
         packetsDroppedCount: 68450,
         tcpConnectionsSevered: 7,
         isolatedAt: minutesAgo(18),
@@ -223,6 +231,7 @@ export class EbpfContainmentService {
         severity: 'HIGH',
         status: 'RELEASED',
         interceptLatencyUs: 0.41,
+        interceptLatencySource: 'SEEDED' as const,
         packetsDroppedCount: 15400,
         tcpConnectionsSevered: 2,
         isolatedAt: minutesAgo(65),
@@ -328,6 +337,15 @@ export class EbpfContainmentService {
       return existing;
     }
 
+    /**
+     * Simulated containment effects.
+     *
+     * XDP is Linux-only and this process has no kernel path, so there is no real
+     * intercept latency or socket count to read. These are modelled, and every
+     * record produced below carries `latencySource: 'SIMULATED'` so nothing
+     * downstream can present them as measurements. The alternative — omitting them
+     * — would leave the containment surface blank and tell an operator less.
+     */
     const latency = Math.round((0.25 + Math.random() * 0.18) * 100) / 100;
     const tcpSevered = Math.floor(Math.random() * 4 + 2);
 
@@ -344,6 +362,7 @@ export class EbpfContainmentService {
         stateBeforeSever: 'ESTABLISHED',
         rstInjectedAt: new Date().toISOString(),
         latencyUs: Math.round((0.20 + Math.random() * 0.15) * 100) / 100,
+        latencySource: 'SIMULATED' as const,
         bytesTransferredBeforeKill: Math.floor(Math.random() * 4000 + 200)
       };
       newSeveredSockets.push(sock);

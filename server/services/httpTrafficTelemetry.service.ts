@@ -32,6 +32,8 @@ export interface HttpRequestFrame {
   mitreTechnique?: string;
   payloadSnippet?: string;
   wafRuleTriggered?: string;
+  /** Whether latencyMs was measured or is a seeded demonstration value. */
+  latencySource?: 'MEASURED' | 'SEEDED' | 'SIMULATED';
 }
 
 export interface WafConfiguration {
@@ -255,6 +257,14 @@ export class HttpTrafficTelemetryService {
   }
 
   private seedTrafficPipeline() {
+    /**
+     * Seeded demonstration frames.
+     *
+     * The local name said `mock`, but nothing in the emitted record did, so a
+     * consumer reading `latencyMs: 1.2` received a hand-written constant with no
+     * way to tell it from a measurement. Each frame now carries
+     * `latencySource: 'SEEDED'`, which is what the console reads to label it.
+     */
     const mockEvents: Array<Omit<HttpRequestFrame, 'id' | 'timestamp'>> = [
       {
         method: 'POST',
@@ -264,6 +274,7 @@ export class HttpTrafficTelemetryService {
         userAgent: 'Mozilla/5.0 (Hydra-Bruter/8.2; x86_64)',
         responseCode: 403,
         latencyMs: 1.2,
+        latencySource: 'SEEDED' as const,
         category: 'CREDENTIAL_STUFFING',
         threatConfidence: 96,
         isBlocked: true,
@@ -280,6 +291,7 @@ export class HttpTrafficTelemetryService {
         userAgent: 'Mozilla/5.0 (compatible; Nmap Scripting Engine)',
         responseCode: 403,
         latencyMs: 0.8,
+        latencySource: 'SEEDED' as const,
         category: 'HONEYTOKEN_HIT',
         threatConfidence: 100,
         isBlocked: true,
@@ -297,6 +309,7 @@ export class HttpTrafficTelemetryService {
         userAgent: 'sqlmap/1.7.2#stable',
         responseCode: 403,
         latencyMs: 1.4,
+        latencySource: 'SEEDED' as const,
         category: 'SQLI_ATTEMPT',
         threatConfidence: 98,
         isBlocked: true,
@@ -313,6 +326,7 @@ export class HttpTrafficTelemetryService {
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         responseCode: 403,
         latencyMs: 1.9,
+        latencySource: 'SEEDED' as const,
         category: 'XSS_ATTEMPT',
         threatConfidence: 92,
         isBlocked: true,
@@ -330,6 +344,7 @@ export class HttpTrafficTelemetryService {
         userAgent: 'DirBuster-1.0-RC1',
         responseCode: 403,
         latencyMs: 1.1,
+        latencySource: 'SEEDED' as const,
         category: 'PATH_TRAVERSAL',
         threatConfidence: 95,
         isBlocked: true,
@@ -346,6 +361,7 @@ export class HttpTrafficTelemetryService {
         userAgent: 'curl/7.88.1',
         responseCode: 403,
         latencyMs: 2.1,
+        latencySource: 'SEEDED' as const,
         category: 'COMMAND_INJECTION',
         threatConfidence: 99,
         isBlocked: true,
@@ -362,6 +378,7 @@ export class HttpTrafficTelemetryService {
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         responseCode: 200,
         latencyMs: 8.4,
+        latencySource: 'SEEDED' as const,
         category: 'NORMAL',
         threatConfidence: 0,
         isBlocked: false
@@ -374,6 +391,7 @@ export class HttpTrafficTelemetryService {
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
         responseCode: 200,
         latencyMs: 4.1,
+        latencySource: 'SEEDED' as const,
         category: 'NORMAL',
         threatConfidence: 0,
         isBlocked: false
@@ -672,7 +690,12 @@ export class HttpTrafficTelemetryService {
       clientIp: frameData.clientIp,
       userAgent: frameData.userAgent,
       responseCode: 200,
-      latencyMs: Number((Date.now() - startTime + Math.random() * 8 + 2).toFixed(1)),
+      // `Date.now() - startTime` is a real elapsed measurement. The previous version
+      // added `Math.random() * 8 + 2` to it, which corrupted a correct figure with
+      // invented noise — worse than a fabricated number, because the reading was
+      // already right before the padding was applied.
+      latencyMs: Number((Date.now() - startTime).toFixed(1)),
+      latencySource: 'MEASURED' as const,
       category: 'NORMAL',
       threatConfidence: 0,
       isBlocked: false

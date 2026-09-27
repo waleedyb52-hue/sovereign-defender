@@ -36,6 +36,8 @@ export interface WebVulnerabilityTestResult {
   responseBody: string;
   remediationSnippet: string;
   mitreId: string;
+  /** Lab exercises are modelled, not timed on the wire; this says which. */
+  latencySource?: 'MEASURED' | 'SEEDED' | 'SIMULATED';
 }
 
 export interface DdosSimulationMetrics {
@@ -263,7 +265,11 @@ Respond in JSON format:
       threatScore: 96,
       status: 'BLOCKED',
       httpResponseCode: 403,
+      // A lab exercise, not a request that crossed a network. The figure is
+      // modelled, and `latencySource` says so rather than leaving a consumer to
+      // read it as a measurement of anything.
       latencyMs: Number((0.45 + Math.random() * 0.8).toFixed(2)),
+      latencySource: 'SIMULATED' as const,
       requestHeaders: {
         'User-Agent': 'Mozilla/5.0 (Sovereign Vulnerability Tester v5.0)',
         'Content-Type': 'application/json',

@@ -711,6 +711,96 @@ const auth = { 'x-api-key': KEY };
     return 'Conjunction enforced: a build is not an attack and a .zip is not an incident.';
   });
 
+  // ---- Credential and fabrication guards ----
+  //
+  // These exist because both defects were found by sweeping, not by a test. A
+  // committed default credential and a hand-written latency both survived every
+  // check the suite had until someone went looking, so each now has a guard that
+  // fails if it returns.
+  await run(81, 'CREDENTIALS', 'No committed default administrative secret', async () => {
+    const server = fs.readFileSync(path.join(ROOT, 'server.ts'), 'utf-8');
+    // The specific string that was granting full administrative access from a
+    // public repository.
+    assert(!/sd_admin_sec_prod_key/.test(server), 'the previous hardcoded admin secret is back in server.ts');
+    // Precision matters here. The first version of this check flagged the CORRECT
+    // fix, because `ADMIN_API_KEY || 'sd_admin_' + crypto.randomBytes(...)` contains
+    // a literal — a prefix, not a credential. A guard that fails on the remedy gets
+    // disabled, so it must distinguish a complete fallback secret from a prefix
+    // concatenated with a cryptographic source.
+    const fallback = server.match(/process\.env\.ADMIN_API_KEY\s*\|\|[^;]{0,160}/);
+    if (fallback) {
+      assert(/crypto\.randomBytes/.test(fallback[0]),
+        `ADMIN_API_KEY falls back to a fixed literal, which is a credential anyone reading the repo has: ${fallback[0].slice(0, 90)}`);
+    }
+    assert(/crypto\.randomBytes\(\d+\)\.toString\('hex'\)/.test(server),
+      'no cryptographic generation of the boot secret');
+
+    const r = await http('GET', '/api/v1/soc/adjudication/stats', undefined, { 'x-api-key': 'sd_admin_sec_prod_key' });
+    assert(r.status === 401, `the old default secret still authenticates (HTTP ${r.status})`);
+    return 'The committed default is gone and rejected at runtime; the boot secret is generated with crypto.randomBytes and printed once.';
+  });
+
+  await run(82, 'CREDENTIALS', 'Session key is not derived from Math.random', () => {
+    const server = fs.readFileSync(path.join(ROOT, 'server.ts'), 'utf-8');
+    // activeApiKey is accepted by adminAuthMiddleware, so it is a credential.
+    // V8's Math.random is a non-cryptographic PRNG whose state is recoverable from
+    // observed output, and string length adds no entropy the generator never had.
+    const m = server.match(/activeApiKey:\s*[^,\n]+/);
+    assert(m, 'activeApiKey initialiser not found');
+    assert(!/Math\.random/.test(m[0]), `activeApiKey is generated with Math.random: ${m[0].slice(0, 80)}`);
+    assert(/crypto\.randomBytes/.test(m[0]), 'activeApiKey is not generated from a cryptographic source');
+
+    const app = fs.readFileSync(path.join(ROOT, 'src/App.tsx'), 'utf-8');
+    assert(!/setApiKey\('sd_live_sec_' \+ Math\.random/.test(app),
+      'the client fabricates a credential the server will reject, making a failed rotation look successful');
+    return 'Both the initial session key and the rotation path use crypto.randomBytes; the client no longer invents a key on failure.';
+  });
+
+  await run(83, 'PROVENANCE', 'No latency figure is fabricated or padded', () => {
+    const offenders: string[] = [];
+    const check = (rel: string) => {
+      const src = fs.readFileSync(path.join(ROOT, rel), 'utf-8');
+      const code = src
+        .split('\n')
+        .filter(l => !/^\s*(\*|\/\/|\/\*)/.test(l))
+        .join('\n');
+
+      // The worst variant: real elapsed time with invented noise added to it.
+      if (/Date\.now\(\)\s*-\s*\w+\s*\+\s*Math\.random/.test(code)) {
+        offenders.push(`${rel}: a measured elapsed time has random noise added to it`);
+      }
+      // A latency literal with no accompanying source tag reads as measured.
+      const lits = [...code.matchAll(/(latencyMs|latencyUs|LatencyUs|LatencyMs):\s*(\d+\.\d+)/g)];
+      for (const m of lits) {
+        const after = code.slice(m.index ?? 0, (m.index ?? 0) + 260);
+        if (!/latencySource|LatencySource|provenance/.test(after)) {
+          offenders.push(`${rel}: ${m[1]}: ${m[2]} carries no source tag`);
+        }
+      }
+    };
+
+    for (const f of [
+      'server/services/httpTrafficTelemetry.service.ts',
+      'server/services/ebpfContainment.service.ts',
+      'server/services/deepFileInspection.service.ts',
+      'server/services/threatLabs.service.ts'
+    ]) {
+      check(f);
+    }
+
+    assert(offenders.length === 0, offenders.slice(0, 4).join(' | '));
+    return 'Every latency value across the four services is either measured, or carries SEEDED/SIMULATED, or is null with a stated reason.';
+  });
+
+  await run(84, 'PROVENANCE', 'A statistics block does not report a typed-in microsecond figure', async () => {
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/deepFileInspection.service.ts'), 'utf-8');
+    assert(!/preTransitLatencyUs:\s*0\.\d+/.test(src),
+      'preTransitLatencyUs is a literal again, sitting beside real counts where it reads as measured');
+    assert(/preTransitLatencyUs:\s*null/.test(src), 'preTransitLatencyUs is not null');
+    assert(/preTransitLatencyUnavailableReason/.test(src), 'null without a stated reason');
+    return 'Nothing in that service times the pre-transit path, so the figure is null and says why.';
+  });
+
   // ---- Report ----
   const pass = results.filter(r => r.status === 'PASS').length;
   const warn = results.filter(r => r.status === 'WARN').length;

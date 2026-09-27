@@ -540,7 +540,10 @@ export default function App() {
       const data = await response.json();
       if (data.apiKey) setApiKey(data.apiKey);
     } catch (err) {
-      setApiKey('sd_live_sec_' + Math.random().toString(36).substring(2, 15));
+      // Previously this fabricated a key with Math.random on failure, which left
+      // the console displaying a credential the server would never accept — the
+      // operator then believed rotation had succeeded. Report the failure instead.
+      console.warn('Key rotation failed; the existing key remains in effect.', err);
     }
   };
 

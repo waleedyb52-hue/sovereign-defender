@@ -378,7 +378,19 @@ export class DeepFileInspectionService {
       totalClean: clean.length,
       averageEntropy: avgEntropy,
       activeYaraRulesCount: this.yaraRules.length,
-      preTransitLatencyUs: 0.38
+      /**
+       * Pre-transit latency.
+       *
+       * Was the literal 0.38, returned from a statistics block whose other fields
+       * are real counts — so it read as measured alongside them. Nothing in this
+       * service times the pre-transit path, and inspection here runs in userspace
+       * rather than on the wire, so there is no microsecond figure to report. Null
+       * with a reason beats a number that was typed.
+       */
+      preTransitLatencyUs: null,
+      preTransitLatencyUnavailableReason:
+        'No pre-transit timing instrumentation exists in this service. A microsecond figure would require measuring on the wire, which needs the kernel path.',
+      provenance: { countsMeasured: true, latencyMeasured: false }
     };
   }
 }

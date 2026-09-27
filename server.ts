@@ -242,7 +242,7 @@ function isTrustedSameOrigin(origin: string): boolean {
 // 3. ADMIN AUTHENTICATION MIDDLEWARE FOR SENSITIVE SOC OPERATIONS
 function adminAuthMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
   const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace(/^Bearer\s+/i, '');
-  const adminSecret = process.env.ADMIN_API_KEY || 'sd_admin_sec_prod_key';
+  const adminSecret = ADMIN_SECRET;
   
   // Allow if matching ADMIN_API_KEY or active session key
   if (apiKey && (apiKey === adminSecret || apiKey === state.activeApiKey)) {
@@ -566,8 +566,55 @@ interface IngestedIntelItem {
   extractedSignatures: string[];
 }
 
+/**
+ * ADMINISTRATIVE SECRET
+ *
+ * This previously fell back to a literal string when ADMIN_API_KEY was unset. The
+ * string itself is deliberately not reproduced here: a credential in a comment is
+ * still a credential in a public repository, and secret scanners flag it. That
+ * fallback was
+ * a known credential committed to a public repository, and it worked: a request
+ * carrying that exact string was granted every administrative route — host
+ * isolation, writing ground truth, model promotion, reading the corpus. In a
+ * security product that is the most serious class of defect it can ship, because it
+ * is not a weakness to be discovered but a password to be read.
+ *
+ * Two constraints had to be satisfied at once, and they pull against each other:
+ *
+ *   - No known default may exist. Failing that is what produced the defect.
+ *   - Phase 6's criterion is that a reviewer can stand the platform up from the
+ *     repository with no configuration. A hard startup failure would break that,
+ *     and the usual consequence is that someone reintroduces a default.
+ *
+ * So the secret is GENERATED at boot with crypto.randomBytes and printed once to
+ * stdout. There is nothing to guess, nothing committed, and a reviewer reads it from
+ * the console — the pattern Jupyter and Grafana use for the same reason. Production
+ * sets ADMIN_API_KEY explicitly and never sees the generated one.
+ */
+const ADMIN_SECRET_WAS_GENERATED = !process.env.ADMIN_API_KEY;
+const ADMIN_SECRET =
+  process.env.ADMIN_API_KEY || 'sd_admin_' + crypto.randomBytes(24).toString('hex');
+
+if (ADMIN_SECRET_WAS_GENERATED) {
+  console.log('');
+  console.log('  ┌─ ADMINISTRATIVE ACCESS ─────────────────────────────────────────────┐');
+  console.log('  │ ADMIN_API_KEY was not set, so one was generated for this run only.  │');
+  console.log('  │ It is not stored and changes on every restart.                      │');
+  console.log('  │                                                                     │');
+  console.log(`  │ x-api-key: ${ADMIN_SECRET.padEnd(56)}│`);
+  console.log('  │                                                                     │');
+  console.log('  │ Set ADMIN_API_KEY in the environment for a stable deployment.       │');
+  console.log('  └─────────────────────────────────────────────────────────────────────┘');
+  console.log('');
+}
+
 const state = {
-  activeApiKey: 'sd_live_sec_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+  // crypto.randomBytes, not Math.random. This value is accepted by
+  // adminAuthMiddleware, so it is a credential: V8's Math.random is a
+  // non-cryptographic PRNG whose state is recoverable from observed outputs, and
+  // string length does not add entropy the generator never had. The rotate-key
+  // endpoint already did this correctly; only the initial value did not.
+  activeApiKey: 'sd_live_sec_' + crypto.randomBytes(24).toString('hex'),
   quarantineTable: new Map<string, QuarantinedIPRecord>(),
   packetLogs: [] as any[],
   ingestedIntel: [] as IngestedIntelItem[],
