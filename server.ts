@@ -46,6 +46,7 @@ import { globalKernelIntegrity } from './server/services/kernelIntegrity.service
 import { globalDriftDetector, globalStrategicRetention } from './server/services/driftDetection.service.js';
 import { globalContinualLearner, decidePromotion, type LabelledSample } from './server/services/continualLearner.service.js';
 import { globalIterativeRetrieval } from './server/services/iterativeRetrieval.service.js';
+import { corroborate, corroborationEnabled } from './server/services/corpusCorroboration.service.js';
 import { globalAdjudication } from './server/services/adjudication.service.js';
 import { globalKernelMitigationDriver } from './server/services/kernelMitigationDriver.js';
 import { globalSelfHealingLedger } from './server/services/selfHealingLedger.service.js';
@@ -1818,8 +1819,21 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
   // The caller-supplied vector and score are now corroboration at most, never
   // the decision.
   const classification = classifyPayload(payloadStr);
+
+  // Phase 4: let retrieved history move a borderline score, if enabled.
+  //
+  // Off by default and band-limited: it cannot touch a zero score or one the rules
+  // already blocked, and it needs two independent corroborating signals. The flag
+  // exists so audit/corroboration_impact.ts can measure with and without it
+  // instead of the comparison resting on an edited source file.
+  const corroboration = corroborationEnabled()
+    ? corroborate(classification, safeSrcIp, payloadStr)
+    : null;
+  const effectiveScore = corroboration?.applied ? corroboration.adjustedScore : classification.score;
+
   const isAttack =
     classification.malicious ||
+    (corroboration?.verdictChanged ?? false) ||
     (packet.threatScore > 50 && classification.score > 0) ||
     (packet.vector && packet.vector !== 'CLEAN_TRAFFIC' && classification.score >= 25);
   const iptables = `iptables -I INPUT -s ${safeSrcIp} -p tcp --dport ${packet.port} -j DROP`;
@@ -1838,7 +1852,19 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
       family: classification.family,
       score: classification.score,
       signatures: classification.signatures,
-      entropy: Number(classification.entropy.toFixed(2))
+      entropy: Number(classification.entropy.toFixed(2)),
+      // Present only when history actually moved the score, with the signals that
+      // did it — an adjustment an analyst cannot inspect is worse than none.
+      corroboration: corroboration?.applied
+        ? {
+            originalScore: corroboration.originalScore,
+            adjustedScore: corroboration.adjustedScore,
+            lift: corroboration.lift,
+            verdictChanged: corroboration.verdictChanged,
+            signals: corroboration.signals
+          }
+        : undefined,
+      effectiveScore
     },
     confidence: 0.96,
     confidenceGatePassed: true,
@@ -2188,6 +2214,141 @@ app.get('/api/v1/soc/investigate/actor', adminAuthMiddleware, (req, res) => {
     });
   }
   res.json({ success: true, investigation: globalIterativeRetrieval.investigateActor(indicator) });
+});
+
+/**
+ * KERNEL AUDIT INTAKE
+ *
+ * Receives a report from scripts/kernel-audit.mjs, which runs on a host that has a
+ * kernel (WSL2, a VM, the deployment target) and takes measurements this process
+ * cannot take on Windows.
+ *
+ * Three guards, because an intake endpoint for "measurements" is an obvious way to
+ * launder fabricated numbers into a platform that otherwise refuses them:
+ *
+ *   1. Only verified facts are accepted. The syscall hash and the XDP compile
+ *      result are recorded; a latency or packet figure in the body is IGNORED.
+ *      The auditor itself reports liveKernelCountersAvailable=false when
+ *      unprivileged, and the platform must keep reporting those as UNAVAILABLE
+ *      rather than adopting whatever arrives here.
+ *
+ *   2. Readings expire. A kernel hash from yesterday says nothing about the kernel
+ *      now, so the response and every later read report the age, and a reading past
+ *      the freshness window is labelled STALE rather than current.
+ *
+ *   3. Origin is recorded and never collapses into "measured". The provenance tag
+ *      is MEASURED_VIA_KERNEL_AUDIT, deliberately distinct from a live in-process
+ *      reading, along with the host kernel and boot id so a reviewer can see which
+ *      machine produced it.
+ */
+
+/** Beyond this, a stored kernel reading is reported STALE. */
+const KERNEL_AUDIT_FRESHNESS_MS = 60 * 60 * 1000;
+
+interface StoredKernelAudit {
+  capturedAt: string;
+  receivedAt: string;
+  hostKernel: string;
+  hostname: string;
+  isWsl: boolean;
+  privileged: boolean;
+  syscallStatus: string;
+  syscallSymbolsRead: number | null;
+  syscallTableHash: string | null;
+  bootId: string | null;
+  xdpStatus: string;
+  xdpLoadable: boolean | null;
+  xdpObjectBytes: number | null;
+  xdpProgramBytes: number | null;
+  bpftoolVersion: string | null;
+  bpffsMounted: boolean;
+  liveCountersAvailable: boolean;
+}
+
+let lastKernelAudit: StoredKernelAudit | null = null;
+
+app.post('/api/v1/soc/sensors/kernel-audit', adminAuthMiddleware, (req, res) => {
+  const b = req.body || {};
+  if (!b?.platform?.kernelRelease || !b?.syscallIntegrity?.status) {
+    return res.status(400).json({
+      success: false,
+      error: 'MALFORMED_AUDIT',
+      message: 'Expected a report produced by scripts/kernel-audit.mjs.'
+    });
+  }
+
+  // Only the fields this endpoint is willing to vouch for are stored. Anything
+  // resembling a latency or packet count is discarded on purpose.
+  lastKernelAudit = {
+    capturedAt: String(b.capturedAt ?? new Date().toISOString()),
+    receivedAt: new Date().toISOString(),
+    hostKernel: String(b.platform.kernelRelease),
+    hostname: sanitizeUntrustedInput(String(b.platform.hostname ?? 'unknown')),
+    isWsl: Boolean(b.platform.isWsl),
+    privileged: Boolean(b.platform.privileged),
+    syscallStatus: String(b.syscallIntegrity.status),
+    syscallSymbolsRead: typeof b.syscallIntegrity.symbolsRead === 'number' ? b.syscallIntegrity.symbolsRead : null,
+    syscallTableHash: typeof b.syscallIntegrity.tableHash === 'string' ? b.syscallIntegrity.tableHash : null,
+    bootId: typeof b.syscallIntegrity.bootId === 'string' ? b.syscallIntegrity.bootId : null,
+    xdpStatus: String(b.xdpProgram?.status ?? 'UNKNOWN'),
+    xdpLoadable: typeof b.xdpProgram?.loadable === 'boolean' ? b.xdpProgram.loadable : null,
+    xdpObjectBytes: typeof b.xdpProgram?.objectBytes === 'number' ? b.xdpProgram.objectBytes : null,
+    xdpProgramBytes: typeof b.xdpProgram?.xdpProgramBytes === 'number' ? b.xdpProgram.xdpProgramBytes : null,
+    bpftoolVersion: typeof b.bpfRuntime?.bpftoolVersion === 'string' ? b.bpfRuntime.bpftoolVersion : null,
+    bpffsMounted: Boolean(b.bpfRuntime?.bpffsMounted),
+    liveCountersAvailable: Boolean(b.claims?.liveKernelCountersAvailable)
+  };
+
+  res.json({
+    success: true,
+    stored: lastKernelAudit,
+    accepted: ['syscallIntegrity', 'xdpProgram', 'bpfRuntime'],
+    ignored: 'Any latency or packet-count field in the body is discarded; those remain UNAVAILABLE unless measured in-process on a kernel host.',
+    freshnessWindowMs: KERNEL_AUDIT_FRESHNESS_MS
+  });
+});
+
+app.get('/api/v1/soc/sensors/kernel-audit', (_req, res) => {
+  if (!lastKernelAudit) {
+    return res.json({
+      success: true,
+      audit: null,
+      state: 'NEVER_RUN',
+      message:
+        'No kernel audit has been submitted. On a non-Linux host run: wsl.exe -e node scripts/kernel-audit.mjs --post http://127.0.0.1:3000 --key <ADMIN_API_KEY>',
+      messageAr:
+        'لم يُرفَع أي تدقيق نواة بعد. على مضيف غير لينكس شغّل السكربت داخل WSL مع --post لتسجيل القياس الحقيقي.'
+    });
+  }
+
+  const ageMs = Date.now() - new Date(lastKernelAudit.capturedAt).getTime();
+  const stale = ageMs > KERNEL_AUDIT_FRESHNESS_MS;
+
+  res.json({
+    success: true,
+    audit: lastKernelAudit,
+    state: stale ? 'STALE' : 'FRESH',
+    ageMs,
+    provenance: {
+      // Deliberately not 'MEASURED'. It was measured, but on another host at
+      // another time, and collapsing that distinction is how a stale reading from
+      // a different machine ends up presented as current local state.
+      mode: 'MEASURED_VIA_KERNEL_AUDIT',
+      host: lastKernelAudit.hostname,
+      kernel: lastKernelAudit.hostKernel,
+      note: stale
+        ? `Captured ${Math.round(ageMs / 60000)} minutes ago, beyond the ${KERNEL_AUDIT_FRESHNESS_MS / 60000}-minute window. Treat as historical.`
+        : 'Within the freshness window.'
+    },
+    /** What this audit does and does not license the platform to claim. */
+    licenses: {
+      syscallIntegrityClaim: lastKernelAudit.syscallStatus === 'VERIFIED',
+      xdpProgramValidClaim: lastKernelAudit.xdpLoadable === true,
+      liveKernelLatencyClaim: false,
+      liveKernelLatencyReason:
+        'The auditor ran unprivileged or on a host without attach capability, so no latency was measured. meanKernelLatencyUs stays null.'
+    }
+  });
 });
 
 // 4. Ingest Threat Intelligence & Train Dynamic Prompt Context

@@ -210,7 +210,7 @@ traffic, which is some evidence the adjudication surface does what it is for.
 frozen baseline on data postdating both, with no catastrophic forgetting on
 earlier folds.
 
-### Phase 4 — Retrieval quality
+### Phase 4 — Retrieval quality *(half the criterion met and measured)*
 
 **Build:** iterative retrieve-and-reason loop, replacing single-shot retrieval
 (CyberRAG pattern).
@@ -218,7 +218,58 @@ earlier folds.
 **Acceptance criterion:** measurable reduction in false positives on the
 held-out set versus single-shot retrieval, with the retrieval cost bounded.
 
-### Phase 5 — Operator surfaces
+**Built.** [`iterativeRetrieval.service.ts`](../server/services/iterativeRetrieval.service.ts)
+loops at most three rounds and reports its own cost. Round 2 refines the query
+using techniques discovered in round 1 — the refinement single-shot cannot make,
+because those techniques were unknown when the first query was built. Measured
+against a 44,000-incident corpus: single-shot 7 evidence items, iterative 9, with
+round 2 surfacing `T1048.003` from a retrieved incident.
+
+`SUFFICIENCY_THRESHOLD` was raised from 6 to 14 after measurement: at 6 the loop
+terminated on round 1 every time, because a rich corpus satisfies it immediately.
+Iteration earns its cost when the corpus is sparse or the packet uninformative,
+not universally.
+
+**The obstacle, and what was done about it.** The criterion could not be assessed
+at all, for a structural reason rather than a missing feature: retrieved context
+reached only the external model's prompt, while the sovereign detection path is
+`classifyPayload()` and never consulted the corpus. With no external model
+configured — the shipping default — retrieval could not move any rate, because it
+took no part in the decision.
+
+[`corpusCorroboration.service.ts`](../server/services/corpusCorroboration.service.ts)
+makes it take part, under four constraints: band-limited to scores in
+`[40, BLOCK_THRESHOLD)`, never applied to a zero score, requires two independent
+corroborating signals, and capped at 18 points with every signal returned for
+inspection.
+
+**Measured by [`corroboration_impact.ts`](../audit/corroboration_impact.ts), with
+the decision rule fixed before the run:**
+
+| | Result |
+|---|---|
+| False positives on benign traffic from known-bad actors | **0 of 12** |
+| Fired where the actor had no history | **0** |
+| Movement on Set A and Set B (58 payloads) | **none** |
+| Verdict changes on ambiguous borderline payloads | 4 |
+
+The false-positive half of the criterion **holds and is measured**. The recall half
+does not: the four verdict changes are on genuinely ambiguous payloads — a
+localhost URL in a `url` parameter is either SSRF probing or a health-check
+config — and no label says which. Counting them as catches would assert ground
+truth the harness does not have.
+
+A second finding from the same run: only 2 of 12 probe payloads scored inside the
+band at all. **This rule set is bimodal** — payloads are either clearly hostile or
+clearly clean — so there is very little borderline for history to tip. That limits
+how much this mechanism can ever contribute.
+
+**Shipping default: off.** `SD_CORPUS_CORROBORATION=on` enables it. The
+false-positive cost is proven zero, but the benefit is unproven, and this project
+does not enable a feature whose benefit has not been measured. It becomes a
+one-line change once the borderline band has adjudicated labels.
+
+### Phase 5 — Operator surfaces *(criterion met)*
 
 **Build:** investigation/query interface over telemetry; dynamic attack-path
 graph derived from data rather than drawn statically.
@@ -226,13 +277,66 @@ graph derived from data rather than drawn statically.
 **Acceptance criterion:** an analyst can answer "what else did this actor
 touch" without leaving the platform or writing SQL.
 
-### Phase 6 — Durability and review
+**Met.** `GET /api/v1/soc/investigate/actor?indicator=…` walks the corpus outward
+from an indicator: direct incidents, the techniques in those incidents, then other
+actors sharing those techniques. Every related finding carries its hop distance, so
+a second-hop link is not presented with the confidence of a direct hit, and
+confidence is derived from corroborating count rather than assigned.
+
+Measured on `194.26.29.112`: 5 direct incidents, 5 techniques, 1 related actor at
+hop 2, HIGH confidence with a stated basis, 411 ms. An empty corpus returns
+`corpusEmpty: true` and `confidence: NONE` with the words "absence of evidence, not
+evidence of safety" — rather than an empty graph that reads as a clean bill.
+
+### Phase 6 — Durability and review *(criterion met, 10/10)*
 
 **Build:** encrypted replication to self-hosted object storage; reproducible
 deployment.
 
 **Acceptance criterion:** a reviewer can stand the platform up from the repo on
 a clean machine and reproduce the reported numbers.
+
+**Met.** [`reproducibility_check.ts`](../audit/reproducibility_check.ts) verifies
+the things that actually break reproducibility rather than restating a README:
+lockfile tracked, container definition present, no credential required to start,
+harnesses present and runnable, figures quoted in this plan matching what the
+harnesses print, provenance on every reported figure, the test fold structurally
+unreachable for tuning, no external frontend requests, and replication encrypted
+before egress and opt-in. **10 PASS, 0 WARN, 0 FAIL.**
+
+It found one real gap on its first run: no `engines.node` while the project depends
+on `node:sqlite`, so a reviewer on Node 20 got an unexplained module-not-found.
+Pinned to `>=22.5.0`.
+
+### Kernel verification on a host that has a kernel
+
+The platform's central claim is kernel-level defence, and on Windows it cannot be
+checked: XDP is Linux-only, so kernel integrity returns `UNAVAILABLE` and
+`meanKernelLatencyUs` is null. Honest, but not measurements.
+
+[`scripts/kernel-audit.mjs`](../scripts/kernel-audit.mjs) takes them where a kernel
+exists. Zero dependencies — nothing outside node's standard library — so it runs
+under a bare `node` with no `npm ci`, no build and no native modules. Verified
+under WSL2 (kernel 6.18.33.2):
+
+| | Result |
+|---|---|
+| Syscall table integrity | **VERIFIED** — 941 `__x64_sys_*` symbols hashed |
+| `ebpf/xdp_drop.c` compiles | **Yes** — 11,456-byte object, `xdp` section 600 bytes, `.maps` and `license` present, `loadable: true` |
+| bpftool / bpffs | v7.7.0, `/sys/fs/bpf` mounted |
+| Live packet & latency counters | **Unavailable** — needs privilege, and no figure is produced without it |
+
+**The XDP program had never been compiled before this script existed.** The product
+claimed kernel-level packet dropping on the strength of a `.c` file nobody had put
+through a compiler. It does compile, to valid BPF bytecode that reads from the
+`xdp_md` context.
+
+The intake endpoint accepts only verified facts. A latency or packet figure in the
+body is **discarded** — tested by posting `meanKernelLatencyUs: 0.01` with
+`liveKernelCountersAvailable: true`, after which the platform's value remained
+`null`. Readings expire after an hour and are tagged
+`MEASURED_VIA_KERNEL_AUDIT`, deliberately distinct from a live in-process reading,
+with the host and kernel recorded.
 
 ---
 
@@ -247,6 +351,12 @@ a clean machine and reproduce the reported numbers.
 | Encrypted object storage | Built, **unverified end to end** | Crypto and refusal paths tested; no live S3 round-trip yet — Docker is not installed on the development machine |
 | Honest evaluation harness | Done | Set A (regression) + Set B (clean); Tier 2 recall 25% is the measured signature ceiling |
 | Operator adjudication pipeline | Built, corpus empty | Append-only, provenance-bearing, temporally folded; reports its shortfall instead of a figure |
+| Continual learning (Phase 3) | 66.5% measured | Drift and retention done; learner and gate built but UNVALIDATED — half credit, not full |
+| Iterative retrieval (Phase 4) | Half the criterion | FP cost proven zero and measured; recall gain unverified; corroboration ships off by default |
+| Investigation surface (Phase 5) | Done | Actor pivot with hop distance and derived confidence |
+| Reproducibility (Phase 6) | Done, 10/10 | Automated check; found and fixed a missing Node version constraint |
+| Kernel verification | Done under WSL2 | Syscall integrity VERIFIED; the shipped XDP program compiles to valid BPF for the first time |
+| International benchmark | 86.1% assessable | 13 MEETS, 5 PARTIAL, 0 FAILS, 3 declined as not applicable |
 | Live training | Phase 3, not started | — |
 
 ---
