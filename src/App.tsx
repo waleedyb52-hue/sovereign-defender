@@ -30,6 +30,7 @@ import { KillChainPanel } from './components/soc/KillChainPanel';
 import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
 import { AdjudicationPanel } from './components/soc/AdjudicationPanel';
 import { ExhibitionMode } from './components/soc/ExhibitionMode';
+import { CorpusIntelPanel } from './components/soc/CorpusIntelPanel';
 import { TelemetryHud } from './components/soc/TelemetryHud';
 import { EbpfTopologyGraph } from './components/soc/EbpfTopologyGraph';
 import { ThreatAuditTable } from './components/soc/ThreatAuditTable';
@@ -863,6 +864,11 @@ export default function App() {
                 ruling on live detections. Placed after the defence stack because
                 it is about how the detector is judged, not how it protects. */}
             <AdjudicationPanel lang={lang} />
+
+            {/* Where the corpus stands, how it is folded, and whether the traffic
+                has moved since. Sits under the adjudication surface because it is
+                what that surface feeds. */}
+            <CorpusIntelPanel lang={lang} />
 
             {/* Sovereignty posture, driven by the live configuration rather than
                 printed unconditionally. */}
