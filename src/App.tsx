@@ -66,7 +66,7 @@ import {
 
 export default function App() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
-  const [activeTab, setActiveTab] = useState<AppTab>('threat_heatmap');
+  const [activeTab, setActiveTab] = useState<AppTab>('tactical_c2');
 
   // Live telemetry for the kernel HUD, topology and audit log. All parsing and
   // polling lives in these hooks, so this component stays layout and wiring —
@@ -609,9 +609,30 @@ export default function App() {
   const isAr = lang === 'ar';
   const pendingApprovalsCount = approvalQueue.filter(q => q.status === 'PENDING').length;
 
+  /**
+   * TACTICAL C2 takes the whole viewport.
+   *
+   * Returned before the chrome rather than inside <main>: the navbar, the sidebar
+   * offset, the p-8 padding and the #0d1117 root would each box the scene in, and a
+   * HUD that is boxed in is just a card with a globe in it.
+   *
+   * The other consoles stay reachable through the ALL CONSOLES control. They are not
+   * deleted, because several are load-bearing rather than decorative — the
+   * adjudication panel is the only UI path to the corpus rulings that Phase 2 and 3
+   * are blocked on, and the compliance report backs the NCA ECC claims. Hiding the
+   * old landing view was the ask; discarding working capability was not.
+   */
+  if (activeTab === 'tactical_c2') {
+    return (
+      <div className="bg-black text-[#e6edf3] antialiased" dir={isAr ? 'rtl' : 'ltr'}>
+        <TacticalCockpit lang={lang} onExit={() => setActiveTab('threat_heatmap')} />
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`min-h-screen bg-[#0d1117] text-[#e6edf3] antialiased ${isAr ? 'rtl' : 'ltr'}`}
+      className={`min-h-screen bg-black text-[#e6edf3] antialiased ${isAr ? 'rtl' : 'ltr'}`}
       dir={isAr ? 'rtl' : 'ltr'}
     >
       {/* Sleek Minimal Top Status Bar (Button-Free) */}
@@ -654,10 +675,6 @@ export default function App() {
         {/* CYBERDEFEND: the orbital command surface. Rendered full-bleed rather
             than inside the max-w-7xl column, because the globe theatre and the
             floating cards are positioned against the viewport. */}
-        {/* Integrated tactical C2. Full-bleed and unwrapped: the stage is the
-            viewport, and the floating docks are positioned against it. */}
-        {activeTab === 'tactical_c2' && <TacticalCockpit lang={lang} />}
-
         {activeTab === 'cyberdefend' && <CyberDefendPlatform lang={lang} />}
 
         {activeTab === 'site_inspector' && (

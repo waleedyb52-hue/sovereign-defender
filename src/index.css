@@ -99,6 +99,22 @@
     min-height: 100vh;
   }
 
+  /* TACTICAL C2 owns the void.
+     The console default (#0d1117) is a blue-grey. Behind a black-space scene it
+     reads as haze at every edge the fixed HUD does not cover — overscroll, the
+     scrollbar gutter, the moment before the canvas paints. So the HUD blacks the
+     root out while it is mounted and hands it straight back on unmount, rather
+     than the token changing globally and dragging every other console with it. */
+  html[data-surface='tactical'],
+  html[data-surface='tactical'] body,
+  html[data-surface='tactical'] #root {
+    background-color: #000000 !important;
+  }
+
+  html[data-surface='tactical'] body {
+    background-image: none;
+  }
+
   body {
     font-family:
       'Cairo',

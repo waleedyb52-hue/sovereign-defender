@@ -32,8 +32,12 @@ import { cn } from '../../../lib/utils';
 
 export const VOID = '#000000';
 export const CYAN = '#00f3ff';
+/** cyan-400. Technical text, where the brighter neon would fringe on small glyphs. */
+export const CYAN_TEXT = '#22d3ee';
+/** cyan-500, the border hue. */
 export const CYAN_DIM = '#06b6d4';
-export const CRIMSON = '#ff003c';
+/** rose-500. Reserved for threats, eBPF drops and critical alerts. */
+export const CRIMSON = '#f43f5e';
 export const AMBER = '#f59e0b';
 export const EMERALD = '#10b981';
 
@@ -112,8 +116,11 @@ export const TacticalPanel: React.FC<TacticalPanelProps> = ({
           className="pointer-events-none absolute inset-0"
           style={{
             clipPath: clip,
-            boxShadow: glow === 'strong' ? `0 0 28px ${hex}22` : `0 0 20px ${hex}0d`,
-            background: glow === 'strong' ? `${hex}05` : 'transparent'
+            boxShadow:
+              glow === 'strong'
+                ? `0 0 34px ${hex}33, 0 0 12px ${hex}22`
+                : `0 0 20px ${hex}1a`,
+            background: glow === 'strong' ? `${hex}08` : 'transparent'
           }}
         />
       )}
@@ -122,8 +129,9 @@ export const TacticalPanel: React.FC<TacticalPanelProps> = ({
         className={cn('relative border backdrop-blur-xl', className)}
         style={{
           clipPath: clip,
-          background: 'rgba(0,0,0,0.5)',
-          borderColor: `${hex}33`,
+          background: 'rgba(0,0,0,0.40)',
+          // 0x66 is 40% — the border strength the reference boards carry.
+          borderColor: `${hex}66`,
           ...style
         }}
       >
