@@ -801,6 +801,31 @@ const auth = { 'x-api-key': KEY };
     return 'Nothing in that service times the pre-transit path, so the figure is null and says why.';
   });
 
+  await run(85, 'PROVENANCE', 'A kernel figure is tagged from its value, not from a capability flag', () => {
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/ebpfContainment.service.ts'), 'utf-8');
+
+    // The defect this guards: `kernelNative` was true on a Linux host merely
+    // because bpftool was on PATH, so meanKernelLatencyUs was tagged MEASURED
+    // while its value was null. A capability flag says what the host could do; it
+    // does not say whether a number was obtained.
+    assert(/latencyValue != null \? 'MEASURED' : 'UNAVAILABLE'/.test(src),
+      'the latency tag is not derived from whether a value exists');
+    assert(!/meanKernelLatencyUs: kernelNative \? 'MEASURED'/.test(src),
+      'the latency tag is derived from kernelNative again');
+
+    const bridge = fs.readFileSync(path.join(ROOT, 'server/services/realEbpfBridge.ts'), 'utf-8');
+    // Readability must be proven by attempting a read, not inferred from a binary
+    // existing on PATH.
+    assert(/bpftool prog show/.test(bridge), 'kernel readability is not probed by an actual read');
+    assert(/operation not permitted\|permission denied/i.test(bridge),
+      'the probe does not detect a permission failure, so an unreadable kernel reads as readable');
+    assert(/get countersReadable\(\)/.test(bridge), 'no separate countersReadable signal');
+
+    assert(/KERNEL_TOOLING_PRESENT_UNREADABLE/.test(src),
+      'no third state for a host with the toolchain but no permission to use it');
+    return 'Tag follows the value; readability is proven by a probe; the toolchain-present-but-unreadable case has its own state.';
+  });
+
   // ---- Report ----
   const pass = results.filter(r => r.status === 'PASS').length;
   const warn = results.filter(r => r.status === 'WARN').length;

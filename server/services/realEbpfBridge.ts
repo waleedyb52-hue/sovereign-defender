@@ -47,6 +47,10 @@ export class RealEbpfBridge {
   private pinnedStatsPath: string = '/sys/fs/bpf/stats_map';
   private defaultInterface: string = 'eth0';
   private isKernelAvailable: boolean = false;
+  /** bpftool on PATH and /sys/fs/bpf mounted. Necessary, not sufficient. */
+  private kernelToolingPresent: boolean = false;
+  /** A bpftool read actually succeeded. This is what licenses a MEASURED claim. */
+  private kernelCountersReadable: boolean = false;
 
   /**
    * Whether a real kernel path was found on this host.
@@ -58,6 +62,20 @@ export class RealEbpfBridge {
    */
   get kernelNative(): boolean {
     return this.isKernelAvailable;
+  }
+
+  /** Whether the toolchain exists at all, regardless of permission. */
+  get toolingPresent(): boolean {
+    return this.kernelToolingPresent;
+  }
+
+  /**
+   * Whether a kernel read succeeded. Only this may license a MEASURED tag on a
+   * kernel figure — `kernelNative` alone once did, and produced a MEASURED tag
+   * over a null value.
+   */
+  get countersReadable(): boolean {
+    return this.kernelCountersReadable;
   }
   private driverMode: RealEbpfKernelStats['driverMode'] = 'CONTAINER_EMULATION';
 
@@ -103,7 +121,30 @@ export class RealEbpfBridge {
       // Check if /sys/fs/bpf is mounted
       const hasBpfFs = fs.existsSync('/sys/fs/bpf');
 
-      if (hasBpftool && hasBpfFs) {
+      // Tooling present is NOT the same as counters readable.
+      //
+      // This check previously set isKernelAvailable on `which bpftool` plus the
+      // existence of /sys/fs/bpf, and that combination is true on an unprivileged
+      // WSL host where `bpftool prog show` returns "Operation not permitted" and
+      // /sys/fs/bpf is empty. The platform then reported mode KERNEL_NATIVE with
+      // the words "counters read from the kernel" while reading nothing at all.
+      //
+      // So readability is now proven by attempting it. A probe that succeeds is
+      // evidence; a binary on PATH is not.
+      let canReadPrograms = false;
+      if (hasBpftool) {
+        try {
+          const probe = await execPromise('bpftool prog show 2>&1 || true');
+          const out = String(probe.stdout ?? '');
+          canReadPrograms = !/operation not permitted|permission denied/i.test(out);
+        } catch {
+          canReadPrograms = false;
+        }
+      }
+      this.kernelToolingPresent = hasBpftool && hasBpfFs;
+      this.kernelCountersReadable = canReadPrograms;
+
+      if (hasBpftool && hasBpfFs && canReadPrograms) {
         this.isKernelAvailable = true;
         this.driverMode = 'XDP_NATIVE_DRV';
         this.stats.isKernelNative = true;

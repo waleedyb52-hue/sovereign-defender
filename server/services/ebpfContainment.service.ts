@@ -553,6 +553,12 @@ export class EbpfContainmentService {
     const quarantinedNodes = this.clusterNodes.filter(n => n.isolationStatus === 'QUARANTINED_EAST_WEST');
 
     const kernelNative = globalRealEbpfBridge.kernelNative;
+    const countersReadable = globalRealEbpfBridge.countersReadable;
+    const toolingPresent = globalRealEbpfBridge.toolingPresent;
+    // The latency value first, then the tag derived FROM it. Tagging from a
+    // capability flag is what produced `meanKernelLatencyUs: null` labelled
+    // MEASURED: the flag was true and the value was absent.
+    const latencyValue = countersReadable ? this.measuredKernelLatencyUs : null;
 
     return {
       // Counted from real state: these are lengths of arrays this process owns.
@@ -579,7 +585,7 @@ export class EbpfContainmentService {
        * value is null — the UI then shows an em dash instead of a number that
        * was typed by hand.
        */
-      meanKernelLatencyUs: kernelNative ? this.measuredKernelLatencyUs : null,
+      meanKernelLatencyUs: latencyValue,
 
       /**
        * Per-figure provenance. The point of this block is that no consumer has
@@ -588,10 +594,21 @@ export class EbpfContainmentService {
        */
       provenance: {
         kernelNative,
-        mode: kernelNative ? 'KERNEL_NATIVE' : 'SIMULATED_NO_KERNEL_PATH',
-        reason: kernelNative
-          ? 'bpftool and a pinned map were found; counters read from the kernel.'
-          : 'No bpftool or pinned BPF map on this host (XDP is Linux-only), so packet figures are seeded demo values and kernel latency is unavailable.',
+        // Three states, not two. The middle one is the case that was being
+        // reported as KERNEL_NATIVE: a Linux host with the toolchain installed but
+        // no permission to read anything through it.
+        mode: countersReadable
+          ? 'KERNEL_NATIVE'
+          : toolingPresent
+            ? 'KERNEL_TOOLING_PRESENT_UNREADABLE'
+            : 'SIMULATED_NO_KERNEL_PATH',
+        reason: countersReadable
+          ? 'A bpftool read succeeded, so kernel counters are readable on this host.'
+          : toolingPresent
+            ? 'bpftool and /sys/fs/bpf exist, but a read returned a permission error and no BPF program is pinned. Nothing is being read from the kernel, so packet figures remain seeded and kernel latency is unavailable. Loading an XDP program requires CAP_BPF or root.'
+            : 'No bpftool or BPF filesystem on this host (XDP is Linux-only), so packet figures are seeded demo values and kernel latency is unavailable.',
+        kernelToolingPresent: toolingPresent,
+        kernelCountersReadable: countersReadable,
         fields: {
           activeBlackholesCount: 'MEASURED',
           totalHistoricIsolations: 'MEASURED',
@@ -603,7 +620,8 @@ export class EbpfContainmentService {
           seededPacketsDropped: 'SEEDED',
           totalPacketsDropped: this.observedPacketsDropped > 0 ? 'MIXED_SEEDED_AND_MEASURED' : 'SEEDED',
           totalTcpResetsInjected: this.observedTcpResetsInjected > 0 ? 'MIXED_SEEDED_AND_MEASURED' : 'SEEDED',
-          meanKernelLatencyUs: kernelNative ? 'MEASURED' : 'UNAVAILABLE'
+          // Derived from whether a number exists, never from a capability flag.
+          meanKernelLatencyUs: latencyValue != null ? 'MEASURED' : 'UNAVAILABLE'
         }
       }
     };
