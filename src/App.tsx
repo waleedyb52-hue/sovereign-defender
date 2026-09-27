@@ -32,6 +32,7 @@ import { AdjudicationPanel } from './components/soc/AdjudicationPanel';
 import { ExhibitionMode } from './components/soc/ExhibitionMode';
 import { CorpusIntelPanel } from './components/soc/CorpusIntelPanel';
 import { CyberDefendPlatform } from './components/soc/cyberdefend/CyberDefendPlatform';
+import { TacticalCockpit } from './components/soc/tactical/TacticalCockpit';
 import { TelemetryHud } from './components/soc/TelemetryHud';
 import { EbpfTopologyGraph } from './components/soc/EbpfTopologyGraph';
 import { ThreatAuditTable } from './components/soc/ThreatAuditTable';
@@ -653,6 +654,10 @@ export default function App() {
         {/* CYBERDEFEND: the orbital command surface. Rendered full-bleed rather
             than inside the max-w-7xl column, because the globe theatre and the
             floating cards are positioned against the viewport. */}
+        {/* Integrated tactical C2. Full-bleed and unwrapped: the stage is the
+            viewport, and the floating docks are positioned against it. */}
+        {activeTab === 'tactical_c2' && <TacticalCockpit lang={lang} />}
+
         {activeTab === 'cyberdefend' && <CyberDefendPlatform lang={lang} />}
 
         {activeTab === 'site_inspector' && (

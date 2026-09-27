@@ -340,3 +340,24 @@ html[data-motion='calm'] .animate-spin {
 .border-amber-warning {
   border-color: var(--sev-warning) !important;
 }
+
+
+/* =========================================================================
+   TACTICAL C2 — scanline drift
+   Decorative only, and behind live data, so the amplitude is deliberately
+   small: texture that competes with a readout is the first thing to go in a
+   console someone watches for a twelve-hour shift. Disabled entirely under
+   prefers-reduced-motion rather than merely slowed.
+   ========================================================================= */
+@keyframes tac-scan-drift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(3px); }
+}
+
+.tac-scan {
+  animation: tac-scan-drift 1.1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tac-scan { animation: none; }
+}
