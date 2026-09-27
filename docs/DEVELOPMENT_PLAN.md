@@ -331,6 +331,41 @@ claimed kernel-level packet dropping on the strength of a `.c` file nobody had p
 through a compiler. It does compile, to valid BPF bytecode that reads from the
 `xdp_md` context.
 
+**What running it on Linux actually exposed.** Moving the whole server into WSL2
+was meant to turn the kernel claims from simulated into verified. It did that for
+syscall integrity — and it produced two false claims within seconds, both of which
+were invisible on Windows because the code path never ran there:
+
+| Reported | Actually true on that host |
+|---|---|
+| `mode: KERNEL_NATIVE`, "counters read from the kernel" | `/sys/fs/bpf` empty, `bpftool prog show` → Operation not permitted |
+| `meanKernelLatencyUs` tagged `MEASURED` | value was `null` |
+
+The second is the general lesson: the tag was computed from a **capability flag**
+rather than from the figure. A flag says what the host could do; it does not say
+whether a number was obtained. A true flag over an absent value produced
+`MEASURED: null`.
+
+Fixed by proving readability with an actual `bpftool prog show` and deriving the
+tag from the value — `latencyValue != null ? 'MEASURED' : 'UNAVAILABLE'` — plus a
+third state for the case that was being mislabelled. Re-verified on the same WSL2
+host after the fix:
+
+```
+mode                : KERNEL_TOOLING_PRESENT_UNREADABLE
+toolingPresent      : true      countersReadable : false
+meanKernelLatencyUs : null      tag              : UNAVAILABLE
+kernel integrity    : VERIFIED  941 symbols, 218 ms
+```
+
+Both facts now coexist without contradiction: the syscall table genuinely is
+readable, and the packet counters genuinely are not. Guard 85 fails if the tag is
+computed from the capability flag again.
+
+**This is why the audit was run rather than reasoned about.** Source inspection
+from Windows would have confirmed the fix and missed the defect, because the defect
+only existed on the platform the code claimed to support.
+
 The intake endpoint accepts only verified facts. A latency or packet figure in the
 body is **discarded** — tested by posting `meanKernelLatencyUs: 0.01` with
 `liveKernelCountersAvailable: true`, after which the platform's value remained
