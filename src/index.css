@@ -485,3 +485,17 @@ html[data-motion='calm'] .animate-spin {
 @media (prefers-reduced-motion: reduce) {
   .tac-hot-path { animation: none; opacity: 0.4; }
 }
+
+/* =========================================================================
+   TACTICAL C2 — incident mode
+   While an unacknowledged incident is live, panels that do not bear on it
+   step back. Opacity only, and the transition is dropped under reduced motion.
+   ========================================================================= */
+[data-incident='1'] .tac-nonessential {
+  opacity: 0.4;
+  transition: opacity 250ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-incident='1'] .tac-nonessential { transition: none; }
+}

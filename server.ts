@@ -5594,6 +5594,11 @@ app.get('/api/v1/fim/merkle-status', (req, res) => {
   res.json({ success: true, merkle: globalFimService.getMerkleTreeStatus() });
 });
 
+/** The Merkle root's inputs, so the console can rebuild and verify the tree itself. */
+app.get('/api/v1/fim/merkle-inputs', (_req, res) => {
+  res.json({ success: true, ...globalFimService.getMerkleInputs() });
+});
+
 // =============================================================================
 // SECTION 5: FULL SITE & WEB APPLICATION TELEMETRY & ATTACK SURVEILLANCE (v6.0)
 // =============================================================================
@@ -7398,6 +7403,35 @@ app.post('/api/v1/tripwire/unprotect', access.requireRole('ADMIN'), (req, res) =
   access.audit(req, 'TRIPWIRE_UNPROTECT', 'reason' in r ? 'FAILURE' : 'SUCCESS', String(req.body?.dir ?? ''), 'reason' in r ? { reason: r.reason } : { removed: r.removed, kept: r.kept });
   if ('reason' in r) return res.status(400).json({ success: false, error: 'REFUSED', message: r.reason });
   return res.json({ success: true, ...r });
+});
+
+/**
+ * INCIDENT ACKNOWLEDGEMENT. An incident is keyed by the timestamp of its first critical
+ * event. Acknowledging is shared — every operator's banner shows who took it — and
+ * audited. Held in memory: after a restart an incident still in progress simply asks to
+ * be acknowledged again, which is the safe direction.
+ */
+const incidentAcks = new Map<string, { by: string; at: string }>();
+
+app.get('/api/v1/incidents/ack', (req, res) => {
+  const since = String(req.query.since ?? '');
+  res.json({ success: true, ack: incidentAcks.get(since) ?? null });
+});
+
+app.post('/api/v1/incidents/ack', (req, res) => {
+  const since = typeof req.body?.since === 'string' ? req.body.since : '';
+  if (!/^\d{4}-\d{2}-\d{2}T/.test(since)) return res.status(400).json({ success: false, error: 'INVALID_SINCE' });
+  const by = req.principal?.kind === 'OPERATOR' ? req.principal.name : 'api-key';
+  const existing = incidentAcks.get(since);
+  if (existing) return res.json({ success: true, ack: existing });
+  const ack = { by, at: new Date().toISOString() };
+  incidentAcks.set(since, ack);
+  while (incidentAcks.size > 200) incidentAcks.delete(incidentAcks.keys().next().value as string);
+  access.audit(req, 'INCIDENT_ACKNOWLEDGED', 'SUCCESS', since, {
+    criticalEvents: Number(req.body?.count) || null,
+    topSource: typeof req.body?.topIp === 'string' ? req.body.topIp.slice(0, 64) : null
+  });
+  return res.json({ success: true, ack });
 });
 
 /** LAN watch: device inventory with NEW/BASELINE/APPROVED state, gateway bindings, events. */

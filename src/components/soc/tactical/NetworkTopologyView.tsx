@@ -4,6 +4,7 @@ import {
   Maximize2, Plus, Minus, Move, ShieldOff
 } from 'lucide-react';
 import type { AssetRow } from './useAssets';
+import type { TwinState } from './digitalTwin';
 
 /**
  * NETWORK TOPOLOGY — your network as relationships, pannable and zoomable.
@@ -67,6 +68,8 @@ interface Node {
   isolated: boolean;
   /** Why this node is on a crimson path, when it is. */
   hot?: string;
+  /** Digital-twin projection for this device, in the wargame environment only. */
+  twin?: TwinState;
 }
 
 interface Edge {
@@ -76,6 +79,8 @@ interface Edge {
   width: number;
   dashed: boolean;
   hot?: boolean;
+  /** A projected attack path to an EXPOSED device (simulation only). */
+  projected?: boolean;
 }
 
 const TONE = {
@@ -116,7 +121,7 @@ function classify(n: TopoNeighbour): { icon: React.ElementType; en: string; ar: 
   return { icon: HelpCircle, en: 'UNCLASSIFIED', ar: 'غير مصنّف' };
 }
 
-function inCidr(ip: string, cidr: string): boolean {
+export function inCidr(ip: string, cidr: string): boolean {
   const m = /^((?:\d{1,3}\.){3}\d{1,3})\/(\d{1,2})$/.exec(cidr);
   if (!m) return false;
   const bits = Number(m[2]);
@@ -144,8 +149,13 @@ export const NetworkTopologyView: React.FC<{
    * here — a path turns red only when an address on it is named by one of those.
    */
   hot?: ReadonlyMap<string, string>;
+  /**
+   * Digital-twin states by address. Supplied only in the wargame environment, and drawn
+   * in amber and dashes so a projection can never be read as a live condition.
+   */
+  twin?: ReadonlyMap<string, TwinState>;
   className?: string;
-}> = ({ assets, isAr, onSelectAsset, hot, className }) => {
+}> = ({ assets, isAr, onSelectAsset, hot, twin, className }) => {
   const svgRef = React.useRef<SVGSVGElement>(null);
   const [vb, setVb] = React.useState<ViewBox>(BASE);
   const [selected, setSelected] = React.useState<Node | null>(null);
@@ -181,7 +191,8 @@ export const NetworkTopologyView: React.FC<{
         asset: h,
         openPorts: [],
         isolated: h.isolated,
-        hot: h.primaryIp ? hot?.get(h.primaryIp) : undefined
+        hot: h.primaryIp ? hot?.get(h.primaryIp) : undefined,
+        twin: h.primaryIp ? twin?.get(h.primaryIp) : undefined
       });
 
       const segments = h.posture?.segments ?? [];
@@ -255,7 +266,8 @@ export const NetworkTopologyView: React.FC<{
             neighbour: n,
             openPorts: ports,
             isolated: false,
-            hot: hot?.get(n.ip)
+            hot: hot?.get(n.ip),
+            twin: twin?.get(n.ip)
           });
           const devHot = hot?.has(n.ip) ?? false;
           es.push({
@@ -266,7 +278,8 @@ export const NetworkTopologyView: React.FC<{
             // Dashed where the ports are unknown, so an unexamined link reads as
             // provisional rather than as a confirmed clean path.
             dashed: !devHot && (!n.sweepState || n.sweepState === 'NOT_IN_RANGE'),
-            hot: devHot
+            hot: devHot,
+            projected: twin?.get(n.ip) === 'EXPOSED'
           });
         });
       });
@@ -275,7 +288,7 @@ export const NetworkTopologyView: React.FC<{
     // Crimson paths last, so they are never painted under a quiet one.
     es.sort((x, y) => Number(Boolean(x.hot)) - Number(Boolean(y.hot)));
     return { nodes: ns, edges: es };
-  }, [hosts, isAr, hot]);
+  }, [hosts, isAr, hot, twin]);
 
   const byId = React.useMemo(() => new Map(nodes.map(n => [n.id, n])), [nodes]);
 
@@ -473,6 +486,9 @@ export const NetworkTopologyView: React.FC<{
               {e.hot && (
                 <path d={d} fill="none" stroke={TONE.hot} strokeWidth={7} filter="url(#nt-glow)" className="tac-hot-path" />
               )}
+              {e.projected && (
+                <path d={d} fill="none" stroke="#fbbf24" strokeWidth={2.5} strokeDasharray="8 6" opacity={0.9} />
+              )}
               <path
                 d={d}
                 fill="none"
@@ -526,6 +542,23 @@ export const NetworkTopologyView: React.FC<{
                   opacity={isSel ? 0.9 : 0.5}
                   filter="url(#nt-glow)"
                 />
+              )}
+
+              {/* Twin projection: an amber (exposed) or slate (unknown) dashed outline around
+                  the plate, plus a tag. Dashes keep it visibly a projection, never a state. */}
+              {n.twin && n.twin !== 'CLEAR' && (
+                <>
+                  <path
+                    d={`M ${cut - 1} -6 H ${w + 6} V ${h - cut + 1} L ${w - cut + 1} ${h + 6} H -6 V ${cut - 1}Z`}
+                    fill="none"
+                    stroke={n.twin === 'EXPOSED' ? '#fbbf24' : '#94a3b8'}
+                    strokeWidth={1.4}
+                    strokeDasharray="5 4"
+                  />
+                  <text x={w} y={-10} textAnchor="end" fontFamily="var(--font-mono)" fontSize="10" fontWeight="bold" fill={n.twin === 'EXPOSED' ? '#fbbf24' : '#94a3b8'}>
+                    {n.twin === 'EXPOSED' ? (isAr ? 'مكشوف · محاكاة' : 'EXPOSED · SIM') : isAr ? 'مجهول' : 'UNKNOWN'}
+                  </text>
+                </>
               )}
 
               {/* Chamfered plate, which is this platform's panel language. */}

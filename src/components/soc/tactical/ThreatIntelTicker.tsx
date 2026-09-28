@@ -47,7 +47,7 @@ export const ThreatIntelTicker: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, 
 
   return (
     <div
-      className="tac-ticker-host relative z-20 flex h-6 shrink-0 items-center gap-2 border-b border-cyan-900/50 bg-[#030712]/70 ps-2 backdrop-blur-2xl"
+      className="tac-ticker-host tac-nonessential relative z-20 flex h-6 shrink-0 items-center gap-2 border-b border-cyan-900/50 bg-[#030712]/70 ps-2 backdrop-blur-2xl"
       role="region"
       aria-label={isAr ? 'مؤشّرات الاختراق' : 'Threat indicators'}
     >

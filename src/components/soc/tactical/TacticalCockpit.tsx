@@ -16,6 +16,17 @@ import { useContainment } from './useContainment';
 import { useLanWatch } from './useLanWatch';
 import { useTripwire } from './useTripwire';
 import { TripwirePanel } from './TripwirePanel';
+import { MerkleTreePanel } from './MerkleTreePanel';
+import { useIncidentMode } from './useIncidentMode';
+import { IncidentBanner } from './IncidentBanner';
+import { TwinPanel } from './TwinPanel';
+import { WallLauncher } from './WallLauncher';
+import { postWall, useWallChannel } from './wallChannel';
+import { projectExposure, scenarioForPhase } from './digitalTwin';
+import type { PhaseId } from './useWargames';
+
+/** three.js is only fetched when the 3D view is first opened. */
+const NetworkTopology3D = React.lazy(() => import('./NetworkTopology3D').then(m => ({ default: m.NetworkTopology3D })));
 import { IpDossierContext, IpLink } from './ipDossier';
 import { IpDossierDrawer } from './IpDossierDrawer';
 import { OperatorBadge } from './OperatorBadge';
@@ -115,7 +126,20 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
   const trip = useTripwire();
   /** The address whose dossier is open. Any IpLink in the cockpit sets it. */
   const [dossierIp, setDossierIp] = React.useState<string | null>(null);
-  const dossier = React.useMemo(() => ({ open: (ip: string) => setDossierIp(ip) }), []);
+  // Selections travel to every wall screen, and wall selections come back here.
+  const dossier = React.useMemo(
+    () => ({
+      open: (ip: string) => {
+        setDossierIp(ip);
+        postWall({ type: 'select-ip', ip });
+      }
+    }),
+    []
+  );
+  useWallChannel(msg => {
+    if (msg.type === 'select-ip') setDossierIp(msg.ip);
+    if (msg.type === 'close-dossier') setDossierIp(null);
+  });
   const { operator, can } = useOperator();
   /** VIEWERs see containment controls disabled, with the reason, rather than refused on click. */
   const canAct = can('ANALYST');
@@ -124,6 +148,9 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
   const [utc, setUtc] = React.useState(() => new Date().toISOString());
   const [sortBy, setSortBy] = React.useState<SortKey>('TIME');
   const [critOnly, setCritOnly] = React.useState(false);
+  /** Condition red: on only while a real critical run or a real containment is live. */
+  const inc = useIncidentMode(d.alerts, c.records);
+  const incidentLoud = inc.active && !inc.ack;
   const [selectedAsset, setSelectedAsset] = React.useState<AssetRow | null>(null);
   /**
    * Which theatre is on stage.
@@ -139,7 +166,7 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
    * "how many do I have" and "which expose SMB". Those are questions about a set, and a
    * set is read as a list. Shipping only the graph left half the inventory unreadable.
    */
-  const [netView, setNetView] = React.useState<'GRAPH' | 'TABLE'>('GRAPH');
+  const [netView, setNetView] = React.useState<'GRAPH' | '3D' | 'TABLE'>('GRAPH');
   const [workspace, setWorkspace] = React.useState<ToolId | null>(null);
   /** The pending isolation, awaiting the two-step confirmation. */
   const [isoReq, setIsoReq] = React.useState<IsolationRequest | null>(null);
@@ -214,6 +241,32 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
     for (const x of c.active) if (!x.seeded) m.set(x.ip, 'contained');
     return m;
   }, [d.alerts, c.active]);
+
+  /** HIGH/CRITICAL alerts per source address in the last ten minutes: the 3D view's crimson flow. */
+  const alertCounts = React.useMemo(() => {
+    const cutoff = Date.now() - 10 * 60_000;
+    const m = new Map<string, number>();
+    for (const x of d.alerts) {
+      if (x.srcIp && /CRITICAL|HIGH/.test(x.severity) && Date.parse(x.at) >= cutoff) m.set(x.srcIp, (m.get(x.srcIp) ?? 0) + 1);
+    }
+    return m;
+  }, [d.alerts]);
+
+  /**
+   * Digital twin, wargame environment only. Follows the running phase until the operator
+   * picks a scenario to preview.
+   */
+  const [twinPick, setTwinPick] = React.useState<PhaseId | null>(null);
+  const twin = React.useMemo(
+    () => projectExposure(fleet.assets, twinPick ?? scenarioForPhase(w.activePhase)),
+    [fleet.assets, twinPick, w.activePhase]
+  );
+  const twinMap = React.useMemo(() => new Map(twin.rows.map(r => [r.ip, r.state] as const)), [twin]);
+
+  const lanStates = React.useMemo(
+    () => new Map((lan.status?.devices ?? []).map(dev => [dev.mac.toLowerCase(), dev.state] as const)),
+    [lan.status]
+  );
 
   /**
    * The tool index. Each badge is a live figure so the list shows state without being
@@ -309,7 +362,19 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
 
   return (
     <IpDossierContext.Provider value={dossier}>
-    <div className="fixed inset-0 z-0 flex h-screen w-screen flex-col overflow-hidden bg-black" dir={isAr ? 'rtl' : 'ltr'}>
+    <div
+      className="fixed inset-0 z-0 flex h-screen w-screen flex-col overflow-hidden bg-black"
+      dir={isAr ? 'rtl' : 'ltr'}
+      data-incident={incidentLoud ? '1' : undefined}
+    >
+      {/* Condition red: a static crimson edge, no flashing, until someone takes the incident. */}
+      {incidentLoud && (
+        <div
+          className="pointer-events-none absolute inset-0 z-30"
+          style={{ boxShadow: 'inset 0 0 140px rgba(244,63,94,0.22)' }}
+          aria-hidden
+        />
+      )}
       {/* ── LAYER 0: void, hex grid, CRT scanlines ──────────────────────────── */}
       <div className="absolute inset-0 z-0" aria-hidden>
         <div
@@ -335,8 +400,28 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
               isAr={isAr}
               onSelectAsset={setSelectedAsset}
               hot={hotIps}
+              twin={sim ? twinMap : undefined}
               className="h-full w-full"
             />
+          ) : netView === '3D' ? (
+            <React.Suspense
+              fallback={
+                <p className="grid h-full place-items-center font-mono text-xs tracking-widest text-cyan-400/70">
+                  {isAr ? 'جارٍ تحميل العرض ثلاثي الأبعاد…' : 'LOADING 3D VIEW…'}
+                </p>
+              }
+            >
+              <NetworkTopology3D
+                assets={fleet.assets}
+                hot={hotIps}
+                alertCounts={alertCounts}
+                lanStates={lanStates}
+                isAr={isAr}
+                onSelectIp={ip => dossier.open(ip)}
+                legendClassName="bottom-[200px] left-1/2 -translate-x-1/2"
+                className="h-full w-full"
+              />
+            </React.Suspense>
           ) : (
             <div className="h-full w-full px-3 pt-16 pb-24">
               <div className="mx-auto h-full max-w-5xl border border-cyan-500/30 bg-[#030712]/80 p-2.5 backdrop-blur-2xl">
@@ -445,6 +530,7 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
         </Readout>
         <HudLabel tone="cyan">UTC</HudLabel>
 
+        <WallLauncher isAr={isAr} />
         <OperatorBadge isAr={isAr} />
 
         {onExit && (
@@ -459,6 +545,16 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
 
       <ThreatIntelTicker a={a} isAr={isAr} />
 
+      <IncidentBanner
+        inc={inc}
+        isAr={isAr}
+        canAct={canAct}
+        onShowCritical={() => {
+          setCritOnly(true);
+          setSortBy('TIME');
+        }}
+      />
+
       {/* ── LAYER 2 · MAIN BAND ─────────────────────────────────────────────── */}
       <div className="relative z-10 grid min-h-0 flex-1 grid-cols-12 gap-2 p-2">
         {/* LEFT: kill chain in live mode, drill control in the sandbox */}
@@ -469,11 +565,14 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
           delay={0.04}
         >
           {sim ? (
-            <WargamePanel w={w} isAr={isAr} />
+            <>
+              <WargamePanel w={w} isAr={isAr} />
+              <TwinPanel twin={twin} isAr={isAr} onScenario={setTwinPick} />
+            </>
           ) : (
             <>
               <SectionHead tone="cyan">{isAr ? 'قياسات النواة وL7' : 'KERNEL · L7 DIALS'}</SectionHead>
-              <div className="mt-1.5 mb-2 shrink-0 border-b border-cyan-900/40 pb-2">
+              <div className="tac-nonessential mt-1.5 mb-2 shrink-0 border-b border-cyan-900/40 pb-2">
                 <TelemetryDials a={a} isAr={isAr} />
               </div>
               <SectionHead tone={critical.length ? 'crimson' : 'cyan'}>
@@ -505,6 +604,9 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
                 <span className="mx-1 h-4 w-px self-center bg-cyan-500/25" aria-hidden />
                 <CyberButton tone="cyan" size="sm" active={netView === 'GRAPH'} onClick={() => setNetView('GRAPH')}>
                   {isAr ? '[ رسم ]' : '[ GRAPH ]'}
+                </CyberButton>
+                <CyberButton tone="cyan" size="sm" active={netView === '3D'} onClick={() => setNetView('3D')}>
+                  {isAr ? '[ ثلاثي الأبعاد ]' : '[ 3D ]'}
                 </CyberButton>
                 <CyberButton tone="cyan" size="sm" active={netView === 'TABLE'} onClick={() => setNetView('TABLE')}>
                   {isAr ? '[ قائمة الأجهزة ]' : '[ DEVICE LIST ]'}
@@ -626,7 +728,7 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
           />
         </Glass>
 
-        <Glass className="col-span-5 px-2.5 py-1.5" amber={sim} reduce={reduce} delay={0.2}>
+        <Glass className="tac-nonessential col-span-5 px-2.5 py-1.5" amber={sim} reduce={reduce} delay={0.2}>
           <SectionHead
             tone="cyan"
             right={
@@ -672,6 +774,7 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
           {workspace === 'FIM' && (
             <div>
               <FimModule a={a} isAr={isAr} />
+              <MerkleTreePanel isAr={isAr} />
               <TripwirePanel t={trip} isAr={isAr} canAdmin={can('ADMIN')} />
             </div>
           )}
@@ -722,7 +825,10 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
           assets={fleet.assets}
           canAct={canAct}
           onRequestIsolate={canAct ? (ip, context) => setIsoReq({ ip, origin: 'IP DOSSIER', context }) : undefined}
-          onClose={() => setDossierIp(null)}
+          onClose={() => {
+            setDossierIp(null);
+            postWall({ type: 'close-dossier' });
+          }}
         />
       )}
 

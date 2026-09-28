@@ -9,6 +9,11 @@ const BACKEND = process.env.SD_BACKEND_ORIGIN || 'http://127.0.0.1:3000';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    // Pre-bundled at start-up. Discovered lazily instead, the first open of the 3D view
+    // made the dev server re-optimise and reload the whole page mid-session.
+    optimizeDeps: {
+      include: ['three', 'three/addons/controls/OrbitControls.js', 'three/addons/renderers/CSS2DRenderer.js'],
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

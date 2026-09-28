@@ -62,8 +62,10 @@ export const IpDossierDrawer: React.FC<{
   assets: AssetRow[];
   canAct: boolean;
   onRequestIsolate?: (ip: string, context: string | null) => void;
+  /** Wall screens: no containment controls — acting stays at the console. */
+  displayOnly?: boolean;
   onClose: () => void;
-}> = ({ ip, isAr, alerts, a, c, lan, assets, canAct, onRequestIsolate, onClose }) => {
+}> = ({ ip, isAr, alerts, a, c, lan, assets, canAct, onRequestIsolate, displayOnly = false, onClose }) => {
   const reduce = useReducedMotion() ?? false;
   const h = useIpHistory(ip, canAct);
   const [copied, setCopied] = React.useState(false);
@@ -297,7 +299,10 @@ export const IpDossierDrawer: React.FC<{
       </div>
 
       <div className="flex flex-wrap gap-2 border-t border-cyan-900/60 p-3">
-        {isolatable && (
+        {displayOnly && (
+          <p className="text-[11px] text-slate-400">{isAr ? 'شاشة عرض — الإجراءات من الكونسول.' : 'Display screen — act from the console.'}</p>
+        )}
+        {!displayOnly && isolatable && (
           <CyberButton
             tone="rose"
             size="sm"
@@ -308,7 +313,7 @@ export const IpDossierDrawer: React.FC<{
             [ ISOLATE_NODE ]
           </CyberButton>
         )}
-        {active && (
+        {!displayOnly && active && (
           <CyberButton
             tone="emerald"
             size="sm"
