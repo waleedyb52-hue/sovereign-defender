@@ -17,7 +17,8 @@ import { z } from 'zod';
  *   Scanners          /scanner/history           completed audits, ports, findings
  *   Threat intel      /forensics/threat-intel/iocs   the local IOC store
  *                     /soc/threat-intel/stats    external source breaker state
- *                     /honeypot/sessions         live decoy sessions
+ *                     /honeypot/sessions         decoy sessions (seeded fixtures on boot)
+ *                     /soc/deception/entrapped   actors the shadow router diverted
  *   ZTNA              /insider-zero-trust/actions    privileged actions and verdicts
  *                     /mitigation/status         progressive tiers, active hard bans
  *
@@ -112,14 +113,35 @@ const TiStats = z.object({
   degradedLookups: num
 });
 
+// The server sends each captured command as { cmd, time, decoyResponse, riskLevel }.
+// This was declared as string[], so every response failed validation and the source
+// was reported silent. Both shapes are accepted now.
+const CapturedCommand = z.union([
+  z.string(),
+  z.object({ cmd: z.string(), time: str, riskLevel: str }).passthrough()
+]);
+
 const Honeypot = z.object({
   totalTrappedCount: num,
   sessions: z.array(z.object({
     sessionId: z.string(), attackerIp: str, decoyService: str, connectedAt: str,
     lastActivityAt: str, keystrokesCount: num,
-    capturedCommands: z.array(z.string()).nullish(),
+    capturedCommands: z.array(CapturedCommand).nullish(),
     decoyCanariesTripped: z.array(z.any()).nullish(), status: str
   })).default([])
+});
+
+/** Actors the shadow router diverted from live traffic into a decoy. */
+const Entrapped = z.object({
+  entrapped: z.array(z.object({
+    sessionId: z.string(), actorIp: str, divertedAt: num, lastInteractionAt: num,
+    interactions: num, intentScoreAtDiversion: num, sophisticationBand: str,
+    techniques: z.array(z.string()).nullish(),
+    canaries: z.array(z.object({ kind: str, redeemed: z.boolean().nullish() }).partial()).nullish()
+  })).default([]),
+  stats: z.object({
+    router: z.object({ activeSessions: num, totalDiverted: num, totalInteractions: num }).partial().nullish()
+  }).partial().nullish()
 });
 
 const Ztna = z.object({
@@ -154,10 +176,13 @@ export function useArsenal(apiKey?: string, pollMs = 6000) {
     fim?: z.infer<typeof FimFiles>; merkle?: z.infer<typeof FimMerkle>;
     scans?: z.infer<typeof ScanHistory>; iocs?: z.infer<typeof Iocs>;
     ti?: z.infer<typeof TiStats>; hp?: z.infer<typeof Honeypot>;
+    dec?: z.infer<typeof Entrapped>;
     zt?: z.infer<typeof Ztna>; mit?: z.infer<typeof Mitigation>;
   }>({});
   const [missing, setMissing] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  /** Wall-clock of the last completed poll, so consumers can sample once per poll. */
+  const [loadedAt, setLoadedAt] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     const jobs = [
@@ -171,6 +196,7 @@ export function useArsenal(apiKey?: string, pollMs = 6000) {
       ['iocs', '/forensics/threat-intel/iocs', get(`${A}/forensics/threat-intel/iocs`, Iocs, apiKey)],
       ['ti', '/soc/threat-intel/stats', get(`${A}/soc/threat-intel/stats`, TiStats, apiKey)],
       ['hp', '/honeypot/sessions', get(`${A}/honeypot/sessions`, Honeypot, apiKey)],
+      ['dec', '/soc/deception/entrapped', get(`${A}/soc/deception/entrapped`, Entrapped, apiKey)],
       ['zt', '/insider-zero-trust/actions', get(`${A}/insider-zero-trust/actions`, Ztna, apiKey)],
       ['mit', '/mitigation/status', get(`${A}/mitigation/status`, Mitigation, apiKey)]
     ] as const;
@@ -187,6 +213,7 @@ export function useArsenal(apiKey?: string, pollMs = 6000) {
     setS(prev => ({ ...prev, ...next }));
     setMissing(failed);
     setLoading(false);
+    setLoadedAt(Date.now());
   }, [apiKey]);
 
   useEffect(() => {
@@ -211,6 +238,7 @@ export function useArsenal(apiKey?: string, pollMs = 6000) {
   return {
     loading,
     missing,
+    loadedAt,
     refresh: () => void load(),
 
     ebpf: {
@@ -231,11 +259,12 @@ export function useArsenal(apiKey?: string, pollMs = 6000) {
           : null
     },
 
+    // `rps` and `ebpfLatencyUs` from /traffic/waf/metrics are not forwarded: the service
+    // returns `38 + Math.random() * 12` and `0.38 + Math.random() * 0.12` for them. A real
+    // request rate is derived from deltas in useCyberDefendData (`derived.requestRate`).
     waf: {
-      rps: s.waf?.metrics.rps ?? null,
       totalRequests: s.waf?.metrics.totalRequests ?? null,
       dropped: s.waf?.metrics.droppedPackets ?? null,
-      latencyUs: s.waf?.metrics.ebpfLatencyUs ?? null,
       blockedSubnets: s.waf?.metrics.activeBlockedSubnetsCount ?? null,
       rules,
       rulesOn: rules.length ? rules.filter(r => r.on).length : null,
@@ -306,11 +335,31 @@ export function useArsenal(apiKey?: string, pollMs = 6000) {
         ip: h.attackerIp ?? null,
         service: h.decoyService ?? null,
         keystrokes: h.keystrokesCount ?? null,
-        commands: h.capturedCommands ?? [],
+        commands: (h.capturedCommands ?? []).map(c =>
+          typeof c === 'string'
+            ? { cmd: c, risk: null, time: null }
+            : { cmd: c.cmd, risk: c.riskLevel ?? null, time: c.time ?? null }
+        ),
         canaries: (h.decoyCanariesTripped ?? []).length,
         status: h.status ?? null,
-        at: h.connectedAt ?? null
-      }))
+        at: h.connectedAt ?? null,
+        lastAt: h.lastActivityAt ?? null
+      })),
+      shadow: {
+        diverted: s.dec?.stats?.router?.totalDiverted ?? null,
+        interactions: s.dec?.stats?.router?.totalInteractions ?? null,
+        actors: (s.dec?.entrapped ?? []).map(e => ({
+          id: e.sessionId,
+          ip: e.actorIp ?? null,
+          divertedAt: e.divertedAt ?? null,
+          lastAt: e.lastInteractionAt ?? null,
+          interactions: e.interactions ?? null,
+          intent: e.intentScoreAtDiversion ?? null,
+          band: e.sophisticationBand ?? null,
+          technique: e.techniques?.[0] ?? null,
+          canariesRedeemed: (e.canaries ?? []).filter(c => c.redeemed).length
+        }))
+      }
     },
 
     ztna: {

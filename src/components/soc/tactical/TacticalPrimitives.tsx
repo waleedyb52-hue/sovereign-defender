@@ -210,7 +210,7 @@ export const Readout: React.FC<{
 /** Stencil label above a readout. */
 export const HudLabel: React.FC<{ children: React.ReactNode; tone?: Tone }> = ({ children, tone = 'neutral' }) => (
   <span
-    className="text-[8px] font-medium tracking-[0.18em] uppercase"
+    className="text-[10px] font-medium tracking-[0.18em] uppercase"
     style={{ color: `${TONE_HEX[tone]}99`, fontFamily: 'var(--font-mono)' }}
   >
     {children}
@@ -311,7 +311,7 @@ export const RadialGauge: React.FC<{
         <div className="absolute inset-0 grid place-items-center">
           <div>
             <HudValue v={value} tone={tone} glow className="text-[13px] font-bold" reason={reason} />
-            {unit && value != null && <p className="text-[7px] text-slate-600">{unit}</p>}
+            {unit && value != null && <p className="text-[10px] text-slate-400">{unit}</p>}
           </div>
         </div>
       </div>

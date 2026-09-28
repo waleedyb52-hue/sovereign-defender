@@ -59,7 +59,7 @@ export const HudButton: React.FC<{
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className="w-full px-2 py-1 text-[8px] tracking-[0.14em] transition-colors disabled:cursor-not-allowed"
+      className="w-full px-2 py-1 text-[11px] tracking-[0.14em] transition-colors disabled:cursor-not-allowed"
       style={{
         fontFamily: 'var(--font-mono)',
         clipPath: 'polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)',
@@ -79,15 +79,24 @@ interface Props {
   isAr: boolean;
   /** Names the feed in the empty state so a quiet rail is explained. */
   endpoint?: string;
-  onContain?: (action: 'ISOLATE' | 'BLACKHOLE' | 'TARPIT', actorIp: string) => void;
+  onContain?: (action: ContainAction, actorIp: string) => void;
+  /**
+   * Actions the backend can actually perform. TARPIT defaults to unsupported: there is
+   * no route that engages a tarpit by address (only /soc/sensors/tarpit/release), and
+   * the button used to call contain-ip — a full blackhole — while saying TARPIT.
+   */
+  supported?: ReadonlyArray<ContainAction>;
   chainsUnavailable?: boolean;
 }
+
+export type ContainAction = 'ISOLATE' | 'BLACKHOLE' | 'TARPIT';
 
 export const KillChainRail: React.FC<Props> = ({
   chains,
   isAr,
   endpoint = '/soc/attack-chains',
   onContain,
+  supported = ['ISOLATE', 'BLACKHOLE'],
   chainsUnavailable = false
 }) => {
   const [selected, setSelected] = React.useState(0);
@@ -113,7 +122,7 @@ export const KillChainRail: React.FC<Props> = ({
               key={c.sessionId}
               type="button"
               onClick={() => setSelected(i)}
-              className="px-1.5 py-0.5 text-[7px] transition-colors"
+              className="px-1.5 py-0.5 text-[10px] transition-colors"
               style={{
                 fontFamily: 'var(--font-mono)',
                 border: `1px solid ${i === selected ? CYAN + '88' : 'rgba(255,255,255,0.08)'}`,
@@ -131,22 +140,22 @@ export const KillChainRail: React.FC<Props> = ({
       {chain ? (
         <div className="mb-2 border-b pb-2" style={{ borderColor: `${CYAN}1a` }}>
           <div className="flex items-baseline justify-between gap-2">
-            <Readout className="text-[9px] text-rose-400">{chain.actorIp ?? (isAr ? 'مصدر غير معرّف' : 'unidentified actor')}</Readout>
+            <Readout className="text-[11px] text-rose-400">{chain.actorIp ?? (isAr ? 'مصدر غير معرّف' : 'unidentified actor')}</Readout>
             {chain.threatScore != null ? (
               <Readout className="text-[10px] font-bold text-rose-500">{chain.threatScore}</Readout>
             ) : (
-              <span className="text-[9px] text-slate-700" title={isAr ? 'لم تُصدر درجة' : 'no score issued'}>
+              <span className="text-[11px] text-slate-500" title={isAr ? 'لم تُصدر درجة' : 'no score issued'}>
                 —
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-[7px] text-slate-600" style={{ fontFamily: 'var(--font-mono)' }}>
+          <p className="mt-0.5 text-[10px] text-slate-600" style={{ fontFamily: 'var(--font-mono)' }}>
             {chain.stages.length}/{CHAIN.length} {isAr ? 'مرحلة مرصودة' : 'STAGES OBSERVED'}
           </p>
         </div>
       ) : (
         <div className="mb-2 border-b pb-2" style={{ borderColor: `${CYAN}1a` }}>
-          <p className="text-[8px] leading-relaxed text-slate-500">
+          <p className="text-[11px] leading-relaxed text-slate-500">
             {chainsUnavailable
               ? isAr
                 ? `تعذّر قراءة ${endpoint} — لا حكم على وجود سلاسل.`
@@ -192,24 +201,24 @@ export const KillChainRail: React.FC<Props> = ({
               <div className="flex items-baseline gap-1.5">
                 <Icon className="h-2.5 w-2.5 shrink-0" style={{ color: tone }} aria-hidden />
                 <span
-                  className="text-[8px] font-semibold tracking-[0.1em]"
+                  className="text-[11px] font-semibold tracking-[0.1em]"
                   style={{ color: hit ? '#fda4af' : isIntercept ? '#fcd34d' : '#8aa4b8', fontFamily: 'var(--font-mono)' }}
                 >
                   {isAr ? s.labelAr : s.labelEn}
                 </span>
                 {stage?.technique && (
-                  <Readout className="ms-auto text-[7px] text-rose-400/80">{stage.technique}</Readout>
+                  <Readout className="ms-auto text-[10px] text-rose-400/80">{stage.technique}</Readout>
                 )}
               </div>
 
               {/* The control that owns this stage */}
               <div className="mt-0.5 flex items-center gap-1">
                 <DefIcon className="h-2 w-2 shrink-0" style={{ color: `${EMERALD}aa` }} aria-hidden />
-                <span className="truncate text-[6.5px] text-slate-500">{isAr ? s.defenceAr : s.defenceEn}</span>
+                <span className="truncate text-[10px] text-slate-500">{isAr ? s.defenceAr : s.defenceEn}</span>
               </div>
 
               {isIntercept && (
-                <p className="mt-0.5 text-[6.5px] tracking-[0.12em] text-amber-400" style={{ fontFamily: 'var(--font-mono)' }}>
+                <p className="mt-0.5 text-[10px] tracking-[0.12em] text-amber-400" style={{ fontFamily: 'var(--font-mono)' }}>
                   {isAr ? '◂ نقطة الاعتراض' : '◂ INTERCEPT POINT'}
                 </p>
               )}
@@ -220,11 +229,12 @@ export const KillChainRail: React.FC<Props> = ({
 
       {/* Containment actions */}
       <div className="mt-2 space-y-1 border-t pt-2" style={{ borderColor: `${CYAN}1a` }}>
-        <p className="mb-1 text-[6.5px] tracking-[0.16em] text-slate-600" style={{ fontFamily: 'var(--font-mono)' }}>
+        <p className="mb-1 text-[10px] tracking-[0.16em] text-slate-600" style={{ fontFamily: 'var(--font-mono)' }}>
           {isAr ? 'إجراءات الاحتواء' : 'CONTAINMENT'}
         </p>
         {(['ISOLATE', 'BLACKHOLE', 'TARPIT'] as const).map(action => {
-          const armed = Boolean(chain?.actorIp && onContain);
+          const can = supported.includes(action);
+          const armed = can && Boolean(chain?.actorIp && onContain);
           return (
             <HudButton
               key={action}
@@ -233,9 +243,13 @@ export const KillChainRail: React.FC<Props> = ({
               title={
                 armed
                   ? undefined
-                  : isAr
-                    ? 'يتطلّب سلسلة مرصودة بعنوان مصدر محدّد'
-                    : 'requires an observed chain with an identified actor IP'
+                  : !can
+                    ? isAr
+                      ? 'لا مسار في الخادم يفعّل مصيدة الإبطاء لعنوان'
+                      : 'no backend route engages a tarpit for an address'
+                    : isAr
+                      ? 'يتطلّب سلسلة مرصودة بعنوان مصدر محدّد'
+                      : 'requires an observed chain with an identified actor IP'
               }
               onClick={armed ? () => onContain!(action, chain!.actorIp!) : undefined}
             >

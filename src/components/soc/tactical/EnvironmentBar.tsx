@@ -190,3 +190,59 @@ export const SimulationFrame: React.FC<{ isAr: boolean; drillActive: boolean; de
     </div>
   </>
 );
+
+/**
+ * Emergency frame while a host is contained — `.clauderules` §8.
+ *
+ * Crimson where the simulation frame is amber, and driven by the server's containment
+ * records rather than by the click that asked for isolation: the frame appears when the
+ * record is ACTIVE and goes when it is RELEASED, so a refused isolation draws nothing.
+ *
+ * Seeded demo records do not raise it. They are active from boot, and a frame that is
+ * always on is a frame the operator learns to stop seeing.
+ *
+ * Release sits on the frame itself, so it is reachable from any view and any mode.
+ */
+export const ContainmentFrame: React.FC<{
+  isAr: boolean;
+  ips: string[];
+  busyIp: string | null;
+  /** Absent for a VIEWER: the buttons stay visible, disabled, with the reason. */
+  onRelease?: (ip: string) => void;
+}> = ({ isAr, ips, busyIp, onRelease }) =>
+  ips.length === 0 ? null : (
+    <>
+      <div
+        className="pointer-events-none absolute inset-0 z-30 border-2"
+        style={{ borderColor: 'rgba(244,63,94,0.6)', boxShadow: 'inset 0 0 70px rgba(244,63,94,0.10)' }}
+        aria-hidden
+      />
+      <div className="pointer-events-none absolute inset-x-0 bottom-9 z-30 flex justify-center">
+        <div
+          role="status"
+          className="pointer-events-auto flex flex-wrap items-center gap-2 border border-rose-500/70 bg-rose-950/85 px-3 py-1 backdrop-blur-xl"
+          style={{ clipPath: 'polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)' }}
+        >
+          <span
+            className="font-mono text-[10px] font-bold tracking-widest text-rose-300 uppercase"
+            style={{ textShadow: '0 0 10px rgba(244,63,94,0.9)' }}
+          >
+            {isAr ? `${ips.length} مضيف محتوى` : `${ips.length} HOST${ips.length > 1 ? 'S' : ''} CONTAINED`}
+          </span>
+          {ips.slice(0, 3).map(ip => (
+            <CyberButton
+              key={ip}
+              tone="emerald"
+              size="sm"
+              disabled={!onRelease || busyIp === ip}
+              title={!onRelease ? (isAr ? 'يتطلّب دور محلّل' : 'requires the ANALYST role') : isAr ? `رفع العزل عن ${ip}` : `release ${ip}`}
+              onClick={onRelease ? () => onRelease(ip) : undefined}
+            >
+              {busyIp === ip ? '…' : `${isAr ? 'فك' : 'RELEASE'} ${ip}`}
+            </CyberButton>
+          ))}
+          {ips.length > 3 && <span className="font-mono text-[10px] text-rose-300/80">+{ips.length - 3}</span>}
+        </div>
+      </div>
+    </>
+  );

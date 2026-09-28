@@ -2,6 +2,7 @@ import React from 'react';
 import { Cpu, ShieldCheck, FileLock2, Radar, Globe2, Lock } from 'lucide-react';
 import { ArsenalCard, CyberButton } from './CyberButton';
 import type { useArsenal } from './useArsenal';
+import type { Containment } from './useContainment';
 
 type Arsenal = ReturnType<typeof useArsenal>;
 
@@ -15,7 +16,7 @@ type Arsenal = ReturnType<typeof useArsenal>;
  */
 
 const Label: React.FC<{ children: React.ReactNode; tone?: string }> = ({ children, tone = '#22d3ee' }) => (
-  <span className="font-mono text-[6px] tracking-widest uppercase" style={{ color: tone, opacity: 0.75 }}>
+  <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: tone, opacity: 0.75 }}>
     {children}
   </span>
 );
@@ -24,14 +25,14 @@ const Val: React.FC<{ v: number | string | null; unit?: string; tone?: string; r
   v, unit, tone = '#22d3ee', reason, glow = true
 }) =>
   v == null ? (
-    <span className="font-mono text-[9px] text-slate-700" title={reason}>—</span>
+    <span className="font-mono text-[11px] text-slate-500" title={reason}>—</span>
   ) : (
     <span
-      className="font-mono text-[10px] font-bold tabular-nums"
+      className="font-mono text-xs font-bold tabular-nums"
       style={{ color: tone, textShadow: glow ? `0 0 8px ${tone}cc` : undefined }}
     >
       {typeof v === 'number' ? v.toLocaleString('en-US') : v}
-      {unit && <span className="ms-0.5 text-[6px] opacity-60">{unit}</span>}
+      {unit && <span className="ms-0.5 text-[10px] opacity-60">{unit}</span>}
     </span>
   );
 
@@ -44,8 +45,8 @@ const Row: React.FC<{ k: React.ReactNode; children: React.ReactNode }> = ({ k, c
 
 const Empty: React.FC<{ endpoint: string; note: string }> = ({ endpoint, note }) => (
   <div className="py-2">
-    <p className="font-mono text-[7px] leading-relaxed text-slate-500">{note}</p>
-    <p className="mt-0.5 font-mono text-[6.5px] text-slate-700">{endpoint}</p>
+    <p className="font-mono text-[10px] leading-relaxed text-slate-500">{note}</p>
+    <p className="mt-0.5 font-mono text-[10px] text-slate-500">{endpoint}</p>
   </div>
 );
 
@@ -61,7 +62,7 @@ const Empty: React.FC<{ endpoint: string; note: string }> = ({ endpoint, note })
 const RingZeroSpark: React.FC<{ samples: number[]; isAr: boolean }> = ({ samples, isAr }) => {
   if (samples.length < 2) {
     return (
-      <p className="py-2 font-mono text-[6.5px] leading-relaxed text-slate-600">
+      <p className="py-2 font-mono text-[10px] leading-relaxed text-slate-400">
         {isAr ? 'عيّنتان على الأقل لازمتان لرسم اتجاه.' : 'a trend needs at least two samples.'}
       </p>
     );
@@ -104,7 +105,7 @@ export const EbpfModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr })
       defaultOpen
     >
       {emu && (
-        <p className="mb-1.5 font-mono text-[6.5px] leading-relaxed text-amber-400">
+        <p className="mb-1.5 font-mono text-[10px] leading-relaxed text-amber-400">
           {isAr
             ? `المشغّل يُبلّغ ${a.ebpf.driverMode} — العدّادات محاكاة لا قياس نواة.`
             : `driver reports ${a.ebpf.driverMode} — counters are emulated, not kernel measurements.`}
@@ -122,7 +123,7 @@ export const EbpfModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr })
       <Row k={isAr ? 'قائمة الحجب' : 'BLACKLIST MAP'}><Val v={a.ebpf.blacklist} /></Row>
       <Label>{isAr ? 'كفاءة الحلقة صفر' : 'RING-0 EFFICIENCY'}</Label>
       <RingZeroSpark samples={samples} isAr={isAr} />
-      <p className="mt-1 truncate font-mono text-[6px] text-slate-600" title={a.ebpf.pinnedMap ?? undefined}>
+      <p className="mt-1 truncate font-mono text-[10px] text-slate-400" title={a.ebpf.pinnedMap ?? undefined}>
         {a.ebpf.iface ?? '—'} · {a.ebpf.pinnedMap ?? '—'}
       </p>
     </ArsenalCard>
@@ -150,7 +151,7 @@ export const WafModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }) 
             style={{ background: r.on ? '#34d399' : '#475569', boxShadow: r.on ? '0 0 4px #34d399' : 'none' }}
             aria-hidden
           />
-          <span className="truncate font-mono text-[6px] text-slate-400" title={r.name}>
+          <span className="truncate font-mono text-[10px] text-slate-400" title={r.name}>
             {r.name.replace(/([A-Z])/g, ' $1').replace(/^ /, '').toUpperCase()}
           </span>
         </div>
@@ -178,20 +179,20 @@ export const WafModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }) 
         <div className="mt-1 max-h-24 space-y-0.5 overflow-y-auto">
           {a.waf.analyses.slice(0, 20).map((an, i) => (
             <div key={an.id ?? i} className="flex items-baseline gap-1.5">
-              <span className="w-10 shrink-0 font-mono text-[6px] text-slate-600">{an.at?.slice(11, 19) ?? '—'}</span>
+              <span className="w-10 shrink-0 font-mono text-[10px] text-slate-400">{an.at?.slice(11, 19) ?? '—'}</span>
               <span
-                className="w-12 shrink-0 font-mono text-[6px]"
+                className="w-12 shrink-0 font-mono text-[10px]"
                 style={{ color: /BLOCK|MALIC|THREAT/i.test(an.verdict ?? '') ? '#fb7185' : '#34d399' }}
               >
                 {an.verdict?.slice(0, 8) ?? '—'}
               </span>
-              <span className="min-w-0 flex-1 truncate font-mono text-[6px] text-slate-400">
+              <span className="min-w-0 flex-1 truncate font-mono text-[10px] text-slate-400">
                 {an.threatType ?? an.excerpt ?? '—'}
               </span>
               {an.confidence != null ? (
-                <span className="shrink-0 font-mono text-[6.5px] font-bold text-cyan-400">{an.confidence}%</span>
+                <span className="shrink-0 font-mono text-[10px] font-bold text-cyan-400">{an.confidence}%</span>
               ) : (
-                <span className="shrink-0 font-mono text-[6.5px] text-slate-700" title={isAr ? 'لم تُصدر ثقة' : 'no confidence issued'}>
+                <span className="shrink-0 font-mono text-[10px] text-slate-500" title={isAr ? 'لم تُصدر ثقة' : 'no confidence issued'}>
                   —
                 </span>
               )}
@@ -254,7 +255,7 @@ export const FimModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }) 
         />
       ) : (
         <>
-          <p className="truncate font-mono text-[6px] text-slate-500" title={files[0]?.path}>
+          <p className="truncate font-mono text-[10px] text-slate-500" title={files[0]?.path}>
             {isAr ? 'الجذر المُراقَب: ' : 'MONITORED ROOT: '}
             {files[0]?.path.replace(/[\\/][^\\/]+$/, '') ?? '—'}
           </p>
@@ -266,7 +267,7 @@ export const FimModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }) 
             {lines.map(({ key, f }) => {
               const ok = f.status == null || /INTACT|OK|VERIFIED/i.test(f.status);
               return (
-                <div key={key} className="flex items-baseline gap-1 whitespace-nowrap font-mono text-[6px] leading-[1.35]">
+                <div key={key} className="flex items-baseline gap-1 whitespace-nowrap font-mono text-[10px] leading-[1.35]">
                   <span className="text-cyan-400/60">SHA256</span>
                   <span className="text-slate-500">{f.sha256 ? f.sha256.slice(0, 16) : '—'}</span>
                   <span className="truncate text-slate-300">{f.name}</span>
@@ -281,7 +282,7 @@ export const FimModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }) 
             <Val v={a.fim.merkleRoot ? a.fim.merkleRoot.slice(0, 14) : null} reason={isAr ? 'لم يُحتسب بعد' : 'not yet calculated'} />
           </Row>
           <Row k={isAr ? 'أوراق الشجرة' : 'LEAF NODES'}><Val v={a.fim.merkleLeaves} /></Row>
-          <p className="mt-0.5 truncate font-mono text-[6px] text-slate-600" title={a.fim.algorithm ?? undefined}>
+          <p className="mt-0.5 truncate font-mono text-[10px] text-slate-400" title={a.fim.algorithm ?? undefined}>
             {a.fim.algorithm ?? '—'}
           </p>
         </>
@@ -317,16 +318,16 @@ export const ScannerModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr
           return (
             <div key={String(row.id ?? i)} className="border-b border-white/[0.04] pb-1">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="truncate font-mono text-[6.5px] text-slate-300">{String(row.target ?? '—')}</span>
-                <span className="font-mono text-[6px] text-slate-600">
+                <span className="truncate font-mono text-[10px] text-slate-300">{String(row.target ?? '—')}</span>
+                <span className="font-mono text-[10px] text-slate-400">
                   {String(row.startedAt ?? '').slice(11, 19)}
                 </span>
               </div>
               <div className="flex gap-3">
-                <span className="font-mono text-[6px] text-cyan-400">
+                <span className="font-mono text-[10px] text-cyan-400">
                   {isAr ? 'منافذ' : 'PORTS'} {ports ?? '—'}
                 </span>
-                <span className="font-mono text-[6px] text-rose-400">
+                <span className="font-mono text-[10px] text-rose-400">
                   {isAr ? 'ثغرات' : 'FINDINGS'} {findings ?? '—'}
                 </span>
               </div>
@@ -354,14 +355,14 @@ export const IntelModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }
 
   return (
     <ArsenalCard
-      title={isAr ? 'استخبارات التهديد ومصائد العسل' : 'THREAT INTEL · HONEYPOTS'}
+      title={isAr ? 'استخبارات التهديد · مخزن IOC' : 'THREAT INTEL · IOC STORE'}
       icon={Globe2}
-      headline={<Val v={a.intel.honeypotTrapped} tone="#fbbf24" />}
+      headline={<Val v={a.missing.includes('/forensics/threat-intel/iocs') ? null : iocs.length} tone="#fb7185" />}
     >
       {/* Provenance first: this ticker is a local store, and the platform is
           zero-egress. Presenting it as a live external STIX/TAXII feed would
           contradict the sovereignty claim the platform makes elsewhere. */}
-      <p className="mb-1 font-mono text-[6px] leading-relaxed text-amber-400/90">
+      <p className="mb-1 font-mono text-[10px] leading-relaxed text-amber-400/90">
         {isAr
           ? `مخزن IOC محلّي. المصادر الخارجية مُهيّأة و${a.intel.totalLookups ?? 0} استعلام نُفِّذ — المنصّة صفر-خروج.`
           : `local IOC store. external sources configured, ${a.intel.totalLookups ?? 0} lookups performed — the platform is zero-egress.`}
@@ -370,14 +371,14 @@ export const IntelModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }
       {cur ? (
         <div className="border border-rose-900/50 bg-black/60 p-1.5">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="font-mono text-[7px] font-bold text-rose-400" style={{ textShadow: '0 0 8px rgba(225,29,72,0.8)' }}>
+            <span className="font-mono text-[10px] font-bold text-rose-400" style={{ textShadow: '0 0 8px rgba(225,29,72,0.8)' }}>
               {cur.type} · {cur.value}
             </span>
-            <span className="font-mono text-[8px] font-bold text-rose-500">{cur.score ?? '—'}</span>
+            <span className="font-mono text-[11px] font-bold text-rose-500">{cur.score ?? '—'}</span>
           </div>
-          <p className="mt-0.5 truncate font-mono text-[6px] text-slate-400">{cur.actor ?? '—'}</p>
-          <p className="truncate font-mono text-[6px] text-slate-500">{cur.family ?? '—'}</p>
-          <p className="mt-0.5 truncate font-mono text-[6px] text-cyan-400">{cur.technique ?? cur.tactic ?? '—'}</p>
+          <p className="mt-0.5 truncate font-mono text-[10px] text-slate-400">{cur.actor ?? '—'}</p>
+          <p className="truncate font-mono text-[10px] text-slate-500">{cur.family ?? '—'}</p>
+          <p className="mt-0.5 truncate font-mono text-[10px] text-cyan-400">{cur.technique ?? cur.tactic ?? '—'}</p>
           <div className="mt-1 flex gap-0.5" aria-hidden>
             {iocs.map((_, i) => (
               <span key={i} className="h-[2px] flex-1" style={{ background: i === tick ? '#e11d48' : 'rgba(255,255,255,0.08)' }} />
@@ -394,7 +395,7 @@ export const IntelModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }
           {a.intel.breakers.map(b => (
             <span
               key={b.source}
-              className="border px-1 py-[1px] font-mono text-[5.5px] tracking-wider"
+              className="border px-1 py-[1px] font-mono text-[10px] tracking-wider"
               style={{
                 borderColor: b.state === 'OPEN' ? 'rgba(225,29,72,0.5)' : 'rgba(22,78,99,0.6)',
                 color: b.state === 'OPEN' ? '#fb7185' : '#5c7484'
@@ -407,28 +408,8 @@ export const IntelModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }
         </div>
       </div>
 
-      <div className="mt-1.5 border-t border-cyan-900/40 pt-1.5">
-        <Label tone="#fbbf24">{isAr ? 'جلسات المصائد الحيّة' : 'LIVE DECOY SESSIONS'}</Label>
-        {a.intel.sessions.length === 0 ? (
-          <p className="mt-0.5 font-mono text-[6px] text-slate-600">
-            {isAr ? 'لا جلسات نشطة' : 'no active sessions'}
-          </p>
-        ) : (
-          <div className="mt-0.5 max-h-20 space-y-0.5 overflow-y-auto">
-            {a.intel.sessions.map(s => (
-              <div key={s.id} className="flex items-baseline gap-1.5">
-                <span className="h-1 w-1 shrink-0 animate-pulse rounded-full bg-amber-400" aria-hidden />
-                <span className="shrink-0 font-mono text-[6px] text-amber-400">{s.service ?? '—'}</span>
-                <span className="min-w-0 flex-1 truncate font-mono text-[6px] text-slate-400">{s.ip ?? '—'}</span>
-                <span className="shrink-0 font-mono text-[6px] text-slate-600">
-                  {s.keystrokes ?? '—'}
-                  {isAr ? ' ضغطة' : ' ks'}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Decoy sessions moved to HoneypotSensorGrid, which can tell a seeded fixture
+          from a live actor. Listed here they carried a pulsing "live" dot regardless. */}
     </ArsenalCard>
   );
 };
@@ -438,19 +419,22 @@ export const IntelModule: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a, isAr }
 export const ZtnaModule: React.FC<{
   a: Arsenal;
   isAr: boolean;
-  onIsolate?: (ip: string) => void;
-  busy?: boolean;
-  lastAction?: string | null;
-}> = ({ a, isAr, onIsolate, busy, lastAction }) => {
+  c: Containment;
+  /** False for a VIEWER: containment and release render disabled, with the reason. */
+  canAct?: boolean;
+  /** Opens the two-step confirmation. This module never contains anything directly. */
+  onRequestIsolate?: (ip: string) => void;
+}> = ({ a, isAr, c, canAct = true, onRequestIsolate }) => {
+  const roleNote = isAr ? 'يتطلّب دور محلّل' : 'requires the ANALYST role';
   const [target, setTarget] = React.useState('');
-  const valid = /^(\d{1,3}\.){3}\d{1,3}$/.test(target.trim());
+  const valid = /^(\d{1,3}\.){3}\d{1,3}$/.test(target.trim()) && target.trim().split('.').every(o => Number(o) <= 255);
 
   return (
     <ArsenalCard
       title={isAr ? 'الثقة الصفرية والحجر الآلي' : 'ZERO TRUST · AUTO QUARANTINE'}
       icon={Lock}
-      tone={a.ztna.pendingFrozen ? 'rose' : 'cyan'}
-      alert={Boolean(a.ztna.pendingFrozen)}
+      tone={a.ztna.pendingFrozen || c.active.some(r => !r.seeded) ? 'rose' : 'cyan'}
+      alert={Boolean(a.ztna.pendingFrozen) || c.active.some(r => !r.seeded)}
       headline={<Val v={a.ztna.activeHardBans} tone="#fb7185" />}
     >
       <Row k={isAr ? 'حجب صارم نشط' : 'ACTIVE HARD BANS'}><Val v={a.ztna.activeHardBans} tone="#fb7185" /></Row>
@@ -464,32 +448,75 @@ export const ZtnaModule: React.FC<{
       <div className="mt-1.5 border-t border-cyan-900/40 pt-1.5">
         <Label>{isAr ? 'أحداث صلاحيات مميّزة' : 'PRIVILEGED ACTIONS'}</Label>
         {a.ztna.actions.length === 0 ? (
-          <p className="mt-0.5 font-mono text-[6px] text-slate-600">{isAr ? 'لا أحداث' : 'none recorded'}</p>
+          <p className="mt-0.5 font-mono text-[10px] text-slate-400">{isAr ? 'لا أحداث' : 'none recorded'}</p>
         ) : (
           <div className="mt-0.5 max-h-20 space-y-1 overflow-y-auto">
             {a.ztna.actions.slice(0, 8).map(act => (
               <div key={act.id} className="border-b border-white/[0.04] pb-1">
                 <div className="flex items-baseline justify-between gap-1.5">
-                  <span className="truncate font-mono text-[6px] text-slate-300">{act.kind ?? '—'}</span>
+                  <span className="truncate font-mono text-[10px] text-slate-300">{act.kind ?? '—'}</span>
                   <span
-                    className="shrink-0 font-mono text-[7px] font-bold"
+                    className="shrink-0 font-mono text-[10px] font-bold"
                     style={{ color: (act.risk ?? 0) >= 80 ? '#fb7185' : '#fbbf24' }}
                   >
                     {act.risk ?? '—'}
                   </span>
                 </div>
-                <p className="truncate font-mono text-[5.5px] text-slate-500" title={act.target ?? undefined}>
+                <p className="truncate font-mono text-[10px] text-slate-500" title={act.target ?? undefined}>
                   {act.target ?? '—'}
                 </p>
-                <p className="font-mono text-[5.5px] text-cyan-400/70">{act.status ?? '—'}</p>
+                <p className="font-mono text-[10px] text-cyan-400/70">{act.status ?? '—'}</p>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Manual isolation. Armed only by a syntactically valid address, because the
-          alternative is a live containment control that fires on a typo. */}
+      {/* Active containments. Release lives beside the evidence, because every isolation
+          must be reversible from the surface that made it. */}
+      <div className="mt-1.5 border-t border-cyan-900/40 pt-1.5">
+        <Label tone="#fb7185">{isAr ? 'الاحتواءات النشطة' : 'ACTIVE CONTAINMENTS'}</Label>
+        {c.error ? (
+          <Empty endpoint="/soc/ebpf/containment-records" note={isAr ? 'المصدر لا يستجيب.' : 'source not responding.'} />
+        ) : c.active.length === 0 ? (
+          <p className="mt-0.5 font-mono text-[10px] text-slate-400">{isAr ? 'لا مضيف محتوى' : 'no host contained'}</p>
+        ) : (
+          <div className="mt-0.5 max-h-28 space-y-1 overflow-y-auto">
+            {c.active.map(r => (
+              <div key={r.id} className="flex items-center gap-1.5 border-b border-white/[0.04] pb-1">
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-baseline gap-1.5 font-mono text-[10px]" dir="ltr">
+                    <span className="text-rose-300">{r.ip}</span>
+                    {r.seeded && (
+                      <span
+                        className="border border-slate-600 px-1 text-[10px] text-slate-400"
+                        title={isAr ? 'سجلّ تجريبي مزروع عند الإقلاع' : 'demo record seeded at boot, not an observed containment'}
+                      >
+                        SEEDED
+                      </span>
+                    )}
+                  </p>
+                  <p className="truncate font-mono text-[10px] text-slate-400" title={r.reason ?? undefined}>
+                    {r.ioc ?? '—'} · {r.at?.slice(11, 19) ?? '—'}
+                  </p>
+                </div>
+                <CyberButton
+                  tone="emerald"
+                  size="sm"
+                  disabled={!canAct || c.busyIp === r.ip}
+                  title={!canAct ? roleNote : isAr ? `رفع العزل عن ${r.ip}` : `release ${r.ip}`}
+                  onClick={() => void c.release(r.ip)}
+                >
+                  {c.busyIp === r.ip ? '…' : isAr ? 'فك' : 'RELEASE'}
+                </CyberButton>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Manual isolation. Armed only by a syntactically valid address, and even then it
+          opens the two-step confirmation rather than firing. */}
       <div className="mt-1.5 border-t border-cyan-900/40 pt-1.5">
         <Label tone="#fb7185">{isAr ? 'عزل يدوي' : 'MANUAL ISOLATION'}</Label>
         <input
@@ -497,22 +524,32 @@ export const ZtnaModule: React.FC<{
           onChange={e => setTarget(e.target.value)}
           placeholder="0.0.0.0"
           inputMode="numeric"
+          dir="ltr"
           aria-label={isAr ? 'عنوان IP للعزل' : 'IP address to isolate'}
-          className="mt-0.5 w-full border border-cyan-900/50 bg-black/60 px-1.5 py-1 font-mono text-[7px] text-cyan-400 placeholder:text-slate-700 focus:border-cyan-500/60 focus:outline-none"
+          className="mt-0.5 w-full border border-cyan-900/50 bg-black/60 px-1.5 py-1 font-mono text-[11px] text-cyan-400 placeholder:text-slate-400 focus:border-cyan-500/60 focus:outline-none"
         />
         <div className="mt-1">
           <CyberButton
             tone="rose"
             size="sm"
             className="w-full"
-            disabled={!valid || busy || !onIsolate}
-            title={valid ? undefined : isAr ? 'أدخل عنوان IPv4 صحيحًا' : 'enter a valid IPv4 address'}
-            onClick={valid && onIsolate ? () => onIsolate(target.trim()) : undefined}
+            disabled={!valid || c.busyIp != null || !onRequestIsolate}
+            title={!canAct ? roleNote : valid ? undefined : isAr ? 'أدخل عنوان IPv4 صحيحًا' : 'enter a valid IPv4 address'}
+            onClick={valid && onRequestIsolate ? () => onRequestIsolate(target.trim()) : undefined}
           >
-            {busy ? (isAr ? '… جارٍ' : '… WORKING') : '[ ISOLATE_NODE ]'}
+            {c.busyIp ? (isAr ? '… جارٍ' : '… WORKING') : '[ ISOLATE_NODE ]'}
           </CyberButton>
         </div>
-        {lastAction && <p className="mt-1 font-mono text-[6px] text-amber-400">{lastAction}</p>}
+        {c.last && (
+          <p
+            role="status"
+            className="mt-1 font-mono text-[10px]"
+            style={{ color: c.last.ok ? '#34d399' : '#fb7185' }}
+            dir="ltr"
+          >
+            {c.last.kind} {c.last.ip} · {c.last.message}
+          </p>
+        )}
       </div>
     </ArsenalCard>
   );

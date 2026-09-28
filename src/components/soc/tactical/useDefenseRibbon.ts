@@ -173,11 +173,13 @@ export function useDefenseRibbon(apiKey?: string, pollMs = 5000) {
     loading,
     missing,
 
+    // rps and ebpfLatencyUs are Math.random() on the server (httpTrafficTelemetry
+    // getWafMetrics), so they are withheld rather than passed on as readings.
     waf: {
-      rps: m?.rps ?? null,
+      rps: null,
       totalRequests: m?.totalRequests ?? null,
       droppedPackets: m?.droppedPackets ?? null,
-      latencyUs: m?.ebpfLatencyUs ?? null,
+      latencyUs: null,
       blockedSubnets: m?.activeBlockedSubnetsCount ?? null,
       l7Active,
       l7Total,

@@ -439,3 +439,49 @@ html[data-motion='calm'] .animate-spin {
 @media (prefers-reduced-motion: reduce) {
   .tac-scan { animation: none; }
 }
+
+/* =========================================================================
+   TACTICAL C2 — indicator ticker
+   Transform only, so it stays on the compositor. The track holds the list
+   twice and travels half its width, which makes the loop seamless. Paused
+   on hover and focus so an indicator can be read and copied, paused by an
+   explicit control for WCAG 2.2.2, and stopped under reduced motion, where
+   the strip becomes a horizontally scrollable list instead.
+   ========================================================================= */
+@keyframes tac-ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.tac-ticker {
+  animation: tac-ticker var(--tac-ticker-dur, 60s) linear infinite;
+  will-change: transform;
+}
+
+.tac-ticker-host:hover .tac-ticker,
+.tac-ticker-host:focus-within .tac-ticker,
+.tac-ticker[data-paused='true'] {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tac-ticker { animation: none; }
+}
+
+/* =========================================================================
+   TACTICAL C2 — crimson path breathing
+   Opacity only. It marks a path that an alert or a containment has named;
+   under reduced motion it holds still at a visible level.
+   ========================================================================= */
+@keyframes tac-hot-breathe {
+  0%, 100% { opacity: 0.22; }
+  50%      { opacity: 0.6; }
+}
+
+.tac-hot-path {
+  animation: tac-hot-breathe 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tac-hot-path { animation: none; opacity: 0.4; }
+}
