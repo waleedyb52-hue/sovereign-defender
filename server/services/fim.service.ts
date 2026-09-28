@@ -155,6 +155,40 @@ export class FileIntegrityMonitoringService {
     return this.merkleRootHash;
   }
 
+  /**
+   * The exact inputs of the Merkle root: every baseline snapshot's path and hash, plus the
+   * file's hash as it is on disk now (null if it is gone). With these a client can rebuild
+   * the tree itself and check it arrives at the same root — verification, not trust — and
+   * see precisely which leaf and which branch a change broke.
+   */
+  /**
+   * Every baseline change goes through here, so the Merkle root always commits to the
+   * current baseline. recalculateMerkleTree() existed but nothing called it: the root the
+   * console displayed as "Merkle SHA-256" had never been computed, and read as empty.
+   */
+  private setBaseline(filePath: string, snap: { content: string; hash: string; timestamp: string; chunks?: Array<{ offset: number; hash: string }> }) {
+    this.snapshots.set(filePath, snap);
+    this.recalculateMerkleTree();
+  }
+
+  public getMerkleInputs() {
+    const leaves = [...this.snapshots.entries()].map(([filePath, snap]) => {
+      let current: string | null = null;
+      try {
+        if (fs.existsSync(filePath)) current = crypto.createHash('sha256').update(fs.readFileSync(filePath, 'utf-8')).digest('hex');
+      } catch {
+        current = null;
+      }
+      return { path: filePath, name: path.basename(filePath), baselineSha256: snap.hash, currentSha256: current };
+    });
+    return {
+      construction: 'leaf = sha256(path + ":" + hash); leaves sorted; parent = sha256(leftHex + rightHex); odd node paired with itself',
+      root: this.merkleRootHash,
+      lastCalculated: this.lastMerkleRecalculated,
+      leaves
+    };
+  }
+
   public getMerkleTreeStatus() {
     return {
       merkleRootHash: this.merkleRootHash,
@@ -250,7 +284,7 @@ ENABLE_EBPF_OFFLOADING=true
           fs.writeFileSync(filePath, file.content, 'utf-8');
         }
         const { text: currentContent, hash } = this.computeIntegrity(filePath);
-        this.snapshots.set(filePath, {
+        this.setBaseline(filePath, {
           content: currentContent,
           hash,
           timestamp: new Date().toISOString()
@@ -386,7 +420,7 @@ ENABLE_EBPF_OFFLOADING=true
         };
 
         // Update snapshot
-        this.snapshots.set(filePath, {
+        this.setBaseline(filePath, {
           content: currentContent,
           hash: currentHash,
           timestamp: new Date().toISOString()
@@ -721,7 +755,7 @@ Evaluate if this modification contains a Web Shell, Backdoor, Sudoers Privilege 
       if (fs.existsSync(alert.filePath)) {
         const currentContent = fs.readFileSync(alert.filePath, 'utf-8');
         const newHash = crypto.createHash('sha256').update(currentContent).digest('hex');
-        this.snapshots.set(alert.filePath, {
+        this.setBaseline(alert.filePath, {
           content: currentContent,
           hash: newHash,
           timestamp: new Date().toISOString()
