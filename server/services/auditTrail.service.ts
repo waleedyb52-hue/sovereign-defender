@@ -196,7 +196,7 @@ export class AuditTrailService {
     }
   }
 
-  public list(opts: { limit?: number; beforeSeq?: number; action?: string; actor?: string } = {}): AuditEntry[] {
+  public list(opts: { limit?: number; beforeSeq?: number; action?: string; actor?: string; target?: string } = {}): AuditEntry[] {
     const limit = Math.max(1, Math.min(opts.limit ?? 100, 500));
     const where: string[] = [];
     const args: Array<string | number> = [];
@@ -211,6 +211,10 @@ export class AuditTrailService {
     if (opts.actor) {
       where.push('actor = ?');
       args.push(opts.actor);
+    }
+    if (opts.target) {
+      where.push('target = ?');
+      args.push(opts.target);
     }
     const rows = this.db
       .prepare(

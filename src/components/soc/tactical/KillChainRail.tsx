@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, KeyRound, Terminal, Anchor, Radio, Upload, Cpu, ShieldCheck, Eye, FileLock2, Bot, Ban } from 'lucide-react';
 import { CYAN, CRIMSON, AMBER, EMERALD, Readout } from './TacticalPrimitives';
 import type { RibbonChain } from './useDefenseRibbon';
+import { IpLink } from './ipDossier';
 
 /**
  * KILL CHAIN & CONTAINMENT RAIL
@@ -140,7 +141,11 @@ export const KillChainRail: React.FC<Props> = ({
       {chain ? (
         <div className="mb-2 border-b pb-2" style={{ borderColor: `${CYAN}1a` }}>
           <div className="flex items-baseline justify-between gap-2">
-            <Readout className="text-[11px] text-rose-400">{chain.actorIp ?? (isAr ? 'مصدر غير معرّف' : 'unidentified actor')}</Readout>
+            {chain.actorIp ? (
+              <IpLink ip={chain.actorIp} className="text-[11px] text-rose-400" />
+            ) : (
+              <Readout className="text-[11px] text-rose-400">{isAr ? 'مصدر غير معرّف' : 'unidentified actor'}</Readout>
+            )}
             {chain.threatScore != null ? (
               <Readout className="text-[10px] font-bold text-rose-500">{chain.threatScore}</Readout>
             ) : (

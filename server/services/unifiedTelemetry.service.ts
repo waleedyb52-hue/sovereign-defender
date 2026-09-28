@@ -23,7 +23,8 @@ export type TelemetrySource =
   | 'HONEYPOT'
   | 'INSIDER_ZERO_TRUST'
   | 'IN_TRANSIT_INSPECTION'
-  | 'SOAR_PLAYBOOK';
+  | 'SOAR_PLAYBOOK'
+  | 'LAN_WATCH';
 
 export interface TelemetryEvent {
   id: string;

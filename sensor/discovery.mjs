@@ -167,6 +167,43 @@ export async function arpNeighbours() {
   return [...seen.values()];
 }
 
+/**
+ * This host's default gateway(s), read from the routing table.
+ *
+ * The platform needs the real gateway to detect ARP poisoning: a man-in-the-middle
+ * answers ARP for the gateway's address with its own MAC. Guessing the gateway from a
+ * .1 or .254 address would raise false alarms on any network laid out differently, so
+ * this reads the route instead, and returns null when no route tool answered — "could
+ * not look" is reported as such, never as "no gateway".
+ */
+export async function defaultGateways() {
+  const ipv4 = /^(?:\d{1,3}\.){3}\d{1,3}$/;
+  const found = new Set();
+
+  if (process.platform === 'win32') {
+    // "  0.0.0.0          0.0.0.0      192.168.1.1    192.168.1.139     25"
+    const out = await tryExec('route', ['print', '-4', '0.0.0.0']);
+    if (out == null) return null;
+    for (const line of out.split(/\r?\n/)) {
+      const cols = line.trim().split(/\s+/);
+      if (cols[0] === '0.0.0.0' && cols[1] === '0.0.0.0' && ipv4.test(cols[2] ?? '')) found.add(cols[2]);
+    }
+  } else {
+    // iproute2: "default via 192.168.1.1 dev eth0 proto dhcp metric 100"
+    const ip = await tryExec('ip', ['route', 'show', 'default']);
+    if (ip != null) {
+      for (const m of ip.matchAll(/default via ((?:\d{1,3}\.){3}\d{1,3})/g)) found.add(m[1]);
+    } else {
+      // BSD / macOS: "   gateway: 192.168.1.1"
+      const bsd = await tryExec('route', ['-n', 'get', 'default']);
+      if (bsd == null) return null;
+      const m = /gateway:\s*((?:\d{1,3}\.){3}\d{1,3})/.exec(bsd);
+      if (m) found.add(m[1]);
+    }
+  }
+  return [...found];
+}
+
 /** The host's own local segments, as CIDRs, so the UI can offer them for a sweep. */
 export function localSegments() {
   const out = [];

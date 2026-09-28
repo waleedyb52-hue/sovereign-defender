@@ -41,7 +41,7 @@ import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
-import { arpNeighbours, localSegments, sweepRange, DEFAULT_PORTS } from './discovery.mjs';
+import { arpNeighbours, defaultGateways, localSegments, sweepRange, DEFAULT_PORTS } from './discovery.mjs';
 import { promisify } from 'node:util';
 
 const exec = promisify(execFile);
@@ -350,11 +350,12 @@ async function enroll() {
 
 async function cycle() {
   const selfIp = primaryIp();
-  const [sockets, procs, users, neighbours] = await Promise.all([
+  const [sockets, procs, users, neighbours, gateways] = await Promise.all([
     collectSockets(),
     collectProcessCount(),
     collectUserCount(),
-    args.noArp ? Promise.resolve(null) : arpNeighbours()
+    args.noArp ? Promise.resolve(null) : arpNeighbours(),
+    defaultGateways()
   ]);
 
   const listening = sockets ? sockets.filter(s => /LISTEN/i.test(s.state)).length : null;
@@ -415,6 +416,9 @@ async function cycle() {
     posture.extra.lanNeighbours = neighbours.length;
   }
   posture.segments = localSegments();
+  // Omitted when the route table could not be read, so the platform reports ARP-spoof
+  // detection as unavailable rather than silently checking nothing.
+  if (gateways !== null) posture.gateways = gateways;
 
   // Omitted, not zeroed, when the collector could not run.
   if (listening != null) posture.listeningPorts = listening;

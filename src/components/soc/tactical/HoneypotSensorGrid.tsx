@@ -2,6 +2,7 @@ import React from 'react';
 import { Bug } from 'lucide-react';
 import { ArsenalCard } from './CyberButton';
 import type { useArsenal } from './useArsenal';
+import { IpLink } from './ipDossier';
 
 type Arsenal = ReturnType<typeof useArsenal>;
 
@@ -140,7 +141,7 @@ export const HoneypotSensorGrid: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a,
                   return (
                     <div key={s.id} className="min-w-0">
                       <div className="flex items-baseline gap-1 font-mono text-[10px]" dir="ltr">
-                        <span className={fx ? 'text-slate-400' : 'text-amber-300'}>{s.ip ?? '—'}</span>
+                        <IpLink ip={s.ip} className={fx ? 'text-slate-400' : 'text-amber-300'} />
                         {fx && <span className="text-slate-500">RFC5737</span>}
                       </div>
                       <p className="font-mono text-[10px] text-slate-400">
@@ -192,7 +193,7 @@ export const HoneypotSensorGrid: React.FC<{ a: Arsenal; isAr: boolean }> = ({ a,
                 ) : (
                   actors.slice(0, 4).map(x => (
                     <div key={x.id} className="flex min-w-0 items-baseline gap-1.5 font-mono text-[10px]" dir="ltr">
-                      <span className="shrink-0 text-amber-300">{x.ip ?? '—'}</span>
+                      <IpLink ip={x.ip} className="shrink-0 text-amber-300" />
                       <span className="shrink-0 text-slate-400">{x.band ?? '—'}</span>
                       <span className="shrink-0 text-slate-400">×{x.interactions ?? '—'}</span>
                       {x.canariesRedeemed > 0 && (

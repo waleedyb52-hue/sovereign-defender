@@ -999,6 +999,61 @@ const auth = { 'x-api-key': KEY };
     return `answered ${r.status} in ${Date.now() - t}ms; the dev proxy is not installed when embedded.`;
   });
 
+  // ================= DETECTION: LAN, RANSOMWARE, FEED MAPPING (98–100) =================
+
+  await run(98, 'DETECTION', 'ARP poisoning of the gateway is detected', async () => {
+    const t = await http('POST', '/api/v1/assets/enrollment-token', { note: 'audit 98' }, auth);
+    const e = await http('POST', '/api/v1/assets/enroll', { token: t.json?.token, hostname: 'audit-lan-' + crypto.randomBytes(3).toString('hex') });
+    const id = e.json?.asset?.id;
+    const A = { Authorization: `Bearer ${e.json?.credential}` };
+    const nb = (ip: string, mac: string) => ({ ip, mac, vendor: null, viaInterface: null, method: 'ARP_CACHE', discoveredAt: new Date().toISOString() });
+    try {
+      const gw = '10.250.0.1';
+      await http('POST', `/api/v1/assets/${id}/heartbeat`, { neighbours: [nb(gw, '02:aa:00:00:00:01')], gateways: [gw] }, A);
+      const evil = '0a:bb:cc:dd:ee:99';
+      await http('POST', `/api/v1/assets/${id}/heartbeat`, { neighbours: [nb(gw, evil), nb('10.250.0.66', evil)], gateways: [gw] }, A);
+      const s = await http('GET', '/api/v1/lan-watch', undefined, auth);
+      const hit = (s.json?.events ?? []).find((x: any) => x.kind === 'ARP_SPOOF_SUSPECTED' && x.assetId === id);
+      assert(hit?.severity === 'CRITICAL' && hit?.ip === '10.250.0.66', 'gateway MAC answering for a second address was not flagged');
+      return `CRITICAL ${hit.mitre.split(' ')[0]} naming ${hit.ip}; gateway change and new-device signals ride the same heartbeat.`;
+    } finally {
+      if (id) await http('DELETE', `/api/v1/assets/${id}`, undefined, auth);
+    }
+  });
+
+  await run(99, 'DETECTION', 'Ransomware tripwire fires on a decoy and never touches user files', async () => {
+    const dir = fs.mkdtempSync(path.join((await import('os')).tmpdir(), 'sd-audit-trip-'));
+    const user = path.join(dir, 'notes.txt');
+    fs.writeFileSync(user, 'ordinary working file '.repeat(30));
+    try {
+      for (const bad of ['C:\\', '/', 'C:\\Windows', ROOT]) {
+        const r = await http('POST', '/api/v1/tripwire/protect', { dir: bad }, auth);
+        assert(r.status === 400, `protect accepted ${bad}`);
+      }
+      const p = await http('POST', '/api/v1/tripwire/protect', { dir }, auth);
+      assert(p.status === 200 && p.json?.decoys?.length === 2, 'decoys were not planted');
+      fs.writeFileSync(p.json.decoys[0], crypto.randomBytes(4096));
+      await new Promise(r => setTimeout(r, 900));
+      const s = await http('GET', '/api/v1/tripwire', undefined, auth);
+      const hit = (s.json?.incidents ?? []).find((i: any) => i.kind === 'TRIPWIRE_ENCRYPTED' && i.dir === path.resolve(dir));
+      assert(hit, 'encrypting a decoy raised no incident');
+      assert(fs.readFileSync(user, 'utf8') === 'ordinary working file '.repeat(30), "the user's file was modified");
+      const u = await http('POST', '/api/v1/tripwire/unprotect', { dir }, auth);
+      assert(u.json?.removed?.length === 2, 'unprotect left its decoys behind');
+      return `TRIPWIRE_ENCRYPTED at H=${hit.entropy}; roots, system and platform paths refused; user file untouched; decoys removed.`;
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  await run(100, 'MITRE', 'The feed reads the technique the event carries, and never infers one', () => {
+    const hook = fs.readFileSync(path.join(ROOT, 'src/components/soc/cyberdefend/useCyberDefendData.ts'), 'utf-8');
+    assert(/mitreTechnique/.test(hook) && /e\.actorIp/.test(hook), 'cockpit feed ignores mitreTechnique / actorIp');
+    const table = fs.readFileSync(path.join(ROOT, 'src/components/soc/ThreatAuditTable.tsx'), 'utf-8');
+    assert(!/TACTIC_TO_TECHNIQUE\[raw\]/.test(table), 'ThreatAuditTable still maps a tactic to a guessed technique');
+    return 'Technique from mitreId or mitreTechnique, else UNMAPPED; source address includes actorIp.';
+  });
+
   // ---- Report ----
   const pass = results.filter(r => r.status === 'PASS').length;
   const warn = results.filter(r => r.status === 'WARN').length;

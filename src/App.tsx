@@ -1,49 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { Navbar, AppTab } from './components/Navbar';
-import { AttackSimulator } from './components/AttackSimulator';
-import { AttackGraph } from './components/AttackGraph';
-import { ThreatIntelStudio } from './components/ThreatIntelStudio';
-import { LiveWebsiteProtection } from './components/LiveWebsiteProtection';
-import { PacketLogsStream } from './components/PacketLogsStream';
-import { DefenseOverview } from './components/DefenseOverview';
-import { AiAnalysisModal } from './components/AiAnalysisModal';
-import { ProCyberTools } from './components/ProCyberTools';
-import { ForensicsVault } from './components/ForensicsVault';
-import { SocAnalyticsDashboard } from './components/SocAnalyticsDashboard';
-import { AlertConfigModal } from './components/AlertConfigModal';
-import { ManualApprovalModal } from './components/ManualApprovalModal';
-import { DigitalTwinSimulator } from './components/DigitalTwinSimulator';
-import { BehavioralAnomalyStudio } from './components/BehavioralAnomalyStudio';
-import { DeceptionCommandCenter } from './components/DeceptionCommandCenter';
-import { KernelIngressPerformanceCenter } from './components/KernelIngressPerformanceCenter';
-import { BlueTeamConsole } from './components/BlueTeamConsole';
-import { ThreatLabsStudio } from './components/ThreatLabsStudio';
-import { CyberTopologyMap } from './components/CyberTopologyMap';
-import { SiteTrafficSecurityInspector } from './components/SiteTrafficSecurityInspector';
-import { FimForensicsCenter } from './components/FimForensicsCenter';
-import { AutonomousThreatMap } from './components/AutonomousThreatMap';
-import { KioskModeWrapper } from './components/KioskModeWrapper';
 import { SocSidebar } from './components/SocSidebar';
-import { MoDWarGamesSimulator } from './components/MoDWarGamesSimulator';
-import { SystemComplianceReport } from './components/SystemComplianceReport';
-import { KillChainPanel } from './components/soc/KillChainPanel';
-import { DefenseLayersPanel } from './components/soc/DefenseLayersPanel';
-import { AdjudicationPanel } from './components/soc/AdjudicationPanel';
-import { ExhibitionMode } from './components/soc/ExhibitionMode';
-import { CorpusIntelPanel } from './components/soc/CorpusIntelPanel';
-import { CyberDefendPlatform } from './components/soc/cyberdefend/CyberDefendPlatform';
 import { TacticalCockpit } from './components/soc/tactical/TacticalCockpit';
-import { TelemetryHud } from './components/soc/TelemetryHud';
-import { EbpfTopologyGraph } from './components/soc/EbpfTopologyGraph';
-import { ThreatAuditTable } from './components/soc/ThreatAuditTable';
-import { IsolationProtocol, CompliancePosture } from './components/soc/IsolationProtocol';
 import { useTelemetry, useThreatFeed, useIsolation } from './hooks/useTelemetry';
-import { IncidentQueue } from './components/soc/IncidentQueue';
-import { PostureStrip } from './components/soc/PostureStrip';
-import { SecurityAnalyticsRow } from './components/soc/SecurityAnalyticsRow';
-import { MitreMatrix } from './components/soc/MitreMatrix';
-import { ThreatCorpusConsole } from './components/soc/ThreatCorpusConsole';
-import { AttackPathGraph } from './components/soc/AttackPathGraph';
 import { useOperator } from './components/auth/operatorContext';
 import {
   INITIAL_INTEL_METRICS,
@@ -64,6 +23,61 @@ import {
   DefenseFlightMode,
   PendingRuleApproval
 } from './types';
+
+/**
+ * Every console except the tactical cockpit loads on demand.
+ *
+ * The cockpit is the landing surface, and it returns before any of these render, so
+ * shipping them in the first bundle only delayed the first paint: the single chunk was
+ * 3 MB. Each now arrives when its tab (or modal) first opens. Named exports are adapted
+ * to React.lazy's default-export contract without losing their prop types.
+ */
+function lazyNamed<M, K extends keyof M>(loader: () => Promise<M>, key: K) {
+  return React.lazy(() => loader().then(m => ({ default: m[key] as M[K] & React.ComponentType<any> })));
+}
+
+const AttackSimulator = lazyNamed(() => import('./components/AttackSimulator'), 'AttackSimulator');
+const AttackGraph = lazyNamed(() => import('./components/AttackGraph'), 'AttackGraph');
+const ThreatIntelStudio = lazyNamed(() => import('./components/ThreatIntelStudio'), 'ThreatIntelStudio');
+const LiveWebsiteProtection = lazyNamed(() => import('./components/LiveWebsiteProtection'), 'LiveWebsiteProtection');
+const PacketLogsStream = lazyNamed(() => import('./components/PacketLogsStream'), 'PacketLogsStream');
+const DefenseOverview = lazyNamed(() => import('./components/DefenseOverview'), 'DefenseOverview');
+const AiAnalysisModal = lazyNamed(() => import('./components/AiAnalysisModal'), 'AiAnalysisModal');
+const ProCyberTools = lazyNamed(() => import('./components/ProCyberTools'), 'ProCyberTools');
+const ForensicsVault = lazyNamed(() => import('./components/ForensicsVault'), 'ForensicsVault');
+const SocAnalyticsDashboard = lazyNamed(() => import('./components/SocAnalyticsDashboard'), 'SocAnalyticsDashboard');
+const AlertConfigModal = lazyNamed(() => import('./components/AlertConfigModal'), 'AlertConfigModal');
+const ManualApprovalModal = lazyNamed(() => import('./components/ManualApprovalModal'), 'ManualApprovalModal');
+const DigitalTwinSimulator = lazyNamed(() => import('./components/DigitalTwinSimulator'), 'DigitalTwinSimulator');
+const BehavioralAnomalyStudio = lazyNamed(() => import('./components/BehavioralAnomalyStudio'), 'BehavioralAnomalyStudio');
+const DeceptionCommandCenter = lazyNamed(() => import('./components/DeceptionCommandCenter'), 'DeceptionCommandCenter');
+const KernelIngressPerformanceCenter = lazyNamed(() => import('./components/KernelIngressPerformanceCenter'), 'KernelIngressPerformanceCenter');
+const BlueTeamConsole = lazyNamed(() => import('./components/BlueTeamConsole'), 'BlueTeamConsole');
+const ThreatLabsStudio = lazyNamed(() => import('./components/ThreatLabsStudio'), 'ThreatLabsStudio');
+const CyberTopologyMap = lazyNamed(() => import('./components/CyberTopologyMap'), 'CyberTopologyMap');
+const SiteTrafficSecurityInspector = lazyNamed(() => import('./components/SiteTrafficSecurityInspector'), 'SiteTrafficSecurityInspector');
+const FimForensicsCenter = lazyNamed(() => import('./components/FimForensicsCenter'), 'FimForensicsCenter');
+const AutonomousThreatMap = lazyNamed(() => import('./components/AutonomousThreatMap'), 'AutonomousThreatMap');
+const KioskModeWrapper = lazyNamed(() => import('./components/KioskModeWrapper'), 'KioskModeWrapper');
+const MoDWarGamesSimulator = lazyNamed(() => import('./components/MoDWarGamesSimulator'), 'MoDWarGamesSimulator');
+const SystemComplianceReport = lazyNamed(() => import('./components/SystemComplianceReport'), 'SystemComplianceReport');
+const KillChainPanel = lazyNamed(() => import('./components/soc/KillChainPanel'), 'KillChainPanel');
+const DefenseLayersPanel = lazyNamed(() => import('./components/soc/DefenseLayersPanel'), 'DefenseLayersPanel');
+const AdjudicationPanel = lazyNamed(() => import('./components/soc/AdjudicationPanel'), 'AdjudicationPanel');
+const ExhibitionMode = lazyNamed(() => import('./components/soc/ExhibitionMode'), 'ExhibitionMode');
+const CorpusIntelPanel = lazyNamed(() => import('./components/soc/CorpusIntelPanel'), 'CorpusIntelPanel');
+const CyberDefendPlatform = lazyNamed(() => import('./components/soc/cyberdefend/CyberDefendPlatform'), 'CyberDefendPlatform');
+const TelemetryHud = lazyNamed(() => import('./components/soc/TelemetryHud'), 'TelemetryHud');
+const EbpfTopologyGraph = lazyNamed(() => import('./components/soc/EbpfTopologyGraph'), 'EbpfTopologyGraph');
+const ThreatAuditTable = lazyNamed(() => import('./components/soc/ThreatAuditTable'), 'ThreatAuditTable');
+const IsolationProtocol = lazyNamed(() => import('./components/soc/IsolationProtocol'), 'IsolationProtocol');
+const CompliancePosture = lazyNamed(() => import('./components/soc/IsolationProtocol'), 'CompliancePosture');
+const IncidentQueue = lazyNamed(() => import('./components/soc/IncidentQueue'), 'IncidentQueue');
+const PostureStrip = lazyNamed(() => import('./components/soc/PostureStrip'), 'PostureStrip');
+const SecurityAnalyticsRow = lazyNamed(() => import('./components/soc/SecurityAnalyticsRow'), 'SecurityAnalyticsRow');
+const MitreMatrix = lazyNamed(() => import('./components/soc/MitreMatrix'), 'MitreMatrix');
+const ThreatCorpusConsole = lazyNamed(() => import('./components/soc/ThreatCorpusConsole'), 'ThreatCorpusConsole');
+const AttackPathGraph = lazyNamed(() => import('./components/soc/AttackPathGraph'), 'AttackPathGraph');
 
 export default function App() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
@@ -696,6 +710,7 @@ export default function App() {
       <main
         className={`${isSidebarPinned ? (isAr ? 'mr-64' : 'ml-64') : isAr ? 'mr-16' : 'ml-16'} flex min-h-[calc(100vh-48px)] flex-col p-4 transition-all duration-300 sm:p-6 lg:p-8`}
       >
+        <Suspense fallback={<ConsoleLoading isAr={isAr} />}>
         {/* VIEW 1: Live Site Traffic & Security Inspector */}
         {/* CYBERDEFEND: the orbital command surface. Rendered full-bleed rather
             than inside the max-w-7xl column, because the globe theatre and the
@@ -948,7 +963,11 @@ export default function App() {
             </div>
           </div>
         )}
+        </Suspense>
       </main>
+
+      {/* Modals load on first open; nothing to show while their chunk arrives. */}
+      <Suspense fallback={null}>
 
       {/* Pure SOC Wall Kiosk Display (Hides All Navigation & Shows Map + Auto-Ticker) */}
       {isKioskMode && <KioskModeWrapper lang={lang} onExitKiosk={() => setIsKioskMode(false)} />}
@@ -1009,6 +1028,16 @@ export default function App() {
         result={sdIsolation.result}
         lang={lang}
       />
+      </Suspense>
     </div>
+  );
+}
+
+/** Shown in the content area while a console's chunk loads. States what is happening, nothing more. */
+function ConsoleLoading({ isAr }: { isAr: boolean }) {
+  return (
+    <p className="py-10 text-center font-mono text-xs tracking-widest text-cyan-400/70" role="status">
+      {isAr ? 'جارٍ تحميل الكونسول…' : 'LOADING CONSOLE…'}
+    </p>
   );
 }

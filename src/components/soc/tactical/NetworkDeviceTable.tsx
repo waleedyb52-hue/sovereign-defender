@@ -2,6 +2,8 @@ import React from 'react';
 import { Router, Smartphone, Server as ServerIcon, HelpCircle, Monitor, ShieldOff, ArrowUpDown, Search } from 'lucide-react';
 import { CyberButton } from './CyberButton';
 import type { AssetRow } from './useAssets';
+import type { LanWatch } from './useLanWatch';
+import { IpLink } from './ipDossier';
 
 /**
  * NETWORK DEVICE INVENTORY — the list the graph was missing.
@@ -151,8 +153,12 @@ export const NetworkDeviceTable: React.FC<{
   assets: AssetRow[];
   isAr: boolean;
   onOpenAsset: (a: AssetRow) => void;
+  /** LAN watch state; absent renders the table without the watch column. */
+  lan?: LanWatch;
+  /** ANALYST or above may approve a new device. */
+  canAct?: boolean;
   className?: string;
-}> = ({ assets, isAr, onOpenAsset, className }) => {
+}> = ({ assets, isAr, onOpenAsset, lan, canAct = false, className }) => {
   const [sort, setSort] = React.useState<SortKey>('ip');
   const [desc, setDesc] = React.useState(false);
   const [q, setQ] = React.useState('');
@@ -195,7 +201,7 @@ export const NetworkDeviceTable: React.FC<{
           setDesc(false);
         }
       }}
-      className="flex shrink-0 items-center gap-0.5 text-start font-mono text-[6.5px] tracking-widest uppercase transition-colors hover:text-cyan-300"
+      className="flex shrink-0 items-center gap-0.5 text-start font-mono text-[10px] tracking-widest uppercase transition-colors hover:text-cyan-300"
       style={{ width, flex: width ? undefined : 1, color: sort === key ? '#22d3ee' : '#5c7484' }}
     >
       {label}
@@ -210,13 +216,13 @@ export const NetworkDeviceTable: React.FC<{
       {/* Controls */}
       <div className="flex shrink-0 flex-wrap items-center gap-1.5 pb-1.5">
         <span className="relative flex items-center">
-          <Search className="pointer-events-none absolute start-1.5 h-2.5 w-2.5 text-slate-600" aria-hidden />
+          <Search className="pointer-events-none absolute start-1.5 h-2.5 w-2.5 text-slate-400" aria-hidden />
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder={isAr ? 'عنوان، MAC، مُصنِّع، منفذ…' : 'address, MAC, vendor, port…'}
             aria-label={isAr ? 'تصفية الأجهزة' : 'filter devices'}
-            className="w-52 border border-cyan-900/50 bg-black/60 py-1 ps-5 pe-1.5 font-mono text-[7px] text-cyan-300 placeholder:text-slate-700 focus:border-cyan-500/60 focus:outline-none"
+            className="w-52 border border-cyan-900/50 bg-black/60 py-1 ps-5 pe-1.5 font-mono text-[10px] text-cyan-300 placeholder:text-slate-500 focus:border-cyan-500/60 focus:outline-none"
           />
         </span>
         <CyberButton tone={openOnly ? 'amber' : 'cyan'} size="sm" active={openOnly} onClick={() => setOpenOnly(v => !v)}>
@@ -224,12 +230,12 @@ export const NetworkDeviceTable: React.FC<{
         </CyberButton>
 
         <span className="ms-auto flex items-center gap-3">
-          <span className="font-mono text-[6.5px] text-slate-500">
+          <span className="font-mono text-[10px] text-slate-500">
             {rows.length} {isAr ? 'جهاز' : 'DEVICES'}
           </span>
           {notable.length > 0 && (
             <span
-              className="font-mono text-[6.5px] text-amber-400"
+              className="font-mono text-[10px] text-amber-400"
               title={
                 isAr
                   ? 'أجهزة تعرض خدمةً تستحقّ النظر عند وصولها من الشبكة المحلّية. ليست درجة خطورة.'
@@ -242,20 +248,62 @@ export const NetworkDeviceTable: React.FC<{
         </span>
       </div>
 
+      {/* ARP poisoning and gateway changes lead the table: they concern every device on it. */}
+      {lan && lan.alarms.length > 0 && (
+        <div role="alert" className="mb-1.5 shrink-0 space-y-1 border border-rose-500/60 bg-rose-950/40 px-2 py-1.5">
+          {lan.alarms.slice(0, 3).map(e => (
+            <p key={e.id} className="text-[11px] leading-snug text-rose-200">
+              <span className="font-mono font-bold text-rose-300">
+                {e.kind === 'ARP_SPOOF_SUSPECTED' ? (isAr ? 'اشتباه انتحال ARP' : 'ARP SPOOFING SUSPECTED') : isAr ? 'تغيّر MAC البوابة' : 'GATEWAY MAC CHANGED'}
+              </span>{' '}
+              <span className="font-mono" dir="ltr">
+                {e.ip} · {e.mac} · {e.at.slice(11, 19)}
+              </span>
+              <span className="block text-rose-200/80" dir="auto">{e.detail}</span>
+              {e.mitre && <span className="font-mono text-[10px] text-cyan-300">{e.mitre}</span>}
+            </p>
+          ))}
+        </div>
+      )}
+      {lan?.status && (
+        <p className="mb-1 shrink-0 font-mono text-[10px] text-slate-400">
+          {isAr ? 'كشف انتحال ARP: ' : 'ARP-spoof detection: '}
+          {Object.keys(lan.status.spoofDetection).length === 0 ? (
+            isAr ? 'بانتظار نبضة حسّاس' : 'awaiting a sensor heartbeat'
+          ) : Object.values(lan.status.spoofDetection).every(v => v === 'ACTIVE') ? (
+            <span className="text-emerald-300">{isAr ? 'فعّال' : 'ACTIVE'}</span>
+          ) : (
+            <span className="text-amber-300">
+              {isAr ? 'غير متاح لبعض المضيفين — البوابة غير مُبلَّغ عنها' : 'unavailable on some hosts — gateway not reported'}
+            </span>
+          )}
+          {lan.status.newCount > 0 && (
+            <span className="ms-3 text-amber-300">
+              {lan.status.newCount} {isAr ? 'جهاز جديد بانتظار المراجعة' : 'new device(s) awaiting review'}
+            </span>
+          )}
+        </p>
+      )}
+
       {/* Header */}
       <div
         className="flex shrink-0 items-center gap-2 px-1.5 py-1"
         style={{ background: 'rgba(34,211,238,0.08)', borderBottom: '1px solid rgba(34,211,238,0.25)' }}
       >
-        {head('ip', isAr ? 'العنوان' : 'ADDRESS', '108px')}
+        {head('ip', isAr ? 'العنوان' : 'ADDRESS', '118px')}
+        {lan && (
+          <span className="w-[92px] shrink-0 font-mono text-[10px] tracking-widest text-slate-400 uppercase">
+            {isAr ? 'المراقبة' : 'WATCH'}
+          </span>
+        )}
         <span className="w-6 shrink-0" aria-hidden />
         {head('vendor', isAr ? 'المُصنِّع / النوع' : 'VENDOR / TYPE', '132px')}
         {head('ports', isAr ? 'المنافذ المفتوحة' : 'OPEN PORTS')}
         {head('state', isAr ? 'حالة الفحص' : 'SWEEP', '78px')}
-        <span className="w-[104px] shrink-0 font-mono text-[6.5px] tracking-widest text-slate-600 uppercase">
+        <span className="w-[104px] shrink-0 font-mono text-[10px] tracking-widest text-slate-400 uppercase">
           {isAr ? 'القطاع' : 'SEGMENT'}
         </span>
-        <span className="w-[86px] shrink-0 font-mono text-[6.5px] tracking-widest text-slate-600 uppercase">
+        <span className="w-[86px] shrink-0 font-mono text-[10px] tracking-widest text-slate-400 uppercase">
           {isAr ? 'رصده' : 'SEEN BY'}
         </span>
       </div>
@@ -264,7 +312,7 @@ export const NetworkDeviceTable: React.FC<{
       <div className="min-h-0 flex-1 overflow-y-auto">
         {rows.length === 0 ? (
           <div className="py-6 text-center">
-            <p className="font-mono text-[8px] text-slate-500">
+            <p className="font-mono text-[11px] text-slate-500">
               {q || openOnly
                 ? isAr ? 'لا جهاز يطابق التصفية.' : 'no device matches the filter.'
                 : isAr
@@ -272,7 +320,7 @@ export const NetworkDeviceTable: React.FC<{
                   : 'no devices observed. run the sensor on a host and it will report its neighbours.'}
             </p>
             {!q && !openOnly && (
-              <p className="mt-1 font-mono text-[6.5px] text-slate-700">/api/v1/assets</p>
+              <p className="mt-1 font-mono text-[10px] text-slate-500">/api/v1/assets</p>
             )}
           </div>
         ) : (
@@ -287,27 +335,29 @@ export const NetworkDeviceTable: React.FC<{
                 key={d.ip}
                 className="flex items-center gap-2 border-b border-white/[0.04] px-1.5 py-[3px] transition-colors hover:bg-cyan-500/[0.05]"
               >
-                <span className="flex w-[108px] shrink-0 items-center gap-1">
+                <span className="flex w-[118px] shrink-0 items-center gap-1">
                   {d.isolated && <ShieldOff className="h-2.5 w-2.5 shrink-0 text-rose-500" aria-hidden />}
-                  <span className="font-mono text-[8px] text-slate-200 tabular-nums">{d.ip}</span>
+                  <IpLink ip={d.ip} className="text-[11px] text-slate-200 tabular-nums" />
                 </span>
+
+                {lan && <WatchCell lan={lan} mac={d.mac} isAr={isAr} canAct={canAct} />}
 
                 <span className="w-6 shrink-0">
                   <Icon className="h-3 w-3" strokeWidth={1.5} style={{ color: d.isEnrolled ? '#22d3ee' : '#5c7484' }} aria-hidden />
                 </span>
 
                 <span className="w-[132px] shrink-0">
-                  <span className="block truncate font-mono text-[7px] text-slate-300">
+                  <span className="block truncate font-mono text-[10px] text-slate-300">
                     {d.vendor ?? (isAr ? 'مُصنِّع مجهول' : 'unknown vendor')}
                   </span>
-                  <span className="block truncate font-mono text-[6px] text-slate-600">
+                  <span className="block truncate font-mono text-[10px] text-slate-400">
                     {d.isEnrolled ? (isAr ? 'مُسجَّل — مجسّ' : 'ENROLLED — SENSOR') : isAr ? cls.ar : cls.en}
                   </span>
                 </span>
 
                 <span className="flex min-w-0 flex-1 flex-wrap gap-1">
                   {d.openPorts.length === 0 ? (
-                    <span className="font-mono text-[6.5px] text-slate-700">
+                    <span className="font-mono text-[10px] text-slate-500">
                       {d.sweepState === 'NO_RESPONSE'
                         ? isAr ? 'لم يُجب على الفحص' : 'no response to probe'
                         : d.sweepState === 'RESPONDED'
@@ -318,7 +368,7 @@ export const NetworkDeviceTable: React.FC<{
                     d.openPorts.map(p => (
                       <span
                         key={p}
-                        className="border px-1 font-mono text-[6px] tabular-nums"
+                        className="border px-1 font-mono text-[10px] tabular-nums"
                         style={{
                           borderColor: NOTABLE.has(p) ? 'rgba(251,191,36,0.55)' : 'rgba(34,211,238,0.35)',
                           color: NOTABLE.has(p) ? '#fbbf24' : '#22d3ee'
@@ -334,20 +384,20 @@ export const NetworkDeviceTable: React.FC<{
 
                 <span className="w-[78px] shrink-0">
                   {st ? (
-                    <span className="font-mono text-[6.5px] tracking-wider" style={{ color: st.tone }}>
+                    <span className="font-mono text-[10px] tracking-wider" style={{ color: st.tone }}>
                       {isAr ? st.ar : st.en}
                     </span>
                   ) : (
-                    <span className="font-mono text-[6.5px] text-slate-700">—</span>
+                    <span className="font-mono text-[10px] text-slate-500">—</span>
                   )}
                   {d.lastSweptAt && (
-                    <span className="block font-mono text-[5.5px] text-slate-700">{d.lastSweptAt.slice(11, 16)}</span>
+                    <span className="block font-mono text-[10px] text-slate-500">{d.lastSweptAt.slice(11, 16)}</span>
                   )}
                 </span>
 
                 <span className="w-[104px] shrink-0">
-                  <span className="block truncate font-mono text-[6.5px] text-slate-500">{d.segment ?? '—'}</span>
-                  <span className="block truncate font-mono text-[5.5px] text-slate-700">{d.viaInterface ?? ''}</span>
+                  <span className="block truncate font-mono text-[10px] text-slate-500">{d.segment ?? '—'}</span>
+                  <span className="block truncate font-mono text-[10px] text-slate-500">{d.viaInterface ?? ''}</span>
                 </span>
 
                 <span className="w-[86px] shrink-0">
@@ -355,16 +405,16 @@ export const NetworkDeviceTable: React.FC<{
                     <button
                       type="button"
                       onClick={() => onOpenAsset(asset)}
-                      className="truncate font-mono text-[6.5px] text-cyan-400 underline-offset-2 transition-colors hover:text-cyan-300 hover:underline"
+                      className="truncate font-mono text-[10px] text-cyan-400 underline-offset-2 transition-colors hover:text-cyan-300 hover:underline"
                     >
                       {d.seenBy}
                     </button>
                   ) : (
-                    <span className="block truncate font-mono text-[6.5px] text-slate-600" title={d.method}>
+                    <span className="block truncate font-mono text-[10px] text-slate-400" title={d.method}>
                       {d.seenBy}
                     </span>
                   )}
-                  <span className="block truncate font-mono text-[5.5px] text-slate-700">{d.method}</span>
+                  <span className="block truncate font-mono text-[10px] text-slate-500">{d.method}</span>
                 </span>
               </div>
             );
@@ -373,12 +423,51 @@ export const NetworkDeviceTable: React.FC<{
       </div>
 
       {/* The provenance line. Every claim above traces to one of these two methods. */}
-      <p className="shrink-0 border-t border-cyan-900/40 pt-1 font-mono text-[6px] leading-relaxed text-slate-600">
+      <p className="shrink-0 border-t border-cyan-900/40 pt-1 font-mono text-[10px] leading-relaxed text-slate-400">
         {isAr
           ? 'ARP_CACHE: الجهاز ردّ فعلًا على الشبكة، دون إرسال أي حزمة منّا. TCP_CONNECT: فُحص بمسح مُصرَّح. المنافذ غير معروفة حتى يُشغَّل مسح — ولا تُخمَّن.'
           : 'ARP_CACHE: the device genuinely answered on the wire, with nothing sent from us. TCP_CONNECT: probed by an authorised sweep. Ports are unknown until a sweep runs, and are never guessed.'}
       </p>
     </div>
+  );
+};
+
+/** One device's LAN-watch state: NEW (with APPROVE), APPROVED or BASELINE. */
+const WatchCell: React.FC<{ lan: LanWatch; mac: string; isAr: boolean; canAct: boolean }> = ({ lan, mac, isAr, canAct }) => {
+  const w = lan.byMac.get(mac.toLowerCase());
+  if (!w) return <span className="w-[92px] shrink-0 font-mono text-[10px] text-slate-500">—</span>;
+  if (w.state === 'NEW') {
+    return (
+      <span className="flex w-[92px] shrink-0 items-center gap-1">
+        <span
+          className="border border-amber-500/60 px-1 font-mono text-[10px] text-amber-300"
+          title={w.randomized ? (isAr ? 'عنوان MAC عشوائي — جهاز شخصي على الأرجح' : 'randomised MAC — likely a personal device') : undefined}
+        >
+          {isAr ? 'جديد' : 'NEW'}
+          {w.randomized ? '·R' : ''}
+        </span>
+        {canAct && (
+          <button
+            type="button"
+            disabled={lan.busyMac === w.mac}
+            onClick={() => void lan.approve(w.mac)}
+            className="border border-emerald-600/60 px-1 font-mono text-[10px] text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
+            title={isAr ? 'اعتماد الجهاز يوقف تنبيهه' : 'approving stops its alert'}
+          >
+            {isAr ? 'اعتماد' : 'APPROVE'}
+          </button>
+        )}
+      </span>
+    );
+  }
+  return (
+    <span
+      className="w-[92px] shrink-0 font-mono text-[10px]"
+      style={{ color: w.state === 'APPROVED' ? '#34d399' : '#94a3b8' }}
+      title={w.approvedBy ? `${w.approvedBy} · ${w.approvedAt?.slice(0, 16)}` : `${isAr ? 'أول رصد' : 'first seen'} ${w.firstSeen.slice(0, 16)}`}
+    >
+      {w.state === 'APPROVED' ? (isAr ? '✓ معتمد' : '✓ APPROVED') : isAr ? 'خط الأساس' : 'BASELINE'}
+    </span>
   );
 };
 

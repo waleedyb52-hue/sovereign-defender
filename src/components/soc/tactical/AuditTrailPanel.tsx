@@ -2,6 +2,7 @@ import React from 'react';
 import { ShieldCheck, ShieldAlert, Copy, Check } from 'lucide-react';
 import { CyberButton } from './CyberButton';
 import { useAuditTrail, type AuditFilter } from './useAuditTrail';
+import { IpLink } from './ipDossier';
 
 /**
  * AUDIT TRAIL — who did what, and proof that the record was not rewritten.
@@ -163,7 +164,7 @@ export const AuditTrailPanel: React.FC<{ isAr: boolean }> = ({ isAr }) => {
                     </td>
                     <td className="px-2 py-1 font-mono text-cyan-300">{e.action}</td>
                     <td className="max-w-[220px] truncate px-2 py-1 font-mono text-slate-300" dir="ltr" title={e.target ?? undefined}>
-                      {e.target ?? '—'}
+                      {e.target && /^(\d{1,3}\.){3}\d{1,3}$/.test(e.target) ? <IpLink ip={e.target} /> : (e.target ?? '—')}
                     </td>
                     <td className="px-2 py-1 whitespace-nowrap" style={{ color: o.fg }}>
                       <span aria-hidden>{o.glyph}</span> {isAr ? o.ar : e.outcome}

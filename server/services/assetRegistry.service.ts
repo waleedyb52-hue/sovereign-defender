@@ -1,5 +1,6 @@
 import { DatabaseSync } from 'node:sqlite';
 import crypto from 'crypto';
+import net from 'net';
 import fs from 'fs';
 import path from 'path';
 
@@ -109,6 +110,11 @@ export interface AssetPosture {
   neighbours: Neighbour[] | null;
   /** The host's own local segments, so the UI can offer them for an authorised sweep. */
   segments: Segment[] | null;
+  /**
+   * Default gateway(s) from the host's routing table. Absent means the route could not be
+   * read, which leaves ARP-spoof detection unavailable for this host rather than blind.
+   */
+  gateways?: string[] | null;
 }
 
 export interface Asset {
@@ -451,6 +457,9 @@ export class AssetRegistryService {
             .slice(0, 512)
         : null,
       segments: Array.isArray(posture.segments) ? (posture.segments as Segment[]).slice(0, 32) : null,
+      gateways: Array.isArray(posture.gateways)
+        ? (posture.gateways as unknown[]).filter((g): g is string => typeof g === 'string' && net.isIPv4(g)).slice(0, 8)
+        : null,
       listeningPorts: numOrNull(posture.listeningPorts),
       establishedConnections: numOrNull(posture.establishedConnections),
       processes: numOrNull(posture.processes),

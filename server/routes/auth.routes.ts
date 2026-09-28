@@ -203,7 +203,8 @@ export function createAuthRouter(ac: AccessControl, opts: { tls: boolean; rotati
         limit: Number(q.limit) || 100,
         beforeSeq: Number(q.before) || undefined,
         action: typeof q.action === 'string' && q.action ? q.action : undefined,
-        actor: typeof q.actor === 'string' && q.actor ? q.actor : undefined
+        actor: typeof q.actor === 'string' && q.actor ? q.actor : undefined,
+        target: typeof q.target === 'string' && q.target ? q.target : undefined
       })
     });
   });

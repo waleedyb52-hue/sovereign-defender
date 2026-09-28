@@ -13,6 +13,11 @@ import { TelemetryDials } from './TelemetryDials';
 import { ThreatIntelTicker } from './ThreatIntelTicker';
 import { IsolationConfirmDialog, type IsolationRequest } from './IsolationConfirmDialog';
 import { useContainment } from './useContainment';
+import { useLanWatch } from './useLanWatch';
+import { useTripwire } from './useTripwire';
+import { TripwirePanel } from './TripwirePanel';
+import { IpDossierContext, IpLink } from './ipDossier';
+import { IpDossierDrawer } from './IpDossierDrawer';
 import { OperatorBadge } from './OperatorBadge';
 import { AuditTrailPanel } from './AuditTrailPanel';
 import { OperatorAdminPanel } from './OperatorAdminPanel';
@@ -106,6 +111,11 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
   const stream = useLiveAttackStream();
   const fleet = useAssets(apiKey);
   const c = useContainment(apiKey);
+  const lan = useLanWatch();
+  const trip = useTripwire();
+  /** The address whose dossier is open. Any IpLink in the cockpit sets it. */
+  const [dossierIp, setDossierIp] = React.useState<string | null>(null);
+  const dossier = React.useMemo(() => ({ open: (ip: string) => setDossierIp(ip) }), []);
   const { operator, can } = useOperator();
   /** VIEWERs see containment controls disabled, with the reason, rather than refused on click. */
   const canAct = can('ANALYST');
@@ -226,7 +236,10 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
       icon: TOOL_ICONS.NETWORK,
       ar: 'أجهزة الشبكة',
       en: 'NETWORK DEVICES',
-      badge: deviceCount ? String(deviceCount) : null
+      badge: deviceCount ? String(deviceCount) : null,
+      // New devices awaiting review, or a gateway ARP alarm, tint the tool in the index.
+      alert: Boolean(lan.status?.newCount) || lan.alarms.length > 0,
+      silentEndpoint: lan.error ? '/api/v1/lan-watch' : null
     },
     {
       id: 'EBPF',
@@ -251,7 +264,10 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
       ar: 'سلامة الملفات',
       en: 'FILE INTEGRITY',
       badge: a.fim.files.length ? String(a.fim.files.length) : null,
-      alert: a.fim.files.some(f => f.status != null && !/INTACT|OK|VERIFIED/i.test(f.status)),
+      // A tripwire in the last 24 hours keeps the tool flagged until someone has looked.
+      alert:
+        a.fim.files.some(f => f.status != null && !/INTACT|OK|VERIFIED/i.test(f.status)) ||
+        (trip.status?.incidents ?? []).some(i => Date.now() - Date.parse(i.at) < 86_400_000),
       silentEndpoint: a.missing.includes('/fim/files') ? '/fim/files' : null
     },
     {
@@ -292,6 +308,7 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
   const accent = sim ? '#fbbf24' : CYAN;
 
   return (
+    <IpDossierContext.Provider value={dossier}>
     <div className="fixed inset-0 z-0 flex h-screen w-screen flex-col overflow-hidden bg-black" dir={isAr ? 'rtl' : 'ltr'}>
       {/* ── LAYER 0: void, hex grid, CRT scanlines ──────────────────────────── */}
       <div className="absolute inset-0 z-0" aria-hidden>
@@ -327,6 +344,8 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
                   assets={fleet.assets}
                   isAr={isAr}
                   onOpenAsset={setSelectedAsset}
+                  lan={lan}
+                  canAct={canAct}
                   className="h-full"
                 />
               </div>
@@ -595,7 +614,7 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
                 width: '54px',
                 render: x => (x.mitre ? <span className="text-cyan-400">{x.mitre}</span> : <span className="text-slate-500">UNMAPPED</span>)
               },
-              { key: 'src', header: isAr ? 'المصدر' : 'SOURCE', width: '88px', render: x => <span className="text-slate-500">{x.srcIp ?? '—'}</span> },
+              { key: 'src', header: isAr ? 'المصدر' : 'SOURCE', width: '88px', render: x => <IpLink ip={x.srcIp} className="text-slate-300" /> },
               { key: 'title', header: isAr ? 'الحدث' : 'EVENT', render: x => <span className="text-slate-300">{x.title}</span> },
               {
                 key: 'act',
@@ -643,12 +662,19 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
               assets={fleet.assets}
               isAr={isAr}
               onOpenAsset={setSelectedAsset}
+              lan={lan}
+              canAct={canAct}
               className="h-full min-h-[320px]"
             />
           )}
           {workspace === 'EBPF' && <EbpfModule a={a} isAr={isAr} />}
           {workspace === 'WAF' && <WafModule a={a} isAr={isAr} />}
-          {workspace === 'FIM' && <FimModule a={a} isAr={isAr} />}
+          {workspace === 'FIM' && (
+            <div>
+              <FimModule a={a} isAr={isAr} />
+              <TripwirePanel t={trip} isAr={isAr} canAdmin={can('ADMIN')} />
+            </div>
+          )}
           {workspace === 'SCANNER' && <ScannerModule a={a} isAr={isAr} />}
           {workspace === 'INTEL' && (
             <div className="space-y-2">
@@ -681,6 +707,22 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
           f={fleet}
           isAr={isAr}
           onClose={() => setSelectedAsset(null)}
+        />
+      )}
+
+      {/* ── LAYER 3 · IP DOSSIER ────────────────────────────────────────────── */}
+      {dossierIp && (
+        <IpDossierDrawer
+          ip={dossierIp}
+          isAr={isAr}
+          alerts={d.alerts}
+          a={a}
+          c={c}
+          lan={lan}
+          assets={fleet.assets}
+          canAct={canAct}
+          onRequestIsolate={canAct ? (ip, context) => setIsoReq({ ip, origin: 'IP DOSSIER', context }) : undefined}
+          onClose={() => setDossierIp(null)}
         />
       )}
 
@@ -764,6 +806,7 @@ export const TacticalCockpit: React.FC<Props> = ({ lang = 'ar', apiKey, onExit }
         )}
       </footer>
     </div>
+    </IpDossierContext.Provider>
   );
 };
 

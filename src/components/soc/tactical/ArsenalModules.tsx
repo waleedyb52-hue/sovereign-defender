@@ -3,6 +3,7 @@ import { Cpu, ShieldCheck, FileLock2, Radar, Globe2, Lock } from 'lucide-react';
 import { ArsenalCard, CyberButton } from './CyberButton';
 import type { useArsenal } from './useArsenal';
 import type { Containment } from './useContainment';
+import { IpLink } from './ipDossier';
 
 type Arsenal = ReturnType<typeof useArsenal>;
 
@@ -486,7 +487,7 @@ export const ZtnaModule: React.FC<{
               <div key={r.id} className="flex items-center gap-1.5 border-b border-white/[0.04] pb-1">
                 <div className="min-w-0 flex-1">
                   <p className="flex items-baseline gap-1.5 font-mono text-[10px]" dir="ltr">
-                    <span className="text-rose-300">{r.ip}</span>
+                    <IpLink ip={r.ip} className="text-rose-300" />
                     {r.seeded && (
                       <span
                         className="border border-slate-600 px-1 text-[10px] text-slate-400"

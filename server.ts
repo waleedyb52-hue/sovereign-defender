@@ -10,6 +10,8 @@ import net from 'net';
 import { createAccessControl, securityHeaders, clientIp as accessClientIp } from './server/middleware/accessControl.js';
 import { createAuthRouter } from './server/routes/auth.routes.js';
 import { globalOperatorAuth, ROLE_RANK, type Role } from './server/services/operatorAuth.service.js';
+import { globalLanWatch } from './server/services/lanWatch.service.js';
+import { globalRansomwareTripwire } from './server/services/ransomwareTripwire.service.js';
 import { isCloudAiEnabled, cloudAiApiKey, isOutboundWebhookAllowed } from './server/aiPolicy.js';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
@@ -214,6 +216,8 @@ app.options('*', cors(corsOptions));
 // starve express.json() of the data it needs.
 // Bind the real filesystem watcher at boot.
 const canaryBoot = globalLiveHostCanary.start();
+// Operator-chosen folders (persisted) and CANARY_DIRS: re-planted and re-watched at boot.
+globalRansomwareTripwire.start();
 
 // Mirror the guarded files into the self-healing ledger so tampering is both
 // detected by the watcher and recoverable from the hash-chained baseline.
@@ -7361,7 +7365,48 @@ app.post('/api/v1/assets/:id/heartbeat', (req, res) => {
   }
   const r = globalAssetRegistry.heartbeat(req.params.id, req.body || {});
   if ('reason' in r) return res.status(404).json({ success: false, error: r.reason });
+  // New devices and gateway ARP bindings, from the posture the registry just cleaned.
+  try {
+    globalLanWatch.observe(r.asset.id, r.asset.posture?.neighbours, r.asset.posture?.gateways);
+  } catch (err: any) {
+    console.warn('[lan-watch] observe failed:', err?.message);
+  }
   return res.json({ success: true, asset: r.asset });
+});
+
+/**
+ * RANSOMWARE TRIPWIRE. Reading status needs VIEWER (gate); protecting or releasing a
+ * folder writes decoy files into it, so it needs ADMIN and is audited with the path.
+ */
+app.get('/api/v1/tripwire', (_req, res) => res.json({ success: true, ...globalRansomwareTripwire.status() }));
+
+app.post('/api/v1/tripwire/protect', access.requireRole('ADMIN'), (req, res) => {
+  const by = req.principal?.kind === 'OPERATOR' ? req.principal.name : 'api-key';
+  const r = globalRansomwareTripwire.protect(String(req.body?.dir ?? ''), by);
+  access.audit(req, 'TRIPWIRE_PROTECT', 'reason' in r ? 'FAILURE' : 'SUCCESS', String(req.body?.dir ?? ''), 'reason' in r ? { reason: r.reason } : { decoys: r.decoys });
+  if ('reason' in r) return res.status(400).json({ success: false, error: 'REFUSED', message: r.reason });
+  return res.json({ success: true, ...r });
+});
+
+app.post('/api/v1/tripwire/unprotect', access.requireRole('ADMIN'), (req, res) => {
+  const r = globalRansomwareTripwire.unprotect(String(req.body?.dir ?? ''));
+  access.audit(req, 'TRIPWIRE_UNPROTECT', 'reason' in r ? 'FAILURE' : 'SUCCESS', String(req.body?.dir ?? ''), 'reason' in r ? { reason: r.reason } : { removed: r.removed, kept: r.kept });
+  if ('reason' in r) return res.status(400).json({ success: false, error: 'REFUSED', message: r.reason });
+  return res.json({ success: true, ...r });
+});
+
+/** LAN watch: device inventory with NEW/BASELINE/APPROVED state, gateway bindings, events. */
+app.get('/api/v1/lan-watch', (_req, res) => res.json({ success: true, ...globalLanWatch.status() }));
+
+/** Approving a device stops its NEW alert. ANALYST (gate) and audited. */
+app.post('/api/v1/lan-watch/:mac/approve', (req, res) => {
+  const mac = String(req.params.mac || '').toLowerCase();
+  if (!/^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/.test(mac)) return res.status(400).json({ success: false, error: 'INVALID_MAC' });
+  const by = req.principal?.kind === 'OPERATOR' ? req.principal.name : 'api-key';
+  const d = globalLanWatch.approve(mac.replace(/-/g, ':'), by);
+  access.audit(req, 'LAN_DEVICE_APPROVED', d ? 'SUCCESS' : 'FAILURE', mac, d ? { ip: d.lastIp, vendor: d.vendor } : { reason: 'unknown device' });
+  if (!d) return res.status(404).json({ success: false, error: 'UNKNOWN_DEVICE' });
+  return res.json({ success: true, device: d });
 });
 
 // A sweep result is posted by the sensor that ran it. Only an enrolled asset can report
