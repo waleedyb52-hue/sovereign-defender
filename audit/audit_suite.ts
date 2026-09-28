@@ -1054,6 +1054,26 @@ const auth = { 'x-api-key': KEY };
     return 'Technique from mitreId or mitreTechnique, else UNMAPPED; source address includes actorIp.';
   });
 
+  await run(101, 'AI', 'Local classification does not block on corpus retrieval', async () => {
+    // Same-technique retrieval scanned the whole corpus synchronously (LIKE '%…%') on every
+    // classification, although the local path never read its result: 55 concurrent calls
+    // took 12–25 s and #32 sat at its 15 s timeout. The budget here is deliberately tight.
+    const src = fs.readFileSync(path.join(ROOT, 'server.ts'), 'utf-8');
+    const handler = src.slice(src.indexOf("app.post('/api/v1/agent/ai-analyze'"));
+    const genAiAt = handler.indexOf('if (genAI) {');
+    const retrieveAt = handler.indexOf('globalThreatMemory.retrieve(');
+    assert(genAiAt > 0 && retrieveAt > genAiAt, 'retrieval runs before (outside) the model branch again');
+    const mem = fs.readFileSync(path.join(ROOT, 'server/services/threatMemory.service.ts'), 'utf-8');
+    assert(/idx_incidents_tech_time/.test(mem) && !/mitre_technique LIKE \?/.test(mem), 'technique retrieval is back on an unindexed LIKE');
+    const t = Date.now();
+    const rs = await Promise.all(Array.from({ length: 55 }, (_, i) =>
+      http('POST', '/api/v1/agent/ai-analyze', { packet: { srcIp: `198.18.101.${i}`, vector: 'DDOS', payload: `perf probe ${i} ${Date.now()}`, threatScore: 70 } }, auth)));
+    const ms = Date.now() - t;
+    assert(rs.filter(r => r.status === 200).length >= 50, 'classifications failed under concurrency');
+    assert(ms < 3000, `55 concurrent classifications took ${ms} ms (budget 3000)`);
+    return `55 concurrent classifications in ${ms} ms; retrieval only on the model path, technique lookup indexed.`;
+  });
+
   // ---- Report ----
   const pass = results.filter(r => r.status === 'PASS').length;
   const warn = results.filter(r => r.status === 'WARN').length;

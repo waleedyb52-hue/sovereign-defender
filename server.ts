@@ -1819,16 +1819,21 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
   // actor did before, how this technique was handled previously, and any
   // textually similar incident. The block is hard-capped, so prompt size
   // stays flat no matter how large the corpus grows.
-  const retrieved = globalThreatMemory.retrieve({
-    actorIp: safeSrcIp,
-    vector: packet.vector,
-    mitreTechnique: packet.mitreTechnique,
-    payload: payloadStr
-  });
-  const groundedContext = globalThreatMemory.buildContextBlock(retrieved);
+  //
+  // Only when a model will read it. On a sovereign deployment (no genAI) the block was
+  // built on every request and never used, and the retrieval behind it is synchronous
+  // SQLite over the whole corpus — it was the entire cost of a local classification
+  // (~100 ms against 0.1 ms for the classifier) and it serialised concurrent requests.
 
   // 4. STRICT PROMPT ISOLATION (<untrusted_payload>)
   if (genAI) {
+    const retrieved = globalThreatMemory.retrieve({
+      actorIp: safeSrcIp,
+      vector: packet.vector,
+      mitreTechnique: packet.mitreTechnique,
+      payload: payloadStr
+    });
+    const groundedContext = globalThreatMemory.buildContextBlock(retrieved);
     try {
       const isolatedPrompt = buildIsolatedGeminiPrompt({
         contextMemory: groundedContext,

@@ -91,6 +91,12 @@ export interface IocRecord {
   notes?: string;
 }
 
+/** "T1190 - Exploit Public-Facing Application" → "T1190"; anything else → null. */
+export function techIdOf(v: string | null | undefined): string | null {
+  const m = typeof v === 'string' ? /\b(T\d{4}(?:\.\d{3})?)\b/i.exec(v) : null;
+  return m ? m[1].toUpperCase() : null;
+}
+
 /** How many characters of retrieved context we are willing to spend on a prompt. */
 const MAX_CONTEXT_CHARS = 4000;
 const DEFAULT_LIMIT = 4;
@@ -208,6 +214,29 @@ export class ThreatMemoryService {
       CREATE INDEX IF NOT EXISTS idx_vuln_vendor     ON vulnerabilities(vendor);
       CREATE INDEX IF NOT EXISTS idx_vuln_added      ON vulnerabilities(date_added DESC);
     `);
+
+    // Normalised technique ID ("T1190", "T1110.001") with an index ordered by time.
+    //
+    // Same-technique retrieval used `mitre_technique LIKE '%T1190%' OR mitre_tactic LIKE
+    // …` ordered by time. A leading wildcard cannot use an index, so every call walked
+    // the whole corpus: ~130 ms at 66k incidents, over a second at the tail, all of it
+    // synchronous — and it ran on every classification, so concurrent requests queued
+    // behind it. With this column the lookup is an index seek.
+    try {
+      this.db.exec(`ALTER TABLE incidents ADD COLUMN tech_id TEXT`);
+    } catch {
+      /* column exists */
+    }
+    this.db.exec(`CREATE INDEX IF NOT EXISTS idx_incidents_tech_time ON incidents(tech_id, timestamp DESC)`);
+    // One-time backfill; rows with no technique get '' so they are not revisited.
+    this.db.exec(`
+      UPDATE incidents
+         SET tech_id = upper(CASE WHEN instr(trim(mitre_technique), ' ') > 0
+                                  THEN substr(trim(mitre_technique), 1, instr(trim(mitre_technique), ' ') - 1)
+                                  ELSE trim(mitre_technique) END)
+       WHERE tech_id IS NULL AND trim(mitre_technique) GLOB '[Tt][0-9][0-9][0-9][0-9]*';
+      UPDATE incidents SET tech_id = '' WHERE tech_id IS NULL;
+    `);
   }
 
   public isReady(): boolean { return this.ready; }
@@ -236,8 +265,8 @@ export class ThreatMemoryService {
       this.db.prepare(`
         INSERT INTO incidents (
           id, timestamp, source, severity, title, title_ar, details, details_ar,
-          actor_ip, mitre_tactic, mitre_technique, action_taken, action_taken_ar, metadata
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+          actor_ip, mitre_tactic, mitre_technique, action_taken, action_taken_ar, metadata, tech_id
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       `).run(
         inc.id,
         inc.timestamp,
@@ -252,7 +281,8 @@ export class ThreatMemoryService {
         inc.mitreTechnique ?? null,
         inc.actionTaken ?? null,
         inc.actionTakenAr ?? null,
-        inc.metadata ? JSON.stringify(inc.metadata) : null
+        inc.metadata ? JSON.stringify(inc.metadata) : null,
+        techIdOf(inc.mitreTechnique) ?? techIdOf(inc.mitreTactic) ?? ''
       );
 
       // One searchable blob per incident: the fields an analyst would grep.
@@ -427,14 +457,37 @@ export class ThreatMemoryService {
         ? this.rows('SELECT * FROM incidents WHERE actor_ip = ? ORDER BY timestamp DESC LIMIT ?', [q.actorIp, limit])
         : [];
 
-      const techKey = (q.mitreTechnique || q.vector || '').split(' - ')[0].trim();
-      const sameTechnique = techKey
+      // Only a real technique ID is searched. A caller's vector label ("DDOS") is not a
+      // technique; the old substring match against it almost never hit anything and
+      // still cost a full scan.
+      const techId = techIdOf(q.mitreTechnique) ?? techIdOf(q.vector);
+      const sameTechnique = techId
         ? this.rows(
-            `SELECT * FROM incidents
-             WHERE (mitre_technique LIKE ? OR mitre_tactic LIKE ?)
-               AND (? IS NULL OR actor_ip IS NULL OR actor_ip <> ?)
-             ORDER BY timestamp DESC LIMIT ?`,
-            [`%${techKey}%`, `%${techKey}%`, q.actorIp ?? null, q.actorIp ?? '', limit]
+            techId.includes('.')
+              ? `SELECT * FROM incidents
+                 WHERE tech_id = ?
+                   AND (? IS NULL OR actor_ip IS NULL OR actor_ip <> ?)
+                 ORDER BY timestamp DESC LIMIT ?`
+              : // A parent ID also retrieves its sub-techniques: T1110 covers T1110.001.
+                // Two index-ordered halves, each stopping at `limit`, then merged. A single
+                // OR made SQLite sort every match — 74 ms for T1498, which holds 66k rows.
+                `SELECT * FROM (
+                   SELECT * FROM (SELECT * FROM incidents
+                                   WHERE tech_id = ? AND (? IS NULL OR actor_ip IS NULL OR actor_ip <> ?)
+                                   ORDER BY timestamp DESC LIMIT ?)
+                   UNION ALL
+                   SELECT * FROM (SELECT * FROM incidents
+                                   WHERE tech_id > ? || '.' AND tech_id < ? || '/'
+                                     AND (? IS NULL OR actor_ip IS NULL OR actor_ip <> ?)
+                                   ORDER BY timestamp DESC LIMIT ?)
+                 ) ORDER BY timestamp DESC LIMIT ?`,
+            techId.includes('.')
+              ? [techId, q.actorIp ?? null, q.actorIp ?? '', limit]
+              : [
+                  techId, q.actorIp ?? null, q.actorIp ?? '', limit,
+                  techId, techId, q.actorIp ?? null, q.actorIp ?? '', limit,
+                  limit
+                ]
           )
         : [];
 
