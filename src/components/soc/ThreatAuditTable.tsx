@@ -71,19 +71,26 @@ const TACTIC_TO_TECHNIQUE: Record<string, { id: string; name: string }> = {
   reconnaissance: { id: 'T1595', name: 'Active Scanning' }
 };
 
+/**
+ * The technique the event itself names, or null (rendered UNMAPPED).
+ *
+ * This used to fall back to TACTIC_TO_TECHNIQUE — "Defense Evasion" became T1070 — which
+ * is a guess dressed as a mapping, and `.clauderules` §7 forbids exactly that. It also
+ * ignored `mitreTechnique`, the field unified telemetry actually fills, so real mappings
+ * were being replaced by inferred ones. The table below now only supplies a display
+ * name for an ID the event already carries.
+ */
 function techniqueFor(e: ThreatEvent): { id: string; name?: string } | null {
-  // An explicit ID on the event always wins over anything inferred.
   if (e.mitreId && /^T\d{4}(\.\d{3})?$/.test(e.mitreId)) {
-    const tactic = e.mitreTactic?.toLowerCase().trim() ?? '';
-    return { id: e.mitreId, name: TACTIC_TO_TECHNIQUE[tactic]?.name };
+    return { id: e.mitreId, name: Object.values(TACTIC_TO_TECHNIQUE).find(t => t.id === e.mitreId)?.name };
   }
-  const raw = e.mitreTactic?.toLowerCase().trim();
-  if (!raw) return null;
-  // A tactic string may already embed its ID, e.g. "Credential Access (T1110.001)".
-  const embedded = raw.match(/t\d{4}(\.\d{3})?/i);
+  // "T1486 - Data Encrypted for Impact"
+  const tech = e.mitreTechnique?.match(/^\s*(T\d{4}(?:\.\d{3})?)\s*(?:[-–:]\s*(.+))?$/i);
+  if (tech) return { id: tech[1].toUpperCase(), name: tech[2]?.trim() };
+  // A tactic string may embed its ID, e.g. "Credential Access (T1110.001)".
+  const embedded = e.mitreTactic?.match(/t\d{4}(\.\d{3})?/i);
   if (embedded) return { id: embedded[0].toUpperCase() };
-  const hit = TACTIC_TO_TECHNIQUE[raw];
-  return hit ? { id: hit.id, name: hit.name } : null;
+  return null;
 }
 
 const SEVERITY_TONE: Record<string, BadgeTone> = {
@@ -105,7 +112,7 @@ const SEVERITY_RANK: Record<string, number> = {
 };
 
 function sourceIpOf(e: ThreatEvent): string | null {
-  return e.srcIp ?? e.sourceIp ?? null;
+  return e.srcIp ?? e.sourceIp ?? e.actorIp ?? null;
 }
 
 const CopyableIp: React.FC<{ ip: string; lang: 'ar' | 'en' }> = ({ ip, lang }) => {

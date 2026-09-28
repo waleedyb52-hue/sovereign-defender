@@ -93,7 +93,11 @@ const AlertEvent = z.object({
   actionTaken: z.string().nullish(),
   actionTakenAr: z.string().nullish(),
   srcIp: z.string().nullish(),
-  sourceIp: z.string().nullish()
+  sourceIp: z.string().nullish(),
+  // What unified telemetry actually sends. Without these two the feed showed every
+  // source as "—" and nearly every technique as UNMAPPED, though both were present.
+  actorIp: z.string().nullish(),
+  mitreTechnique: z.string().nullish()
 });
 
 const TelemetryResponse = z.object({
@@ -448,9 +452,11 @@ export function useCyberDefendData(apiKey?: string, pollMs = 5000): CyberDefendD
       mitre:
         e.mitreId && /^T\d{4}(\.\d{3})?$/.test(e.mitreId)
           ? e.mitreId
-          : (e.mitreTactic?.match(/T\d{4}(\.\d{3})?/i)?.[0]?.toUpperCase() ?? null),
+          : (e.mitreTechnique?.match(/T\d{4}(\.\d{3})?/i)?.[0]?.toUpperCase() ??
+            e.mitreTactic?.match(/T\d{4}(\.\d{3})?/i)?.[0]?.toUpperCase() ??
+            null),
       action: e.actionTaken ?? null,
-      srcIp: e.srcIp ?? e.sourceIp ?? null,
+      srcIp: e.srcIp ?? e.sourceIp ?? e.actorIp ?? null,
       source: e.source ?? null
     })),
     emergencyLockdown: Boolean(telemetry?.emergencyLockdown),

@@ -130,7 +130,10 @@ export const ThreatEventSchema = z.object({
   actionTaken: z.string().nullish(),
   actionTakenAr: z.string().nullish(),
   srcIp: z.string().nullish(),
-  sourceIp: z.string().nullish()
+  sourceIp: z.string().nullish(),
+  // The fields unified telemetry actually populates.
+  actorIp: z.string().nullish(),
+  mitreTechnique: z.string().nullish()
 });
 export type ThreatEvent = z.infer<typeof ThreatEventSchema>;
 
