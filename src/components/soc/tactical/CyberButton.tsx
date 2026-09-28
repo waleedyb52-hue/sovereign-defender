@@ -40,24 +40,26 @@ export const CyberButton: React.FC<{
   title?: string;
   className?: string;
   onClick?: () => void;
-}> = ({ children, tone = 'cyan', size = 'md', disabled, active, title, className = '', onClick }) => {
+  /** 'submit' inside a form; everything else stays a plain button. */
+  type?: 'button' | 'submit';
+}> = ({ children, tone = 'cyan', size = 'md', disabled, active, title, className = '', onClick, type = 'button' }) => {
   const t = TONE[tone];
   const cut = size === 'sm' ? 6 : 10;
 
   return (
     <button
-      type="button"
+      type={type}
       onClick={onClick}
       disabled={disabled}
       title={title}
       className={`group relative font-mono uppercase tracking-widest transition-all duration-200 disabled:cursor-not-allowed ${
-        size === 'sm' ? 'px-2.5 py-1 text-[8px]' : 'px-5 py-2 text-[10px]'
+        size === 'sm' ? 'px-2.5 py-1 text-[10px]' : 'px-5 py-2 text-xs'
       } ${className}`}
       style={{
         clipPath: chamfer(cut),
         border: `1px solid ${disabled ? 'rgba(148,163,184,0.18)' : t.border}`,
         background: disabled ? 'rgba(255,255,255,0.015)' : active ? t.border + '33' : t.bg,
-        color: disabled ? '#475569' : t.fg,
+        color: disabled ? '#64748b' : t.fg,
         boxShadow: disabled ? 'none' : active ? `0 0 20px ${t.glow}` : `0 0 10px ${t.glow}44`,
         textShadow: disabled ? 'none' : `0 0 8px ${t.glow}`
       }}
@@ -129,14 +131,14 @@ export const ArsenalCard: React.FC<{
       >
         <Icon className="h-3 w-3 shrink-0" strokeWidth={1.5} style={{ color: t.fg }} aria-hidden />
         <span
-          className="truncate font-mono text-[7.5px] font-semibold tracking-widest uppercase"
+          className="truncate font-mono text-[10px] font-semibold tracking-widest uppercase"
           style={{ color: t.fg, textShadow: `0 0 8px ${t.glow}` }}
         >
           {title}
         </span>
         <span className="ms-auto flex shrink-0 items-center gap-1.5">
           {headline}
-          <span className="font-mono text-[8px] text-slate-600">{open ? '−' : '+'}</span>
+          <span className="font-mono text-[11px] text-slate-400" aria-hidden>{open ? '−' : '+'}</span>
         </span>
       </button>
 

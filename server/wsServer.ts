@@ -1,4 +1,5 @@
-import { Server as HttpServer } from 'http';
+import type { Server as HttpServer, IncomingMessage } from 'http';
+import type { Server as HttpsServer } from 'https';
 import { WebSocketServer, WebSocket } from 'ws';
 
 export class TelemetryWebSocketServer {
@@ -8,9 +9,19 @@ export class TelemetryWebSocketServer {
   private packetCountThisSec: number = 0;
   private startTime: number = Date.now();
 
-  public init(server: HttpServer): void {
+  /**
+   * `authorize` decides each upgrade before the socket opens. The stream carries every
+   * live packet summary the console sees, so it needs the same credential as the API;
+   * it was open to anyone who could reach the port. A refused upgrade gets 401 and no
+   * socket.
+   */
+  public init(server: HttpServer | HttpsServer, authorize?: (req: IncomingMessage) => boolean): void {
     try {
-      this.wss = new WebSocketServer({ server, path: '/ws/telemetry' });
+      this.wss = new WebSocketServer({
+        server,
+        path: '/ws/telemetry',
+        verifyClient: authorize ? (info, done) => (authorize(info.req) ? done(true) : done(false, 401, 'Unauthorized')) : undefined
+      });
 
       this.wss.on('connection', (ws: WebSocket) => {
         this.clients.add(ws);

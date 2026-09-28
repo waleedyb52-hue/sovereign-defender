@@ -1,9 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import http from 'http';
+import https from 'https';
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import crypto from 'crypto';
 import net from 'net';
+import { createAccessControl, securityHeaders, clientIp as accessClientIp } from './server/middleware/accessControl.js';
+import { createAuthRouter } from './server/routes/auth.routes.js';
+import { globalOperatorAuth, ROLE_RANK, type Role } from './server/services/operatorAuth.service.js';
 import { isCloudAiEnabled, cloudAiApiKey, isOutboundWebhookAllowed } from './server/aiPolicy.js';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
@@ -76,7 +82,47 @@ const app = express();
 const PORT = 3000;
 
 // 1. TRUST PROXY CONFIGURATION (PREVENT SPOOFED IP INGESTION)
-app.set('trust proxy', 1);
+//
+// This was `1`, which trusts one X-Forwarded-For hop unconditionally. With no proxy in
+// front — the default deployment — the client writes that header itself, so any caller
+// could present as 127.0.0.1 and walk past containment, rate limits and every per-address
+// decision. The default now trusts forwarding headers only from a loopback peer (a reverse
+// proxy on the same host). Behind a remote proxy or Cloud Run, set TRUST_PROXY to that
+// hop count or subnet explicitly.
+const TRUST_PROXY = process.env.TRUST_PROXY;
+app.set(
+  'trust proxy',
+  TRUST_PROXY == null || TRUST_PROXY === '' ? 'loopback' : /^\d+$/.test(TRUST_PROXY) ? Number(TRUST_PROXY) : TRUST_PROXY
+);
+
+// TLS is enabled when a certificate and key are supplied. Without it, session cookies and
+// every telemetry frame cross the network in cleartext; the console says so on the login
+// screen rather than implying otherwise.
+const TLS_CERT_FILE = process.env.TLS_CERT_FILE;
+const TLS_KEY_FILE = process.env.TLS_KEY_FILE;
+const TLS_ENABLED = Boolean(TLS_CERT_FILE && TLS_KEY_FILE);
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+app.use(
+  securityHeaders({
+    production: IS_PRODUCTION,
+    tls: TLS_ENABLED,
+    // 'none' unless the console is deliberately embedded (e.g. a preview frame).
+    frameAncestors: process.env.FRAME_ANCESTORS || "'none'"
+  })
+);
+
+// CONTAINMENT, ENFORCED. Before any parsing or routing: a request from an actively
+// contained address is refused here, and the refusal is what the drop counter counts.
+app.use((req, res, next) => {
+  const ip = accessClientIp(req);
+  if (ip && ip !== '127.0.0.1' && ip !== '::1' && globalEbpfContainmentService.isEnforced(ip)) {
+    globalEbpfContainmentService.recordEnforcedDrop(ip);
+    res.status(403).end();
+    return;
+  }
+  next();
+});
 
 // Helper for cryptographic token / ID generation
 export function generateSecureId(prefix: string = 'SD'): string {
@@ -132,51 +178,36 @@ globalTargetScannerService.setReportCallback((report) => {
 // =============================================================================
 // ROBUST CORS POLICY & CROSS-ORIGIN SETUP
 // =============================================================================
+// Exact origins only. The console is served same-origin and needs none of these; they
+// exist for a separately hosted dev frontend. Extra origins come from ALLOWED_ORIGINS
+// (comma-separated). Removed, with reasons:
+//   - a second /api middleware that echoed back ANY Origin with credentials allowed,
+//     overriding this list entirely;
+//   - `origin.includes('localhost')`, which admits http://localhost.attacker.example;
+//   - `*.google.com` and `*.run.app`, which admit any page anyone hosts there.
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
-  'http://localhost',
-  'http://127.0.0.1'
+  ...(process.env.ALLOWED_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean)
 ];
 
-app.use(cors({
+const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like server-to-server, mobile curl, or same-origin)
+    // No Origin: same-origin navigation or a non-browser client. CORS does not apply.
     if (!origin) return callback(null, true);
-    
-    // Check exact whitelist
     if (allowedOrigins.includes(origin)) return callback(null, true);
-
-    // Allow all Google Cloud Run / AI Studio preview subdomains (*.run.app, *.google.com)
-    if (origin.endsWith('.run.app') || origin.endsWith('.google.com') || origin.includes('localhost')) {
-      return callback(null, true);
-    }
-
-    // Explicitly reject unauthorized cross-origin requests
-    return callback(new Error('CORS policy violation: Unauthorized origin rejected by Sovereign Defender.'), false);
+    // Not an error: the response simply carries no CORS grant, and the browser blocks it.
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-requested-with', 'Accept', 'Origin']
-}));
+};
 
-// Explicit Options Preflight handling for all routes
-app.options('*', cors());
-
-// Explicit CORS headers middleware for all /api endpoints
-app.use('/api', (req, res, next) => {
-  const origin = req.headers.origin || '*';
-  res.header('Access-Control-Allow-Origin', origin);
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-api-key, x-requested-with, Accept, Origin');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  next();
-});
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // LIVE WIRE GATE: runs before any body parser. It reads only wire metadata
 // (method, raw URL, headers) and never touches the body stream, so it cannot
@@ -205,12 +236,25 @@ app.use(wireVerifyErrorHandler);
 // payload is available to hash) and before any route handler, so a tampered
 // request is stopped before it can reach business logic.
 app.use('/api', inLineInterceptionMiddleware);
-app.use('/api/v1/soc/intercept', interceptionRouter);
 
 // DECEPTION GRID: the shadow proxy runs after interception (a tampered
 // payload is stopped outright) but before route dispatch, so a flagged actor
 // is forked into the decoy without ever reaching real business logic.
 app.use(shadowDecoyMiddleware);
+
+// ACCESS CONTROL GATE. After the decoy (a flagged actor is still diverted into it, and
+// the decoy serves nothing real) and before every router. Everything under /api needs a
+// credential except health, sign-in and sensor enrolment; reads need VIEWER, writes need
+// ANALYST. See server/middleware/accessControl.ts.
+const access = createAccessControl({
+  apiKeys: () => [ADMIN_SECRET, state.activeApiKey],
+  extraOrigins: () => allowedOrigins
+});
+app.use('/api', access.gate);
+app.use('/api/v1', createAuthRouter(access, { tls: TLS_ENABLED, rotatingApiKey: () => state.activeApiKey }));
+
+// Was mounted ahead of any auth; now behind the gate (reads VIEWER, writes ANALYST).
+app.use('/api/v1/soc/intercept', interceptionRouter);
 app.use('/api/v1/soc/deception', deceptionRouter);
 app.use('/api/v1/soc/live', liveRouter);
 // SECURITY: these routers drive the dual-kernel mitigation driver (host firewall
@@ -229,39 +273,27 @@ function getReliableClientIp(req: express.Request): string {
   return ip.replace(/^::ffff:/, '').trim();
 }
 
-// Strict same-origin check: parses the URL host so only exact trusted hosts
-// (loopback / *.run.app preview) pass, never a substring like `localhost.evil.com`.
-function isTrustedSameOrigin(origin: string): boolean {
-  try {
-    const host = new URL(origin).hostname.toLowerCase();
-    return host === 'localhost' || host === '127.0.0.1' || host === '::1' || host.endsWith('.run.app');
-  } catch {
-    return false;
-  }
-}
-
 // 3. ADMIN AUTHENTICATION MIDDLEWARE FOR SENSITIVE SOC OPERATIONS
+//
+// An API key, or a signed-in operator of ANALYST rank or above. The Origin-header
+// allowance that used to sit here is gone: `Origin: http://localhost` is set by curl in
+// one flag, so it authenticated anyone who asked. Every state change through here is
+// written to the audit trail with its real response status.
 function adminAuthMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace(/^Bearer\s+/i, '');
-  const adminSecret = ADMIN_SECRET;
-  
-  // Allow if matching ADMIN_API_KEY or active session key
-  if (apiKey && (apiKey === adminSecret || apiKey === state.activeApiKey)) {
+  const p = req.principal ?? access.authenticate(req);
+  req.principal = p;
+  if (p && (p.kind === 'API_KEY' || (p.kind === 'OPERATOR' && ROLE_RANK[p.role as Role] >= ROLE_RANK.ANALYST))) {
+    access.auditOnFinish(req, res);
     return next();
   }
-
-  // Same-origin preview session access allowed. SECURITY: parse the hostname
-  // instead of a substring match — a bare `includes('localhost')` is bypassed
-  // by any attacker-supplied Origin such as `http://localhost.attacker.com`.
-  const origin = req.headers.origin || req.headers.referer || '';
-  if (origin && isTrustedSameOrigin(origin)) {
-    return next();
-  }
-
-  return res.status(401).json({
-    error: 'UNAUTHORIZED_ADMIN_ACTION',
-    message: 'Valid x-api-key or administrative credentials required for this SOC operation.',
-    messageAr: 'مطلوب مفتاح صلاحيات إدارية صالح لتنفيذ هذه العملية في مركز العمليات.'
+  return res.status(p ? 403 : 401).json({
+    error: p ? 'ROLE_INSUFFICIENT' : 'UNAUTHORIZED_ADMIN_ACTION',
+    message: p
+      ? 'This SOC operation needs the ANALYST role or higher.'
+      : 'Sign in, or present a valid x-api-key, for this SOC operation.',
+    messageAr: p
+      ? 'تتطلّب هذه العملية دور محلّل أو أعلى.'
+      : 'سجّل الدخول أو قدّم مفتاح x-api-key صالحًا لتنفيذ هذه العملية.'
   });
 }
 
@@ -1273,7 +1305,9 @@ app.get('/api/v1/agent/status', (req, res) => {
   res.json({
     status: 'ONLINE',
     version: '3.0.0',
-    apiKey: state.activeApiKey,
+    // The live API key used to be returned here, to any caller, which made every
+    // key-protected route public. An ADMIN reads it from GET /api/v1/auth/api-key,
+    // and each read is audited.
     metrics: {
       ...state.metrics,
       activeIptablesRules: state.quarantineTable.size,
@@ -3715,8 +3749,9 @@ app.post(['/api/v1/system/reset-telemetry', '/api/v1/telemetry/reset'], adminAut
 });
 
 // 6. Regenerate API Key (Cryptographically Secure)
-app.post('/api/v1/agent/rotate-key', adminAuthMiddleware, (req, res) => {
+app.post('/api/v1/agent/rotate-key', adminAuthMiddleware, access.requireRole('ADMIN'), (req, res) => {
   state.activeApiKey = 'sd_live_sec_' + crypto.randomBytes(24).toString('hex');
+  access.audit(req, 'API_KEY_ROTATED', 'SUCCESS', 'rotating-key');
   res.json({ success: true, apiKey: state.activeApiKey });
 });
 
@@ -3941,19 +3976,44 @@ app.get('/api/v1/soc/ebpf/containment-records', (req, res) => {
   });
 });
 
+/**
+ * Addresses containment must never take: loopback, the unspecified address, this
+ * server's own interfaces, and the address of the operator asking. The last one is the
+ * self-lockout case — an operator who isolates the machine they are sitting at loses the
+ * console, and with it the release button.
+ */
+function containmentRefusal(targetIp: string, requesterIp: string): string | null {
+  if (net.isIP(targetIp) === 0) return 'not a valid IPv4 or IPv6 address';
+  const t = targetIp.replace(/^::ffff:/, '');
+  if (t === '0.0.0.0' || t === '::' || t.startsWith('127.') || t === '::1') return 'loopback and unspecified addresses cannot be contained';
+  const own = Object.values(os.networkInterfaces()).flat().filter(Boolean).map(i => i!.address.replace(/^::ffff:/, ''));
+  if (own.includes(t)) return 'that address belongs to this server';
+  if (t === requesterIp) return 'that is your own address — containing it would cut you off from the console';
+  return null;
+}
+
 app.post('/api/v1/soc/ebpf/contain-ip', (req, res) => {
   const { targetIp, reason, reasonAr, triggeredByIoc, nodeName } = req.body || {};
-  if (!targetIp) {
+  if (typeof targetIp !== 'string' || !targetIp.trim()) {
     return res.status(400).json({ error: 'targetIp is required' });
   }
+  const ip = targetIp.trim();
+  const refusal = containmentRefusal(ip, accessClientIp(req));
+  if (refusal) {
+    access.audit(req, 'CONTAIN', 'DENIED', ip, { reason: refusal });
+    return res.status(422).json({ success: false, error: 'CONTAINMENT_REFUSED', message: refusal });
+  }
 
+  const requestedBy = req.principal?.kind === 'OPERATOR' ? req.principal.name : req.principal?.kind === 'API_KEY' ? 'api-key' : undefined;
   const record = globalEbpfContainmentService.containIpAutonomously({
-    targetIp,
-    reason: reason || 'Manual operator or heuristic zero-trust containment',
-    reasonAr: reasonAr || 'عزل شبكي فوري بأمر المشغل الأمني أو النظام الذاتي',
-    triggeredByIoc: triggeredByIoc || 'MANUAL_OPERATOR_OVERRIDE',
-    nodeName
+    targetIp: ip,
+    reason: typeof reason === 'string' && reason ? reason.slice(0, 300) : 'Manual operator or heuristic zero-trust containment',
+    reasonAr: typeof reasonAr === 'string' && reasonAr ? reasonAr.slice(0, 300) : 'عزل شبكي فوري بأمر المشغل الأمني أو النظام الذاتي',
+    triggeredByIoc: typeof triggeredByIoc === 'string' && triggeredByIoc ? triggeredByIoc.slice(0, 80) : 'MANUAL_OPERATOR_OVERRIDE',
+    nodeName,
+    requestedBy
   });
+  access.audit(req, 'CONTAIN', 'SUCCESS', ip, { recordId: record.id, reason: record.reason });
 
   res.json({
     success: true,
@@ -3964,14 +4024,16 @@ app.post('/api/v1/soc/ebpf/contain-ip', (req, res) => {
 
 app.post('/api/v1/soc/ebpf/release-ip', (req, res) => {
   const { targetIp } = req.body || {};
-  if (!targetIp) {
+  if (typeof targetIp !== 'string' || !targetIp.trim()) {
     return res.status(400).json({ error: 'targetIp is required' });
   }
-
-  const released = globalEbpfContainmentService.releaseIp(targetIp);
+  const ip = targetIp.trim();
+  const by = req.principal?.kind === 'OPERATOR' ? req.principal.name : 'api-key';
+  const released = globalEbpfContainmentService.releaseIp(ip, by);
+  access.audit(req, 'RELEASE', released ? 'SUCCESS' : 'FAILURE', ip, released ? null : { reason: 'no active containment' });
   res.json({
     success: released,
-    targetIp,
+    targetIp: ip,
     statistics: globalEbpfContainmentService.getStatistics()
   });
 });
@@ -7264,14 +7326,52 @@ app.post('/api/v1/assets/enrollment-token/revoke', adminAuthMiddleware, (req, re
 
 // Enrolment itself is token-gated rather than admin-gated: the sensor runs on a host
 // that must not hold the admin secret. The token is the whole authority it needs.
+/** The sensor credential on a request, from `Authorization: Bearer` or x-api-key. */
+function sensorSecret(req: express.Request): string | null {
+  const auth = req.headers.authorization;
+  if (typeof auth === 'string' && /^Bearer\s+/i.test(auth)) return auth.replace(/^Bearer\s+/i, '').trim();
+  const k = req.headers['x-api-key'];
+  return typeof k === 'string' ? k : null;
+}
+
+/**
+ * A sensor may only speak for its own asset. An API key (automation, tests) may speak
+ * for any. Before this, heartbeats and sweep reports needed nothing but an asset ID —
+ * which GET /api/v1/assets lists — so anyone could feed the fleet view invented hosts.
+ */
+function sensorMaySpeakFor(req: express.Request, assetId: string): boolean {
+  if (req.principal?.kind === 'API_KEY') return true;
+  return globalAssetRegistry.verifySensor(assetId, sensorSecret(req));
+}
+
 app.post('/api/v1/assets/enroll', (req, res) => {
-  const r = globalAssetRegistry.enroll(req.body || {});
-  if ('reason' in r) return res.status(401).json({ success: false, error: r.reason });
-  return res.json({ success: true, asset: r.asset });
+  const r = globalAssetRegistry.enroll(req.body || {}, sensorSecret(req));
+  if ('reason' in r) {
+    access.audit(req, 'SENSOR_ENROLL', 'DENIED', typeof req.body?.hostname === 'string' ? req.body.hostname : null, { reason: r.reason });
+    return res.status(401).json({ success: false, error: r.reason });
+  }
+  access.audit(req, 'SENSOR_ENROLL', 'SUCCESS', r.asset.id, { hostname: r.asset.hostname, credentialIssued: Boolean(r.credential) });
+  // The credential is returned exactly once, at the enrolment that minted it.
+  return res.json({ success: true, asset: r.asset, credential: r.credential });
 });
 
 app.post('/api/v1/assets/:id/heartbeat', (req, res) => {
+  if (!sensorMaySpeakFor(req, req.params.id)) {
+    return res.status(401).json({ success: false, error: 'SENSOR_CREDENTIAL_REQUIRED: re-enrol this host with a fresh token.' });
+  }
   const r = globalAssetRegistry.heartbeat(req.params.id, req.body || {});
+  if ('reason' in r) return res.status(404).json({ success: false, error: r.reason });
+  return res.json({ success: true, asset: r.asset });
+});
+
+// A sweep result is posted by the sensor that ran it. Only an enrolled asset can report
+// one, which keeps the network picture attributable: every discovered device is traceable
+// to the host that observed it and the method used.
+app.post('/api/v1/assets/:id/discovery', (req, res) => {
+  if (!sensorMaySpeakFor(req, req.params.id)) {
+    return res.status(401).json({ success: false, error: 'SENSOR_CREDENTIAL_REQUIRED: re-enrol this host with a fresh token.' });
+  }
+  const r = globalAssetRegistry.recordSweep(req.params.id, req.body || {});
   if ('reason' in r) return res.status(404).json({ success: false, error: r.reason });
   return res.json({ success: true, asset: r.asset });
 });
@@ -7351,7 +7451,22 @@ app.delete('/api/v1/assets/:id', adminAuthMiddleware, (req, res) =>
 // VITE MIDDLEWARE & SERVER STARTUP
 // -----------------------------------------------------------------------------
 async function startServer() {
-  const httpServer = http.createServer(app);
+  let httpServer: http.Server | https.Server;
+  if (TLS_ENABLED) {
+    try {
+      httpServer = https.createServer(
+        { cert: fs.readFileSync(TLS_CERT_FILE!), key: fs.readFileSync(TLS_KEY_FILE!), minVersion: 'TLSv1.2' },
+        app
+      );
+    } catch (err: any) {
+      // A configured-but-unreadable certificate is a hard stop, not a silent downgrade:
+      // an operator who asked for TLS must not be served cleartext without knowing it.
+      console.error('[TLS] could not load TLS_CERT_FILE / TLS_KEY_FILE:', err?.message);
+      process.exit(1);
+    }
+  } else {
+    httpServer = http.createServer(app);
+  }
 
   // Hand every accepted TCP connection to the mitigation driver so its
   // userland tier can reset a peer that is mitigated mid-session, and refuse
@@ -7364,10 +7479,30 @@ async function startServer() {
     }
   });
 
-  // Initialize WebSocket Telemetry Stream server on same port 3000
-  globalTelemetryWsServer.init(httpServer);
+  // Initialize WebSocket Telemetry Stream server on same port 3000. Same credential as the
+  // API, plus an Origin check: without it any page the operator visits could open the
+  // stream with their cookie (cross-site WebSocket hijacking).
+  globalTelemetryWsServer.init(httpServer, req => {
+    const ip = (req.socket.remoteAddress || '').replace(/^::ffff:/, '');
+    if (globalEbpfContainmentService.isEnforced(ip)) return false;
+    const origin = req.headers.origin;
+    if (origin) {
+      let sameHost = false;
+      try {
+        sameHost = new URL(origin).host === req.headers.host;
+      } catch {
+        sameHost = false;
+      }
+      if (!sameHost && !allowedOrigins.includes(origin)) return false;
+    }
+    const p = access.authenticate(req as unknown as express.Request);
+    return p?.kind === 'OPERATOR' || p?.kind === 'API_KEY';
+  });
 
   if (process.env.NODE_ENV !== 'production') {
+    // Tells vite.config.ts it is embedded on this server's own port, so its dev proxy —
+    // which targets this port — must not be installed. See the note there.
+    process.env.SD_EMBEDDED_VITE = '1';
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
@@ -7388,7 +7523,23 @@ async function startServer() {
   }
 
   httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`[✓] Sovereign Defender v4.0 High-Throughput Kernel Ingress Server running on http://0.0.0.0:${PORT}`);
+    console.log(`[✓] Sovereign Defender v4.0 High-Throughput Kernel Ingress Server running on ${TLS_ENABLED ? 'https' : 'http'}://0.0.0.0:${PORT}`);
+    if (!TLS_ENABLED) {
+      console.log('[!] TLS is off: session cookies and telemetry cross the network in cleartext.');
+      console.log('    Set TLS_CERT_FILE and TLS_KEY_FILE to serve HTTPS.');
+    }
+    const setup = globalOperatorAuth.ensureSetupSecret();
+    if (setup) {
+      console.log('');
+      console.log('  ┌─ FIRST-RUN SETUP ───────────────────────────────────────────────────┐');
+      console.log('  │ No operator account exists yet. Open the console to create the      │');
+      console.log('  │ first administrator. From this machine (localhost) no secret is     │');
+      console.log('  │ needed; from any other machine, enter this one-time setup secret:   │');
+      console.log('  │                                                                     │');
+      console.log(`  │   ${setup.padEnd(66)}│`);
+      console.log('  └─────────────────────────────────────────────────────────────────────┘');
+      console.log('');
+    }
   });
 }
 

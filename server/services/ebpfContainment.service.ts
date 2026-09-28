@@ -20,6 +20,9 @@ export interface EbpfContainmentRecord {
   severedSockets?: SeveredTcpSocket[];
   /** Whether interceptLatencyUs was measured on a kernel path or is a seeded value. */
   interceptLatencySource?: 'MEASURED' | 'SEEDED' | 'SIMULATED';
+  /** The operator or key that requested it; absent for autonomous containment. */
+  requestedBy?: string;
+  releasedBy?: string;
 }
 
 export interface SeveredTcpSocket {
@@ -320,6 +323,7 @@ export class EbpfContainmentService {
     triggeredByIoc: string;
     nodeName?: string;
     severity?: 'CRITICAL' | 'HIGH';
+    requestedBy?: string;
   }): EbpfContainmentRecord {
     const {
       targetIp,
@@ -332,10 +336,9 @@ export class EbpfContainmentService {
 
     // Check if already active
     const existing = this.containmentRecords.find(r => r.targetIp === targetIp && r.status === 'ACTIVE_BLACKHOLE');
-    if (existing) {
-      existing.packetsDroppedCount += 250;
-      return existing;
-    }
+    // Already contained: return the live record. This used to add 250 to its drop
+    // counter, a number nothing had dropped.
+    if (existing) return existing;
 
     /**
      * Simulated containment effects.
@@ -383,10 +386,12 @@ export class EbpfContainmentService {
       severity,
       status: 'ACTIVE_BLACKHOLE',
       interceptLatencyUs: latency,
-      packetsDroppedCount: 120,
+      interceptLatencySource: 'SIMULATED',
+      packetsDroppedCount: 0,
       tcpConnectionsSevered: tcpSevered,
       isolatedAt: new Date().toISOString(),
       nodeName,
+      requestedBy: params.requestedBy,
       bpfMapKey: `0x${Math.random().toString(16).substring(2, 10)}`,
       severedSockets: newSeveredSockets
     };
@@ -504,11 +509,12 @@ export class EbpfContainmentService {
   /**
    * Manual or Policy-based Release of an isolated IP
    */
-  public releaseIp(targetIp: string): boolean {
+  public releaseIp(targetIp: string, releasedBy?: string): boolean {
     const record = this.containmentRecords.find(r => r.targetIp === targetIp && r.status === 'ACTIVE_BLACKHOLE');
     if (record) {
       record.status = 'RELEASED';
       record.releasedAt = new Date().toISOString();
+      record.releasedBy = releasedBy;
 
       // Direct removal from production Linux Kernel eBPF Map via Bridge
       globalRealEbpfBridge.removeIp(targetIp);
@@ -527,6 +533,29 @@ export class EbpfContainmentService {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Whether requests from `ip` must be refused at the application layer.
+   *
+   * On a host with no kernel path, contain-ip wrote the address to an in-process list
+   * that nothing consulted: a "contained" host could keep talking to this server. The
+   * request gate now asks this. Seeded demo records are excluded — they name real public
+   * addresses, and blocking those because a fixture mentions them would be a side effect
+   * of demo data, not a defensive decision.
+   */
+  public isEnforced(ip: string): boolean {
+    const clean = ip.replace(/^::ffff:/, '').trim();
+    return this.containmentRecords.some(
+      r => r.status === 'ACTIVE_BLACKHOLE' && r.interceptLatencySource !== 'SEEDED' && r.targetIp === clean
+    );
+  }
+
+  /** A request actually refused at the gate. Counted as observed, because it was. */
+  public recordEnforcedDrop(ip: string): void {
+    this.observedPacketsDropped++;
+    const rec = this.containmentRecords.find(r => r.status === 'ACTIVE_BLACKHOLE' && r.targetIp === ip);
+    if (rec) rec.packetsDroppedCount++;
   }
 
   public getContainmentRecords(): EbpfContainmentRecord[] {

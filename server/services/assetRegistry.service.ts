@@ -134,6 +134,11 @@ export interface Asset {
   lastSweep: SweepResult | null;
   /** Derived from heartbeat age. Never taken from the sensor. */
   liveness: Liveness;
+  /**
+   * Whether this host holds a sensor credential. False for hosts enrolled before
+   * credentials existed: their heartbeats are refused until they re-enrol with a token.
+   */
+  credentialed: boolean;
 }
 
 export interface EnrollmentToken {
@@ -212,6 +217,15 @@ export class AssetRegistryService {
     } catch {
       /* column exists */
     }
+    // Per-sensor credential, stored only as its SHA-256. Hosts enrolled before this column
+    // existed have none and must re-enrol with a fresh token: granting them a credential
+    // on their next unauthenticated heartbeat would hand it to whoever sent that heartbeat.
+    try {
+      this.db.exec(`ALTER TABLE assets ADD COLUMN secret_hash TEXT`);
+    } catch {
+      /* column exists */
+    }
+    this.db.exec(`CREATE INDEX IF NOT EXISTS idx_assets_secret ON assets(secret_hash)`);
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS enrollment_tokens (
         id          TEXT PRIMARY KEY,
@@ -288,8 +302,41 @@ export class AssetRegistryService {
 
   /* ── Enrolment and heartbeat ───────────────────────────────────────────── */
 
+  /* ── Sensor credentials ────────────────────────────────────────────────── */
+
+  private issueCredential(id: string): string {
+    const secret = 'sd_asset_' + crypto.randomBytes(32).toString('hex');
+    this.db.prepare(`UPDATE assets SET secret_hash = ? WHERE id = ?`).run(sha256(secret), id);
+    return secret;
+  }
+
+  /** Whether `secret` is the credential issued to asset `id`. Constant-time on the digests. */
+  public verifySensor(id: string, secret: string | null | undefined): boolean {
+    if (!secret) return false;
+    const row = this.db.prepare(`SELECT secret_hash FROM assets WHERE id = ?`).get(id) as any;
+    if (!row?.secret_hash) return false;
+    const a = Buffer.from(String(row.secret_hash), 'hex');
+    const b = Buffer.from(sha256(secret), 'hex');
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  }
+
+  /** The asset a sensor credential belongs to, or null. Looked up by digest. */
+  public sensorFor(secret: string | null | undefined): string | null {
+    if (!secret || !secret.startsWith('sd_asset_')) return null;
+    const row = this.db.prepare(`SELECT id FROM assets WHERE secret_hash = ?`).get(sha256(secret)) as any;
+    return row ? String(row.id) : null;
+  }
+
+  /**
+   * Enrol a host, or refresh a known one.
+   *
+   * A new host needs a single-use token and receives a credential, returned once. A
+   * known host (same hostname) may refresh with its credential; without it, only a fresh
+   * token will do, and that rotates the credential. Previously a known hostname skipped
+   * the token check entirely, so anyone who knew a hostname could overwrite that asset.
+   */
   public enroll(input: {
-    token: string;
+    token?: string;
     hostname?: string;
     platform?: string;
     arch?: string;
@@ -298,9 +345,7 @@ export class AssetRegistryService {
     heartbeatIntervalSec?: number;
     sensorVersion?: string;
     label?: string;
-  }): { ok: true; asset: Asset } | { ok: false; reason: string } {
-    if (!input.token || typeof input.token !== 'string') return { ok: false, reason: '"token" is required.' };
-
+  }, presentedSecret?: string | null): { ok: true; asset: Asset; credential: string | null } | { ok: false; reason: string } {
     // Re-enrolment of a known host updates it rather than creating a duplicate.
     // Without this, every sensor restart would add a new row and the fleet count
     // would climb forever — an inventory that miscounts is worse than none.
@@ -310,9 +355,20 @@ export class AssetRegistryService {
 
     const id = existing ? String(existing.id) : 'AST-' + crypto.randomBytes(5).toString('hex').toUpperCase();
 
-    if (!existing) {
+    const knownByCredential = existing ? this.verifySensor(id, presentedSecret) : false;
+    let rotate = false;
+    if (!knownByCredential) {
+      if (!input.token || typeof input.token !== 'string') {
+        return {
+          ok: false,
+          reason: existing
+            ? 'This host is already enrolled. Refreshing it needs its sensor credential or a fresh enrolment token.'
+            : '"token" is required.'
+        };
+      }
       const consumed = this.consumeToken(input.token, id);
       if ('reason' in consumed) return { ok: false as const, reason: consumed.reason };
+      rotate = true;
     }
 
     const now = new Date().toISOString();
@@ -358,7 +414,8 @@ export class AssetRegistryService {
         );
     }
 
-    return { ok: true, asset: this.get(id)! };
+    const credential = rotate ? this.issueCredential(id) : null;
+    return { ok: true, asset: this.get(id)!, credential };
   }
 
   /** A declared network range. No sensor runs on it; it scopes scans and reporting. */
@@ -545,6 +602,7 @@ export class AssetRegistryService {
       lastSeenAt,
       heartbeatIntervalSec: interval,
       sensorVersion: r.sensor_version ? String(r.sensor_version) : null,
+      credentialed: Boolean(r.secret_hash),
       isolated: Number(r.isolated) === 1,
       isolatedAt: r.isolated_at ? String(r.isolated_at) : null,
       flowsIngested: Number(r.flows_ingested) || 0,

@@ -28,11 +28,20 @@ export default defineConfig(() => {
        * about missing data is what ends up looking like the bug.
        *
        * `ws: true` covers /ws/telemetry, which upgrades rather than proxying plainly.
+       *
+       * ONLY for a standalone `vite` dev server. When server.ts embeds Vite as middleware
+       * on port 3000, BACKEND *is* this server, so the proxy forwarded to itself: any
+       * plain HTTP request beginning with /ws (a request, not an upgrade) was proxied
+       * back into the same server, which proxied it again, without end. Three requests
+       * left 24,482 sockets open — a one-line denial of service against the console.
+       * server.ts sets SD_EMBEDDED_VITE, and the proxy is omitted.
        */
-      proxy: {
-        '/api': { target: BACKEND, changeOrigin: true },
-        '/ws': { target: BACKEND, changeOrigin: true, ws: true },
-      },
+      proxy: process.env.SD_EMBEDDED_VITE
+        ? undefined
+        : {
+            '/api': { target: BACKEND, changeOrigin: true },
+            '/ws': { target: BACKEND, changeOrigin: true, ws: true },
+          },
       hmr: {
         clientPort: 443,
         overlay: false,

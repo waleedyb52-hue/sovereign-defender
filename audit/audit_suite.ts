@@ -307,7 +307,9 @@ const auth = { 'x-api-key': KEY };
     const imp = await http('POST', '/api/v1/memory/import', { incidents: [poison] }, auth);
     assert(imp.status === 200, 'could not seed poison record');
 
-    const r = await http('GET', '/api/v1/memory/context?ip=203.0.113.250');
+    // Authenticated: the API is no longer publicly readable. The property under test is
+    // the fencing of retrieved text, which is unchanged.
+    const r = await http('GET', '/api/v1/memory/context?ip=203.0.113.250', undefined, auth);
     const block: string = r.json?.promptBlock ?? '';
     assert(block.length > 0, 'no context returned');
     assert(!block.includes('IGNORE ALL PREVIOUS INSTRUCTIONS'), 'raw override instruction reached the prompt');
@@ -867,6 +869,134 @@ const auth = { 'x-api-key': KEY };
     }
     const st = await http('GET', '/api/v1/soc/adjudication/stats', undefined, auth);
     return `Guard precedes the queue insert; retraction is insert-only with a mandatory reason; ${st.json?.retractions ?? 0} label(s) withdrawn and auditable.`;
+  });
+
+  // ================= ACCESS CONTROL (87–96) =================
+  //
+  // Each of these was an open door found in review: the live API key returned by an
+  // unauthenticated status call, an Origin header accepted as a credential, CORS echoing
+  // any origin with credentials, containment and telemetry ingestion open to anyone, and
+  // sensor heartbeats accepted on an asset ID alone. Every case asserts the refusal.
+
+  await run(87, 'ACCESS', 'The status endpoint does not disclose the API key', async () => {
+    const anon = await http('GET', '/api/v1/agent/status');
+    assert(anon.status === 401, `anonymous status call answered ${anon.status}, expected 401`);
+    const r = await http('GET', '/api/v1/agent/status', undefined, auth);
+    assert(r.status === 200, `authenticated status call answered ${r.status}`);
+    assert(!('apiKey' in (r.json ?? {})), 'status response still carries apiKey');
+    return 'Anonymous callers are refused, and the key is absent even for authenticated ones.';
+  });
+
+  await run(88, 'ACCESS', 'An Origin header is not a credential', async () => {
+    const r = await http('POST', '/api/v1/agent/rotate-key', {}, { Origin: 'http://localhost' });
+    assert(r.status === 401, `Origin-only request answered ${r.status}, expected 401`);
+    return 'Origin: http://localhost no longer authenticates a request.';
+  });
+
+  await run(89, 'ACCESS', 'CORS does not grant a foreign origin', async () => {
+    for (const o of ['http://evil.example', 'http://localhost.evil.example']) {
+      const ctrl = new AbortController();
+      const r = await fetch(BASE + '/api/health', { headers: { Origin: o }, signal: ctrl.signal });
+      assert(r.headers.get('access-control-allow-origin') == null, `CORS granted ${o}`);
+    }
+    return 'No Access-Control-Allow-Origin for foreign or look-alike origins.';
+  });
+
+  await run(90, 'ACCESS', 'Containment and release refuse anonymous callers', async () => {
+    const c = await http('POST', '/api/v1/soc/ebpf/contain-ip', { targetIp: '192.0.2.200' });
+    const r = await http('POST', '/api/v1/soc/ebpf/release-ip', { targetIp: '192.0.2.200' });
+    assert(c.status === 401 && r.status === 401, `contain=${c.status} release=${r.status}, expected 401/401`);
+    return 'Isolation and release both require an authenticated caller.';
+  });
+
+  await run(91, 'ACCESS', 'Containment refuses loopback and malformed targets', async () => {
+    const lo = await http('POST', '/api/v1/soc/ebpf/contain-ip', { targetIp: '127.0.0.1' }, auth);
+    const bad = await http('POST', '/api/v1/soc/ebpf/contain-ip', { targetIp: '999.1.1.1' }, auth);
+    assert(lo.status === 422 && bad.status === 422, `loopback=${lo.status} malformed=${bad.status}, expected 422/422`);
+    return 'The console cannot isolate itself or act on an address that does not parse.';
+  });
+
+  await run(92, 'ACCESS', 'A contained address is refused at the gate', async () => {
+    const ip = '192.0.2.201';
+    const c = await http('POST', '/api/v1/soc/ebpf/contain-ip', { targetIp: ip, reason: 'audit 92' }, auth);
+    assert(c.status === 200, `containment answered ${c.status}`);
+    try {
+      // Loopback is the trusted proxy hop under the default policy, so its
+      // X-Forwarded-For is honoured — the only way a local test can present as another address.
+      const r = await http('GET', '/api/health', undefined, { 'X-Forwarded-For': ip });
+      assert(r.status === 403, `request from contained address answered ${r.status}, expected 403`);
+    } finally {
+      await http('POST', '/api/v1/soc/ebpf/release-ip', { targetIp: ip }, auth);
+    }
+    const after = await http('GET', '/api/health', undefined, { 'X-Forwarded-For': ip });
+    assert(after.status === 200, `released address still refused (${after.status})`);
+    return 'Contain blocks the address; release restores it.';
+  });
+
+  await run(93, 'ACCESS', 'Telemetry injection needs a credential', async () => {
+    const r = await http('POST', '/api/v1/soc/ingest-telemetry/batch', { payloads: [] });
+    assert(r.status === 401, `anonymous ingestion answered ${r.status}, expected 401`);
+    return 'Forged flows cannot be fed to the detector without an operator, key or sensor credential.';
+  });
+
+  await run(94, 'ACCESS', 'A sensor speaks only for its own asset', async () => {
+    const t = await http('POST', '/api/v1/assets/enrollment-token', { note: 'audit 94' }, auth);
+    const host = 'audit-sensor-' + crypto.randomBytes(3).toString('hex');
+    const e = await http('POST', '/api/v1/assets/enroll', { token: t.json?.token, hostname: host });
+    const id = e.json?.asset?.id;
+    const cred = e.json?.credential;
+    try {
+      assert(e.status === 200 && typeof cred === 'string', 'enrolment did not issue a credential');
+      const anon = await http('POST', `/api/v1/assets/${id}/heartbeat`, { uptimeSec: 1 });
+      assert(anon.status === 401, `heartbeat without credential answered ${anon.status}`);
+      const hijack = await http('POST', '/api/v1/assets/enroll', { hostname: host });
+      assert(hijack.status === 401, `re-enrolment without proof answered ${hijack.status}`);
+      const own = await http('POST', `/api/v1/assets/${id}/heartbeat`, { uptimeSec: 1 }, { Authorization: `Bearer ${cred}` });
+      assert(own.status === 200, `heartbeat with its credential answered ${own.status}`);
+      const scope = await http('GET', '/api/v1/agent/status', undefined, { Authorization: `Bearer ${cred}` });
+      assert(scope.status === 403, `sensor credential reached an operator route (${scope.status})`);
+    } finally {
+      if (id) await http('DELETE', `/api/v1/assets/${id}`, undefined, auth);
+    }
+    return 'Heartbeats need the issued credential; a hostname alone cannot re-enrol; the credential is scoped to sensor routes.';
+  });
+
+  await run(95, 'ACCESS', 'The telemetry stream refuses anonymous sockets', async () => {
+    // A raw upgrade request, so the check depends on nothing but the socket.
+    const code = await new Promise<number | string>(resolve => {
+      const s = net.connect(3000, '127.0.0.1', () =>
+        s.write(
+          'GET /ws/telemetry HTTP/1.1\r\nHost: 127.0.0.1:3000\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n' +
+            'Sec-WebSocket-Key: ' + crypto.randomBytes(16).toString('base64') + '\r\nSec-WebSocket-Version: 13\r\n\r\n'
+        )
+      );
+      const t = setTimeout(() => { s.destroy(); resolve('timeout'); }, 5000);
+      s.once('data', d => { clearTimeout(t); resolve(Number(/HTTP\/1\.1 (\d{3})/.exec(d.toString())?.[1] ?? 0)); s.destroy(); });
+      s.once('error', () => { clearTimeout(t); resolve('error'); });
+    });
+    assert(code === 401, `anonymous upgrade answered ${code}, expected 401`);
+    return 'The live stream needs the same credential as the API.';
+  });
+
+  await run(96, 'ACCESS', 'The audit trail chain verifies', async () => {
+    const r = await http('GET', '/api/v1/audit/verify', undefined, auth);
+    assert(r.status === 200, `verify answered ${r.status}`);
+    const v = r.json?.verification;
+    assert(v?.ok === true, `chain broken at ${v?.brokenAt}: ${v?.reason}`);
+    const src = fs.readFileSync(path.join(ROOT, 'server/services/auditTrail.service.ts'), 'utf-8');
+    assert(/BEFORE UPDATE ON audit_log/.test(src) && /BEFORE DELETE ON audit_log/.test(src), 'append-only triggers missing');
+    return `${v.checked} entries verified (hash chain + HMAC, key source ${v.keySource}); UPDATE/DELETE blocked by trigger.`;
+  });
+
+  await run(97, 'ACCESS', 'A plain request under /ws does not proxy back into this server', async () => {
+    // vite.config's dev proxy targets port 3000; embedded in the server it forwarded to
+    // itself, and three such requests once left 24,482 sockets open.
+    const cfg = fs.readFileSync(path.join(ROOT, 'vite.config.ts'), 'utf-8');
+    assert(/SD_EMBEDDED_VITE/.test(cfg), 'vite.config.ts no longer gates its proxy on SD_EMBEDDED_VITE');
+    const t = Date.now();
+    const r = await http('GET', '/ws-audit-probe');
+    assert(r.status > 0, 'no response');
+    return `answered ${r.status} in ${Date.now() - t}ms; the dev proxy is not installed when embedded.`;
   });
 
   // ---- Report ----

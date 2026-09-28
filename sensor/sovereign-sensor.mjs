@@ -38,6 +38,8 @@
  */
 
 import os from 'node:os';
+import fs from 'node:fs';
+import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { arpNeighbours, localSegments, sweepRange, DEFAULT_PORTS } from './discovery.mjs';
 import { promisify } from 'node:util';
@@ -58,6 +60,7 @@ function parseArgs(argv) {
     else if (a === '--interval') out.interval = Math.max(5, Number(next()) || 30);
     else if (a === '--max-flows') out.maxFlows = Math.max(1, Math.min(200, Number(next()) || 40));
     else if (a === '--label') out.label = next();
+    else if (a === '--credential-file') out.credentialFile = next();
     else if (a === '--sweep') out.sweep = next();
     else if (a === '--sweep-ports') out.sweepPorts = next();
     else if (a === '--no-arp') out.noArp = true;
@@ -70,12 +73,41 @@ function parseArgs(argv) {
 
 const args = parseArgs(process.argv);
 
-if (args.help || (!args.dryRun && (!args.server || !args.token))) {
+/* ── Credential ────────────────────────────────────────────────────────────── */
+
+/**
+ * The platform issues this host a credential at its first enrolment and returns it once.
+ * It is kept in a file only this user can read, and sent on every request. On restart
+ * the sensor refreshes its enrolment with the credential instead of the single-use
+ * token, which is already spent.
+ */
+const credentialFile =
+  args.credentialFile ?? path.join(os.homedir(), '.sovereign-sensor', `${os.hostname()}.credential.json`);
+
+function loadCredential() {
+  try {
+    const c = JSON.parse(fs.readFileSync(credentialFile, 'utf8'));
+    return c && c.server === args.server && typeof c.secret === 'string' ? c : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCredential(assetId, secret) {
+  fs.mkdirSync(path.dirname(credentialFile), { recursive: true, mode: 0o700 });
+  fs.writeFileSync(credentialFile, JSON.stringify({ server: args.server, assetId, secret }), { mode: 0o600 });
+}
+
+let credential = null;
+
+if (args.help || (!args.dryRun && (!args.server || (!args.token && !loadCredential())))) {
   console.log(`
 Sovereign Defender host sensor v${VERSION}
 
   --server   <url>    Platform base URL, e.g. http://10.0.0.5:3000   (required)
-  --token    <token>  Single-use enrolment token                     (required)
+  --token    <token>  Single-use enrolment token (first run, or to re-key)
+  --credential-file <path>  Where the issued credential is kept
+                      default ~/.sovereign-sensor/<hostname>.credential.json
   --interval <sec>    Heartbeat and collection cadence, default 30
   --max-flows <n>     Max connections shipped per cycle, default 40
   --label    <name>   Friendly name for this asset, default hostname
@@ -229,7 +261,10 @@ async function collectUserCount() {
 async function post(pathname, body) {
   const res = await fetch(new URL(pathname, args.server), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(credential ? { Authorization: `Bearer ${credential.secret}` } : {})
+    },
     body: JSON.stringify(body)
   });
   const json = await res.json().catch(() => null);
@@ -279,8 +314,10 @@ function remotePriority(ip) {
 let assetId = null;
 
 async function enroll() {
+  credential = credential ?? loadCredential();
   const body = {
-    token: args.token,
+    // With a stored credential the token is not needed; with neither, the server refuses.
+    ...(args.token ? { token: args.token } : {}),
     hostname: os.hostname(),
     platform: `${os.platform()} ${os.release()}`,
     arch: os.arch(),
@@ -290,8 +327,24 @@ async function enroll() {
     sensorVersion: VERSION,
     label: args.label ?? os.hostname()
   };
-  const r = await post('/api/v1/assets/enroll', body);
+  let r;
+  try {
+    r = await post('/api/v1/assets/enroll', body);
+  } catch (err) {
+    // A stale credential (the asset was removed and re-created) falls back to the token.
+    if (credential && args.token) {
+      credential = null;
+      r = await post('/api/v1/assets/enroll', body);
+    } else {
+      throw err;
+    }
+  }
   assetId = r.asset.id;
+  if (r.credential) {
+    credential = { server: args.server, assetId, secret: r.credential };
+    saveCredential(assetId, r.credential);
+    log(`credential issued and stored at ${credentialFile}`);
+  }
   log(`enrolled as ${assetId} (${r.asset.label}) on ${body.platform}`);
 }
 

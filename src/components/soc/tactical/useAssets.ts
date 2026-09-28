@@ -81,7 +81,9 @@ const Asset = z.object({
   flowsIngested: z.number(),
   posture: Posture.nullable(),
   lastSweep: Sweep.nullish(),
-  liveness: z.enum(['ONLINE', 'STALE', 'OFFLINE', 'NEVER_REPORTED'])
+  liveness: z.enum(['ONLINE', 'STALE', 'OFFLINE', 'NEVER_REPORTED']),
+  // Optional so an older server without sensor credentials still parses.
+  credentialed: z.boolean().optional()
 });
 
 const Summary = z.object({

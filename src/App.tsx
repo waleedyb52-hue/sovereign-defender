@@ -44,6 +44,7 @@ import { SecurityAnalyticsRow } from './components/soc/SecurityAnalyticsRow';
 import { MitreMatrix } from './components/soc/MitreMatrix';
 import { ThreatCorpusConsole } from './components/soc/ThreatCorpusConsole';
 import { AttackPathGraph } from './components/soc/AttackPathGraph';
+import { useOperator } from './components/auth/operatorContext';
 import {
   INITIAL_INTEL_METRICS,
   INITIAL_NETWORK_EDGES,
@@ -106,7 +107,31 @@ export default function App() {
   const [edges, setEdges] = useState<NetworkEdge[]>(INITIAL_NETWORK_EDGES);
   const [packetLogs, setPacketLogs] = useState<TelemetryPacket[]>([]);
   const [quarantinedHosts, setQuarantinedHosts] = useState<QuarantinedHost[]>([]);
-  const [apiKey, setApiKey] = useState<string>('sd_live_sec_89f01ab2994c');
+  /**
+   * The integration key shown in the website-protection snippets. It used to default to a
+   * made-up literal and was then overwritten from /agent/status, which handed the live key
+   * to any caller. It is now read from the ADMIN-only endpoint, only when the tab that
+   * displays it is opened, so each reveal is a deliberate, audited act. Everyone else sees
+   * a placeholder that no server would accept and no one would mistake for a key.
+   */
+  const { operator, can } = useOperator();
+  const [apiKey, setApiKey] = useState<string>('<ADMIN-ONLY>');
+  const isAdmin = can('ADMIN');
+  useEffect(() => {
+    if (activeTab !== 'live_protection' || !isAdmin || apiKey !== '<ADMIN-ONLY>') return;
+    let live = true;
+    fetch('/api/v1/auth/api-key')
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (live && typeof d?.apiKey === 'string') setApiKey(d.apiKey);
+      })
+      .catch(() => {
+        /* the snippet keeps its placeholder; nothing is invented */
+      });
+    return () => {
+      live = false;
+    };
+  }, [activeTab, isAdmin, apiKey]);
 
   // Node isolation toggle with real eBPF backend synchronization
   const handleToggleIsolateNode = async (nodeId: string) => {
@@ -221,7 +246,6 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (signal?.aborted) return;
-        if (data.apiKey) setApiKey(data.apiKey);
         if (data.quarantinedHosts) setQuarantinedHosts(data.quarantinedHosts);
         if (data.metrics) {
           setSystemStatus({
@@ -541,6 +565,7 @@ export default function App() {
     try {
       const response = await fetch('/api/v1/agent/rotate-key', { method: 'POST' });
       const data = await response.json();
+      if (!response.ok) throw new Error(data?.message ?? `rotate-key -> ${response.status}`);
       if (data.apiKey) setApiKey(data.apiKey);
     } catch (err) {
       // Previously this fabricated a key with Math.random on failure, which left
@@ -753,6 +778,13 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'live_protection' && !can('ADMIN') && (
+          <p className="mx-auto mb-2 w-full max-w-7xl text-xs text-amber-300">
+            {lang === 'ar'
+              ? `مفتاح التكامل يظهر لدور المسؤول فقط؛ دورك ${operator.role}.`
+              : `The integration key is shown to ADMIN only; your role is ${operator.role}.`}
+          </p>
+        )}
         {activeTab === 'live_protection' && (
           <div className="mx-auto w-full max-w-7xl">
             <LiveWebsiteProtection

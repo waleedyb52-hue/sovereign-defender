@@ -136,14 +136,28 @@ export const AssetFleetPanel: React.FC<{
                       <Network className="h-2.5 w-2.5 shrink-0 text-cyan-400" aria-hidden />
                     )}
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate font-mono text-[7.5px] text-slate-200">{a.label}</span>
-                      <span className="block truncate font-mono text-[6px] text-slate-600">
+                      <span className="block truncate font-mono text-[11px] text-slate-200">{a.label}</span>
+                      <span className="block truncate font-mono text-[10px] text-slate-400">
                         {a.cidr ?? a.primaryIp ?? '—'} · {a.platform?.split(' ')[0] ?? '—'}
                       </span>
                     </span>
                     {a.isolated && <ShieldOff className="h-2.5 w-2.5 shrink-0 text-rose-500" aria-hidden />}
+                    {/* Enrolled before sensor credentials existed: the server now refuses its
+                        heartbeats, so without this it would simply drift to OFFLINE unexplained. */}
+                    {a.kind === 'HOST' && a.credentialed === false && (
+                      <span
+                        className="shrink-0 border border-amber-500/60 px-1 font-mono text-[10px] text-amber-300"
+                        title={
+                          isAr
+                            ? 'سُجِّل قبل اعتماد الحسّاسات؛ أعد تسجيله برمز جديد'
+                            : 'enrolled before sensor credentials; re-enrol it with a fresh token'
+                        }
+                      >
+                        {isAr ? 'أعد التسجيل' : 'RE-ENROL'}
+                      </span>
+                    )}
                     <span
-                      className="shrink-0 font-mono text-[5.5px] tracking-widest"
+                      className="shrink-0 font-mono text-[10px] tracking-widest"
                       style={{ color: L.tone }}
                       title={
                         a.lastSeenAt
