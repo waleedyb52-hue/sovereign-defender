@@ -12,15 +12,15 @@
     "cat": "eBPF/XDP",
     "name": "Max throughput & drop-latency benchmark",
     "status": "PASS",
-    "ms": 23,
-    "detail": "5Mpps burst: 1015.94Gbps, drop=1930000, evloop max lag 15.336ms (non-blocking)."
+    "ms": 142,
+    "detail": "5Mpps burst: 8521.17Gbps, drop=1930000, evloop max lag 0.721ms (non-blocking)."
   },
   {
     "id": 3,
     "cat": "eBPF/XDP",
     "name": "BPF map insert/lookup/delete under concurrency",
     "status": "PASS",
-    "ms": 17,
+    "ms": 21,
     "detail": "500 concurrent inserts, 250 atomic deletes; post-delete lookups consistent."
   },
   {
@@ -44,8 +44,8 @@
     "cat": "eBPF/XDP",
     "name": "Rapid blacklist update propagation",
     "status": "PASS",
-    "ms": 7,
-    "detail": "Inject→enforce visible in 0ms (in-memory mirror, O(1))."
+    "ms": 14,
+    "detail": "Inject→enforce visible in 1ms (in-memory mirror, O(1))."
   },
   {
     "id": 7,
@@ -60,7 +60,7 @@
     "cat": "eBPF/XDP",
     "name": "Missing / detaching interface behavior",
     "status": "PASS",
-    "ms": 18,
+    "ms": 30,
     "detail": "detachInterface on absent iface returns {success:false} gracefully, never throws."
   },
   {
@@ -68,7 +68,7 @@
     "cat": "eBPF/XDP",
     "name": "TCP SYN flood resilience at NIC layer",
     "status": "PASS",
-    "ms": 0,
+    "ms": 1,
     "detail": "Blacklisted sources dropped pre-sk_buff (XDP_DROP) — SYN flood absorbed before stack allocation."
   },
   {
@@ -76,7 +76,7 @@
     "cat": "eBPF/XDP",
     "name": "Non-IP (ARP/critical) bypass integrity",
     "status": "PASS",
-    "ms": 0,
+    "ms": 1,
     "detail": "ARP / IPv6 / non-IP explicitly XDP_PASS — control-plane traffic never collaterally dropped."
   },
   {
@@ -84,7 +84,7 @@
     "cat": "Tarpit",
     "name": "Zero-window probe / honeypot interaction",
     "status": "PASS",
-    "ms": 326,
+    "ms": 165,
     "detail": "honeypot/interact reachable (status 200); deception command channel responds."
   },
   {
@@ -92,7 +92,7 @@
     "cat": "Tarpit",
     "name": "Handshake stall / session persistence",
     "status": "PASS",
-    "ms": 13,
+    "ms": 26,
     "detail": "honeypot session table served; stalled-session metadata persists across polls."
   },
   {
@@ -100,8 +100,8 @@
     "cat": "Tarpit",
     "name": "Attacker state memory under mass port scan",
     "status": "PASS",
-    "ms": 5991,
-    "detail": "2000 scan sources tracked; bounded map size=455, TTL-reaped (no memory blow-up)."
+    "ms": 7475,
+    "detail": "2000 scan sources tracked; bounded map size=362, TTL-reaped (no memory blow-up)."
   },
   {
     "id": 14,
@@ -124,7 +124,7 @@
     "cat": "Tarpit",
     "name": "Per-origin concurrent-connection accounting",
     "status": "PASS",
-    "ms": 0,
+    "ms": 1,
     "detail": "Multiple sockets per origin tracked in a Set keyed by peer IP → correct per-IP accounting."
   },
   {
@@ -140,7 +140,7 @@
     "cat": "Tarpit",
     "name": "Trapped-IP metadata logging accuracy",
     "status": "PASS",
-    "ms": 126,
+    "ms": 43,
     "detail": "Deception/honeypot telemetry endpoints emit structured trapped-IP metadata (status 200)."
   },
   {
@@ -148,15 +148,15 @@
     "cat": "FIM",
     "name": "Sub-100ms unauthorized-write detection",
     "status": "PASS",
-    "ms": 865,
-    "detail": "Tamper simulated & alerted in 865ms (round-trip); watcher is event-driven (fs.watch), not polled."
+    "ms": 562,
+    "detail": "Tamper simulated & alerted in 561ms (round-trip); watcher is event-driven (fs.watch), not polled."
   },
   {
     "id": 20,
     "cat": "FIM",
     "name": "SHA-256 recalculation accuracy",
     "status": "PASS",
-    "ms": 0,
+    "ms": 1,
     "detail": "FIM uses crypto.createHash(\"sha256\"); digest verified against NIST test vector \"abc\"."
   },
   {
@@ -164,7 +164,7 @@
     "cat": "FIM",
     "name": "Instant SIGKILL on tamper (logic)",
     "status": "PASS",
-    "ms": 34,
+    "ms": 67,
     "detail": "Tamper alerts recorded with response action metadata; process-kill hook exposed at /forensics/process/kill (admin-gated)."
   },
   {
@@ -172,7 +172,7 @@
     "cat": "FIM",
     "name": "Quarantine relocation + permission stripping",
     "status": "PASS",
-    "ms": 9,
+    "ms": 0,
     "detail": "quarantineFile relocates via fs.rename then chmod 0o400 (read-only) on the isolated copy."
   },
   {
@@ -180,7 +180,7 @@
     "cat": "FIM",
     "name": "Symlink / TOCTOU handling",
     "status": "PASS",
-    "ms": 0,
+    "ms": 1,
     "detail": "Symlink resolution guard present."
   },
   {
@@ -204,7 +204,7 @@
     "cat": "FIM",
     "name": "Mass-encryption (ransomware) emulation",
     "status": "PASS",
-    "ms": 7,
+    "ms": 18,
     "detail": "High-entropy mutation classified by FIM diff analyzer (status 200); entropy heuristics in payloadForensics."
   },
   {
@@ -212,7 +212,7 @@
     "cat": "FIM",
     "name": "Inode monitoring across delete/recreate",
     "status": "PASS",
-    "ms": 0,
+    "ms": 3,
     "detail": "Watcher emits distinct DELETE and CREATE alerts; baseline snapshot persists across recreation."
   },
   {
@@ -228,7 +228,7 @@
     "cat": "AI",
     "name": "Prompt-injection / jailbreak isolation",
     "status": "PASS",
-    "ms": 2956,
+    "ms": 27,
     "detail": "Injected payload treated as passive data (systemInstruction isolation); verdict=ALLOW, score=4, no key leak."
   },
   {
@@ -236,7 +236,7 @@
     "cat": "AI",
     "name": "Inference timeout → fail-safe fallback",
     "status": "PASS",
-    "ms": 10,
+    "ms": 7,
     "detail": "All generateContent calls wrapped in withInferenceTimeout(8s); timeout rejects → local hybrid engine (fail-safe)."
   },
   {
@@ -244,7 +244,7 @@
     "cat": "AI",
     "name": "Malformed / corrupted telemetry ingestion",
     "status": "PASS",
-    "ms": 54,
+    "ms": 16,
     "detail": "Malformed/typed-wrong telemetry handled without 5xx (status 200); defaults applied defensively."
   },
   {
@@ -252,7 +252,7 @@
     "cat": "AI",
     "name": "50+ concurrent alert classifications",
     "status": "PASS",
-    "ms": 6517,
+    "ms": 302,
     "detail": "55/55 concurrent classifications returned 200 (LRU cache + fallback absorbed load)."
   },
   {
@@ -260,15 +260,15 @@
     "cat": "AI",
     "name": "Memory footprint under sustained load",
     "status": "PASS",
-    "ms": 1,
-    "detail": "Test-process heap 16MB after load; server uses bounded LRU + Maps, no per-request accumulation."
+    "ms": 0,
+    "detail": "Test-process heap 23MB after load; server uses bounded LRU + Maps, no per-request accumulation."
   },
   {
     "id": 34,
     "cat": "AI",
     "name": "Intent: admin-change vs zero-day",
     "status": "PASS",
-    "ms": 2085,
+    "ms": 16,
     "detail": "Benign→ALLOW(4), attack→BLOCK(80) — separable."
   },
   {
@@ -276,7 +276,7 @@
     "cat": "AI",
     "name": "Log-injection sanitization",
     "status": "PASS",
-    "ms": 3,
+    "ms": 6,
     "detail": "Untrusted payload encapsulated via buildIsolatedGeminiPrompt; JSON responseMimeType constrains output shape."
   },
   {
@@ -284,7 +284,7 @@
     "cat": "AI",
     "name": "Corpus poisoning / indirect prompt injection",
     "status": "PASS",
-    "ms": 288,
+    "ms": 93,
     "detail": "Poisoned corpus row is fenced as untrusted data, instruction phrasing redacted, fence-escape blocked."
   },
   {
@@ -292,7 +292,7 @@
     "cat": "AI",
     "name": "100% on-prem containment (egress gate)",
     "status": "PASS",
-    "ms": 13,
+    "ms": 18,
     "detail": "Default = sovereign containment: cloud AI + webhooks gated OFF via aiPolicy; genAI stays null → local engine, zero egress. Opt-in via AI_CLOUD_ENABLED=true."
   },
   {
@@ -300,8 +300,8 @@
     "cat": "AI",
     "name": "Inference latency < 800ms (fallback path)",
     "status": "PASS",
-    "ms": 216,
-    "detail": "Local reasoning path served in 216ms (< 800ms SLA). Cloud path bounded by 8s timeout+fallback."
+    "ms": 12,
+    "detail": "Local reasoning path served in 12ms (< 800ms SLA). Cloud path bounded by 8s timeout+fallback."
   },
   {
     "id": 38,
@@ -316,23 +316,23 @@
     "cat": "E2E",
     "name": "Attack lifecycle Discovery→Drop→Quarantine < 1s",
     "status": "PASS",
-    "ms": 191,
-    "detail": "Discovery→kernel-drop→confirmed in blacklist in 191ms (< 1.0s)."
+    "ms": 52,
+    "detail": "Discovery→kernel-drop→confirmed in blacklist in 42ms (< 1.0s)."
   },
   {
     "id": 40,
     "cat": "E2E",
     "name": "eBPF map ↔ TS orchestrator integration",
     "status": "PASS",
-    "ms": 31,
-    "detail": "Bridge stats live: 5 entries, mode=CONTAINER_EMULATION."
+    "ms": 13,
+    "detail": "Bridge stats live: 4 entries, mode=CONTAINER_EMULATION."
   },
   {
     "id": 41,
     "cat": "E2E",
     "name": "Crash recovery / state reconstruction (design)",
     "status": "PASS",
-    "ms": 1,
+    "ms": 2,
     "detail": "Self-healing ledger reconstructs authentic bytes from baseline on restart; state derivable from disk snapshots."
   },
   {
@@ -340,15 +340,15 @@
     "cat": "E2E",
     "name": "Graceful degradation w/o kernel hooks",
     "status": "PASS",
-    "ms": 39,
-    "detail": "No bpftool/BPF-fs on host → CONTAINER_EMULATION mode active; userland RST tier still enforces (Test verifies fallback)."
+    "ms": 8,
+    "detail": "No bpftool/BPF-fs on host → CONTAINER_EMULATION, counters labelled EMULATION; the application gate still enforces."
   },
   {
     "id": 43,
     "cat": "E2E",
     "name": "Deadlock prevention in async queues",
     "status": "PASS",
-    "ms": 0,
+    "ms": 1,
     "detail": "Kernel bridge calls fire through propagateToKernelBridge (fire-and-forget w/ catch) — no await-cycle deadlock."
   },
   {
@@ -356,7 +356,7 @@
     "cat": "E2E",
     "name": "Log rotation / disk-exhaustion safeguard",
     "status": "PASS",
-    "ms": 4,
+    "ms": 6,
     "detail": "Telemetry/packet logs are capped in-memory ring buffers (bounded arrays), not unbounded disk writes."
   },
   {
@@ -364,7 +364,7 @@
     "cat": "E2E",
     "name": "Env/secret leakage protection",
     "status": "PASS",
-    "ms": 12,
+    "ms": 19,
     "detail": "full-state exposes no secret fields; .env is gitignored (only .env.example tracked)."
   },
   {
@@ -380,7 +380,7 @@
     "cat": "E2E",
     "name": "Host vs containerized interface compatibility",
     "status": "PASS",
-    "ms": 65,
+    "ms": 16,
     "detail": "Driver auto-negotiates (CONTAINER_EMULATION); same API across bare-metal and container."
   },
   {
@@ -388,15 +388,15 @@
     "cat": "E2E",
     "name": "Baseline jitter/CPU under background traffic",
     "status": "PASS",
-    "ms": 770,
-    "detail": "/api/health median 16ms, p90 43ms (15 samples, worst outlier trimmed) under live background timers."
+    "ms": 176,
+    "detail": "/api/health median 10ms, p90 15ms (15 samples, worst outlier trimmed) under live background timers."
   },
   {
     "id": 49,
     "cat": "E2E",
     "name": "Audit-trail immutability",
     "status": "PASS",
-    "ms": 3,
+    "ms": 6,
     "detail": "Audit reports cryptographically sealed (hash-chained); ledger entries hash-anchored → tamper-evident."
   },
   {
@@ -404,7 +404,7 @@
     "cat": "E2E",
     "name": "Self-healing integrity check of own artifacts",
     "status": "PASS",
-    "ms": 7,
+    "ms": 11,
     "detail": "Self-healing ledger continuously verifies protected artifacts vs baseline hashes; control surface admin-gated (status 200)."
   },
   {
@@ -412,7 +412,7 @@
     "cat": "PROVENANCE",
     "name": "Kernel latency is null without a kernel path, never a constant",
     "status": "PASS",
-    "ms": 7,
+    "ms": 20,
     "detail": "XDP is Linux-only; with no kernel path the figure is null and the UI shows an em dash."
   },
   {
@@ -420,8 +420,8 @@
     "cat": "PROVENANCE",
     "name": "Seeded packet counters are declared, not passed off as measured",
     "status": "PASS",
-    "ms": 14,
-    "detail": "total 373960 = seeded 373960 + observed 0, tagged SEEDED."
+    "ms": 8,
+    "detail": "total 373961 = seeded 373960 + observed 1, tagged MIXED_SEEDED_AND_MEASURED."
   },
   {
     "id": 63,
@@ -436,7 +436,7 @@
     "cat": "PROVENANCE",
     "name": "No displayed metric is generated by Math.random",
     "status": "PASS",
-    "ms": 5,
+    "ms": 8,
     "detail": "Ticker now derives req/s from real counter deltas; the modelled ping says modelled, not measured."
   },
   {
@@ -444,7 +444,7 @@
     "cat": "LABELS",
     "name": "Ground-truth surface requires admin authentication",
     "status": "PASS",
-    "ms": 4,
+    "ms": 7,
     "detail": "Writing ground truth is admin-gated: whoever reaches it defines what the platform measures itself against."
   },
   {
@@ -452,7 +452,7 @@
     "cat": "LABELS",
     "name": "A label without an adjudicator identity is refused",
     "status": "PASS",
-    "ms": 29,
+    "ms": 18,
     "detail": "Anonymous labels rejected — a label without provenance is an assertion, not a measurement."
   },
   {
@@ -460,7 +460,7 @@
     "cat": "LABELS",
     "name": "Agreement with the machine is derived, never accepted from the client",
     "status": "PASS",
-    "ms": 1,
+    "ms": 6,
     "detail": "A client that could assert agreement could manufacture the platform accuracy figure; it cannot."
   },
   {
@@ -476,7 +476,7 @@
     "cat": "LABELS",
     "name": "Test fold withholds labels unless scoring is explicit",
     "status": "PASS",
-    "ms": 11,
+    "ms": 9,
     "detail": "Corpus below the fold threshold, so the endpoint states the shortfall instead of serving a thin fold."
   },
   {
@@ -492,7 +492,7 @@
     "cat": "LABELS",
     "name": "Label provenance is reported so drill data cannot pass as operator data",
     "status": "PASS",
-    "ms": 9,
+    "ms": 13,
     "detail": "Origins {\"IMPORT\":11}; operatorGrounded=false, and the harness banners it above any figure."
   },
   {
@@ -500,7 +500,7 @@
     "cat": "LABELS",
     "name": "Temporal folds are derived from timestamps, not stored",
     "status": "PASS",
-    "ms": 14,
+    "ms": 11,
     "detail": "Folds withheld: 11 labels across 4 folds gives 2 per fold; 20 needed. A fold this thin cannot carry a defensible number."
   },
   {
@@ -508,7 +508,7 @@
     "cat": "LABELS",
     "name": "Labels are append-only; a revision supersedes rather than overwrites",
     "status": "PASS",
-    "ms": 1,
+    "ms": 2,
     "detail": "No UPDATE, no DELETE, no delete route: the trail can prove a label was not quietly rewritten."
   },
   {
@@ -516,7 +516,7 @@
     "cat": "LABELS",
     "name": "A degraded label store never costs a detection",
     "status": "PASS",
-    "ms": 2,
+    "ms": 4,
     "detail": "Queuing is bounded, deduplicated, swallows its own errors, and sits off the response path."
   },
   {
@@ -524,7 +524,7 @@
     "cat": "SENSORS",
     "name": "Kernel integrity never claims VERIFIED without reading the kernel",
     "status": "PASS",
-    "ms": 142,
+    "ms": 274,
     "detail": "platform win32: UNAVAILABLE with reason, no integrity implied."
   },
   {
@@ -532,7 +532,7 @@
     "cat": "SENSORS",
     "name": "Kill-safety refuses to SIGKILL a kernel thread",
     "status": "PASS",
-    "ms": 26,
+    "ms": 48,
     "detail": "Kernel threads and system-critical processes refused; user processes permitted; empty name refused."
   },
   {
@@ -540,7 +540,7 @@
     "cat": "SENSORS",
     "name": "DNS tunnel detector spares ordinary resolution",
     "status": "PASS",
-    "ms": 78,
+    "ms": 77,
     "detail": "Short low-entropy A-record resolution scored 25; no tarpit engaged."
   },
   {
@@ -548,7 +548,7 @@
     "cat": "SENSORS",
     "name": "DNS tunnel detector catches encoded TXT exfiltration",
     "status": "PASS",
-    "ms": 495,
+    "ms": 464,
     "detail": "score 70 on 3 independent marks; tarpit engaged and declared USERSPACE."
   },
   {
@@ -556,7 +556,7 @@
     "cat": "SENSORS",
     "name": "Ransomware burst reports zero rate when nothing was observed",
     "status": "PASS",
-    "ms": 16,
+    "ms": 11,
     "detail": "Measured from watcher events only; idle state reports zero rather than a plausible baseline."
   },
   {
@@ -572,7 +572,7 @@
     "cat": "CREDENTIALS",
     "name": "No committed default administrative secret",
     "status": "PASS",
-    "ms": 14,
+    "ms": 16,
     "detail": "The committed default is gone and rejected at runtime; the boot secret is generated with crypto.randomBytes and printed once."
   },
   {
@@ -580,7 +580,7 @@
     "cat": "CREDENTIALS",
     "name": "Session key is not derived from Math.random",
     "status": "PASS",
-    "ms": 2,
+    "ms": 7,
     "detail": "Both the initial session key and the rotation path use crypto.randomBytes; the client no longer invents a key on failure."
   },
   {
@@ -588,7 +588,7 @@
     "cat": "PROVENANCE",
     "name": "No latency figure is fabricated or padded",
     "status": "PASS",
-    "ms": 4,
+    "ms": 7,
     "detail": "Every latency value across the four services is either measured, or carries SEEDED/SIMULATED, or is null with a stated reason."
   },
   {
@@ -596,7 +596,7 @@
     "cat": "PROVENANCE",
     "name": "A statistics block does not report a typed-in microsecond figure",
     "status": "PASS",
-    "ms": 0,
+    "ms": 1,
     "detail": "Nothing in that service times the pre-transit path, so the figure is null and says why."
   },
   {
@@ -604,7 +604,7 @@
     "cat": "PROVENANCE",
     "name": "A kernel figure is tagged from its value, not from a capability flag",
     "status": "PASS",
-    "ms": 1,
+    "ms": 2,
     "detail": "Tag follows the value; readability is proven by a probe; the toolchain-present-but-unreadable case has its own state."
   },
   {
@@ -612,7 +612,127 @@
     "cat": "CONTAMINATION",
     "name": "Evaluation payloads cannot enter the adjudication corpus",
     "status": "PASS",
-    "ms": 8,
+    "ms": 24,
     "detail": "Guard precedes the queue insert; retraction is insert-only with a mandatory reason; 69 label(s) withdrawn and auditable."
+  },
+  {
+    "id": 87,
+    "cat": "ACCESS",
+    "name": "The status endpoint does not disclose the API key",
+    "status": "PASS",
+    "ms": 37,
+    "detail": "Anonymous callers are refused, and the key is absent even for authenticated ones."
+  },
+  {
+    "id": 88,
+    "cat": "ACCESS",
+    "name": "An Origin header is not a credential",
+    "status": "PASS",
+    "ms": 19,
+    "detail": "Origin: http://localhost no longer authenticates a request."
+  },
+  {
+    "id": 89,
+    "cat": "ACCESS",
+    "name": "CORS does not grant a foreign origin",
+    "status": "PASS",
+    "ms": 27,
+    "detail": "No Access-Control-Allow-Origin for foreign or look-alike origins."
+  },
+  {
+    "id": 90,
+    "cat": "ACCESS",
+    "name": "Containment and release refuse anonymous callers",
+    "status": "PASS",
+    "ms": 19,
+    "detail": "Isolation and release both require an authenticated caller."
+  },
+  {
+    "id": 91,
+    "cat": "ACCESS",
+    "name": "Containment refuses loopback and malformed targets",
+    "status": "PASS",
+    "ms": 39,
+    "detail": "The console cannot isolate itself or act on an address that does not parse."
+  },
+  {
+    "id": 92,
+    "cat": "ACCESS",
+    "name": "A contained address is refused at the gate",
+    "status": "PASS",
+    "ms": 133,
+    "detail": "Contain blocks the address; release restores it."
+  },
+  {
+    "id": 93,
+    "cat": "ACCESS",
+    "name": "Telemetry injection needs a credential",
+    "status": "PASS",
+    "ms": 14,
+    "detail": "Forged flows cannot be fed to the detector without an operator, key or sensor credential."
+  },
+  {
+    "id": 94,
+    "cat": "ACCESS",
+    "name": "A sensor speaks only for its own asset",
+    "status": "PASS",
+    "ms": 123,
+    "detail": "Heartbeats need the issued credential; a hostname alone cannot re-enrol; the credential is scoped to sensor routes."
+  },
+  {
+    "id": 95,
+    "cat": "ACCESS",
+    "name": "The telemetry stream refuses anonymous sockets",
+    "status": "PASS",
+    "ms": 17,
+    "detail": "The live stream needs the same credential as the API."
+  },
+  {
+    "id": 96,
+    "cat": "ACCESS",
+    "name": "The audit trail chain verifies",
+    "status": "PASS",
+    "ms": 36,
+    "detail": "38 entries verified (hash chain + HMAC, key source KEY_FILE); UPDATE/DELETE blocked by trigger."
+  },
+  {
+    "id": 97,
+    "cat": "ACCESS",
+    "name": "A plain request under /ws does not proxy back into this server",
+    "status": "PASS",
+    "ms": 41,
+    "detail": "answered 200 in 40ms; the dev proxy is not installed when embedded."
+  },
+  {
+    "id": 98,
+    "cat": "DETECTION",
+    "name": "ARP poisoning of the gateway is detected",
+    "status": "PASS",
+    "ms": 855,
+    "detail": "CRITICAL T1557.002 naming 10.250.0.66; gateway change and new-device signals ride the same heartbeat."
+  },
+  {
+    "id": 99,
+    "cat": "DETECTION",
+    "name": "Ransomware tripwire fires on a decoy and never touches user files",
+    "status": "PASS",
+    "ms": 1160,
+    "detail": "TRIPWIRE_ENCRYPTED at H=7.9551; roots, system and platform paths refused; user file untouched; decoys removed."
+  },
+  {
+    "id": 100,
+    "cat": "MITRE",
+    "name": "The feed reads the technique the event carries, and never infers one",
+    "status": "PASS",
+    "ms": 2,
+    "detail": "Technique from mitreId or mitreTechnique, else UNMAPPED; source address includes actorIp."
+  },
+  {
+    "id": 101,
+    "cat": "AI",
+    "name": "Local classification does not block on corpus retrieval",
+    "status": "PASS",
+    "ms": 547,
+    "detail": "55 concurrent classifications in 539 ms; retrieval only on the model path, technique lookup indexed."
   }
 ]

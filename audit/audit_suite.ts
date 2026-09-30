@@ -67,7 +67,15 @@ const auth = { 'x-api-key': KEY };
     return 'All 4 boundary guards present; malformed frames fall through to XDP_PASS (fail-open, no OOB read).';
   });
   await run(2, 'eBPF/XDP', 'Max throughput & drop-latency benchmark', async () => {
+    // Detection is asynchronous; without waiting, the mode could flip mid-barrage.
+    await globalRealEbpfBridge.ready;
     const r = await globalRealEbpfBridge.simulateVolumetricBarrage(5_000_000, 400);
+    // On a kernel host the modelled barrage is refused, so it cannot add invented packets to
+    // stats_map-sourced counters; real drops there are measured with actual traffic instead.
+    if (globalRealEbpfBridge.kernelNative) {
+      assert(!r.success, 'a synthetic barrage ran on a kernel host and would mix with kernel counters');
+      return 'Kernel host: synthetic barrage refused; drop rates come from the XDP program\'s stats_map.';
+    }
     assert(r.success && r.totalPacketsProcessed > 0, 'barrage did not run');
     assert(r.maxEventLoopDelayMs < 50, 'event-loop starved under barrage: ' + r.maxEventLoopDelayMs + 'ms');
     return `5Mpps burst: ${r.throughputGbps}Gbps, drop=${r.droppedPackets}, evloop max lag ${r.maxEventLoopDelayMs}ms (non-blocking).`;
@@ -356,6 +364,8 @@ const auth = { 'x-api-key': KEY };
     const inj = await http('POST', '/api/v1/ebpf/real-inject', { ip: '198.51.100.66', reason: 'e2e lifecycle' }, auth);
     const bl = await http('GET', '/api/v1/ebpf/real-blacklist', undefined, auth);
     const dt = Date.now() - t;
+    // On a Linux host this entry is in the real kernel map, so it is removed again.
+    await http('POST', '/api/v1/ebpf/real-remove', { ip: '198.51.100.66' }, auth);
     assert(inj.status === 200, 'inject failed: ' + inj.status);
     assert(bl.json?.blacklist?.some((e: any) => e.ip === '198.51.100.66'), 'IP not in kernel map after inject');
     assert(dt < 1000, 'lifecycle ' + dt + 'ms > 1s');
@@ -374,8 +384,18 @@ const auth = { 'x-api-key': KEY };
   });
   await run(42, 'E2E', 'Graceful degradation w/o kernel hooks', async () => {
     const s = await http('GET', '/api/v1/ebpf/real-stats', undefined, auth);
-    assert(s.json?.stats?.driverMode === 'CONTAINER_EMULATION', 'expected emulation fallback on this host');
-    return 'No bpftool/BPF-fs on host → CONTAINER_EMULATION mode active; userland RST tier still enforces (Test verifies fallback).';
+    const st = s.json?.stats;
+    assert(st, 'stats bridge broken');
+    // Host-dependent. A Linux host with bpftool and the pinned maps reports the attach mode it
+    // read from the kernel; anywhere else the bridge falls back to emulation and says so.
+    if (st.isKernelNative) {
+      assert(st.driverMode !== 'CONTAINER_EMULATION', 'a kernel host reported itself as emulation');
+      assert(st.countersSource === 'KERNEL_STATS_MAP', `kernel host counters came from ${st.countersSource}`);
+      return `Kernel path live (${st.driverMode}); counters read from the XDP program's stats_map.`;
+    }
+    assert(st.driverMode === 'CONTAINER_EMULATION', 'expected emulation fallback on this host');
+    assert(st.countersSource === 'EMULATION', 'emulated counters are not labelled EMULATION');
+    return 'No bpftool/BPF-fs on host → CONTAINER_EMULATION, counters labelled EMULATION; the application gate still enforces.';
   });
   await run(43, 'E2E', 'Deadlock prevention in async queues', () => {
     const eng = fs.readFileSync(path.join(ROOT, 'server/ebpfEngine.ts'), 'utf-8');
@@ -587,8 +607,12 @@ const auth = { 'x-api-key': KEY };
       'total does not equal seeded + observed, so the split cannot be trusted');
     const tag = st.provenance.fields.totalPacketsDropped;
     assert(['SEEDED', 'MEASURED', 'MIXED_SEEDED_AND_MEASURED'].includes(tag), `unexpected tag ${tag}`);
-    if (st.observedPacketsDropped === 0) {
+    if (st.observedPacketsDropped === 0 && st.seededPacketsDropped > 0) {
       assert(tag === 'SEEDED', 'nothing observed yet, but the total is not marked SEEDED');
+    }
+    // A kernel host withholds the seeds, and a zero it counted itself is a measurement.
+    if (st.seededPacketsDropped === 0) {
+      assert(tag === 'MEASURED', `nothing seeded, but the total is tagged ${tag}`);
     }
     return `total ${st.totalPacketsDropped} = seeded ${st.seededPacketsDropped} + observed ${st.observedPacketsDropped}, tagged ${tag}.`;
   });
