@@ -14,9 +14,10 @@
  * Compile:
  *   clang -O2 -g -Wall -target bpf -c xdp_drop.c -o xdp_drop.o
  *
- * Load & Attach:
- *   ip link set dev eth0 xdpgeneric obj xdp_drop.o sec xdp
- *   bpftool prog load xdp_drop.o /sys/fs/bpf/xdp_drop type xdp pinmaps /sys/fs/bpf/
+ * Load & Attach (as the platform expects — maps pinned at /sys/fs/bpf/<name>):
+ *   make load IFACE=eth0            # bpftool prog load + net attach xdpgeneric
+ *   Verified on Linux 6.18 (WSL2), XDP generic mode. `pinmaps /sys/fs/bpf/` must not be
+ *   passed: the maps are LIBBPF_PIN_BY_NAME and libbpf pins them itself.
  */
 
 #include <linux/bpf.h>

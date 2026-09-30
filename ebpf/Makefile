@@ -28,6 +28,25 @@ clean:
 # Attach to default interface (e.g. eth0 or enp1s0)
 IFACE ?= eth0
 
+# load / unload: what the server needs. bpftool pins the LIBBPF_PIN_BY_NAME maps at
+# /sys/fs/bpf/blacklist_map and /sys/fs/bpf/stats_map, which is where the platform reads
+# and writes them. (`ip link ... obj` pins under /sys/fs/bpf/xdp/globals instead, and
+# `bpftool prog load ... pinmaps /sys/fs/bpf/` fails: libbpf has already pinned them.)
+# MODE=xdpgeneric works on any interface; MODE=xdpdrv needs driver support.
+MODE ?= xdpgeneric
+
+load: xdp_drop.o
+	@mountpoint -q /sys/fs/bpf || mount -t bpf bpf /sys/fs/bpf
+	@rm -f /sys/fs/bpf/xdp_drop
+	$(BPFTOOL) prog load xdp_drop.o /sys/fs/bpf/xdp_drop type xdp
+	$(BPFTOOL) net attach $(MODE) pinned /sys/fs/bpf/xdp_drop dev $(IFACE) overwrite
+	@$(BPFTOOL) net show dev $(IFACE)
+
+unload:
+	-$(BPFTOOL) net detach $(MODE) dev $(IFACE)
+	rm -f /sys/fs/bpf/xdp_drop /sys/fs/bpf/blacklist_map /sys/fs/bpf/stats_map
+
+# Standalone attach without the platform (maps pinned under /sys/fs/bpf/xdp/globals).
 attach-generic: xdp_drop.o
 	@echo "[+] Attaching xdp_drop.o to $(IFACE) in XDP Generic (SKB) mode..."
 	ip link set dev $(IFACE) xdpgeneric obj xdp_drop.o sec xdp

@@ -27,8 +27,16 @@ export interface RealEbpfKernelStats {
   activeBlacklistEntries: number;
   throughputGbps: number;
   throughputPps: number;
-  avgLatencyNs: number;
-  driverMode: 'XDP_NATIVE_DRV' | 'XDP_GENERIC_SKB' | 'XDP_OFFLOAD_NIC' | 'CONTAINER_EMULATION';
+  /** Null on a real kernel path: per-packet XDP latency is not measured, and is not invented. */
+  avgLatencyNs: number | null;
+  driverMode: 'XDP_NATIVE_DRV' | 'XDP_GENERIC_SKB' | 'XDP_OFFLOAD_NIC' | 'KERNEL_NO_XDP_ATTACHED' | 'CONTAINER_EMULATION';
+  /**
+   * Where the packet counters came from. KERNEL_STATS_MAP: summed from the XDP program's own
+   * per-CPU stats_map. EMULATION: this process's in-memory model, not a measurement.
+   */
+  // KERNEL_MAP_UNREACHABLE: a kernel host whose last stats_map read failed (e.g. /sys/fs/bpf
+  // unmounted while the program stayed attached); the counters are not a measurement then.
+  countersSource: 'KERNEL_STATS_MAP' | 'KERNEL_MAP_UNREACHABLE' | 'EMULATION';
   interfaceName: string;
   kernelPinnedMapPath: string;
   lastUpdated: string;
@@ -45,7 +53,12 @@ export interface RealEbpfKernelStats {
 export class RealEbpfBridge {
   private pinnedMapPath: string = '/sys/fs/bpf/blacklist_map';
   private pinnedStatsPath: string = '/sys/fs/bpf/stats_map';
-  private defaultInterface: string = 'eth0';
+  private defaultInterface: string =
+    process.env.XDP_IFACE && /^[A-Za-z0-9._-]{1,15}$/.test(process.env.XDP_IFACE) ? process.env.XDP_IFACE : 'eth0';
+  /** bytes_value of the pinned blacklist map, read from the kernel; 56 for xdp_drop.c. */
+  private blacklistValueSize: number | null = null;
+  /** Previous stats_map sample, so throughput is derived from two real readings. */
+  private lastKernelSample: { at: number; rxPackets: number; rxBytes: number } | null = null;
   private isKernelAvailable: boolean = false;
   /** bpftool on PATH and /sys/fs/bpf mounted. Necessary, not sufficient. */
   private kernelToolingPresent: boolean = false;
@@ -77,6 +90,11 @@ export class RealEbpfBridge {
   get countersReadable(): boolean {
     return this.kernelCountersReadable;
   }
+
+  /** Packets the XDP program dropped, from stats_map at the last read; null until one succeeds. */
+  get kernelDroppedPackets(): number | null {
+    return this.isKernelAvailable && this.stats.countersSource === 'KERNEL_STATS_MAP' ? this.stats.droppedPackets : null;
+  }
   private driverMode: RealEbpfKernelStats['driverMode'] = 'CONTAINER_EMULATION';
 
   // In-memory mirror for sub-millisecond lookups and container compatibility
@@ -98,15 +116,24 @@ export class RealEbpfBridge {
     interfaceName: 'eth0',
     kernelPinnedMapPath: '/sys/fs/bpf/blacklist_map',
     lastUpdated: new Date().toISOString(),
-    isKernelNative: false
+    isKernelNative: false,
+    countersSource: 'EMULATION'
   };
 
   private streamInterval: NodeJS.Timeout | null = null;
 
+  /** Resolves once the host has been probed: true on a kernel path, false in emulation. */
+  public readonly ready: Promise<boolean>;
+
   constructor() {
-    this.detectHostKernelCapabilities();
-    this.seedBaselineThreats();
-    this.startLiveWebSocketTelemetryStream(1000); // 1-second live telemetry broadcast
+    // Detection decides the mode before anything is seeded or streamed. Demo seeds go only
+    // to the emulation mirror, never to a real kernel map, where they would block real
+    // public addresses because a fixture named them.
+    this.ready = this.detectHostKernelCapabilities().then(kernel => {
+      if (!kernel) this.seedBaselineThreats();
+      this.startLiveWebSocketTelemetryStream(1000);
+      return kernel;
+    });
   }
 
   /**
@@ -146,11 +173,21 @@ export class RealEbpfBridge {
 
       if (hasBpftool && hasBpfFs && canReadPrograms) {
         this.isKernelAvailable = true;
-        this.driverMode = 'XDP_NATIVE_DRV';
         this.stats.isKernelNative = true;
-        this.stats.driverMode = 'XDP_NATIVE_DRV';
-        console.log('[RealEbpfBridge] Production Linux Kernel BPF subsystem verified. Driver: XDP_NATIVE_DRV');
+        // Read from the attachment itself. This printed XDP_NATIVE_DRV whenever bpftool
+        // could read anything, including with the program attached in generic (SKB) mode,
+        // which is a different and slower datapath.
+        this.driverMode = await this.readAttachMode();
+        this.stats.driverMode = this.driverMode;
+        this.stats.interfaceName = this.defaultInterface;
+        // Seeded demo figures have no place beside kernel counters.
+        Object.assign(this.stats, {
+          rxPackets: 0, rxBytes: 0, droppedPackets: 0, droppedBytes: 0, passedPackets: 0, passedBytes: 0,
+          throughputGbps: 0, throughputPps: 0, avgLatencyNs: null, countersSource: 'KERNEL_MAP_UNREACHABLE'
+        });
+        console.log(`[RealEbpfBridge] Linux kernel BPF verified on ${this.defaultInterface}: ${this.driverMode}`);
         await this.syncFromKernelMap();
+        await this.readKernelCounters();
         return true;
       }
     } catch (err) {
@@ -178,12 +215,92 @@ export class RealEbpfBridge {
     return typeof iface === 'string' && /^[A-Za-z0-9._-]{1,15}$/.test(iface);
   }
 
+  /** XDP attachment on the interface, from `bpftool net show`, not assumed. */
+  private async readAttachMode(iface: string = this.defaultInterface): Promise<RealEbpfKernelStats['driverMode']> {
+    try {
+      const { stdout } = await execFilePromise('bpftool', ['-j', 'net', 'show', 'dev', iface], { timeout: 5000 });
+      const net = JSON.parse(stdout);
+      const xdp = (Array.isArray(net) ? net[0]?.xdp : net?.xdp) ?? [];
+      const mode = String(xdp[0]?.mode ?? '');
+      if (mode === 'generic') return 'XDP_GENERIC_SKB';
+      if (mode === 'driver') return 'XDP_NATIVE_DRV';
+      if (mode === 'offload') return 'XDP_OFFLOAD_NIC';
+      return 'KERNEL_NO_XDP_ATTACHED';
+    } catch {
+      return 'KERNEL_NO_XDP_ATTACHED';
+    }
+  }
+
+  /** The map's value size, from the kernel. bpftool rejects any other length. */
+  private async valueSize(): Promise<number> {
+    if (this.blacklistValueSize) return this.blacklistValueSize;
+    try {
+      const { stdout } = await execFilePromise('bpftool', ['-j', 'map', 'show', 'pinned', this.pinnedMapPath], { timeout: 5000 });
+      const n = Number(JSON.parse(stdout)?.bytes_value);
+      if (Number.isInteger(n) && n > 0) this.blacklistValueSize = n;
+    } catch {
+      /* fall through to the struct's known size */
+    }
+    return this.blacklistValueSize ?? 56;
+  }
+
+  /**
+   * struct ip_blacklist_entry as bytes, at exactly the map's value size:
+   *   0  hits u64         0 (the XDP program counts)
+   *   8  added_at_ns u64  0 (a kernel monotonic stamp this process cannot produce)
+   *   16 action u32       1 DROP / 2 PASS, little-endian
+   *   20 reason char[32]  ASCII, NUL-terminated
+   * The previous command sent 20 bytes against a 56-byte value, so every kernel write
+   * failed ("value expected 56 bytes got 20") and the address silently fell back to the
+   * in-process mirror: containment never reached the kernel.
+   */
+  private valueBytes(size: number, action: 'XDP_DROP' | 'XDP_PASS', reason: string): string[] {
+    const buf = Buffer.alloc(size);
+    buf.writeUInt32LE(action === 'XDP_DROP' ? 1 : 2, 16);
+    const tag = Buffer.from(reason.replace(/[^\x20-\x7e]/g, '?').slice(0, 31), 'ascii');
+    tag.copy(buf, 20, 0, Math.min(tag.length, Math.max(0, size - 21)));
+    return [...buf].map(b => b.toString(16).padStart(2, '0'));
+  }
+
+  /** Sum the XDP program's per-CPU stats_map into this.stats. True when a read succeeded. */
+  private async readKernelCounters(): Promise<boolean> {
+    try {
+      const { stdout } = await execFilePromise('bpftool', ['-j', 'map', 'dump', 'pinned', this.pinnedStatsPath], { timeout: 5000 });
+      const rows = JSON.parse(stdout);
+      const cpus = rows?.[0]?.formatted?.values ?? rows?.[0]?.values ?? [];
+      const sum = { rx_packets: 0, rx_bytes: 0, dropped_packets: 0, dropped_bytes: 0, passed_packets: 0, passed_bytes: 0 };
+      for (const c of cpus) {
+        const v = c?.value ?? {};
+        for (const k of Object.keys(sum) as Array<keyof typeof sum>) sum[k] += Number(v[k]) || 0;
+      }
+      const now = Date.now();
+      if (this.lastKernelSample && now > this.lastKernelSample.at) {
+        const dt = (now - this.lastKernelSample.at) / 1000;
+        this.stats.throughputPps = Math.max(0, Math.round((sum.rx_packets - this.lastKernelSample.rxPackets) / dt));
+        this.stats.throughputGbps = Number(((Math.max(0, sum.rx_bytes - this.lastKernelSample.rxBytes) * 8) / dt / 1e9).toFixed(6));
+      }
+      this.lastKernelSample = { at: now, rxPackets: sum.rx_packets, rxBytes: sum.rx_bytes };
+      Object.assign(this.stats, {
+        rxPackets: sum.rx_packets, rxBytes: sum.rx_bytes,
+        droppedPackets: sum.dropped_packets, droppedBytes: sum.dropped_bytes,
+        passedPackets: sum.passed_packets, passedBytes: sum.passed_bytes,
+        countersSource: 'KERNEL_STATS_MAP'
+      });
+      return true;
+    } catch {
+      // Reported, not papered over: this read failing used to leave KERNEL_STATS_MAP on
+      // zeroed counters while the attached program was dropping packets nobody could see.
+      this.stats.countersSource = 'KERNEL_MAP_UNREACHABLE';
+      return false;
+    }
+  }
+
   public ipToHexBytes(ip: string): string[] {
     const octets = ip.trim().split('.').map(o => parseInt(o, 10));
     if (octets.length !== 4 || octets.some(isNaN)) {
       throw new Error(`Invalid IPv4 address format: ${ip}`);
     }
-    // Network byte order / Little Endian for x86_64
+    // The key is iph->saddr as it sits in the packet: network byte order, a.b.c.d -> a b c d.
     return octets.map(o => '0x' + o.toString(16).padStart(2, '0'));
   }
 
@@ -217,12 +334,10 @@ export class RealEbpfBridge {
     // 1. If real kernel BPF map is pinned, commit directly into Linux kernel
     if (this.isKernelAvailable && fs.existsSync(this.pinnedMapPath)) {
       try {
-        const hexKey = this.ipToHexBytes(cleanIp).join(' ');
-        // Value: struct ip_blacklist_entry: hits (u64), added_at_ns (u64), action (u32), reason (32 bytes)
-        // For standard bpftool, we write key and formatted value bytes
-        const actionCode = action === 'XDP_DROP' ? '0x01' : '0x02';
-        const cmd = `bpftool map update pinned ${this.pinnedMapPath} key hex ${hexKey} value hex 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 ${actionCode} 00 00 00`;
-        await execPromise(cmd);
+        const key = this.ipToHexBytes(cleanIp).map(b => b.slice(2));
+        const value = this.valueBytes(await this.valueSize(), action === 'XDP_DROP' ? 'XDP_DROP' : 'XDP_PASS', reason);
+        // argv, not a shell string: the reason is operator-supplied text.
+        await execFilePromise('bpftool', ['map', 'update', 'pinned', this.pinnedMapPath, 'key', 'hex', ...key, 'value', 'hex', ...value], { timeout: 5000 });
         entry.inKernelMap = true;
         console.log(`[RealEbpfBridge] Successfully injected ${cleanIp} into Linux kernel BPF_MAP_TYPE_HASH`);
       } catch (err: any) {
@@ -250,9 +365,8 @@ export class RealEbpfBridge {
 
     if (this.isKernelAvailable && fs.existsSync(this.pinnedMapPath)) {
       try {
-        const hexKey = this.ipToHexBytes(cleanIp).join(' ');
-        const cmd = `bpftool map delete pinned ${this.pinnedMapPath} key hex ${hexKey}`;
-        await execPromise(cmd);
+        const key = this.ipToHexBytes(cleanIp).map(b => b.slice(2));
+        await execFilePromise('bpftool', ['map', 'delete', 'pinned', this.pinnedMapPath, 'key', 'hex', ...key], { timeout: 5000 });
         removedFromKernel = true;
         console.log(`[RealEbpfBridge] Successfully removed ${cleanIp} from Linux kernel BPF_MAP_TYPE_HASH`);
       } catch (err: any) {
@@ -304,13 +418,26 @@ export class RealEbpfBridge {
       if (stdout.trim().startsWith('[')) {
         const entries = JSON.parse(stdout);
         for (const item of entries) {
-          if (Array.isArray(item.key) && item.key.length >= 4) {
-            const ip = this.hexBytesToIp(item.key.slice(0, 4));
-            if (!this.inMemoryBlacklist.has(ip)) {
+          const rawKey = Array.isArray(item.key) ? item.key : null;
+          const fmtKey = typeof item.formatted?.key === 'number' ? item.formatted.key : null;
+          // A BTF-formatted dump gives the key as the u32 read in host order (little-endian).
+          const ip =
+            rawKey && rawKey.length >= 4
+              ? this.hexBytesToIp(rawKey.slice(0, 4))
+              : fmtKey != null
+                ? [fmtKey & 255, (fmtKey >>> 8) & 255, (fmtKey >>> 16) & 255, (fmtKey >>> 24) & 255].join('.')
+                : null;
+          const hits = Number(item.formatted?.value?.hits ?? item.value?.hits ?? 0) || 0;
+          if (ip) {
+            const known = this.inMemoryBlacklist.get(ip);
+            if (known) {
+              known.hits = hits;
+              known.inKernelMap = true;
+            } else {
               this.inMemoryBlacklist.set(ip, {
                 ip,
                 action: 'XDP_DROP',
-                hits: item.value?.hits || 0,
+                hits,
                 addedAtNs: Date.now() * 1000000,
                 addedAtIso: new Date().toISOString(),
                 reason: 'Discovered from active Linux Kernel BPF Map',
@@ -329,7 +456,15 @@ export class RealEbpfBridge {
    * Reads real datapath statistics from the Linux kernel or host network interface
    */
   public async getKernelStats(): Promise<RealEbpfKernelStats> {
-    // 1. If running on real Linux, poll interface RX statistics from /sys/class/net/<iface>/statistics
+    // Real kernel path: the XDP program's own counters, nothing else.
+    if (this.isKernelAvailable) {
+      await this.readKernelCounters();
+      await this.syncFromKernelMap();
+      this.stats.activeBlacklistEntries = this.inMemoryBlacklist.size;
+      this.stats.lastUpdated = new Date().toISOString();
+      return { ...this.stats };
+    }
+    // Emulation only below.
     if (fs.existsSync(`/sys/class/net/${this.defaultInterface}/statistics/rx_packets`)) {
       try {
         const rxPackets = parseInt(fs.readFileSync(`/sys/class/net/${this.defaultInterface}/statistics/rx_packets`, 'utf-8').trim(), 10);
@@ -380,9 +515,16 @@ export class RealEbpfBridge {
     }
 
     try {
-      await execFilePromise('ip', ['link', 'set', 'dev', iface, mode, 'obj', objPath, 'sec', 'xdp'], { timeout: 5000 });
+      // Loaded with bpftool so the LIBBPF_PIN_BY_NAME maps land at /sys/fs/bpf/<name>, where
+      // this bridge reads them. `ip link ... obj` pins under /sys/fs/bpf/xdp/globals, which
+      // left the server writing to a map no program was using.
+      const progPin = '/sys/fs/bpf/xdp_drop';
+      if (!fs.existsSync(progPin)) {
+        await execFilePromise('bpftool', ['prog', 'load', objPath, progPin, 'type', 'xdp'], { timeout: 10000 });
+      }
+      await execFilePromise('bpftool', ['net', 'attach', mode === 'xdpdrv' ? 'xdpdrv' : 'xdpgeneric', 'pinned', progPin, 'dev', iface, 'overwrite'], { timeout: 5000 });
       this.defaultInterface = iface;
-      this.driverMode = mode === 'xdpdrv' ? 'XDP_NATIVE_DRV' : 'XDP_GENERIC_SKB';
+      this.driverMode = await this.readAttachMode();
       this.stats.driverMode = this.driverMode;
       this.stats.interfaceName = iface;
 
@@ -408,7 +550,23 @@ export class RealEbpfBridge {
       return { success: false, message: `Rejected: invalid interface name '${iface}'.` };
     }
     try {
-      await execFilePromise('ip', ['link', 'set', 'dev', iface, 'xdp', 'off'], { timeout: 5000 });
+      // `ip link set dev X xdp off` clears only the driver-mode slot: on Linux a generic
+      // attach survived it while this reported success. Detach the mode actually attached,
+      // then ask the kernel again rather than trusting the exit code.
+      const flags: Partial<Record<RealEbpfKernelStats['driverMode'], string>> = {
+        XDP_GENERIC_SKB: 'xdpgeneric', XDP_NATIVE_DRV: 'xdpdrv', XDP_OFFLOAD_NIC: 'xdpoffload'
+      };
+      const flag = flags[await this.readAttachMode(iface)];
+      if (!flag) return { success: false, message: `No XDP program is attached to ${iface}.` };
+      await execFilePromise('bpftool', ['net', 'detach', flag, 'dev', iface], { timeout: 5000 });
+      const after = await this.readAttachMode(iface);
+      if (after !== 'KERNEL_NO_XDP_ATTACHED') {
+        return { success: false, message: `XDP is still attached to ${iface} (${after}).` };
+      }
+      if (iface === this.defaultInterface) {
+        this.driverMode = after;
+        this.stats.driverMode = after;
+      }
       return { success: true, message: `Detached XDP program from ${iface}.` };
     } catch (err: any) {
       return { success: false, message: `Detachment failed: ${err.message}` };
@@ -425,7 +583,12 @@ export class RealEbpfBridge {
     }
 
     this.streamInterval = setInterval(async () => {
-      // Simulate micro-fluctuations in network ingress for realistic SOC dashboard fidelity
+      if (this.isKernelAvailable) {
+        await this.readKernelCounters();
+        this.broadcastTelemetryUpdate();
+        return;
+      }
+      // EMULATION ONLY: modelled traffic, labelled countersSource EMULATION.
       const deltaRx = Math.floor(80 + Math.random() * 250);
       const deltaBytes = deltaRx * Math.floor(128 + Math.random() * 1024);
       this.stats.rxPackets += deltaRx;
@@ -512,6 +675,14 @@ export class RealEbpfBridge {
     status: 'PASSED' | 'FAILED';
     durationMs: number;
   }> {
+    if (this.isKernelAvailable) {
+      // A modelled barrage would overwrite measured kernel counters with invented ones.
+      return {
+        success: false, simulatedPps: 0, totalPacketsProcessed: 0, droppedPackets: 0, passedPackets: 0,
+        throughputGbps: 0, kernelLatencyNs: 0, eventLoopLagMs: 0, maxEventLoopDelayMs: 0,
+        driverVerdict: 'XDP_DROP_LINE_RATE', status: 'FAILED', durationMs: 0
+      };
+    }
     const totalPackets = Math.floor((targetPps * burstDurationMs) / 1000);
     const dropRatio = 0.965; // 96.5% volumetric malicious flood dropped at NIC / XDP
     const droppedCount = Math.floor(totalPackets * dropRatio);
