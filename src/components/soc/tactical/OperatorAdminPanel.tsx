@@ -19,7 +19,7 @@ const ROLE_HELP: Record<string, [string, string]> = {
 };
 
 export const OperatorAdminPanel: React.FC<{ isAr: boolean; selfId: string }> = ({ isAr, selfId }) => {
-  const o = useOperators();
+  const o = useOperators(isAr);
   const [form, setForm] = React.useState({ username: '', displayName: '', role: 'ANALYST', password: '' });
   const [problem, setProblem] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -106,7 +106,7 @@ export const OperatorAdminPanel: React.FC<{ isAr: boolean; selfId: string }> = (
             <UserPlus className="h-3.5 w-3.5" aria-hidden />
             {isAr ? 'مشغّل جديد' : 'New operator'}
           </p>
-          <input className={`${input} font-mono`} dir="ltr" placeholder={isAr ? 'اسم المستخدم' : 'username'} aria-label={isAr ? 'اسم المستخدم' : 'username'} value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} autoCapitalize="none" spellCheck={false} />
+          <input className={`${input} font-mono`} dir="auto" placeholder={isAr ? 'اسم المستخدم' : 'username'} aria-label={isAr ? 'اسم المستخدم' : 'username'} value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} autoCapitalize="none" spellCheck={false} />
           <input className={input} placeholder={isAr ? 'الاسم الظاهر' : 'display name'} aria-label={isAr ? 'الاسم الظاهر' : 'display name'} value={form.displayName} onChange={e => setForm({ ...form, displayName: e.target.value })} />
           <select className={`${input} font-mono`} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} aria-label={isAr ? 'الدور' : 'role'}>
             {['VIEWER', 'ANALYST', 'ADMIN'].map(r => (

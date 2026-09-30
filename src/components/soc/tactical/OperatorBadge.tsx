@@ -40,7 +40,7 @@ export const OperatorBadge: React.FC<{ isAr: boolean }> = ({ isAr }) => {
       refresh();
       return;
     }
-    setMsg(r.json?.message ?? (isAr ? 'تعذّر تغيير كلمة المرور' : 'password change failed'));
+    setMsg((isAr ? r.json?.messageAr : null) ?? r.json?.message ?? (isAr ? 'تعذّر تغيير كلمة المرور' : 'password change failed'));
   };
 
   const tone = ROLE_TONE[operator.role] ?? '#94a3b8';

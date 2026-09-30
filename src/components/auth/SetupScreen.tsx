@@ -2,6 +2,7 @@ import React from 'react';
 import { CyberButton } from '../soc/tactical/CyberButton';
 import { AccessError, AccessField, AccessShell } from './AccessShell';
 import { postJson } from './operatorContext';
+import { normalizeUsername, usernameValid } from './usernameRule';
 
 /**
  * First-run setup: create the first administrator.
@@ -31,7 +32,21 @@ export const SetupScreen: React.FC<{
 
   const len = [...password].length;
   const mismatch = confirm.length > 0 && confirm !== password;
-  const ready = /^[a-zA-Z0-9._-]{3,32}$/.test(username) && len >= 12 && confirm === password && (!needsSecret || secret.trim());
+  const nameOk = usernameValid(username);
+  const ready = nameOk && len >= 12 && confirm === password && (!needsSecret || secret.trim());
+  // The first unmet condition, named. A disabled button with no reason is what made an
+  // Arabic username look like a broken sign-in.
+  const blocker =
+    needsSecret && !secret.trim()
+      ? isAr ? 'أدخل رمز الإعداد.' : 'Enter the setup secret.'
+      : !nameOk
+        ? isAr ? 'اسم المستخدم: من ٣ إلى ٣٢ حرفًا — حروف عربية أو إنجليزية وأرقام و . _ -' : 'Username: 3–32 characters — Arabic or Latin letters, digits, . _ -'
+        : len < 12
+          ? isAr ? `كلمة المرور: ${len} من ١٢ حرفًا على الأقل.` : `Password: ${len} of at least 12 characters.`
+          : confirm !== password
+            ? isAr ? 'تأكيد كلمة المرور غير مطابق.' : 'The confirmation does not match.'
+            : null;
+  const touched = Boolean(username || password || confirm || secret);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +55,7 @@ export const SetupScreen: React.FC<{
     setError(null);
     try {
       const r = await postJson('/api/v1/auth/setup', {
-        username,
+        username: normalizeUsername(username),
         displayName: displayName.trim() || undefined,
         password,
         setupToken: needsSecret ? secret.trim() : undefined
@@ -83,11 +98,11 @@ export const SetupScreen: React.FC<{
         )}
         <AccessField
           label={isAr ? 'اسم المستخدم' : 'Username'}
-          hint={isAr ? '٣–٣٢ حرفًا: أحرف لاتينية وأرقام و . _ -' : '3–32 characters: letters, digits, . _ -'}
+          hint={isAr ? '٣–٣٢ حرفًا: حروف عربية أو إنجليزية وأرقام و . _ -' : '3–32 characters: Arabic or Latin letters, digits, . _ -'}
           autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
-          dir="ltr"
+          dir="auto"
           value={username}
           onChange={e => setUsername(e.target.value)}
           autoFocus={!needsSecret}
@@ -128,6 +143,11 @@ export const SetupScreen: React.FC<{
         <CyberButton tone="cyan" className="w-full" type="submit" disabled={!ready || busy}>
           {busy ? (isAr ? '… جارٍ الإنشاء' : '… CREATING') : isAr ? '[ إنشاء حساب المسؤول ]' : '[ CREATE ADMINISTRATOR ]'}
         </CyberButton>
+        {touched && blocker && (
+          <p className="text-xs text-amber-300" role="status" aria-live="polite">
+            {blocker}
+          </p>
+        )}
       </form>
     </AccessShell>
   );

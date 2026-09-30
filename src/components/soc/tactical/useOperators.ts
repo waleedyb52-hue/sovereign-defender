@@ -26,14 +26,14 @@ const Session = z.object({
 export type OperatorRow = z.infer<typeof Operator>;
 export type SessionRow = z.infer<typeof Session>;
 
-async function send(method: 'POST' | 'PATCH', path: string, body: unknown): Promise<string | null> {
+async function send(method: 'POST' | 'PATCH', path: string, body: unknown, isAr: boolean): Promise<string | null> {
   const res = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   if (res.ok) return null;
   const j = await res.json().catch(() => null);
-  return j?.message ?? `${path} -> ${res.status}`;
+  return (isAr ? j?.messageAr : null) ?? j?.message ?? `${path} -> ${res.status}`;
 }
 
-export function useOperators() {
+export function useOperators(isAr = false) {
   const [operators, setOperators] = useState<OperatorRow[]>([]);
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -71,9 +71,9 @@ export function useOperators() {
     error,
     loading,
     create: (input: { username: string; displayName: string; role: string; password: string }) =>
-      act(() => send('POST', '/api/v1/auth/operators', input)),
-    setRole: (id: string, role: string) => act(() => send('PATCH', `/api/v1/auth/operators/${id}`, { role })),
-    setDisabled: (id: string, disabled: boolean) => act(() => send('PATCH', `/api/v1/auth/operators/${id}`, { disabled }))
+      act(() => send('POST', '/api/v1/auth/operators', input, isAr)),
+    setRole: (id: string, role: string) => act(() => send('PATCH', `/api/v1/auth/operators/${id}`, { role }, isAr)),
+    setDisabled: (id: string, disabled: boolean) => act(() => send('PATCH', `/api/v1/auth/operators/${id}`, { disabled }, isAr))
   };
 }
 

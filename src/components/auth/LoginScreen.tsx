@@ -69,7 +69,7 @@ export const LoginScreen: React.FC<{
           autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
-          dir="ltr"
+          dir="auto"
           value={username}
           onChange={e => setUsername(e.target.value)}
           required

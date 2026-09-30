@@ -79,7 +79,9 @@ export function createAuthRouter(ac: AccessControl, opts: { tls: boolean; rotati
       });
     }
     const created = await globalOperatorAuth.create({ username, password, displayName, role: 'ADMIN' }, 'first-run-setup');
-    if ('reason' in created) return res.status(400).json({ success: false, error: 'INVALID', message: created.reason });
+    if ('reason' in created) {
+      return res.status(400).json({ success: false, error: 'INVALID', message: created.reason, messageAr: created.reasonAr });
+    }
 
     const login = await globalOperatorAuth.login(username, password, clientIp(req));
     if ('reason' in login) return res.status(500).json({ success: false, error: 'LOGIN_AFTER_SETUP_FAILED' });
@@ -142,7 +144,7 @@ export function createAuthRouter(ac: AccessControl, opts: { tls: boolean; rotati
     const done = await globalOperatorAuth.changePassword(p.id, String(current ?? ''), String(next ?? ''));
     const why = 'reason' in done ? done.reason : null;
     ac.audit(req, 'PASSWORD_CHANGED', why ? 'FAILURE' : 'SUCCESS', p.name, why ? { reason: why } : null);
-    if (why) return res.status(400).json({ success: false, error: 'INVALID', message: why });
+    if ('reason' in done) return res.status(400).json({ success: false, error: 'INVALID', message: done.reason, messageAr: done.reasonAr });
     res.setHeader('Set-Cookie', clearedSessionCookie(secure(req)));
     return res.json({ success: true, signedOut: true });
   });
@@ -157,7 +159,9 @@ export function createAuthRouter(ac: AccessControl, opts: { tls: boolean; rotati
     const { username, password, displayName, role } = req.body || {};
     const created = await globalOperatorAuth.create({ username, password, displayName, role: role as Role }, req.principal?.name ?? null);
     ac.audit(req, 'OPERATOR_CREATED', 'reason' in created ? 'FAILURE' : 'SUCCESS', typeof username === 'string' ? username : null, 'reason' in created ? { reason: created.reason } : { role });
-    if ('reason' in created) return res.status(400).json({ success: false, error: 'INVALID', message: created.reason });
+    if ('reason' in created) {
+      return res.status(400).json({ success: false, error: 'INVALID', message: created.reason, messageAr: created.reasonAr });
+    }
     return res.json({ success: true, operator: created.operator });
   });
 
@@ -171,12 +175,12 @@ export function createAuthRouter(ac: AccessControl, opts: { tls: boolean; rotati
     if (role !== undefined) {
       result = globalOperatorAuth.setRole(id, role);
       ac.audit(req, 'OPERATOR_ROLE_CHANGED', 'reason' in result ? 'FAILURE' : 'SUCCESS', id, 'reason' in result ? { reason: result.reason } : { role });
-      if ('reason' in result) return res.status(400).json({ success: false, error: 'INVALID', message: result.reason });
+      if ('reason' in result) return res.status(400).json({ success: false, error: 'INVALID', message: result.reason, messageAr: result.reasonAr });
     }
     if (disabled !== undefined) {
       result = globalOperatorAuth.setDisabled(id, Boolean(disabled));
       ac.audit(req, disabled ? 'OPERATOR_DISABLED' : 'OPERATOR_ENABLED', 'reason' in result ? 'FAILURE' : 'SUCCESS', id, 'reason' in result ? { reason: result.reason } : null);
-      if ('reason' in result) return res.status(400).json({ success: false, error: 'INVALID', message: result.reason });
+      if ('reason' in result) return res.status(400).json({ success: false, error: 'INVALID', message: result.reason, messageAr: result.reasonAr });
     }
     if (!result) return res.status(400).json({ success: false, error: 'NOTHING_TO_CHANGE' });
     return res.json({ success: true, operator: 'operator' in result ? result.operator : null });

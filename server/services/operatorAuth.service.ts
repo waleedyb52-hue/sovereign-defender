@@ -101,21 +101,56 @@ async function verifyPassword(password: string, encoded: string): Promise<boolea
 let DUMMY_HASH: Promise<string> | null = null;
 const dummyHash = () => (DUMMY_HASH ??= hashPassword(crypto.randomBytes(18).toString('base64')));
 
-export function passwordProblem(password: string, username: string): string | null {
-  if (typeof password !== 'string') return 'password is required';
+/** A refusal in both console languages. `en` is also what the audit trail records. */
+export interface Problem {
+  en: string;
+  ar: string;
+}
+
+export function passwordProblem(password: string, username: string): Problem | null {
+  if (typeof password !== 'string') return { en: 'password is required', ar: 'كلمة المرور مطلوبة' };
   const len = [...password].length;
-  if (len < 12) return 'use at least 12 characters — a passphrase of several words works well';
-  if (len > 128) return 'use at most 128 characters';
+  if (len < 12) {
+    return {
+      en: 'use at least 12 characters — a passphrase of several words works well',
+      ar: 'استخدم ١٢ حرفًا على الأقل — عبارة من عدة كلمات تفي بالغرض'
+    };
+  }
+  if (len > 128) return { en: 'use at most 128 characters', ar: 'الحد الأقصى ١٢٨ حرفًا' };
   const lower = password.toLowerCase();
-  if (COMMON.has(lower)) return 'this password appears in breach lists';
-  if (username && lower.includes(username.toLowerCase())) return 'the password must not contain the username';
-  if (/^(.)\1+$/.test(password)) return 'the password must not be one repeated character';
+  if (COMMON.has(lower)) return { en: 'this password appears in breach lists', ar: 'كلمة المرور هذه موجودة في قوائم التسريبات' };
+  if (username && lower.includes(username.toLowerCase())) {
+    return { en: 'the password must not contain the username', ar: 'يجب ألا تحتوي كلمة المرور على اسم المستخدم' };
+  }
+  if (/^(.)\1+$/u.test(password)) {
+    return { en: 'the password must not be one repeated character', ar: 'يجب ألا تكون كلمة المرور حرفًا واحدًا مكررًا' };
+  }
   return null;
 }
 
-function usernameProblem(username: string): string | null {
-  if (typeof username !== 'string' || !/^[a-zA-Z0-9._-]{3,32}$/.test(username)) {
-    return 'username: 3–32 characters, letters, digits, dot, dash or underscore';
+/**
+ * Usernames: Arabic or Latin letters, digits (Western or Arabic-Indic), dot, dash,
+ * underscore; 3–32 characters. This was ASCII-only, which turned an Arabic name into a
+ * setup form that silently refused to submit. The two scripts are named rather than
+ * allowing every letter, because Cyrillic or Greek lookalikes would let "аdmin" pass for
+ * "admin" in the operator list and the audit trail. Harakat and tatweel are excluded for
+ * the same reason: "محمد" and "مُحمد" must not be two different accounts.
+ * Keep in step with src/components/auth/usernameRule.ts.
+ */
+const USERNAME_CHARS = /^(?:(?=\p{L})[\p{Script=Latin}\p{Script=Arabic}]|[0-9٠-٩۰-۹._-])+$/u;
+
+/** NFKC folds Arabic presentation forms and full-width Latin into their plain letters. */
+export function normalizeUsername(username: unknown): string {
+  return typeof username === 'string' ? username.normalize('NFKC').trim() : '';
+}
+
+export function usernameProblem(username: string): Problem | null {
+  const len = typeof username === 'string' ? [...username].length : 0;
+  if (len < 3 || len > 32 || !USERNAME_CHARS.test(username)) {
+    return {
+      en: 'username: 3–32 characters — Arabic or Latin letters, digits, dot, dash or underscore',
+      ar: 'اسم المستخدم: من ٣ إلى ٣٢ حرفًا — حروف عربية أو إنجليزية وأرقام و . _ -'
+    };
   }
   return null;
 }
@@ -222,24 +257,26 @@ export class OperatorAuthService {
   public async create(
     input: { username: string; password: string; displayName?: string; role: Role },
     createdBy: string | null
-  ): Promise<{ ok: true; operator: OperatorPublic } | { ok: false; reason: string }> {
-    const u = usernameProblem(input.username);
-    if (u) return { ok: false, reason: u };
-    if (!ROLES.includes(input.role)) return { ok: false, reason: 'unknown role' };
-    const p = passwordProblem(input.password, input.username);
-    if (p) return { ok: false, reason: p };
-    if (this.db.prepare('SELECT 1 FROM operators WHERE username = ?').get(input.username)) {
-      return { ok: false, reason: 'that username is taken' };
+  ): Promise<{ ok: true; operator: OperatorPublic } | { ok: false; reason: string; reasonAr: string }> {
+    const refuse = (p: Problem) => ({ ok: false as const, reason: p.en, reasonAr: p.ar });
+    const username = normalizeUsername(input.username);
+    const u = usernameProblem(username);
+    if (u) return refuse(u);
+    if (!ROLES.includes(input.role)) return refuse({ en: 'unknown role', ar: 'دور غير معروف' });
+    const p = passwordProblem(input.password, username);
+    if (p) return refuse(p);
+    if (this.db.prepare('SELECT 1 FROM operators WHERE username = ?').get(username)) {
+      return refuse({ en: 'that username is taken', ar: 'اسم المستخدم هذا مستخدم من قبل' });
     }
     const id = 'OPR-' + crypto.randomBytes(5).toString('hex').toUpperCase();
     const pw = await hashPassword(input.password);
-    const display = (input.displayName ?? '').trim().slice(0, 64) || input.username;
+    const display = (input.displayName ?? '').trim().slice(0, 64) || username;
     this.db
       .prepare(
         `INSERT INTO operators (id, username, display_name, role, pw_hash, created_at, created_by)
          VALUES (?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(id, input.username, display, input.role, pw, new Date().toISOString(), createdBy);
+      .run(id, username, display, input.role, pw, new Date().toISOString(), createdBy);
     if (this.hasOperators()) this.setupSecret = null;
     return { ok: true, operator: this.toPublic(this.row(id)) };
   }
@@ -252,18 +289,22 @@ export class OperatorAuthService {
     return Number(n.n) <= 1;
   }
 
-  public setRole(id: string, role: Role): { ok: true; operator: OperatorPublic } | { ok: false; reason: string } {
-    if (!ROLES.includes(role)) return { ok: false, reason: 'unknown role' };
-    if (!this.row(id)) return { ok: false, reason: 'no such operator' };
-    if (role !== 'ADMIN' && this.isLastAdmin(id)) return { ok: false, reason: 'cannot demote the last active admin' };
+  public setRole(id: string, role: Role): { ok: true; operator: OperatorPublic } | { ok: false; reason: string; reasonAr: string } {
+    if (!ROLES.includes(role)) return { ok: false, reason: 'unknown role', reasonAr: 'دور غير معروف' };
+    if (!this.row(id)) return { ok: false, reason: 'no such operator', reasonAr: 'لا يوجد مشغّل بهذا المعرّف' };
+    if (role !== 'ADMIN' && this.isLastAdmin(id)) {
+      return { ok: false, reason: 'cannot demote the last active admin', reasonAr: 'لا يمكن خفض دور آخر مسؤول نشط' };
+    }
     this.db.prepare('UPDATE operators SET role = ? WHERE id = ?').run(role, id);
     this.revokeSessionsFor(id);
     return { ok: true, operator: this.toPublic(this.row(id)) };
   }
 
-  public setDisabled(id: string, disabled: boolean): { ok: true; operator: OperatorPublic } | { ok: false; reason: string } {
-    if (!this.row(id)) return { ok: false, reason: 'no such operator' };
-    if (disabled && this.isLastAdmin(id)) return { ok: false, reason: 'cannot disable the last active admin' };
+  public setDisabled(id: string, disabled: boolean): { ok: true; operator: OperatorPublic } | { ok: false; reason: string; reasonAr: string } {
+    if (!this.row(id)) return { ok: false, reason: 'no such operator', reasonAr: 'لا يوجد مشغّل بهذا المعرّف' };
+    if (disabled && this.isLastAdmin(id)) {
+      return { ok: false, reason: 'cannot disable the last active admin', reasonAr: 'لا يمكن تعطيل آخر مسؤول نشط' };
+    }
     this.db.prepare('UPDATE operators SET disabled = ? WHERE id = ?').run(disabled ? 1 : 0, id);
     if (disabled) this.revokeSessionsFor(id);
     return { ok: true, operator: this.toPublic(this.row(id)) };
@@ -273,12 +314,14 @@ export class OperatorAuthService {
     id: string,
     current: string,
     next: string
-  ): Promise<{ ok: true } | { ok: false; reason: string }> {
+  ): Promise<{ ok: true } | { ok: false; reason: string; reasonAr: string }> {
     const r = this.row(id);
-    if (!r) return { ok: false, reason: 'no such operator' };
-    if (!(await verifyPassword(current, r.pw_hash))) return { ok: false, reason: 'current password is wrong' };
+    if (!r) return { ok: false, reason: 'no such operator', reasonAr: 'لا يوجد مشغّل بهذا المعرّف' };
+    if (!(await verifyPassword(current, r.pw_hash))) {
+      return { ok: false, reason: 'current password is wrong', reasonAr: 'كلمة المرور الحالية غير صحيحة' };
+    }
     const p = passwordProblem(next, r.username);
-    if (p) return { ok: false, reason: p };
+    if (p) return { ok: false, reason: p.en, reasonAr: p.ar };
     this.db.prepare('UPDATE operators SET pw_hash = ? WHERE id = ?').run(await hashPassword(next), id);
     this.revokeSessionsFor(id);
     return { ok: true };
@@ -301,7 +344,8 @@ export class OperatorAuthService {
 
   public async login(usernameIn: unknown, passwordIn: unknown, ip: string): Promise<LoginResult> {
     const now = Date.now();
-    const username = typeof usernameIn === 'string' ? usernameIn.trim().slice(0, 64) : '';
+    // Normalised exactly as at creation, or an Arabic name typed on another keyboard misses.
+    const username = normalizeUsername(usernameIn).slice(0, 64);
     const password = typeof passwordIn === 'string' ? passwordIn.slice(0, 256) : '';
     const acctKey = username.toLowerCase();
 
