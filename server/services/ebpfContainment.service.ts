@@ -397,7 +397,8 @@ export class EbpfContainmentService {
     };
 
     this.containmentRecords.unshift(newRecord);
-    this.observedTcpResetsInjected += tcpSevered;
+    // tcpSevered is modelled above, so it is not added to observedTcpResetsInjected: it was,
+    // and the console reported random resets as MEASURED. XDP_DROP sends no RST at all.
 
     // Direct injection into production Linux Kernel eBPF Map via Bridge
     globalRealEbpfBridge.injectIp(targetIp, reason);
@@ -411,8 +412,8 @@ export class EbpfContainmentService {
       severity: 'CRITICAL',
       title: `Autonomous Kernel eBPF Containment: ${targetIp}`,
       titleAr: `عزل شبكي تلقائي بنواة eBPF: ${targetIp}`,
-      details: `Zero-Trust eBPF drop rule applied in ${latency}µs. ${tcpSevered} active TCP sessions severed with TCP-RST. Reason: ${reason}. Node ${nodeName} micro-segmented.`,
-      detailsAr: `تم تطبيق قاعدة إسقاط eBPF بالنواة خلال ${latency} ميكروثانية. قُطعت ${tcpSevered} جلسات TCP نشطة بإرسال RST. تم عزل العقدة ${nodeName} جزئياً لمنع الانتشار الجانبي.`,
+      details: `Drop rule set for ${targetIp} (kernel XDP map where available, otherwise the application gate). Reason: ${reason}. Node ${nodeName} micro-segmented.`,
+      detailsAr: `ضُبطت قاعدة إسقاط للعنوان ${targetIp} (في خريطة XDP بالنواة إن توفرت، وإلا في بوابة التطبيق). السبب: ${reason}. تم عزل العقدة ${nodeName} جزئياً لمنع الانتشار الجانبي.`,
       actorIp: targetIp,
       mitreTactic: 'Defense Evasion',
       mitreTechnique: 'T1562 - Impair Defenses Countermeasure',
@@ -558,8 +559,23 @@ export class EbpfContainmentService {
     if (rec) rec.packetsDroppedCount++;
   }
 
+  /**
+   * Seeded records are demo fixtures for a host with no kernel path. Where the kernel is
+   * readable they claimed blackholes the XDP map did not hold — on Linux the console showed
+   * two "active" seeds against an empty blacklist_map — so they are withheld there.
+   */
+  private get showSeeds(): boolean {
+    return !globalRealEbpfBridge.countersReadable;
+  }
+
+  private visibleRecords(): EbpfContainmentRecord[] {
+    return this.showSeeds
+      ? this.containmentRecords
+      : this.containmentRecords.filter(r => r.interceptLatencySource !== 'SEEDED');
+  }
+
   public getContainmentRecords(): EbpfContainmentRecord[] {
-    return [...this.containmentRecords];
+    return [...this.visibleRecords()];
   }
 
   public getBehavioralAnomalies(): BehavioralAnomaly[] {
@@ -567,7 +583,7 @@ export class EbpfContainmentService {
   }
 
   public getSeveredSockets(): SeveredTcpSocket[] {
-    return [...this.severedSockets];
+    return this.showSeeds ? [...this.severedSockets] : this.severedSockets.filter(s => s.latencySource !== 'SEEDED');
   }
 
   public getClusterNodes(): ClusterNodeIsolationState[] {
@@ -575,11 +591,24 @@ export class EbpfContainmentService {
   }
 
   public getStatistics() {
-    const active = this.containmentRecords.filter(r => r.status === 'ACTIVE_BLACKHOLE');
-    const droppedSum =
-      this.containmentRecords.reduce((acc, r) => acc + r.packetsDroppedCount, this.seededPacketsDroppedBaseline) +
-      this.observedPacketsDropped;
+    const records = this.visibleRecords();
+    // Enforced ones only, as isEnforced() defines them: a seeded "active" record blocks
+    // nothing on any host, so counting it reported two blackholes that did not exist.
+    const active = records.filter(r => r.status === 'ACTIVE_BLACKHOLE' && r.interceptLatencySource !== 'SEEDED');
+    // Seeded drops are the baseline plus the seeded records' own counts. The old total added
+    // every record's count and then observedPacketsDropped again, so a gate drop was counted
+    // twice and half of it was reported as seeded.
+    const seededDropped = this.showSeeds
+      ? records
+          .filter(r => r.interceptLatencySource === 'SEEDED')
+          .reduce((acc, r) => acc + r.packetsDroppedCount, this.seededPacketsDroppedBaseline)
+      : 0;
+    // Gate refusals counted here, plus what the XDP program itself dropped (stats_map).
+    const observedDropped = this.observedPacketsDropped + (globalRealEbpfBridge.kernelDroppedPackets ?? 0);
+    const seededResets = this.showSeeds ? this.seededTcpResetsBaseline : 0;
     const quarantinedNodes = this.clusterNodes.filter(n => n.isolationStatus === 'QUARANTINED_EAST_WEST');
+    const originOf = (seeded: number, observed: number) =>
+      seeded > 0 ? (observed > 0 ? 'MIXED_SEEDED_AND_MEASURED' : 'SEEDED') : 'MEASURED';
 
     const kernelNative = globalRealEbpfBridge.kernelNative;
     const countersReadable = globalRealEbpfBridge.countersReadable;
@@ -592,17 +621,17 @@ export class EbpfContainmentService {
     return {
       // Counted from real state: these are lengths of arrays this process owns.
       activeBlackholesCount: active.length,
-      totalHistoricIsolations: this.containmentRecords.length,
+      totalHistoricIsolations: records.length,
       anomaliesDetectedCount: this.behavioralAnomalies.length,
       quarantinedNodesCount: quarantinedNodes.length,
       totalClusterNodesCount: this.clusterNodes.length,
 
       // Packet and reset counters, split by origin so a consumer cannot blend
       // them by accident.
-      totalPacketsDropped: droppedSum,
-      observedPacketsDropped: this.observedPacketsDropped,
-      seededPacketsDropped: droppedSum - this.observedPacketsDropped,
-      totalTcpResetsInjected: this.seededTcpResetsBaseline + this.observedTcpResetsInjected,
+      totalPacketsDropped: seededDropped + observedDropped,
+      observedPacketsDropped: observedDropped,
+      seededPacketsDropped: seededDropped,
+      totalTcpResetsInjected: seededResets + this.observedTcpResetsInjected,
       observedTcpResetsInjected: this.observedTcpResetsInjected,
 
       /**
@@ -647,8 +676,8 @@ export class EbpfContainmentService {
           observedPacketsDropped: 'MEASURED',
           observedTcpResetsInjected: 'MEASURED',
           seededPacketsDropped: 'SEEDED',
-          totalPacketsDropped: this.observedPacketsDropped > 0 ? 'MIXED_SEEDED_AND_MEASURED' : 'SEEDED',
-          totalTcpResetsInjected: this.observedTcpResetsInjected > 0 ? 'MIXED_SEEDED_AND_MEASURED' : 'SEEDED',
+          totalPacketsDropped: originOf(seededDropped, observedDropped),
+          totalTcpResetsInjected: originOf(seededResets, this.observedTcpResetsInjected),
           // Derived from whether a number exists, never from a capability flag.
           meanKernelLatencyUs: latencyValue != null ? 'MEASURED' : 'UNAVAILABLE'
         }

@@ -103,7 +103,8 @@ export interface EbpfStatistics {
   totalHistoricIsolations: number;
   totalPacketsDropped: number;
   totalTcpResetsInjected: number;
-  meanKernelLatencyUs: number;
+  /** Null where no kernel path measured it. */
+  meanKernelLatencyUs: number | null;
   anomaliesDetectedCount?: number;
   quarantinedNodesCount?: number;
   totalClusterNodesCount?: number;
@@ -125,16 +126,9 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
   const [anomalies, setAnomalies] = useState<BehavioralAnomaly[]>([]);
   const [severedSockets, setSeveredSockets] = useState<SeveredTcpSocket[]>([]);
   const [clusterNodes, setClusterNodes] = useState<ClusterNodeIsolationState[]>([]);
-  const [stats, setStats] = useState<EbpfStatistics>({
-    activeBlackholesCount: 2,
-    totalHistoricIsolations: 3,
-    totalPacketsDropped: 248910,
-    totalTcpResetsInjected: 842,
-    meanKernelLatencyUs: 0.34,
-    anomaliesDetectedCount: 3,
-    quarantinedNodesCount: 2,
-    totalClusterNodesCount: 4
-  });
+  // Null until /api/v1/soc/ebpf/containment-records answers. This used to start from
+  // literals (248,910 drops, 0.34 µs) that stayed on screen whenever the fetch failed.
+  const [stats, setStats] = useState<EbpfStatistics | null>(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLiveStream, setIsLiveStream] = useState<boolean>(true);
@@ -392,7 +386,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           <div className="mt-0.5 flex items-center gap-2">
             <Lock className="h-4 w-4 text-rose-400" />
             <span className="text-base font-bold text-rose-300">
-              {stats.activeBlackholesCount} IPs
+              {stats ? `${stats.activeBlackholesCount} IPs` : '—'}
             </span>
           </div>
         </div>
@@ -404,7 +398,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           <div className="mt-0.5 flex items-center gap-2">
             <Flame className="h-4 w-4 text-amber-400" />
             <span className="text-base font-bold text-amber-300">
-              {stats.totalPacketsDropped.toLocaleString()}
+              {stats ? stats.totalPacketsDropped.toLocaleString() : '—'}
             </span>
           </div>
         </div>
@@ -416,7 +410,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           <div className="mt-0.5 flex items-center gap-2">
             <Network className="h-4 w-4 text-cyan-400" />
             <span className="text-base font-bold text-cyan-300">
-              {stats.totalTcpResetsInjected} RST
+              {stats ? `${stats.totalTcpResetsInjected} RST` : '—'}
             </span>
           </div>
         </div>
@@ -428,7 +422,7 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           <div className="mt-0.5 flex items-center gap-2">
             <Zap className="h-4 w-4 text-emerald-400" />
             <span className="text-base font-bold text-emerald-300">
-              {stats.meanKernelLatencyUs} µs
+              {stats?.meanKernelLatencyUs != null ? `${stats.meanKernelLatencyUs} µs` : '—'}
             </span>
           </div>
         </div>
@@ -440,7 +434,9 @@ export const AutonomousContainmentTelemetry: React.FC<AutonomousContainmentTelem
           <div className="mt-0.5 flex items-center gap-2">
             <Server className="h-4 w-4 text-cyan-400" />
             <span className="text-base font-bold text-cyan-300">
-              {stats.quarantinedNodesCount || 2} / {stats.totalClusterNodesCount || 4}
+              {stats?.quarantinedNodesCount != null && stats.totalClusterNodesCount != null
+                ? `${stats.quarantinedNodesCount} / ${stats.totalClusterNodesCount}`
+                : '—'}
             </span>
           </div>
         </div>
