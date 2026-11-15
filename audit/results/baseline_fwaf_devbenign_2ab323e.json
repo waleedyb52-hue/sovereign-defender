@@ -73,16 +73,9 @@
     }
   },
   "missedExamples": [],
-  "fpExamples": [
-    "/index.php?act=sm_window&page=event&day=-1 union select 1,1332010400,1221421857 --",
-    "/examples/jsp/checkbox/index.php?op=viewalbum&albumid=-1/**/union/**/select/**/0,1,3116925",
-    "/forum.php3?id_article=1&id_forum=-1/**/union/**/select 875486487--",
-    "/index.php?option=frontpage&itemid=2|system(id)|1332010398",
-    "/examples/jsp/jsp2/el/ajax.php?rs=__exp__getfeedcontent&rsargs[]=-99 union select 11615170",
-    "/examples/jsp/sessions/.|./.|./.|./.|./.|./.|./.|./.|./.|./.|./.|./.|./windows/win.ini",
-    "/index.php?act=sm_window&page=event&day=-1 union select 1,1331919215,1201912380 --",
-    "/bb-admin/admin.html",
-    "/phpmyadmin/awstatstotals.php?sort={${passthru(chr(105).chr(100))}}{${exit()}}"
-  ],
-  "finishedAt": "2026-11-15T14:38:17.136Z"
+  "fpExamples": [],
+  "finishedAt": "2026-11-15T14:38:17.136Z",
+  "fpExamplesCount": 9,
+  "missedExamplesCount": 0,
+  "note": "examples removed: the second source has no stated licence and is not redistributed. Regenerate locally with the command in docs/FINAL_ENGINEERING_REPORT.md."
 }

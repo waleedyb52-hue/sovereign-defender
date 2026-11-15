@@ -14,41 +14,7 @@
       "flaggedOnlyByStructure": 5
     }
   },
-  "flaggedOnlyByStructure": [
-    {
-      "score": 60,
-      "payload": "/www/delivery/ac.php?bannerid=-969+or+1=1",
-      "signatures": [
-        "boolean test between two constants"
-      ]
-    },
-    {
-      "score": 60,
-      "payload": "/cgi-bin/www/delivery/ac.php?bannerid=-691+or+1=1",
-      "signatures": [
-        "boolean test between two constants"
-      ]
-    },
-    {
-      "score": 60,
-      "payload": "/cgi-bin/www/delivery/ac.php?bannerid=-958+or+1=1",
-      "signatures": [
-        "boolean test between two constants"
-      ]
-    },
-    {
-      "score": 60,
-      "payload": "/cgi-bin/www/delivery/ac.php?bannerid=-537+or+1=1",
-      "signatures": [
-        "boolean test between two constants"
-      ]
-    },
-    {
-      "score": 60,
-      "payload": "/examples/jsp/jsp2/el/disp_album.php?id_album=0+or+1=1",
-      "signatures": [
-        "boolean test between two constants"
-      ]
-    }
-  ]
+  "flaggedOnlyByStructure": [],
+  "flaggedOnlyByStructureCount": 5,
+  "note": "examples removed: the second source has no stated licence and is not redistributed. Regenerate locally with the command in docs/FINAL_ENGINEERING_REPORT.md."
 }
