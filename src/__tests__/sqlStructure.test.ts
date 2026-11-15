@@ -78,8 +78,13 @@ describe('structural SQL injection — text that must still pass', () => {
 });
 
 describe('structural SQL analysis — cost is bounded', () => {
+  // Catastrophic (super-linear) behaviour shows up as seconds: 200 KB of ")" took 2.1 s before the
+  // run-end fix. Ordinary linear cost on a loaded test runner reaches ~250 ms, so the bound is set
+  // to catch the former without flaking on the latter.
   it('stays fast on large adversarial input', () => {
     const inputs = [
+      ')'.repeat(200_000),
+      ")'".repeat(150_000),
       "'".repeat(200_000),
       '('.repeat(200_000),
       'select '.repeat(40_000),
@@ -92,7 +97,7 @@ describe('structural SQL analysis — cost is bounded', () => {
       const t0 = performance.now();
       analyseSqlStructure(s);
       classifyPayload(s);
-      expect(performance.now() - t0).toBeLessThan(250);
+      expect(performance.now() - t0).toBeLessThan(500);
     }
   });
 
@@ -122,4 +127,67 @@ describe('command injection and traversal shapes', () => {
       expect(r.score, r.signatures.join(' | ')).toBeLessThan(25);
     });
   }
+});
+
+describe('structural SQL analysis — padding cannot hide an injection', () => {
+  const injection = "x') or 12=12";
+  const fill = (n: number, unit: string) => unit.repeat(Math.ceil(n / unit.length)).slice(0, n);
+  const fillers: Record<string, string> = {
+    letters: 'lorem ipsum dolor ',
+    json: '{"k":"v","n":1},',
+    quotes: "a'b\"c(d)e=f;",
+    spaces: ' '
+  };
+
+  for (const [name, unit] of Object.entries(fillers)) {
+    for (const size of [5_000, 100_000, 2_000_000]) {
+      it(`blocks an injection after ${size} chars of ${name} filler`, () => {
+        expect(blocked(fill(size, unit) + ' ' + injection)).toBe(true);
+      });
+    }
+    it(`blocks an injection in the middle of 200 KB of ${name} filler`, () => {
+      expect(blocked(fill(100_000, unit) + ' ' + injection + ' ' + fill(100_000, unit))).toBe(true);
+    });
+  }
+
+  it('does not add up weak hints spread through a long benign document', () => {
+    const record = (i: number) => `{"id":${i},"name":"o'brien ${i}","note":"select one (or two) items; order by date","qty":${i % 7}}`;
+    const body = '[' + Array.from({ length: 3000 }, (_, i) => record(i)).join(',') + ']';
+    expect(body.length).toBeGreaterThan(250_000);
+    const r = classifyPayload(body);
+    expect(r.score, r.signatures.join(' | ')).toBeLessThan(25);
+  });
+
+  it('keeps structural cost bounded on very large adversarial input', () => {
+    for (const unit of Object.values(fillers)) {
+      const big = fill(8_000_000, unit) + injection;
+      const t0 = performance.now();
+      const sig = analyseSqlStructure(big);
+      expect(performance.now() - t0).toBeLessThan(2000);
+      expect(sig.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('structural SQL analysis — prose that looks like a select list or a call', () => {
+  // Found by the long-document test above: "select one (or two)" read as SELECT one(…),
+  // because the tokenizer drops whitespace. Calls now need `name(` with no space.
+  const benign = [
+    'Please select one (or more) options', 'select one (or two) items; order by date',
+    'select (or deselect) all rows', 'select 2 or more options', 'Select "Save" to continue',
+    'select case studies (2020)', 'select null values only', 'I need sleep (a lot) tonight',
+    'rating 5 = excellent (best)', 'benchmark (2024) results', 'select * to mark all',
+    '{"help":"select one (or more) items, then press OK"}'
+  ];
+  for (const p of benign) {
+    it(`passes: ${p}`, () => {
+      const r = classifyPayload(p);
+      expect(r.score, r.signatures.join(' | ')).toBeLessThan(25);
+    });
+  }
+  const attacks = [
+    "1' union select 1,2,3--", "x' and 1=(select null from dual)--", '5 and 9=(select (case when (1=1) then 1 else 0 end))',
+    "k') or 3=extractvalue (1,concat(0x7e,version()))", '7 or 4=sleep(3)', "q' and 'a'=(select 'a' from dual)--"
+  ];
+  for (const p of attacks) it(`blocks: ${p}`, () => expect(blocked(p)).toBe(true));
 });

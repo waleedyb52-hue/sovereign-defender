@@ -82,7 +82,8 @@ const RULES: Rule[] = [
   { re: /\bunion\s+(all\s+)?select\b/i, weight: 65, label: 'UNION SELECT', family: 'SQL_INJECTION' },
   { re: /\b(drop|truncate)\s+table\b/i, weight: 65, label: 'DROP/TRUNCATE TABLE', family: 'SQL_INJECTION' },
   { re: /;\s*(drop|delete|update|insert)\b/i, weight: 55, label: 'stacked SQL statement', family: 'SQL_INJECTION' },
-  { re: /\b(sleep|benchmark|waitfor\s+delay|pg_sleep)\s*\(/i, weight: 60, label: 'time-based blind SQLi', family: 'SQL_INJECTION' },
+  // sleep and benchmark are English words: "I need sleep (a lot)" is prose, sleep(5) is a call.
+  { re: /\b(sleep|benchmark)\(|\b(waitfor\s+delay|pg_sleep)\s*\(/i, weight: 60, label: 'time-based blind SQLi', family: 'SQL_INJECTION' },
   { re: /(--|#|\/\*)\s*$/, weight: 20, label: 'SQL comment terminator', family: 'SQL_INJECTION' },
   { re: /\b(information_schema|sysobjects|pg_catalog)\b/i, weight: 45, label: 'schema enumeration', family: 'SQL_INJECTION' },
 

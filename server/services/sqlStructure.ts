@@ -25,8 +25,21 @@
  * double quote. The reading with the strongest evidence is reported. (libinjection uses the
  * same idea; this is a small independent implementation, not a port.)
  *
- * Cost is bounded: at most MAX_LEN characters are examined, each pass is linear, and a
- * payload with none of the characters SQL syntax needs is rejected before tokenising.
+ * Long payloads are read as overlapping windows of WINDOW characters and the single most
+ * incriminating window is reported. The first version read only the first 4 KB, so an injection
+ * placed after 4 KB of filler was invisible to this module. Windows close that without giving up
+ * the bounds: work per window is fixed, the token array never exceeds one window, and signals
+ * are never added up across windows, so a long document cannot accumulate a score from hints
+ * scattered through it. Any injection up to OVERLAP characters lies wholly inside one window.
+ *
+ * Coverage: the whole payload up to FULL_SCAN_LIMIT (256 KB); beyond that, the first and last
+ * EDGE_SCAN (128 KB) characters. Dense adversarial input costs about 0.37 µs per character here,
+ * so this caps the module near 100 ms per request on the reference laptop. Scanning everything
+ * was measured at 2.6–3.2 s for 10 MB of dense filler — a cheap way to stall a single-process
+ * server whose rate limit keys on a caller-supplied address. Padding evasion puts the filler
+ * first and the injection last, which the tail window covers. What stays uncovered is an
+ * injection with more than 128 KB of filler on BOTH sides of it; the signature rules still read
+ * the whole payload.
  */
 
 export interface SqlSignal {
@@ -34,10 +47,16 @@ export interface SqlSignal {
   label: string;
 }
 
-const MAX_LEN = 4096;
+const WINDOW = 4096;
+const OVERLAP = 1024;
+const STEP = WINDOW - OVERLAP;
+const FULL_SCAN_LIMIT = 1 << 18;
+const EDGE_SCAN = 1 << 17;
+const SQL_PREFILTER = /[=()';"]|select|waitfor|order\s+by|group\s+by/;
 
 type Kind = 'num' | 'str' | 'id' | 'op' | 'lp' | 'rp' | 'semi' | 'comma' | 'quote' | 'cmt';
-interface Tok { k: Kind; v: string }
+/** `c`: an identifier immediately followed by '(' with no whitespace — the form of a call. */
+interface Tok { k: Kind; v: string; c?: boolean }
 
 const CMP_OPS = new Set(['=', '<', '>', '<>', '!=', '<=', '>=', '==']);
 const CMP_WORDS = new Set(['like', 'rlike', 'regexp']);
@@ -143,7 +162,7 @@ function tokenize(s: string): Tok[] {
       while (j < n && isIdChar(s[j])) j++;
       let v = s.slice(i, j);
       while (v.length > 1 && v.endsWith('.')) v = v.slice(0, -1);
-      out.push({ k: 'id', v });
+      out.push(s[j] === '(' ? { k: 'id', v, c: true } : { k: 'id', v });
       i = j;
       continue;
     }
@@ -173,7 +192,21 @@ function tokenize(s: string): Tok[] {
 const isLit = (t: Tok | undefined) => !!t && (t.k === 'num' || t.k === 'str');
 const isCmp = (t: Tok | undefined) => !!t && ((t.k === 'op' && CMP_OPS.has(t.v)) || (t.k === 'id' && CMP_WORDS.has(t.v)));
 const isWord = (t: Tok | undefined, w: string) => !!t && t.k === 'id' && t.v === w;
-const isCall = (t: Tok[], i: number) => t[i]?.k === 'id' && t[i + 1]?.k === 'lp';
+/** Function names that are also English words: only the adjacent form `sleep(` counts. */
+const AMBIGUOUS_NAMES = new Set(['sleep', 'benchmark']);
+/**
+ * A call is `name(` with no space. Prose writes "one (or two)", "good (very)", "sleep (a lot)";
+ * an injection writes `count(*)`, `length(database())`. The spaced form is accepted only for
+ * names that mean nothing outside SQL (`extractvalue (`, `dbms_pipe.receive_message (`).
+ */
+const isCall = (t: Tok[], i: number) =>
+  t[i]?.k === 'id' && t[i + 1]?.k === 'lp' &&
+  (t[i].c === true || ((STRONG_FUNCTIONS.has(t[i].v) || STRONG_FUNCTION_PREFIX.test(t[i].v)) && !AMBIGUOUS_NAMES.has(t[i].v)));
+/** Tokens that can legitimately follow a literal in a SELECT list. */
+const AFTER_SELECT_LITERAL = new Set(['from', 'into', 'union', 'where', 'as', 'limit', 'order', 'group', 'having']);
+const endsSelectItem = (t: Tok | undefined) =>
+  !t || t.k === 'comma' || t.k === 'rp' || t.k === 'semi' || t.k === 'cmt' || t.k === 'op' || t.k === 'quote' ||
+  (t.k === 'id' && AFTER_SELECT_LITERAL.has(t.v));
 
 /** Evidence found in one tokenisation. Labels are unique; the strongest weight per label wins. */
 function analyseTokens(t: Tok[]): Map<string, number> {
@@ -182,6 +215,8 @@ function analyseTokens(t: Tok[]): Map<string, number> {
   const skipOpen = (j: number) => { while (t[j]?.k === 'lp' || isWord(t[j], 'not')) j++; return j; };
 
   let depth = 0;
+  /** Index of the first token after the current run of ")" / quote tokens. */
+  let runEnd = -1;
   const strongFns = new Set<string>();
   const genericFns = new Set<string>();
   let genericCalls = 0;
@@ -192,8 +227,11 @@ function analyseTokens(t: Tok[]): Map<string, number> {
     // ── a string or parenthesis of the host query being closed right before a SQL keyword ──
     if (tok.k === 'lp') depth++;
     if (tok.k === 'quote' || (tok.k === 'rp' && depth === 0)) {
-      let j = i + 1;
-      while (t[j]?.k === 'rp' || t[j]?.k === 'quote') j++;
+      // Every token in a run of ")" / quote has the same first token after the run, so the end
+      // is found once per run. Scanning it again for each token was O(n²) on ")))…" — 12 s for
+      // 1 MB once windows covered the whole payload.
+      if (i >= runEnd) { runEnd = i + 1; while (t[runEnd]?.k === 'rp' || t[runEnd]?.k === 'quote') runEnd++; }
+      const j = runEnd;
       const nx = t[j];
       if (nx && (nx.k === 'semi' || (nx.k === 'id' && BREAK_WORDS.has(nx.v)))) add('SQL context break before keyword', 20);
       if (isWord(nx, 'as') && t[j + 1]?.k === 'id' && isWord(t[j + 2], 'where')) add('SQL context break before keyword', 20);
@@ -237,10 +275,21 @@ function analyseTokens(t: Tok[]): Map<string, number> {
       let j = i + 1;
       while (isWord(t[j], 'all') || isWord(t[j], 'distinct') || isWord(t[j], 'top')) j++;
       const nx = t[j];
+      // Each form is the start of a real select list, not a sentence that uses the word:
+      //   select (case …  select (select …  select (char(…   - not "select (or deselect) all"
+      //   select 1,2  select 'x' from  select null,         - not "select 2 or more options"
+      //   select count(*)  select @@version  select case when - not "select one (or two)"
+      const after = t[j + 1];
       const strong = !!nx && (
-        nx.k === 'lp' || nx.k === 'num' || nx.k === 'str' ||
-        (nx.k === 'op' && nx.v === '*') ||
-        (nx.k === 'id' && (nx.v === 'case' || nx.v === 'null' || nx.v.startsWith('@') || t[j + 1]?.k === 'lp'))
+        (nx.k === 'lp' && !!after && (isWord(after, 'select') || isWord(after, 'case') || after.k === 'num' || after.k === 'str' || isCall(t, j + 1) || after.k === 'lp')) ||
+        ((nx.k === 'num' || nx.k === 'str') && endsSelectItem(after)) ||
+        (nx.k === 'op' && nx.v === '*' && endsSelectItem(after)) ||
+        (nx.k === 'id' && (
+          (nx.v === 'case' && isWord(after, 'when')) ||
+          (nx.v === 'null' && endsSelectItem(after)) ||
+          nx.v.startsWith('@') ||
+          isCall(t, j)
+        ))
       );
       if (strong) add('SELECT with expression list', 50);
       else if (nx?.k === 'id') {
@@ -279,7 +328,7 @@ function analyseTokens(t: Tok[]): Map<string, number> {
       }
     }
 
-    if (t[i + 1]?.k === 'lp') {
+    if (isCall(t, i)) {
       if (STRONG_FUNCTIONS.has(tok.v) || STRONG_FUNCTION_PREFIX.test(tok.v)) strongFns.add(tok.v);
       // An empty call such as count() is how prose names a function; an injection passes arguments.
       else if (GENERIC_FUNCTIONS.has(tok.v) && t[i + 2] && t[i + 2].k !== 'rp') { genericFns.add(tok.v); genericCalls++; }
@@ -293,15 +342,10 @@ function analyseTokens(t: Tok[]): Map<string, number> {
   return found;
 }
 
-/**
- * Structural SQL evidence in a payload. Empty when the text carries no SQL syntax.
- * Signals come from the single most incriminating tokenisation, never a mixture.
- */
-export function analyseSqlStructure(raw: string): SqlSignal[] {
-  if (!raw) return [];
-  const s = (raw.length > MAX_LEN ? raw.slice(0, MAX_LEN) : raw).toLowerCase();
-  // Nothing below can fire without one of these.
-  if (!/[=()';"]|select|waitfor|order\s+by|group\s+by/.test(s)) return [];
+/** The strongest of the three readings of one window (as given, after its first ' or "). */
+function readWindow(s: string): { found: Map<string, number>; total: number } | null {
+  // Nothing in analyseTokens can fire without one of these.
+  if (!SQL_PREFILTER.test(s)) return null;
 
   const views = [s];
   const sq = s.indexOf("'");
@@ -309,14 +353,37 @@ export function analyseSqlStructure(raw: string): SqlSignal[] {
   const dq = s.indexOf('"');
   if (dq !== -1 && dq + 1 < s.length) views.push(s.slice(dq + 1));
 
-  let best: Map<string, number> | null = null;
-  let bestTotal = 0;
+  let best: { found: Map<string, number>; total: number } | null = null;
   for (const v of views) {
     const found = analyseTokens(tokenize(v));
     let total = 0;
     for (const w of found.values()) total += w;
-    if (total > bestTotal) { best = found; bestTotal = total; }
+    if (total > (best?.total ?? 0)) best = { found, total };
+  }
+  return best;
+}
+
+/**
+ * Structural SQL evidence in a payload. Empty when the text carries no SQL syntax.
+ * Signals come from the single most incriminating reading of the single most incriminating
+ * window, never a mixture.
+ */
+export function analyseSqlStructure(raw: string): SqlSignal[] {
+  if (!raw) return [];
+  if (!SQL_PREFILTER.test(raw.length > FULL_SCAN_LIMIT ? raw : raw.toLowerCase())) return [];
+
+  const ranges: Array<[number, number]> = raw.length <= FULL_SCAN_LIMIT
+    ? [[0, raw.length]]
+    : [[0, EDGE_SCAN], [raw.length - EDGE_SCAN, raw.length]];
+
+  let best: { found: Map<string, number>; total: number } | null = null;
+  for (const [from, to] of ranges) {
+    for (let start = from; ; start += STEP) {
+      const r = readWindow(raw.slice(start, Math.min(start + WINDOW, to)).toLowerCase());
+      if (r && r.total > (best?.total ?? 0)) best = r;
+      if (start + WINDOW >= to) break;
+    }
   }
   if (!best) return [];
-  return [...best.entries()].map(([label, weight]) => ({ label, weight })).sort((a, b) => b.weight - a.weight);
+  return [...best.found.entries()].map(([label, weight]) => ({ label, weight })).sort((a, b) => b.weight - a.weight);
 }
