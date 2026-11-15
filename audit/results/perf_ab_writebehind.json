@@ -1,0 +1,112 @@
+{
+  "finishedAt": "2026-11-15T15:03:47.972Z",
+  "host": {
+    "platform": "win32",
+    "node": "v24.20.0",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-1235U",
+    "logicalCpus": 12,
+    "totalMemGb": 7.7
+  },
+  "protocol": {
+    "variable": "SD_ADJUDICATION_WRITE_BEHIND",
+    "A": "off",
+    "B": "on",
+    "rounds": 3,
+    "clients": 100,
+    "requestsPerRun": 3000,
+    "serverMode": "dev (tsx), fresh process per run",
+    "order": "A,B alternating"
+  },
+  "A": {
+    "reqPerSec": {
+      "median": 176.8,
+      "min": 140.4,
+      "max": 188.5
+    },
+    "p50": 561.1,
+    "p95": 657.2,
+    "p99": 702.3,
+    "failed": 0,
+    "rssMbAfter": 289.1
+  },
+  "B": {
+    "reqPerSec": {
+      "median": 454.9,
+      "min": 432.2,
+      "max": 550.4
+    },
+    "p50": 207.8,
+    "p95": 315.3,
+    "p99": 333.1,
+    "failed": 0,
+    "rssMbAfter": 283.8
+  },
+  "throughputGainPercent": 157.3,
+  "rangesSeparated": true,
+  "runs": {
+    "A": [
+      {
+        "reqPerSec": 176.8,
+        "p50": 561.1,
+        "p95": 657.2,
+        "p99": 702.3,
+        "failed": 0,
+        "requests": 3000,
+        "rssMbBefore": 278.2,
+        "rssMbAfter": 300.4
+      },
+      {
+        "reqPerSec": 140.4,
+        "p50": 693.7,
+        "p95": 964.1,
+        "p99": 994.4,
+        "failed": 0,
+        "requests": 3000,
+        "rssMbBefore": 270.3,
+        "rssMbAfter": 289.1
+      },
+      {
+        "reqPerSec": 188.5,
+        "p50": 522.2,
+        "p95": 595.3,
+        "p99": 613.5,
+        "failed": 0,
+        "requests": 3000,
+        "rssMbBefore": 265.5,
+        "rssMbAfter": 283.8
+      }
+    ],
+    "B": [
+      {
+        "reqPerSec": 454.9,
+        "p50": 207.8,
+        "p95": 315.3,
+        "p99": 405.1,
+        "failed": 0,
+        "requests": 3000,
+        "rssMbBefore": 330.3,
+        "rssMbAfter": 354.7
+      },
+      {
+        "reqPerSec": 432.2,
+        "p50": 216.5,
+        "p95": 320.1,
+        "p99": 333.1,
+        "failed": 0,
+        "requests": 3000,
+        "rssMbBefore": 269.9,
+        "rssMbAfter": 283.8
+      },
+      {
+        "reqPerSec": 550.4,
+        "p50": 168.7,
+        "p95": 267.5,
+        "p99": 288.1,
+        "failed": 0,
+        "requests": 3000,
+        "rssMbBefore": 269.6,
+        "rssMbAfter": 283.3
+      }
+    ]
+  }
+}
