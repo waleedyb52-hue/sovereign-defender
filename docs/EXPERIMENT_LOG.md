@@ -70,6 +70,23 @@ candidate (cycle 4).
 No code change. Scored once each, `SD_EVAL_SEALED=1`, fresh server. Results in
 [`IMPROVEMENT_EVIDENCE.md`](IMPROVEMENT_EVIDENCE.md).
 
+## Cycle 5 — padding bypass and the defects behind it (`c435d2e`, tag `candidate-48h-2`)
+
+| Field | Value |
+|---|---|
+| Hypothesis | Reading only the first 4 KB lets filler hide an injection; overlapping windows close it at bounded cost |
+| Evidence before coding | Injection after 5 KB, 100 KB, 1 MB, 10 MB of letters / JSON / quote / SQL-ish filler: missed in all 16 cases |
+| First attempt | Windows over the whole payload, 2 KB overlap. Detection fixed in all cases; cost 2.6–3.2 s on 10 MB of dense filler. **Rejected** as a DoS lever |
+| Second attempt | 1 KB overlap, full coverage to 1 MB, head + tail beyond. A new test then exposed an O(n²) scan over `)` runs: 1 MB of `)` = 12.4 s. Fixed (run end once per run → 70 ms). Worst linear cost still ~350 ms per request at 1 MB. **Rejected** |
+| Kept | Full coverage to 256 KB, first and last 128 KB beyond. Structural cost ≤ 65 ms on 10 MB adversarial input |
+| Found by the new tests | "select one (or two)" read as a call (pre-existing in candidate-48h-1); original `sleep\s*\(` signature flags "sleep (a lot)" (pre-existing in the baseline). Both fixed with adjacency |
+| Dev half, in-process | Identical output to candidate-48h-1, every class, both thresholds |
+| Sealed sets | Re-scored once on the new tag: identical confusion matrices. Labelled re-evaluation |
+| Second-source benign, 100,000 lines | Unchanged: +5 by structure, all real attacks |
+| Tests | unit 208 / 208; audit suite 92 / 92; Set A / Set B unchanged |
+| Throughput @100 | 637.3 req/s, one run; within noise, no gain claimed |
+| Decision | **Keep** |
+
 ## Considered and not built
 
 | Candidate | Why not |

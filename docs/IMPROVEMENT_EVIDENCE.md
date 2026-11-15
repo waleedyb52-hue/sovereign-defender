@@ -128,13 +128,30 @@ not used as a baseline.
 
 Method and limits: section 6 of [`FINAL_ENGINEERING_REPORT.md`](FINAL_ENGINEERING_REPORT.md).
 
+## 6b. Re-evaluation on `candidate-48h-2` (`c435d2e`)
+
+After the sealed runs, the padding-bypass fix and two adjacency fixes were made (EXPERIMENT_LOG
+cycle 5). Both sealed sets were scored once more, labelled as a re-evaluation:
+
+| | `candidate-48h-1` | `candidate-48h-2` |
+|---|---|---|
+| HttpParams sealed TP / FN / FP / TN | 5,751 / 161 / 0 / 9,664 | 5,751 / 161 / 0 / 9,664 |
+| Fwaf sealed TP / FN / FP / TN | 2,080 / 2,920 / 12 / 9,988 | 2,080 / 2,920 / 12 / 9,988 |
+| Set A misses / Set B overall | 1 / 66.7% | 1 / 66.7% |
+| Audit suite | 92 / 92 | 92 / 92 |
+| Throughput @100 clients | 555.1 / 510.6 req/s | 637.3 req/s (one run, within noise) |
+
+Files: `reeval_sealed_httpparams_c435d2e.json`, `reeval_sealed_fwaf_c435d2e.json`,
+`dev_httpparams_c435d2e.json`, `perf_candidate2_c435d2e.json`.
+
 ## 7. Integrity disclosures
 
 1. Before the split was made, the very first whole-file run printed 12 missed examples from the
    whole file, so up to 12 strings may belong to what became the sealed half. They were removed
    from the stored JSON. No rule contains a literal from any dataset; the rules are structural.
-2. Both sealed sets were scored exactly twice: once on `2ab323e`, once on `237420e`. No rule was
-   changed after the second run.
+2. Both sealed sets were scored three times: on `2ab323e`, on `237420e` (the independent
+   result), and on `c435d2e` after the padding fix (a re-evaluation, identical result). The
+   post-freeze changes were driven by hand-written tests, not by sealed results.
 3. All route figures use `vector: 'UNKNOWN'`, which makes the route block at score 25 instead of
    55. Unchanged from the poster's method, so before and after are the same measurement.
 4. The local adjudication queue (`data/adjudication.db`, not in git) still holds 1,942 rows from

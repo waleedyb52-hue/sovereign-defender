@@ -1,7 +1,8 @@
 # Sovereign Defender — 48-hour engineering pass, final report
 
 **Date:** 2026-11-15 · **Branch:** `improvement/48h-detection-performance` · **Before:** `2ab323e`
-(code identical to the poster's `989befb`) · **After:** `237420e`, tag `candidate-48h-1`
+(code identical to the poster's `989befb`) · **After:** `c435d2e`, tag `candidate-48h-2`
+(sealed sets first scored on `237420e`, tag `candidate-48h-1`; see section 4b)
 
 Detailed tables: [`IMPROVEMENT_EVIDENCE.md`](IMPROVEMENT_EVIDENCE.md) · per-change record:
 [`EXPERIMENT_LOG.md`](EXPERIMENT_LOG.md) · baseline: [`BASELINE_METRICS.md`](BASELINE_METRICS.md).
@@ -14,7 +15,7 @@ Detailed tables: [`IMPROVEMENT_EVIDENCE.md`](IMPROVEMENT_EVIDENCE.md) · per-cha
 | — on a second, independent source | Fwaf sealed test **38.94% → 41.60%** (+2.7 pp), FP 9 → 12 of 10,000 | **No** |
 | Throughput +20% (≥ 220 req/s) | 100 clients: **172.8–205.4 → 510.6–555.1 req/s**; interleaved A/B median 176.8 → 454.9 | Yes |
 | p95 at 100 clients not worse | 500.8–583.2 → 212.1–248.3 ms | Yes |
-| No regressions | lint 0 errors, unit 172 / 172, build ok, audit suite 92 / 92, Set B unchanged | Yes |
+| No regressions | lint 0 errors, unit 208 / 208, build ok, audit suite 92 / 92, Set B unchanged | Yes |
 | Zero egress | 0 external connection attempts over a 300 s soak (in-process probe) | Yes, within the probe's limits |
 
 The headline improvement is real and was measured on data no rule was written from. It is also
@@ -49,6 +50,28 @@ the 97% figure is quoted.
 | `ac9dc78` | `server/services/sqlStructure.ts`: linear SQL tokenizer, tried on the text as given and from inside a single- or double-quoted string, scoring syntax not text. Wired into `classifyPayload()` as SQL-family evidence; prose guard still applies to weak signals |
 | `d7ae2a3` | Command-injection shapes requiring a command-line form; dot-run and hex-spelled traversal; sentence-only punctuation in the prose guard |
 | `237420e` | Pending-queue write-behind (labels stay synchronous, readers flush first, exit hook); 10.40.x reserved as an evaluation source |
+
+## 4b. After the sealed runs: padding-bypass fix (`c435d2e`, tag `candidate-48h-2`)
+
+Review of the frozen candidate found that `analyseSqlStructure()` read only the first 4,096
+characters. Measured: an injection after 5 KB to 10 MB of filler was missed in every case. Fixed
+by reading overlapping 4 KB windows (1 KB overlap) over the whole payload up to 256 KB and the
+first and last 128 KB beyond that, keeping the single most incriminating window. Three defects
+surfaced while fixing it and were fixed in the same commit:
+
+| Defect | Evidence | Fix |
+|---|---|---|
+| O(n²) scan over runs of `)` | 1 MB of `)` took 12.4 s once windows covered the whole payload (in the 4 KB version it was hidden: one window, ~30 ms) | Run end computed once per run: 14.5 ms |
+| "Please select one (or more) options" scored 50 — blocked at the route's 25 | The tokenizer drops whitespace, so `one (` read as a call. Present in `candidate-48h-1` | Calls need `name(` with no space, except SQL-only names; SELECT-list forms tightened |
+| "I need sleep (a lot)", "benchmark (2024)" flagged | Original signature `sleep\s*\(`, present in the poster's baseline | `sleep(` / `benchmark(` adjacent only; `pg_sleep` and `WAITFOR DELAY` unchanged |
+
+Effect on every measured figure: **none.** HttpParams dev half in-process: identical output at
+both thresholds, every class. Both sealed sets re-scored on `candidate-48h-2`
+(`reeval_sealed_*_c435d2e.json`): identical confusion matrices to `candidate-48h-1`. Because the
+sealed sets had already been scored once, this second score is a **re-evaluation**, not new
+independent evidence. Structural cost on 10 MB adversarial filler: 37–65 ms. Throughput at 100
+clients 637.3 req/s in one run — within the run-to-run noise of this laptop; no gain is claimed.
+Zero-egress check not re-run: no network code or dependency changed.
 
 API contracts unchanged: `ClassificationResult` and the `/api/v1/agent/ai-analyze` response
 keep their fields; `classifyPayload()` gained an optional second argument used only by harnesses.
@@ -122,7 +145,7 @@ and no host packet capture was taken.
 | Check | Result |
 |---|---|
 | `npm run lint` | 0 errors |
-| `npx vitest run` | 172 / 172 (53 existing + 119 new) |
+| `npx vitest run` | 208 / 208 (53 existing + 155 new) |
 | `npm run build` | succeeds |
 | `npx tsx audit/audit_suite.ts` | 92 / 92 PASS, 0 WARN, 0 FAIL |
 | Set A / Set B | 1 miss (was 2) / unchanged |
@@ -171,11 +194,13 @@ Expected SHA-256: `payload_full.csv` `a4e62ba1…f03d`; dev half `45cf0f1c…319
   reads 96.63% against 98.09% at 25.
 - **Benign evidence is thin where it matters.** HttpParams benign values are names and
   addresses; Fwaf "good" labels contain real attacks. Neither is real API traffic.
-- **Padding bypass of the new component.** `analyseSqlStructure()` reads the first 4,096
-  characters only (a cost bound). An injection placed after 4 KB of filler is judged by the
-  signature rules alone — baseline behaviour, not worse, but the new component is blind to it.
-  Found in review after the freeze; no evaluated payload exceeds 1,058 characters, so no figure
-  here is affected. Fix: also analyse the last window, or windows around each quote.
+- **Structural coverage above 256 KB.** Beyond 256 KB only the first and last 128 KB are
+  analysed structurally (a cost bound; section 4b). An injection with more than 128 KB of filler
+  on both sides is judged by the signature rules alone. The usual padding attack — filler first,
+  injection last — is covered at any size.
+- **Rate limit keys on a caller-supplied address.** The `/ai-analyze` self-DoS limiter uses
+  `packet.srcIp` from the request body, so a client can rotate it. Not changed in this pass; it
+  matters for any per-request cost, including the signature rules' ~0.5–1.1 s on a 10 MB body.
 - **Write-behind trade-off.** Up to 50 ms or 256 pending-review suggestions can be lost on a
   hard kill. Labels are not affected.
 - **Single-request latency** (~15 ms) is unexplained and unchanged.
@@ -187,6 +212,7 @@ Expected SHA-256: `payload_full.csv` `a4e62ba1…f03d`; dev half `45cf0f1c…319
 ## 10. Git commits and evidence
 
 ```
+c435d2e fix(detect): close the 4 KB padding bypass in structural SQL analysis   <- candidate-48h-2
 237420e perf(adjudication): write the pending queue behind the request path   <- candidate-48h-1
 d7ae2a3 feat(detect): command-injection and traversal shapes; prose guard counts sentence punctuation only
 ac9dc78 feat(detect): structural SQL injection analysis alongside the signature rules
@@ -194,14 +220,14 @@ ac9dc78 feat(detect): structural SQL injection analysis alongside the signature 
 1f54c62 chore(eval): reproducible baseline, dev/sealed split, gates and project skills
 ```
 
-Evidence files: `audit/results/` (baseline_*, sealed_*, dev_*, full_*, perf_*, perf_ab_*,
+Evidence files: `audit/results/` (baseline_*, sealed_*, reeval_sealed_*, dev_*, full_*, perf_*, perf_ab_*,
 fp_stress_*, dev_miss_analysis_*, fwaf_transfer_diagnosis_*, egress_*, audit_suite_*,
 manifests). Nothing pushed to the remote.
 
 ## 11. Recommended next engineering priorities
 
-0. **Close the 4 KB padding bypass** in `sqlStructure.ts` (limitation above), with a unit test
-   that pads a known injection past the window.
+0. **Key the `/ai-analyze` rate limit on the socket address**, not `packet.srcIp`, keeping an
+   explicit allowance for the evaluation harnesses.
 1. **Third independent evaluation set** with class labels (for example a SQLi corpus not built
    with sqlmap), scored once, before any further SQLi claim.
 2. **Second-source gap, by size:** encoded command injection (commix-style `$(echo …)`,
