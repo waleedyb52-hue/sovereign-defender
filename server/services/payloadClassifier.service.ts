@@ -39,7 +39,8 @@ export interface ClassificationResult {
 export const BLOCK_THRESHOLD = 55;
 
 interface Rule {
-  re: RegExp;
+  /** A RegExp, or an object with the same test() for checks one linear regex cannot express. */
+  re: RegExp | { test(s: string): boolean };
   weight: number;
   label: string;
   family: AttackFamily;
@@ -91,7 +92,7 @@ const RULES: Rule[] = [
   { re: /<\s*script[\s>]/i, weight: 65, label: '<script> tag', family: 'XSS_ATTACK' },
   { re: /\bon(error|load|click|mouseover|focus)\s*=/i, weight: 60, label: 'inline event handler', family: 'XSS_ATTACK' },
   { re: /javascript\s*:/i, weight: 50, label: 'javascript: URI', family: 'XSS_ATTACK' },
-  { re: /<\s*(svg|img|iframe|object|embed)[^>]*\bon\w+\s*=/i, weight: 65, label: 'tag with event handler', family: 'XSS_ATTACK' },
+  { re: /<\s*(svg|img|iframe|object|embed)[^<>]*\bon\w+\s*=/i, weight: 65, label: 'tag with event handler', family: 'XSS_ATTACK' },
   { re: /document\s*\.\s*(cookie|domain)/i, weight: 45, label: 'document.cookie/domain access', family: 'XSS_ATTACK' },
   { re: /\balert\s*\(|\bprompt\s*\(/i, weight: 30, label: 'alert()/prompt()', family: 'XSS_ATTACK' },
 
@@ -103,7 +104,7 @@ const RULES: Rule[] = [
 
   // Dot-runs longer than ".." used as path segments, and the textual-hex spellings of "." "/"
   // backslash that some decoders accept. One "../" is an ordinary relative path and stays allowed.
-  { re: /(\.{3,}[\/\\]){2,}/, weight: 60, label: 'repeated dot-run traversal', family: 'PATH_TRAVERSAL' },
+  { re: /(?<!\.)\.{3,}[\/\\]\.{3,}[\/\\]/, weight: 60, label: 'repeated dot-run traversal', family: 'PATH_TRAVERSAL' },
   { re: /(0x2e|\.)(0x2e|\.)(0x2f|0x5c)|0x2e0x2e[\/\\]/i, weight: 60, label: 'hex-spelled traversal', family: 'PATH_TRAVERSAL' },
   { re: /\bweb-inf[\/\\]web\.xml\b/i, weight: 65, label: 'sensitive java descriptor path', family: 'PATH_TRAVERSAL' },
 
@@ -144,7 +145,7 @@ const RULES: Rule[] = [
   // operands to be bare words, so `{{ config.items() * 7 }}` — a call, which is
   // what an SSTI probe actually looks like — slipped past. A plain placeholder
   // such as {{customerName}} has no operator and still passes.
-  { re: /\{\{[^}]*[*+\-/][^}]*\}\}/, weight: 60, label: 'template expression with operator', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\{\{[^{}]*[*+\-/][^{}]*\}\}/, weight: 60, label: 'template expression with operator', family: 'REMOTE_CODE_EXECUTION' },
   { re: /<%=?[^%>]*[*+\-/][^%>]*%>/, weight: 55, label: 'ERB/JSP template expression', family: 'REMOTE_CODE_EXECUTION' },
   { re: /\$\{\s*[\w.]+\s*[*+\-/]\s*[\w.]+\s*\}/, weight: 55, label: 'EL/template expression', family: 'REMOTE_CODE_EXECUTION' },
 
@@ -161,7 +162,7 @@ const RULES: Rule[] = [
   { re: /\b(file|gopher|dict):\/\//i, weight: 60, label: 'dangerous URI scheme', family: 'REMOTE_CODE_EXECUTION' },
 
   // ---- Header / CRLF injection ----
-  { re: /(%0d%0a|[\r\n])\s*(set-cookie|location|content-length)\s*:/i, weight: 70, label: 'CRLF header injection', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /(%0d%0a|[\r\n])[ \t]*(set-cookie|location|content-length)[ \t]*:/i, weight: 70, label: 'CRLF header injection', family: 'REMOTE_CODE_EXECUTION' },
 
   // ---- LDAP injection (CWE-90) ----
   { re: /[)(]\s*\|\s*\(|\*\)\s*\(/, weight: 55, label: 'LDAP filter metacharacters', family: 'INJECTION_OTHER' },
@@ -188,14 +189,14 @@ const RULES: Rule[] = [
     weight: 60, label: 'privilege field in request body', family: 'OBJECT_TAMPERING' },
 
   // ---- Host header injection (CWE-644) ----
-  { re: /^\s*host\s*:\s*\S+[\s\S]*x-forwarded-host\s*:/im, weight: 65, label: 'conflicting Host headers', family: 'INJECTION_OTHER' },
+  { re: { test: (s: string) => { const h = /^[ \t]*host[ \t]*:[ \t]*\S/im.exec(s); return !!h && /x-forwarded-host[ \t]*:/i.test(s.slice(h.index + h[0].length)); } }, weight: 65, label: 'conflicting Host headers', family: 'INJECTION_OTHER' },
 
   // ---- Resource abuse: deeply nested query (GraphQL and similar) ----
   { re: /(\{\s*\w+\s*){12,}/, weight: 55, label: 'pathologically nested query', family: 'RESOURCE_ABUSE' },
 
   // ---- Exfiltration ----
-  { re: /\b[A-Za-z0-9+/]{16,}={0,2}\.[A-Za-z0-9+/]{16,}={0,2}\./, weight: 55, label: 'base64 chunks in DNS labels', family: 'DNS_EXFILTRATION' },
-  { re: /\b(attacker|exfil|c2)[-.][a-z0-9-]*\.(com|net|io|xyz)\b/i, weight: 50, label: 'suspicious exfil domain', family: 'DNS_EXFILTRATION' }
+  { re: /(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{16,}={0,2}\.[A-Za-z0-9+/]{16,}={0,2}\./, weight: 55, label: 'base64 chunks in DNS labels', family: 'DNS_EXFILTRATION' },
+  { re: /\b(attacker|exfil|c2)[-.][a-z0-9-]{0,63}\.(com|net|io|xyz)\b/i, weight: 50, label: 'suspicious exfil domain', family: 'DNS_EXFILTRATION' }
 ];
 
 /**
