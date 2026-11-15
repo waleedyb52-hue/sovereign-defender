@@ -111,8 +111,30 @@ ADMIN_API_KEY=test_admin_key_123 node audit/perf_benchmark.mjs audit/results/bas
 | Audit chain verification (53 entries) | 16.9 ms, intact |
 
 Poster values (183 req/s, median 399 ms, p95 790 ms at 100 clients) were taken on a different
-host and are **not** the baseline for the 20% throughput goal. The baseline is **172.8 req/s**.
-This is a single run; a second baseline run is required before a 20% claim (see roadmap H+1).
+host and are **not** the baseline for the 20% throughput goal.
+
+A second baseline run of the same code (`baseline_perf_run2_2ab323e.json`) gave **205.4 req/s**
+at 100 clients (p50 467.3, p95 500.8, p99 764.0 ms, 0 non-200). The two runs differ by 18.9%,
+so a single before/after pair on this laptop cannot support a 20% claim. Improvements are
+therefore compared against **both** baseline runs, and the responsible change is also measured
+with an interleaved A/B (`scripts/perf-ab.mjs`).
+
+## 5b. Second external source (added during the pass)
+
+Fwaf query corpus (github.com/faizann24/Fwaf-Machine-Learning-driven-Web-Application-Firewall,
+2017; no licence stated, used locally and not committed). Built by `audit/build_external2.mjs`;
+hashes in `audit/results/external2_manifest.json`. Sealed test = 10,000 good + 5,000 bad lines,
+chosen by SHA-256 rank before any rule change; dev benign = the next 10,000 good lines.
+
+| Baseline `2ab323e`, sealed test | |
+|---|---|
+| TP / FN / FP / TN | 1,947 / 3,053 / 9 / 9,991 |
+| Recall | 38.94% (95% CI 37.60 – 40.30) |
+| Precision / FPR | 99.54% / 0.09% (0.05 – 0.17) |
+| F1 / MCC | 55.98% / 0.5439 |
+
+Labels are the source's own and are noisy: its "good" file contains real injections and scanner
+probes.
 
 ## 6. Zero egress
 
@@ -151,9 +173,12 @@ Limits: 45-second soak, in-process probe only. Child processes and jobs on timer
 
 ## Open issues
 
-- `main` on this machine is 3 commits behind `origin/main`. Fast-forwarding fails on Windows
-  because the upstream file `Data` and the local directory `data/` differ only by case.
-  Renaming `Data` upstream (for example to `notebooks/cic_ids2018_colab.py`) resolves it.
+- `main` on this machine was 3 commits behind `origin/main`, and checking it out fails on
+  Windows because the upstream file `Data` and the local directory `data/` differ only by case.
+  **Resolved on the branch** (`7a46165`): `origin/main` merged with `Data` renamed to
+  `notebooks/cic_ids2018_colab.py`, content unchanged. The local `main` ref was fast-forwarded
+  to `989befb` without a checkout. `main` itself stays uncheckoutable on Windows until the
+  branch is merged.
 
 ## Not measured
 

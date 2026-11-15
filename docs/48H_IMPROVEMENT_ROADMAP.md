@@ -1,5 +1,7 @@
 # 48-hour improvement roadmap
 
+**Status (end of pass): executed. Results in FINAL_ENGINEERING_REPORT.md. The sections below are the plan as written at the start.**
+
 **Start:** 2026-11-15 · **Branch:** `improvement/48h-detection-performance` · **Baseline:**
 [`BASELINE_METRICS.md`](BASELINE_METRICS.md) · **Evidence log:** [`IMPROVEMENT_EVIDENCE.md`](IMPROVEMENT_EVIDENCE.md)
 

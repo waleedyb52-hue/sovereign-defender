@@ -18,6 +18,8 @@ low one. `docs/DEVELOPMENT_PLAN.md` section 2 is binding; this skill is how to a
 | External, dev half | `data/external/httpparams_dev.csv` | yes | regression only, once used |
 | External, sealed half | `data/external/httpparams_sealed.csv` | **never, do not open the file** | the independent figure |
 | Adjudicated, newest fold | adjudication store | **never** | test fold |
+| Second source, sealed test | `data/external2/fwaf_test_sealed.csv` | **never, do not open the file** | out-of-distribution figure |
+| Second source, dev | `fwaf_dev_benign.csv`; `badqueries.txt` / `goodqueries.txt` lines outside the sealed ranks (see `audit/build_external2.mjs`) | yes | regression only |
 
 Hashes and the split rule are in `audit/results/external_split_manifest.json`. The split is
 `SHA-256(payload)[0] & 1`, re-derivable by anyone from the published file.
