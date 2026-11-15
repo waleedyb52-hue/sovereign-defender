@@ -1,0 +1,54 @@
+{
+  "source": "data/external2/goodqueries.txt",
+  "skippedReservedRanks": 20000,
+  "n": 100000,
+  "thresholds": {
+    "25": {
+      "flaggedWithoutStructure": 105,
+      "flaggedWithStructure": 110,
+      "flaggedOnlyByStructure": 5
+    },
+    "55": {
+      "flaggedWithoutStructure": 105,
+      "flaggedWithStructure": 110,
+      "flaggedOnlyByStructure": 5
+    }
+  },
+  "flaggedOnlyByStructure": [
+    {
+      "score": 60,
+      "payload": "/www/delivery/ac.php?bannerid=-969+or+1=1",
+      "signatures": [
+        "boolean test between two constants"
+      ]
+    },
+    {
+      "score": 60,
+      "payload": "/cgi-bin/www/delivery/ac.php?bannerid=-691+or+1=1",
+      "signatures": [
+        "boolean test between two constants"
+      ]
+    },
+    {
+      "score": 60,
+      "payload": "/cgi-bin/www/delivery/ac.php?bannerid=-958+or+1=1",
+      "signatures": [
+        "boolean test between two constants"
+      ]
+    },
+    {
+      "score": 60,
+      "payload": "/cgi-bin/www/delivery/ac.php?bannerid=-537+or+1=1",
+      "signatures": [
+        "boolean test between two constants"
+      ]
+    },
+    {
+      "score": 60,
+      "payload": "/examples/jsp/jsp2/el/disp_album.php?id_album=0+or+1=1",
+      "signatures": [
+        "boolean test between two constants"
+      ]
+    }
+  ]
+}

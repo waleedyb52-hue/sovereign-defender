@@ -1,4 +1,5 @@
 import { shannonEntropy } from './payloadForensics.js';
+import { analyseSqlStructure, type SqlSignal } from './sqlStructure.js';
 
 /**
  * LOCAL PAYLOAD CLASSIFIER
@@ -269,7 +270,35 @@ function canonicalisePayload(raw: string): string {
   return s;
 }
 
-export function classifyPayload(rawPayload: unknown): ClassificationResult {
+/**
+ * Switches for measurement, not for operators. They exist so the audit harnesses can score
+ * each detection component with and without it (audit/eval_dev_inprocess.ts) instead of a
+ * comparison resting on an edited source file. Everything defaults to on.
+ */
+export interface ClassifyOptions {
+  /** Structural SQL analysis (sqlStructure.ts). */
+  sqlStructure?: boolean;
+}
+
+/** SD_SQL_STRUCTURE=off restores signature-only SQL detection for a whole process. */
+const SQL_STRUCTURE_DEFAULT = process.env.SD_SQL_STRUCTURE !== 'off';
+
+/**
+ * Structural signals below this weight are hints (a column-index ORDER BY, one generic
+ * function call) that a sentence could contain; at or above it they are syntax a sentence
+ * cannot contain, so the prose guard does not apply to them.
+ */
+const STRUCTURAL_PROSE_FLOOR = 40;
+
+function strongestStructure(original: string, canonical: string): SqlSignal[] {
+  const a = analyseSqlStructure(original);
+  if (canonical === original) return a;
+  const b = analyseSqlStructure(canonical);
+  const total = (x: SqlSignal[]) => x.reduce((n, sig) => n + sig.weight, 0);
+  return total(b) > total(a) ? b : a;
+}
+
+export function classifyPayload(rawPayload: unknown, options: ClassifyOptions = {}): ClassificationResult {
   const original = String(rawPayload ?? '');
   // Match against BOTH forms: canonicalisation can dissolve a signature that
   // was only present in the raw text, so a hit in either counts.
@@ -298,6 +327,18 @@ export function classifyPayload(rawPayload: unknown): ClassificationResult {
     cur.score += rule.weight;
     cur.sigs.push(rule.label);
     byFamily.set(rule.family, cur);
+  }
+
+  // Structural SQL evidence: what the payload is when read as SQL, independent of which
+  // tool produced it. Added to the SQL family alongside the signatures above.
+  if (options.sqlStructure ?? SQL_STRUCTURE_DEFAULT) {
+    for (const sig of strongestStructure(original, canonical)) {
+      if (prose && sig.weight < STRUCTURAL_PROSE_FLOOR) continue;
+      const cur = byFamily.get('SQL_INJECTION') ?? { score: 0, sigs: [] };
+      cur.score += sig.weight;
+      cur.sigs.push(sig.label);
+      byFamily.set('SQL_INJECTION', cur);
+    }
   }
 
   // Very high entropy in a short payload suggests packing/encoding, but it is
