@@ -1,0 +1,127 @@
+{
+  "dataset": "HttpParamsDataset (Morzeux, 2016, MIT)",
+  "file": "data/external/httpparams_dev.csv",
+  "sha256": "45cf0f1c3858b4d93bcbe7cbe18860f612012117a0105b1852d224c7594f3192",
+  "samples": 15491,
+  "failedRequests": 0,
+  "seconds": 130.2,
+  "samplesPerSecond": 119,
+  "sealedRun": false,
+  "all": {
+    "n": 15491,
+    "tp": 2416,
+    "fn": 3435,
+    "fp": 0,
+    "tn": 9640,
+    "precision": 1,
+    "recall": 0.4129208682276534,
+    "f1": 0.5844925607838393,
+    "fpr": 0,
+    "accuracy": 0.7782583435543219,
+    "mcc": 0.5517611067368058,
+    "recallCI": [
+      0.40036598323467504,
+      0.42559002554957637
+    ],
+    "precisionCI": [
+      0.9984124580716358,
+      1
+    ],
+    "fprCI": [
+      2.709425708205396e-20,
+      0.0003983474801162225
+    ],
+    "projectedPrecisionAt2pct": 1,
+    "falseAlarmsPer10k": 0
+  },
+  "deduplicated": {
+    "n": 15491,
+    "tp": 2416,
+    "fn": 3435,
+    "fp": 0,
+    "tn": 9640,
+    "precision": 1,
+    "recall": 0.4129208682276534,
+    "f1": 0.5844925607838393,
+    "fpr": 0,
+    "accuracy": 0.7782583435543219,
+    "mcc": 0.5517611067368058,
+    "recallCI": [
+      0.40036598323467504,
+      0.42559002554957637
+    ],
+    "precisionCI": [
+      0.9984124580716358,
+      1
+    ],
+    "fprCI": [
+      2.709425708205396e-20,
+      0.0003983474801162225
+    ],
+    "projectedPrecisionAt2pct": 1,
+    "falseAlarmsPer10k": 0
+  },
+  "byType": {
+    "norm": {
+      "n": 9640,
+      "detected": 0,
+      "rate": 0,
+      "ci": [
+        2.709425708205396e-20,
+        0.0003983474801162225
+      ]
+    },
+    "sqli": {
+      "n": 5405,
+      "detected": 2133,
+      "rate": 0.3946345975948196,
+      "ci": [
+        0.38168324053598207,
+        0.4077356250488411
+      ]
+    },
+    "xss": {
+      "n": 269,
+      "detected": 232,
+      "rate": 0.862453531598513,
+      "ci": [
+        0.8161638649571841,
+        0.8985365326361447
+      ]
+    },
+    "cmdi": {
+      "n": 45,
+      "detected": 3,
+      "rate": 0.06666666666666667,
+      "ci": [
+        0.022931616462147076,
+        0.17856874388640825
+      ]
+    },
+    "path-traversal": {
+      "n": 132,
+      "detected": 48,
+      "rate": 0.36363636363636365,
+      "ci": [
+        0.28650505488913514,
+        0.448480398756876
+      ]
+    }
+  },
+  "missedExamples": [
+    "sqli: -3136%') or 3400=6002",
+    "sqli: -2604)) as sekb where 6897=6897 or 1000=7683",
+    "sqli: 1'))) or 1022=(select count(*) from all_users t1,all_users t2,all_users t3,all_users t4,al",
+    "sqli: -4259')) as usqu where 5419=5419 or elt(8325=8837,8837)--",
+    "sqli: 1')) and 3707=(select count(*) from sysibm.systables as t1,sysibm.systables as t2,sysibm.s",
+    "sqli: -1638' or 2724 in ((char(113)+char(113)+char(112)+char(106)+char(113)+(select (case when (",
+    "xss: open()>",
+    "sqli: 1') as zdhq where 5586=5586;select like('abcdefg',upper(hex(randomblob(500000000/2))))--",
+    "sqli: 1' where 8584=8584 order by 1#",
+    "sqli: 1')) as plbt where 4368=4368 and 3754=(select upper(xmltype(chr(60)||chr(58)||chr(113)||ch",
+    "sqli: 1'));select (case when (8601=1220) then 8601 else 8601*(select 8601 from mysql.db) end)#",
+    "sqli: 1\" or updatexml(1808,concat(0x2e,0x7171706a71,(select (elt(1808=1808,1))),0x717a767a71),86"
+  ],
+  "fpExamples": [],
+  "finishedAt": "2026-11-15T14:15:07.474Z"
+}

@@ -1,0 +1,52 @@
+name: CI
+
+# Build, type-check, unit tests, and a detection regression against the two in-repo sets.
+#
+# Deliberately NOT here, because a shared runner cannot produce a defensible figure:
+#   - performance comparison   -> scripts/compare-perf.mjs, same machine, before and after
+#   - external-dataset scoring -> the dataset is not in the repository, by design
+#   - kernel / XDP verification -> needs a privileged Linux host (scripts/kernel-audit.mjs)
+
+on:
+  push:
+    branches: [main, 'improvement/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      ADMIN_API_KEY: ci_admin_key_not_a_secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Type check
+        run: npm run lint
+      - name: Unit tests
+        run: npm run test:fast
+      - name: Build
+        run: npm run build
+      - name: Start server
+        run: |
+          npx tsx server.ts > server.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:3000/api/health > /dev/null && exit 0
+            sleep 1
+          done
+          cat server.log
+          exit 1
+      - name: Detection regression - Set A (regression baseline)
+        run: npx tsx audit/eval_harness.ts
+      - name: Detection regression - Set B (held out, never write rules against its misses)
+        run: npx tsx audit/eval_holdout_b.ts
+      - name: Server log on failure
+        if: failure()
+        run: tail -n 100 server.log
