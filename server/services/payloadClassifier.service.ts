@@ -100,6 +100,29 @@ const RULES: Rule[] = [
   { re: /\/etc\/(passwd|shadow)\b/i, weight: 70, label: 'sensitive unix path', family: 'PATH_TRAVERSAL' },
   { re: /\b(win\.ini|boot\.ini|system32\\config)\b/i, weight: 65, label: 'sensitive windows path', family: 'PATH_TRAVERSAL' },
 
+  // Dot-runs longer than ".." used as path segments, and the textual-hex spellings of "." "/"
+  // backslash that some decoders accept. One "../" is an ordinary relative path and stays allowed.
+  { re: /(\.{3,}[\/\\]){2,}/, weight: 60, label: 'repeated dot-run traversal', family: 'PATH_TRAVERSAL' },
+  { re: /(0x2e|\.)(0x2e|\.)(0x2f|0x5c)|0x2e0x2e[\/\\]/i, weight: 60, label: 'hex-spelled traversal', family: 'PATH_TRAVERSAL' },
+  { re: /\bweb-inf[\/\\]web\.xml\b/i, weight: 65, label: 'sensitive java descriptor path', family: 'PATH_TRAVERSAL' },
+
+  // ---- OS command injection ----
+  //
+  // A shell separator followed by a command. Short command names are also English words and
+  // field names ("name;id", "cat|dog", "Name & ID"), so they only count when the shape around
+  // them is a command line: an absolute binary path, a flag or path argument, or separators
+  // on both sides. Names with no everyday meaning count after any separator.
+  { re: /(^|[;|&`(\s])\/(usr\/)?s?bin\/(id|ls|cat|sh|bash|sleep|ping|nc|uname|whoami|netstat|ps|rm|chmod|wget|curl|echo|kill)\b/i,
+    weight: 60, label: 'absolute path to a system binary', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /(;|\|\|?|&&?|`|\$\()[\s+]*(whoami|uname|netstat|ifconfig|ipconfig|nslookup|wget|curl|ping|powershell|bash)(?=$|[\s+]*[;|&`)]|[\s+]+(-|\/|https?:|\d|\$))/i,
+    weight: 60, label: 'shell separator before a command', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /(;|\|\|?|&&|\$\()[\s+]*(id|ls|cat|dir|ps|pwd|sleep|echo|type|rm|nc|sh)[\s+]*(;|\|)/i,
+    weight: 60, label: 'command between shell separators', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /(;|\|\|?|&&?|`|\$\()[\s+]*(ls|cat|dir|ps|sleep|rm|nc|ping|netstat|type)[\s+]+(-[a-z]|\/|[a-z]:)/i,
+    weight: 60, label: 'command with flag or path argument after a separator', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /`\s*(uname|whoami|ping\s[^`]{1,60}|cat\s[^`]{1,60}|ls\s[^`]{1,60})\s*`/i,
+    weight: 60, label: 'backtick command substitution', family: 'REMOTE_CODE_EXECUTION' },
+
   // ---- Remote code execution / webshell ----
   { re: /<\?php/i, weight: 70, label: 'PHP open tag', family: 'REMOTE_CODE_EXECUTION' },
   { re: /\b(system|shell_exec|passthru|popen|proc_open)\s*\(/i, weight: 65, label: 'command execution primitive', family: 'REMOTE_CODE_EXECUTION' },
@@ -234,7 +257,9 @@ function isProseInJsonValue(payload: string): boolean {
 function looksLikeProse(payload: string): boolean {
   const words = payload.split(/\s+/).filter(Boolean);
   if (words.length < 6) return false;
-  const punctuation = (payload.match(/[.,!?]/g) || []).length;
+  // Sentence punctuation only: followed by a space or the end. The dots of an IP address or a
+  // qualified name (10.0.0.1, sysibm.systables) are not what makes text prose.
+  const punctuation = (payload.match(/[.,!?](?=\s|$)/g) || []).length;
   const hasInjectionSyntax = /['";]|--\s*$|\/\*|\bunion\b.*\bselect\b/i.test(payload);
   return punctuation >= 1 && !hasInjectionSyntax;
 }

