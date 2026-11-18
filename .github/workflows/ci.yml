@@ -78,6 +78,12 @@ jobs:
           { echo '### Graceful shutdown (real server, real SIGTERM)'; echo '```'; cat shutdown.log | tail -n 20; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           echo "::notice title=Graceful shutdown (real SIGTERM)::$(tail -n 1 shutdown.log) | $(grep -E '"rows|"expected' shutdown.log | tr -d ' ' | paste -sd ' ' -)"
 
+      - name: Per-caller classification budget - real server at 1 MiB/min
+        run: |
+          node audit/budget_check.mjs 2>&1 | tee budget.log
+          { echo '### Classification budget'; echo '```'; cat budget.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Classification budget::$(tail -n 1 budget.log)"
+
       - name: Start server
         run: |
           npx tsx server.ts > server.log 2>&1 &
