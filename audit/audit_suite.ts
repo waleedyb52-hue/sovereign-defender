@@ -858,16 +858,27 @@ const auth = { 'x-api-key': KEY };
     // literals. A learner trained on that corpus would have seen Set B, making
     // every later Set B score on it meaningless. The fold guard was in place and
     // did nothing, because the leak was upstream of folds entirely.
+    //
+    // The guard used to key on `packet.srcIp`, which the caller writes: any client could
+    // claim 10.20.x and keep a payload out of review. It is now a flag the route computes
+    // from facts the server verifies (ADMIN, direct loopback, declared evaluation).
     const svc = fs.readFileSync(path.join(ROOT, 'server/services/adjudication.service.ts'), 'utf-8');
-    assert(/EVALUATION_SOURCE_PREFIXES/.test(svc), 'no reserved evaluation source ranges');
-    assert(/isEvaluationSource\(input\.srcIp\)/.test(svc),
-      'recordPending does not refuse evaluation sources at the queue entry point');
+    assert(/input\.isEvaluationSource === true/.test(svc),
+      'recordPending does not refuse evaluation traffic at the queue entry point');
+    assert(!/isEvaluationSource\(input\.srcIp\)/.test(svc),
+      'the queue guard reads the caller-supplied srcIp again');
 
     // Filtering later would be too late: the label would already exist, and the
     // label is what contaminates.
-    const idx = svc.indexOf('isEvaluationSource(input.srcIp)');
+    const idx = svc.indexOf('input.isEvaluationSource === true');
     const insertIdx = svc.indexOf('INSERT INTO pending_detections');
     assert(idx > 0 && insertIdx > idx, 'the guard does not precede the queue insert');
+
+    const srv = fs.readFileSync(path.join(ROOT, 'server.ts'), 'utf-8');
+    const fn = srv.slice(srv.indexOf('function isVerifiedEvaluation('), srv.indexOf('function isVerifiedEvaluation(') + 400);
+    assert(/role === 'ADMIN'/.test(fn) && /isDirectLoopback\(req\)/.test(fn) && /EVALUATION_SOURCE_HEADER/.test(fn),
+      'evaluation is not decided from ADMIN + direct loopback + declared header');
+    assert(/isEvaluationSource: evaluation/.test(srv), 'the route does not pass the verified flag to recordPending');
 
     // Retraction must be insert-only; a corpus that can be silently pruned is
     // worse than one that is wrong.
@@ -1096,6 +1107,35 @@ const auth = { 'x-api-key': KEY };
     assert(rs.filter(r => r.status === 200).length >= 50, 'classifications failed under concurrency');
     assert(ms < 3000, `55 concurrent classifications took ${ms} ms (budget 3000)`);
     return `55 concurrent classifications in ${ms} ms; retrieval only on the model path, technique lookup indexed.`;
+  });
+
+  await run(102, 'CONTAMINATION', 'A claimed packet address cannot keep a payload out of review', async () => {
+    // Before: srcIp 10.20.x in the body excluded the payload from analyst review. Now only
+    // the server-verified evaluation context does. Two requests from this harness, both
+    // authenticated as ADMIN on loopback: one claims a harness address without the header
+    // (must be queued), one sends the header (must not be).
+    const nonce = `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
+    const spoofed = `audit-102 spoofed-source probe ${nonce}`;
+    const declared = `audit-102 declared-evaluation probe ${nonce}`;
+    const a = await http('POST', '/api/v1/agent/ai-analyze', { packet: { srcIp: '10.20.7.7', vector: 'UNKNOWN', payload: spoofed } }, auth);
+    const b = await http('POST', '/api/v1/agent/ai-analyze', { packet: { srcIp: '203.0.113.50', vector: 'UNKNOWN', payload: declared } },
+      { ...auth, 'x-sd-evaluation-source': '1' });
+    assert(a.status === 200 && b.status === 200, `classification failed: ${a.status} / ${b.status}`);
+    const q = await http('GET', '/api/v1/soc/adjudication/queue?limit=500', undefined, auth);
+    const samples: string[] = (q.json?.items ?? []).map((x: any) => String(x.payloadSample));
+    assert(samples.includes(spoofed), 'a payload claiming a 10.20.x source was kept out of review');
+    assert(!samples.includes(declared), 'a verified evaluation request entered the review queue');
+    return 'Claimed 10.20.x source: queued for review. ADMIN + loopback + declared evaluation: excluded.';
+  });
+
+  await run(103, 'AI', 'Oversized payloads are refused, not truncated', async () => {
+    const big = 'a'.repeat(1_048_577);
+    const r = await http('POST', '/api/v1/agent/ai-analyze', { packet: { srcIp: '203.0.113.51', vector: 'UNKNOWN', payload: big } }, auth);
+    assert(r.status === 413 && r.json?.error === 'PAYLOAD_TOO_LARGE', `expected 413 PAYLOAD_TOO_LARGE, got ${r.status}`);
+    const ok = await http('POST', '/api/v1/agent/ai-analyze', { packet: { srcIp: '203.0.113.51', vector: 'UNKNOWN', payload: 'a'.repeat(1_048_576 - 64) + "' or 9=9" } }, auth);
+    assert(ok.status === 200, `a payload just under the limit was not classified: ${ok.status}`);
+    assert(ok.json?.verdict !== 'ALLOW', 'an injection at the end of a 1 MB payload was not detected');
+    return `>1 MB refused with 413; an injection at the end of a payload just under 1 MB → ${ok.json?.verdict}.`;
   });
 
   // ---- Report ----

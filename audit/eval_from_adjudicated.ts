@@ -36,7 +36,7 @@ const pct = (n: number) => (n * 100).toFixed(1) + '%';
 async function classify(payload: string, nonce: number): Promise<Label> {
   const res = await fetch(`${BASE}/api/v1/agent/ai-analyze`, {
     method: 'POST',
-    headers: auth,
+    headers: { ...auth, 'x-sd-evaluation-source': '1' },
     body: JSON.stringify({
       packet: {
         srcIp: `10.80.${nonce % 250}.${(nonce * 7) % 250}`,

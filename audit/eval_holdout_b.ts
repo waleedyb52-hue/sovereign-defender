@@ -108,7 +108,7 @@ interface Scored extends Sample { predicted: Label; verdict: string; score: numb
 async function classify(s: Sample, nonce: number): Promise<Scored> {
   const res = await fetch(`${BASE}/api/v1/agent/ai-analyze`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': KEY },
+    headers: { 'Content-Type': 'application/json', 'x-api-key': KEY, 'x-sd-evaluation-source': '1' },
     body: JSON.stringify({
       packet: {
         srcIp: `10.30.${nonce % 250}.${(nonce * 11) % 250}`,

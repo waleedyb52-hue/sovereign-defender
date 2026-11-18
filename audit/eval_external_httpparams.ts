@@ -74,7 +74,7 @@ async function classify(payload: string, n: number): Promise<{ detected: boolean
     try {
       const res = await fetch(`${BASE}/api/v1/agent/ai-analyze`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': KEY },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': KEY, 'x-sd-evaluation-source': '1' },
         body: JSON.stringify({
           packet: {
             srcIp: `10.40.${(n >> 8) & 255}.${n & 255}`,

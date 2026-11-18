@@ -86,7 +86,7 @@ interface Probe {
 async function probe(payload: string, srcIp: string): Promise<Probe> {
   const res = await fetch(`${BASE}/api/v1/agent/ai-analyze`, {
     method: 'POST',
-    headers: auth,
+    headers: { ...auth, 'x-sd-evaluation-source': '1' },
     body: JSON.stringify({
       packet: { srcIp, dstIp: '10.0.1.10', port: 443, protocol: 'HTTPS', vector: 'UNKNOWN', payload }
     })

@@ -7,7 +7,7 @@ import os from 'os';
 import path from 'path';
 import crypto from 'crypto';
 import net from 'net';
-import { createAccessControl, securityHeaders, clientIp as accessClientIp } from './server/middleware/accessControl.js';
+import { createAccessControl, securityHeaders, clientIp as accessClientIp, isDirectLoopback, type Principal } from './server/middleware/accessControl.js';
 import { createAuthRouter } from './server/routes/auth.routes.js';
 import { globalOperatorAuth, ROLE_RANK, type Role } from './server/services/operatorAuth.service.js';
 import { globalLanWatch } from './server/services/lanWatch.service.js';
@@ -56,7 +56,7 @@ import { globalDriftDetector, globalStrategicRetention } from './server/services
 import { globalContinualLearner, decidePromotion, type LabelledSample } from './server/services/continualLearner.service.js';
 import { globalIterativeRetrieval } from './server/services/iterativeRetrieval.service.js';
 import { corroborate, corroborationEnabled } from './server/services/corpusCorroboration.service.js';
-import { globalAdjudication } from './server/services/adjudication.service.js';
+import { globalAdjudication, EVALUATION_SOURCE_HEADER } from './server/services/adjudication.service.js';
 import { globalKernelMitigationDriver } from './server/services/kernelMitigationDriver.js';
 import { globalSelfHealingLedger } from './server/services/selfHealingLedger.service.js';
 import { globalInLineInterceptionEngine } from './server/services/inLineInterception.service.js';
@@ -1777,6 +1777,42 @@ app.post('/api/v1/agent/protect', async (req, res) => {
   res.status(200).json(responsePayload);
 });
 
+/**
+ * WHO THE CALLER IS, AS THE SERVER KNOWS IT — not as the request body describes it
+ *
+ * `packet.srcIp` is the address of the traffic being analysed, written by the caller. It is
+ * data about the packet: it goes into the generated firewall rules, the cache key and the
+ * review queue as a description. It must not decide anything about the caller, because any
+ * authenticated client can write any value there. It used to key the rate limiter (a client
+ * that rotated it was never limited, and every distinct value grew the limiter's map) and to
+ * exclude "evaluation" traffic from analyst review (a client that claimed 10.20.x kept its
+ * payload out of the queue, and real detections from that range never reached it).
+ *
+ * Both decisions now use facts the server establishes itself:
+ *   callerKey               the authenticated principal plus the TCP peer address
+ *   isVerifiedEvaluation    an ADMIN principal, on a direct loopback connection with no
+ *                           forwarding headers, that declares EVALUATION_SOURCE_HEADER: 1.
+ *                           The header is only a statement of intent; on its own, from
+ *                           anyone else or from anywhere else, it is ignored.
+ */
+function callerKey(req: express.Request, caller: Principal | null): string {
+  return `${caller ? `${caller.kind}:${caller.id}` : 'anonymous'}@${accessClientIp(req)}`;
+}
+
+function isVerifiedEvaluation(req: express.Request, caller: Principal | null): boolean {
+  if (req.get(EVALUATION_SOURCE_HEADER) !== '1') return false;
+  return caller?.role === 'ADMIN' && isDirectLoopback(req);
+}
+
+/**
+ * Largest payload this route will classify, in characters. Above it the request is refused
+ * with 413 rather than truncated: a truncated payload is a bypass (an injection placed after
+ * the cut is never read), and an unbounded one is a way to hold the event loop. The
+ * signature rules cost about 0.1 s per MB after the ReDoS fixes, so this caps one request
+ * near that.
+ */
+const MAX_ANALYZE_PAYLOAD_CHARS = 1_048_576;
+
 // 3. AI Threat Deep Analysis with Gemini API (@google/genai)
 app.post('/api/v1/agent/ai-analyze', async (req, res) => {
   const { packet } = req.body || {};
@@ -1786,10 +1822,17 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
     return res.status(400).json({ error: 'Missing packet payload for AI analysis' });
   }
 
+  const caller = req.principal ?? access.authenticate(req);
+  const evaluation = isVerifiedEvaluation(req, caller);
+  // The analysed packet's claimed source. Data, never identity: see callerKey above.
   const safeSrcIp = sanitizeUntrustedInput(packet.srcIp || '198.51.100.42');
 
   // 1. AGENT SELF-DOS DEFENSE (AI Model Quota Protection)
-  if (geminiSelfDosLimiter.isRateLimited(safeSrcIp)) {
+  //
+  // Applies where it protects something — the external model's quota — and is keyed on the
+  // caller. The local classifier has no quota; its per-request cost is bounded instead by
+  // MAX_ANALYZE_PAYLOAD_CHARS and by linear-time rules (audit/redos_scan.mjs).
+  if (genAI && geminiSelfDosLimiter.isRateLimited(callerKey(req, caller))) {
     state.safeguards.selfDosEarlyDropsCount++;
     return res.status(429).json({
       error: 'AGENT_SELF_DOS_DEFENSE_TRIGGERED',
@@ -1800,6 +1843,15 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
 
   // 2. FAST IN-MEMORY LRU CACHE FOR AI ANALYSIS
   const payloadStr = sanitizeUntrustedInput(packet.payload || '');
+  if (payloadStr.length > MAX_ANALYZE_PAYLOAD_CHARS) {
+    return res.status(413).json({
+      error: 'PAYLOAD_TOO_LARGE',
+      message: `Payloads above ${MAX_ANALYZE_PAYLOAD_CHARS} characters are refused rather than truncated; split the content and analyse each part.`,
+      messageAr: `تُرفض الحمولات الأكبر من ${MAX_ANALYZE_PAYLOAD_CHARS} حرف بدل اقتطاعها؛ قسّم المحتوى وحلّل كل جزء على حدة.`,
+      limitChars: MAX_ANALYZE_PAYLOAD_CHARS,
+      receivedChars: payloadStr.length
+    });
+  }
   const aiCacheHash = computeEvaluationHash(safeSrcIp, 'AI_ANALYSIS', packet.vector || 'ANOMALY', payloadStr);
   const cachedAi = evaluationCache.get(aiCacheHash);
   if (cachedAi.hit && cachedAi.value) {
@@ -1998,10 +2050,16 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
   // Phase 3 observation. Unsupervised, so it runs on every payload regardless of
   // whether anyone ever adjudicates it — drift is a property of the input stream.
   // Wrapped because a monitoring component must never cost a detection.
-  try {
-    globalDriftDetector.observe(payloadStr);
-    globalStrategicRetention.admit(payloadStr);
-  } catch { /* observation is best-effort */ }
+  //
+  // Verified evaluation traffic is test data, not the live input stream: it stays out of
+  // drift statistics and of the retention store the learner trains from, for the same reason
+  // it stays out of the review queue.
+  if (!evaluation) {
+    try {
+      globalDriftDetector.observe(payloadStr);
+      globalStrategicRetention.admit(payloadStr);
+    } catch { /* observation is best-effort */ }
+  }
 
   globalAdjudication.recordPending({
     payload: payloadStr,
@@ -2009,7 +2067,8 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
     machineScore: classification.score,
     machineFamily: classification.family,
     machineSignatures: classification.signatures,
-    srcIp: safeSrcIp
+    srcIp: safeSrcIp,
+    isEvaluationSource: evaluation
   });
 
   evaluationCache.set(aiCacheHash, fallbackResult, 5 * 60 * 1000);

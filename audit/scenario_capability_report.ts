@@ -71,7 +71,7 @@ async function probe(payload: string, nonce: number) {
   const started = Date.now();
   const res = await fetch(`${BASE}/api/v1/agent/ai-analyze`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': KEY },
+    headers: { 'Content-Type': 'application/json', 'x-api-key': KEY, 'x-sd-evaluation-source': '1' },
     body: JSON.stringify({
       packet: {
         srcIp: `10.0.0.${45 + nonce}`,

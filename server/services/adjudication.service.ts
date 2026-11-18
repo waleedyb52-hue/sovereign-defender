@@ -81,20 +81,29 @@ const PAYLOAD_SAMPLE_MAX = 2048;
  * tuning was in place and did nothing here, because the leak was upstream of folds
  * entirely: evaluation data was becoming training data before any fold existed.
  *
- * The prefixes match what the harnesses already use, so no harness had to change:
- *   10.20.x  eval_harness.ts        (Set A)
- *   10.30.x  eval_holdout_b.ts      (Set B)
- *   10.40.x  eval_external_httpparams.ts (external datasets, including sealed halves)
- *   10.80.x  eval_from_adjudicated.ts
- *   10.90.x  seed_adjudication_drill.ts
+ * WHO DECIDES THAT TRAFFIC IS EVALUATION — the server, not the request body
  *
- * A header is honoured too, for a harness that cannot control its source address.
- * Both are checked; either one excludes.
+ * The first version of this guard keyed on `packet.srcIp`, a field the caller writes. Any
+ * authenticated caller could keep a payload out of analyst review by claiming a 10.20.x
+ * source, and genuine detections from a network that happens to use 10.20/16, 10.30/16,
+ * 10.40/16, 10.80/16 or 10.90/16 — common enterprise ranges — never reached the queue.
+ *
+ * The decision is now made by the route from facts the server verifies itself (see
+ * `isVerifiedEvaluationRequest` in server.ts): the request carries EVALUATION_SOURCE_HEADER,
+ * the caller authenticated as ADMIN, and the TCP peer is a direct loopback connection with
+ * no forwarding headers. The route passes the result as `isEvaluationSource`; nothing in the
+ * packet can set it. The harnesses send the header:
+ *   eval_harness.ts (Set A), eval_holdout_b.ts (Set B), eval_external_httpparams.ts,
+ *   eval_from_adjudicated.ts.
+ * seed_adjudication_drill.ts deliberately does not: it exists to put traffic in the queue.
+ *
+ * EVALUATION_SOURCE_PREFIXES is kept only to recognise labels written before this change
+ * (audit/retract_evaluation_labels.ts); it no longer excludes anything at the queue entry.
  */
 export const EVALUATION_SOURCE_PREFIXES = ['10.20.', '10.30.', '10.40.', '10.80.', '10.90.'] as const;
 export const EVALUATION_SOURCE_HEADER = 'x-sd-evaluation-source';
 
-/** Whether this source is an evaluation harness rather than traffic to learn from. */
+/** Whether a stored source address falls in a historical harness range. Not a queue guard. */
 export function isEvaluationSource(srcIp: string): boolean {
   const ip = String(srcIp ?? '');
   return EVALUATION_SOURCE_PREFIXES.some(p => ip.startsWith(p));
@@ -122,7 +131,11 @@ const PENDING_CAP = 5000;
  * measured against each other on the same machine and database (scripts/perf-ab.mjs).
  */
 const WRITE_BEHIND = process.env.SD_ADJUDICATION_WRITE_BEHIND !== 'off';
-const FLUSH_INTERVAL_MS = 50;
+/**
+ * SD_ADJUDICATION_FLUSH_MS lengthens the interval for the shutdown tests, which need rows to
+ * still be in the buffer when the signal arrives. Clamped; production leaves it unset.
+ */
+const FLUSH_INTERVAL_MS = Math.min(600_000, Math.max(10, Number(process.env.SD_ADJUDICATION_FLUSH_MS) || 50));
 const FLUSH_MAX_ROWS = 256;
 
 interface BufferedPending {
@@ -346,7 +359,10 @@ export class AdjudicationService {
     machineSignatures: string[];
     srcIp: string;
     detectedAt?: string;
-    /** Set by a caller that knows it is an evaluation harness, whatever its address. */
+    /**
+     * Set by the route from server-verified facts (ADMIN caller, direct loopback, declared
+     * evaluation). Never derived from the packet: `srcIp` is the caller's claim.
+     */
     isEvaluationSource?: boolean;
   }): string | null {
     if (!this.ready) return null;
@@ -356,7 +372,7 @@ export class AdjudicationService {
     // Evaluation traffic is refused here, at the only entry point into the queue.
     // Filtering later — in the export, or in a fold — would be too late: the label
     // would already exist, and a label is the thing that contaminates.
-    if (isEvaluationSource(input.srcIp) || input.isEvaluationSource) {
+    if (input.isEvaluationSource === true) {
       this.evaluationSourcesRejected++;
       return null;
     }
