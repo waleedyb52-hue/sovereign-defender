@@ -1,13 +1,13 @@
 {
-  "_purpose": "Floors for the detection regression gate. CI runs the harnesses with --gate and fails if any figure drops below its floor. These are the figures measured on candidate-48h-2 (c435d2e) and unchanged since; they are floors, not targets. Raising a floor after a measured improvement is fine. Lowering one needs the reason written in the commit that does it.",
+  "_purpose": "Floors for the detection regression gate. CI runs the harnesses with --gate and fails if any figure drops below its floor. Floors raised on the follow-up branch after the second-source rules (measured, see docs/EXPERIMENT_LOG.md cycle 7). Set B Tier 2 stays at 3: its fourth hit is a side effect of Unicode normalisation chosen while the Tier 2 miss list was known, so it is not counted. They are floors, not targets. Raising a floor after a measured improvement is fine. Lowering one needs the reason written in the commit that does it.",
   "_sources": {
     "setA": "audit/eval_harness.ts against a running server",
     "setB": "audit/eval_holdout_b.ts against a running server",
     "httpParamsDev": "audit/eval_dev_inprocess.ts on the dev half of HttpParamsDataset, split by audit/split_external.ts. The sealed half is never scored in CI."
   },
   "setA": {
-    "inDistributionMinRecall": 1.0,
-    "heldOutMinTP": 13,
+    "inDistributionMinRecall": 1,
+    "heldOutMinTP": 14,
     "heldOutMaxFP": 0
   },
   "setB": {
@@ -17,9 +17,14 @@
   },
   "httpParamsDev": {
     "sha256": "45cf0f1c3858b4d93bcbe7cbe18860f612012117a0105b1852d224c7594f3192",
-    "minTPAt55": 5654,
-    "minTPAt25": 5739,
+    "minTPAt55": 5668,
+    "minTPAt25": 5750,
     "maxFPAt25": 0,
-    "perClassMinTPAt25": { "sqli": 5393, "xss": 232, "cmdi": 35, "path-traversal": 79 }
+    "perClassMinTPAt25": {
+      "sqli": 5393,
+      "xss": 243,
+      "cmdi": 35,
+      "path-traversal": 79
+    }
   }
 }

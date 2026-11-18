@@ -1,0 +1,11 @@
+{
+  "chunk": "dev",
+  "file": "badqueries.txt",
+  "ranks": "5000..14999",
+  "n": 10000,
+  "flaggedAt25": 6679,
+  "flaggedAt55": 6541,
+  "rateAt25": 0.6679,
+  "rateAt55": 0.6541,
+  "meaning": "recall (attack lines)"
+}

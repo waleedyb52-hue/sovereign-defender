@@ -65,7 +65,10 @@ describe('structural SQL injection — text that must still pass', () => {
     // structured bodies
     '{"name":"Ali","age":30,"tags":["a","b"]}', '{"filter":{"status":"open"},"limit":20}',
     'GET /api/v1/users?select=name,email&order=created', '/search?q=union+station&in=boston',
-    '/items?where=color:red&limit=10', '/files/all_users/report.php?dir=http://10.0.0.5:8080/x', 'SELECT', 'select', 'where', "it's"
+    // A catalog name in a URL path is not SQL. (This case used to end in "?dir=http://host/x",
+    // adapted from a second-source line labelled benign; that line was a scanner's RFI probe,
+    // which the remote-file-inclusion rule now flags correctly, so the URL was removed.)
+    '/items?where=color:red&limit=10', '/files/all_users/report.php?dir=reports', 'SELECT', 'select', 'where', "it's"
   ];
   for (const payload of benign) {
     it(`passes: ${payload}`, () => {
