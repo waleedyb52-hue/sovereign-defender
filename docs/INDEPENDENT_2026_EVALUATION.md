@@ -18,7 +18,7 @@ existed**. Part 2 (results) was added after the single run. The commit history s
 | Licence | CC BY 4.0 (DataCite `rightsList`) |
 | Content (per its abstract) | `baseline_dataset.csv` 25,736 requests in 6 classes (Normal, XSS, SQLi, CMDi, LFI, SSRF); `llm_round1..4.csv` 4,462 Llama-3.3-generated attacks; `llm_qwen.csv`, `llm_claude.csv` |
 
-**Why it was not run:** on 2026-11-18, between 13:59 and 14:30 UTC, every Mendeley Data
+**Why it was not run:** on 2026-11-18, between 13:59 and 14:07 UTC, every Mendeley Data
 endpoint tried returned **HTTP 500**: the dataset page, the public API, the file list and the
 archive. A control request for a different, unrelated dataset also returned 500, so the
 outage was on the provider's side. The official archive store returned 403. No file of this
