@@ -1,0 +1,113 @@
+name: CI
+
+# Every step here can fail the build on a real problem. The detection harnesses run with
+# --gate, which compares their figures with the floors in audit/regression_gate.json and
+# exits 1 if any falls; before that flag they always exited 0 and only proved the server
+# started.
+#
+# Each check also writes its result to the job summary, so the evidence is readable on the
+# run page without signing in (step logs need a GitHub login). GitHub runs `bash -eo
+# pipefail`, so piping through tee does not hide a failure.
+#
+# Deliberately NOT here, because a shared runner cannot produce a defensible figure:
+#   - throughput comparison      -> scripts/perf-ab.mjs, same machine, interleaved
+#   - the sealed evaluation sets -> scored once per frozen candidate, never on every push
+#   - kernel / XDP verification  -> needs a privileged Linux host (scripts/kernel-audit.mjs)
+
+on:
+  push:
+    branches: [main, 'improvement/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ADMIN_API_KEY: ci_admin_key_not_a_secret
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Type check
+        run: npm run lint
+      - name: Unit tests (includes graceful shutdown with real POSIX signals)
+        env:
+          NO_COLOR: '1'
+        run: |
+          npx vitest run --reporter=verbose 2>&1 | tee vitest.log
+          {
+            echo '### Unit tests'
+            echo '```'
+            grep -E 'graceful shutdown|SIGTERM|SIGINT|hard kill|still buffered' vitest.log | sed 's/^ *//' || true
+            grep -E '^ *(Test Files|Tests) ' vitest.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Unit tests::$(grep -E '^ *Tests ' vitest.log | sed 's/^ *//') - shutdown tests run with real OS signals: $(grep -c 'real OS signal' vitest.log)"
+      - name: ReDoS scan - every regex in the server, timed on adversarial input
+        run: |
+          node audit/redos_scan.mjs redos_scan.json 2>&1 | tee redos.log
+          { echo '### ReDoS scan'; echo '```'; tail -n 3 redos.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=ReDoS scan::$(tail -n 1 redos.log)"
+      - name: Build
+        run: npm run build
+
+      - name: Fetch HttpParamsDataset (MIT) and split it, pinned by SHA-256
+        run: |
+          mkdir -p data/external
+          curl -sSfL --retry 3 -o data/external/payload_full.csv \
+            https://raw.githubusercontent.com/Morzeux/HttpParamsDataset/master/payload_full.csv
+          echo "a4e62ba13435ad3dd583c5790db2175629020fc41c56e1b26baa02a9ae45f03d  data/external/payload_full.csv" | sha256sum -c -
+          npx tsx audit/split_external.ts data/external/payload_full.csv data/external > /dev/null
+      - name: Detection regression gate - HttpParams dev half (the sealed half is never scored here)
+        run: |
+          npx tsx audit/eval_dev_inprocess.ts data/external/httpparams_dev.csv --gate 2>&1 | tee gate_dev.log
+          { echo '### Detection gate: HttpParams dev half'; echo '```'; sed -n '/REGRESSION GATE/,$p' gate_dev.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Gate - HttpParams dev half::$(grep -E 'GATE:' gate_dev.log) | $(grep -E 'at (55|25)' gate_dev.log | sed -E 's/ +/ /g; s/^ //' | paste -sd ';' -)"
+
+      - name: Graceful shutdown - real server, real SIGTERM, review rows counted on disk
+        run: |
+          node audit/shutdown_flush_check.mjs 2>&1 | tee shutdown.log
+          { echo '### Graceful shutdown (real server, real SIGTERM)'; echo '```'; cat shutdown.log | tail -n 20; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Graceful shutdown (real SIGTERM)::$(tail -n 1 shutdown.log) | $(grep -E '"rows|"expected' shutdown.log | tr -d ' ' | paste -sd ' ' -)"
+
+      - name: Start server
+        run: |
+          npx tsx server.ts > server.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:3000/api/health > /dev/null && exit 0
+            sleep 1
+          done
+          cat server.log
+          exit 1
+      - name: Detection regression gate - Set A
+        run: |
+          npx tsx audit/eval_harness.ts --gate 2>&1 | tee gate_a.log
+          { echo '### Detection gate: Set A'; echo '```'; sed -n '/REGRESSION GATE/,$p' gate_a.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Gate - Set A::$(grep -E 'GATE:' gate_a.log) | $(sed -n '/REGRESSION GATE/,/GATE:/p' gate_a.log | grep -E '^ +(ok|FAIL)' | sed -E 's/ +/ /g; s/^ //' | paste -sd ';' -)"
+      - name: Detection regression gate - Set B (held out, never write rules against its misses)
+        run: |
+          npx tsx audit/eval_holdout_b.ts --gate 2>&1 | tee gate_b.log
+          { echo '### Detection gate: Set B'; echo '```'; sed -n '/REGRESSION GATE/,$p' gate_b.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Gate - Set B::$(grep -E 'GATE:' gate_b.log) | $(sed -n '/REGRESSION GATE/,/GATE:/p' gate_b.log | grep -E '^ +(ok|FAIL)' | sed -E 's/ +/ /g; s/^ //' | paste -sd ';' -)"
+      - name: Audit suite (exits 1 on any failed case)
+        run: |
+          npx tsx audit/audit_suite.ts 2>&1 | tee audit.log
+          {
+            echo '### Audit suite'
+            echo '```'
+            grep -E '\[(FAIL|WARN)\]' audit.log || true
+            grep -E '^TOTAL:' audit.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Audit suite::$(grep -E '^TOTAL:' audit.log)"
+      - name: Server log on failure
+        if: failure()
+        run: tail -n 150 server.log

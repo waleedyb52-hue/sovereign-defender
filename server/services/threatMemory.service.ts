@@ -760,8 +760,8 @@ const INJECTION_PATTERNS: RegExp[] = [
   /\b(new|updated|revised)\s+(system\s+)?(instruction|prompt|directive)s?\b/gi,
   /\byou\s+are\s+now\b[^.\n]{0,60}/gi,
   /\b(act|behave|respond)\s+as\s+(if|a|an)\b[^.\n]{0,60}/gi,
-  /^\s*(system|assistant|user|developer)\s*:/gim,
-  /<\/?(system|assistant|user|instruction|untrusted_payload|retrieved_corpus_evidence)[^>]*>/gi,
+  /^[ \t]*(system|assistant|user|developer)[ \t]*:/gim,
+  /<\/?(system|assistant|user|instruction|untrusted_payload|retrieved_corpus_evidence)[^<>]*>/gi,
   /\b(always|never)\s+(classify|score|rate|mark|treat)\b[^.\n]{0,60}/gi,
   /\bset\s+(threat)?score\s*(=|to)\s*\d+/gi
 ];

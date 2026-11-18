@@ -74,7 +74,7 @@ async function classify(payload: string, n: number): Promise<{ detected: boolean
     try {
       const res = await fetch(`${BASE}/api/v1/agent/ai-analyze`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': KEY },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': KEY, 'x-sd-evaluation-source': '1' },
         body: JSON.stringify({
           packet: {
             srcIp: `10.40.${(n >> 8) & 255}.${n & 255}`,
@@ -164,19 +164,22 @@ async function classify(payload: string, n: number): Promise<{ detected: boolean
     byType[t] = { n: set.length, detected, rate: detected / set.length, ci: wilson(detected, set.length) };
   }
   const failed = results.filter(r => !r.ok).length;
-  const missedExamples = results.filter(r => r.malicious && !flagged(r)).slice(0, 12).map(r => `${r.attackType}: ${r.payload.slice(0, 90)}`);
-  const fpExamples = results.filter(r => !r.malicious && flagged(r)).slice(0, 12).map(r => r.payload.slice(0, 90));
+  // SD_EVAL_SEALED=1: aggregate figures only. A sealed half stops being sealed the moment its
+  // misses are printed where a rule author can read them (see audit/split_external.ts).
+  const sealedRun = process.env.SD_EVAL_SEALED === '1';
+  const missedExamples = sealedRun ? [] : results.filter(r => r.malicious && !flagged(r)).slice(0, 12).map(r => `${r.attackType}: ${r.payload.slice(0, 90)}`);
+  const fpExamples = sealedRun ? [] : results.filter(r => !r.malicious && flagged(r)).slice(0, 12).map(r => r.payload.slice(0, 90));
 
   const out = {
     dataset: 'HttpParamsDataset (Morzeux, 2016, MIT)', file, sha256,
     samples: rows.length, failedRequests: failed, seconds: +seconds.toFixed(1),
     samplesPerSecond: +(rows.length / seconds).toFixed(1),
-    all, deduplicated: dedup, byType, missedExamples, fpExamples, finishedAt: new Date().toISOString()
+    sealedRun, all, deduplicated: dedup, byType, missedExamples, fpExamples, finishedAt: new Date().toISOString()
   };
   if (process.argv[3]) fs.writeFileSync(process.argv[3], JSON.stringify(out, null, 2));
 
   console.log('\n' + '='.repeat(76));
-  console.log('  EXTERNAL DATASET — HttpParamsDataset (never used to write any rule)');
+  console.log(`  EXTERNAL DATASET — HttpParamsDataset${sealedRun ? ' — SEALED RUN, aggregate only' : ''}`);
   console.log('='.repeat(76));
   console.log(`  file sha256   ${sha256}`);
   console.log(`  samples       ${rows.length}  (${failed} failed requests, scored against the system)`);

@@ -1,0 +1,36 @@
+{
+  "dataset": "HttpParamsDataset (Morzeux, 2016, MIT) — payload_full.csv",
+  "source": "https://github.com/Morzeux/HttpParamsDataset",
+  "rule": "half = SHA-256(payload utf-8)[0] & 1 ; 0 -> dev, 1 -> sealed",
+  "sourceSha256": "a4e62ba13435ad3dd583c5790db2175629020fc41c56e1b26baa02a9ae45f03d",
+  "rows": 31067,
+  "dev": {
+    "file": "httpparams_dev.csv",
+    "rows": 15491,
+    "sha256": "45cf0f1c3858b4d93bcbe7cbe18860f612012117a0105b1852d224c7594f3192",
+    "byType": {
+      "norm": 9640,
+      "sqli": 5405,
+      "xss": 269,
+      "cmdi": 45,
+      "path-traversal": 132
+    }
+  },
+  "sealed": {
+    "file": "httpparams_sealed.csv",
+    "rows": 15576,
+    "sha256": "be6096a7fa128ed0b38252676d3aa7cab4a41a9c1ef710f844ec8accb908ed42",
+    "byType": {
+      "norm": 9664,
+      "sqli": 5447,
+      "xss": 263,
+      "cmdi": 44,
+      "path-traversal": 158
+    }
+  },
+  "policy": [
+    "dev: may be inspected and used to design rules; any later score on it is a regression figure.",
+    "sealed: aggregate scoring only, with SD_EVAL_SEALED=1 so no sample is printed or written.",
+    "A rule changed after seeing a sealed-half result retires the sealed half as independent evidence."
+  ]
+}

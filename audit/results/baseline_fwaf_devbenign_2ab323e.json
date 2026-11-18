@@ -1,0 +1,81 @@
+{
+  "dataset": "HttpParamsDataset (Morzeux, 2016, MIT)",
+  "file": "data/external2/fwaf_dev_benign.csv",
+  "sha256": "926314a2cd709af3726ca83d78f3a22249352c3bd3ff41cb30284e6d7ceaa563",
+  "samples": 10000,
+  "failedRequests": 0,
+  "seconds": 78.5,
+  "samplesPerSecond": 127.3,
+  "sealedRun": false,
+  "all": {
+    "n": 10000,
+    "tp": 0,
+    "fn": 0,
+    "fp": 9,
+    "tn": 9991,
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "fpr": 0.0009,
+    "accuracy": 0.9991,
+    "mcc": 0,
+    "recallCI": [
+      0,
+      0
+    ],
+    "precisionCI": [
+      0,
+      0.2991527535509594
+    ],
+    "fprCI": [
+      0.0004735716566504438,
+      0.0017097495986561175
+    ],
+    "projectedPrecisionAt2pct": 0,
+    "falseAlarmsPer10k": 8.82
+  },
+  "deduplicated": {
+    "n": 10000,
+    "tp": 0,
+    "fn": 0,
+    "fp": 9,
+    "tn": 9991,
+    "precision": 0,
+    "recall": 0,
+    "f1": 0,
+    "fpr": 0.0009,
+    "accuracy": 0.9991,
+    "mcc": 0,
+    "recallCI": [
+      0,
+      0
+    ],
+    "precisionCI": [
+      0,
+      0.2991527535509594
+    ],
+    "fprCI": [
+      0.0004735716566504438,
+      0.0017097495986561175
+    ],
+    "projectedPrecisionAt2pct": 0,
+    "falseAlarmsPer10k": 8.82
+  },
+  "byType": {
+    "norm": {
+      "n": 10000,
+      "detected": 9,
+      "rate": 0.0009,
+      "ci": [
+        0.0004735716566504438,
+        0.0017097495986561175
+      ]
+    }
+  },
+  "missedExamples": [],
+  "fpExamples": [],
+  "finishedAt": "2026-11-15T14:38:17.136Z",
+  "fpExamplesCount": 9,
+  "missedExamplesCount": 0,
+  "note": "examples removed: the second source has no stated licence and is not redistributed. Regenerate locally with the command in docs/FINAL_ENGINEERING_REPORT.md."
+}

@@ -1,0 +1,127 @@
+{
+  "dataset": "HttpParamsDataset (Morzeux, 2016, MIT)",
+  "file": "data/external/httpparams_dev.csv",
+  "sha256": "45cf0f1c3858b4d93bcbe7cbe18860f612012117a0105b1852d224c7594f3192",
+  "samples": 15491,
+  "failedRequests": 0,
+  "seconds": 119.6,
+  "samplesPerSecond": 129.6,
+  "sealedRun": false,
+  "all": {
+    "n": 15491,
+    "tp": 5676,
+    "fn": 175,
+    "fp": 0,
+    "tn": 9640,
+    "precision": 1,
+    "recall": 0.9700905828063578,
+    "f1": 0.9848182527977791,
+    "fpr": 0,
+    "accuracy": 0.9887031179394488,
+    "mcc": 0.9761116795886485,
+    "recallCI": [
+      0.9654080133921851,
+      0.9741562610708508
+    ],
+    "precisionCI": [
+      0.9993236431100474,
+      1.0000000000000002
+    ],
+    "fprCI": [
+      2.709425708205396e-20,
+      0.0003983474801162225
+    ],
+    "projectedPrecisionAt2pct": 1,
+    "falseAlarmsPer10k": 0
+  },
+  "deduplicated": {
+    "n": 15491,
+    "tp": 5676,
+    "fn": 175,
+    "fp": 0,
+    "tn": 9640,
+    "precision": 1,
+    "recall": 0.9700905828063578,
+    "f1": 0.9848182527977791,
+    "fpr": 0,
+    "accuracy": 0.9887031179394488,
+    "mcc": 0.9761116795886485,
+    "recallCI": [
+      0.9654080133921851,
+      0.9741562610708508
+    ],
+    "precisionCI": [
+      0.9993236431100474,
+      1.0000000000000002
+    ],
+    "fprCI": [
+      2.709425708205396e-20,
+      0.0003983474801162225
+    ],
+    "projectedPrecisionAt2pct": 1,
+    "falseAlarmsPer10k": 0
+  },
+  "byType": {
+    "norm": {
+      "n": 9640,
+      "detected": 0,
+      "rate": 0,
+      "ci": [
+        2.709425708205396e-20,
+        0.0003983474801162225
+      ]
+    },
+    "sqli": {
+      "n": 5405,
+      "detected": 5393,
+      "rate": 0.9977798334875115,
+      "ci": [
+        0.9961230787891657,
+        0.9987294974075563
+      ]
+    },
+    "xss": {
+      "n": 269,
+      "detected": 232,
+      "rate": 0.862453531598513,
+      "ci": [
+        0.8161638649571841,
+        0.8985365326361447
+      ]
+    },
+    "cmdi": {
+      "n": 45,
+      "detected": 3,
+      "rate": 0.06666666666666667,
+      "ci": [
+        0.022931616462147076,
+        0.17856874388640825
+      ]
+    },
+    "path-traversal": {
+      "n": 132,
+      "detected": 48,
+      "rate": 0.36363636363636365,
+      "ci": [
+        0.28650505488913514,
+        0.448480398756876
+      ]
+    }
+  },
+  "missedExamples": [
+    "xss: open()>",
+    "cmdi: +|+dir+c:\",10,cmdi,anom $+|+dir+c:\"",
+    "cmdi: &&+|+dir c:\",12,cmdi,anom $&&dir c:\"",
+    "cmdi: &&+|+dir c:/",
+    "cmdi: $&&dir+c:/",
+    "cmdi: +dir+c:+|",
+    "cmdi: /index.html|id|",
+    "cmdi: ;id",
+    "cmdi: ;netstat -a;",
+    "cmdi: |/usr/bin/id|",
+    "cmdi: ||/usr/bin/id|",
+    "cmdi: |id;"
+  ],
+  "fpExamples": [],
+  "finishedAt": "2026-11-15T14:51:52.033Z"
+}

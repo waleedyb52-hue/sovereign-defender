@@ -1,0 +1,110 @@
+[with-server] dev server healthy after 4.7 s (pid 32512)
+[with-server] $ npx tsx audit/audit_suite.ts
+[ThreatMemory] Persistent corpus ready at C:\Users\walee\OneDrive\Desktop\sovereign-defender\sovereign-defender\data\threat_memory.db (70785 incidents on file).
+[RealEbpfBridge] Host environment running in accelerated container mode (Simulated eBPF XDP Engine active).
+[RealEbpfBridge] Real-Time eBPF WebSocket Telemetry Stream active (1000ms ticks).
+[RealEbpfBridge] Host environment running in accelerated container mode (Simulated eBPF XDP Engine active).
+[RealEbpfBridge] Real-Time eBPF WebSocket Telemetry Stream active (1000ms ticks).
+[RealEbpfBridge] Host environment running in accelerated container mode (Simulated eBPF XDP Engine active).
+[RealEbpfBridge] Real-Time eBPF WebSocket Telemetry Stream active (1000ms ticks).
+[RealEbpfBridge] Host environment running in accelerated container mode (Simulated eBPF XDP Engine active).
+[RealEbpfBridge] Real-Time eBPF WebSocket Telemetry Stream active (1000ms ticks).
+[RealEbpfBridge] Host environment running in accelerated container mode (Simulated eBPF XDP Engine active).
+[RealEbpfBridge] Real-Time eBPF WebSocket Telemetry Stream active (1000ms ticks).
+
+================ SOVEREIGN DEFENDER — TEST MATRIX ================
+#01 [PASS] eBPF/XDP      0ms  Malformed IPv4/IPv6 packet ingestion
+#02 [PASS] eBPF/XDP    135ms  Max throughput & drop-latency benchmark
+#03 [PASS] eBPF/XDP     25ms  BPF map insert/lookup/delete under concurrency
+#04 [PASS] eBPF/XDP      1ms  Map saturation / overflow behavior
+#05 [PASS] eBPF/XDP      0ms  Port/header extraction edge cases
+#06 [PASS] eBPF/XDP     17ms  Rapid blacklist update propagation
+#07 [PASS] eBPF/XDP      1ms  Re-entrancy / memory safety (LLVM)
+#08 [PASS] eBPF/XDP     35ms  Missing / detaching interface behavior
+#09 [PASS] eBPF/XDP      0ms  TCP SYN flood resilience at NIC layer
+#10 [PASS] eBPF/XDP      0ms  Non-IP (ARP/critical) bypass integrity
+#11 [PASS] Tarpit      261ms  Zero-window probe / honeypot interaction
+#12 [PASS] Tarpit       11ms  Handshake stall / session persistence
+#13 [PASS] Tarpit     4524ms  Attacker state memory under mass port scan
+#14 [PASS] Tarpit        0ms  Half-open cleanup under starvation
+#15 [PASS] Tarpit        1ms  Graceful socket closure on forced client termination
+#16 [PASS] Tarpit        0ms  Per-origin concurrent-connection accounting
+#17 [PASS] Tarpit        0ms  Tarpit reflection / DoS resistance
+#18 [PASS] Tarpit       62ms  Trapped-IP metadata logging accuracy
+#19 [PASS] FIM        1175ms  Sub-100ms unauthorized-write detection
+#20 [PASS] FIM           1ms  SHA-256 recalculation accuracy
+#21 [PASS] FIM          34ms  Instant SIGKILL on tamper (logic)
+#22 [PASS] FIM           1ms  Quarantine relocation + permission stripping
+#23 [PASS] FIM           1ms  Symlink / TOCTOU handling
+#24 [PASS] FIM           1ms  Namespace/sandbox containment (design)
+#25 [PASS] FIM           0ms  Read-only enforcement on quarantine artifacts
+#26 [PASS] FIM          15ms  Mass-encryption (ransomware) emulation
+#27 [PASS] FIM           0ms  Inode monitoring across delete/recreate
+#28 [PASS] FIM           1ms  Recovery of falsely-quarantined files
+#29 [PASS] AI           42ms  Prompt-injection / jailbreak isolation
+#30 [PASS] AI            1ms  Inference timeout → fail-safe fallback
+#31 [PASS] AI           76ms  Malformed / corrupted telemetry ingestion
+#32 [PASS] AI          504ms  50+ concurrent alert classifications
+#33 [PASS] AI            1ms  Memory footprint under sustained load
+#34 [PASS] AI         1459ms  Intent: admin-change vs zero-day
+#35 [PASS] AI            4ms  Log-injection sanitization
+#35.5 [PASS] AI          461ms  Corpus poisoning / indirect prompt injection
+#36 [PASS] AI           11ms  100% on-prem containment (egress gate)
+#37 [PASS] AI          622ms  Inference latency < 800ms (fallback path)
+#38 [PASS] AI            3ms  Rate-limiting against internal flooding
+#39 [PASS] E2E         153ms  Attack lifecycle Discovery→Drop→Quarantine < 1s
+#40 [PASS] E2E          49ms  eBPF map ↔ TS orchestrator integration
+#41 [PASS] E2E           2ms  Crash recovery / state reconstruction (design)
+#42 [PASS] E2E          89ms  Graceful degradation w/o kernel hooks
+#43 [PASS] E2E           2ms  Deadlock prevention in async queues
+#44 [PASS] E2E           5ms  Log rotation / disk-exhaustion safeguard
+#45 [PASS] E2E          40ms  Env/secret leakage protection
+#46 [PASS] E2E          17ms  Multi-interface / multi-tenant topology
+#47 [PASS] E2E           6ms  Host vs containerized interface compatibility
+#48 [PASS] E2E         167ms  Baseline jitter/CPU under background traffic
+#49 [PASS] E2E           2ms  Audit-trail immutability
+#50 [PASS] E2E          16ms  Self-healing integrity check of own artifacts
+#61 [PASS] PROVENANCE    10ms  Kernel latency is null without a kernel path, never a constant
+#62 [PASS] PROVENANCE     3ms  Seeded packet counters are declared, not passed off as measured
+#63 [PASS] PROVENANCE     1ms  The console surfaces provenance instead of printing bare figures
+#64 [PASS] PROVENANCE     4ms  No displayed metric is generated by Math.random
+#65 [PASS] LABELS        8ms  Ground-truth surface requires admin authentication
+#66 [PASS] LABELS       68ms  A label without an adjudicator identity is refused
+#67 [PASS] LABELS        1ms  Agreement with the machine is derived, never accepted from the client
+#68 [PASS] LABELS        0ms  Tuning export structurally cannot return the test fold
+#69 [PASS] LABELS       14ms  Test fold withholds labels unless scoring is explicit
+#70 [PASS] LABELS       16ms  Corpus reports its own inadequacy instead of a figure
+#71 [PASS] LABELS       16ms  Label provenance is reported so drill data cannot pass as operator data
+#72 [PASS] LABELS       15ms  Temporal folds are derived from timestamps, not stored
+#73 [PASS] LABELS        2ms  Labels are append-only; a revision supersedes rather than overwrites
+#74 [PASS] LABELS        3ms  A degraded label store never costs a detection
+#75 [PASS] SENSORS     233ms  Kernel integrity never claims VERIFIED without reading the kernel
+#76 [PASS] SENSORS      57ms  Kill-safety refuses to SIGKILL a kernel thread
+#77 [PASS] SENSORS     109ms  DNS tunnel detector spares ordinary resolution
+#78 [PASS] SENSORS     563ms  DNS tunnel detector catches encoded TXT exfiltration
+#79 [PASS] SENSORS      16ms  Ransomware burst reports zero rate when nothing was observed
+#80 [PASS] SENSORS       1ms  Burst detection requires rate AND entropy, not either alone
+#81 [PASS] CREDENTIALS    15ms  No committed default administrative secret
+#82 [PASS] CREDENTIALS     4ms  Session key is not derived from Math.random
+#83 [PASS] PROVENANCE     3ms  No latency figure is fabricated or padded
+#84 [PASS] PROVENANCE     1ms  A statistics block does not report a typed-in microsecond figure
+#85 [PASS] PROVENANCE     1ms  A kernel figure is tagged from its value, not from a capability flag
+#86 [PASS] CONTAMINATION    39ms  Evaluation payloads cannot enter the adjudication corpus
+#87 [PASS] ACCESS       13ms  The status endpoint does not disclose the API key
+#88 [PASS] ACCESS       16ms  An Origin header is not a credential
+#89 [PASS] ACCESS       15ms  CORS does not grant a foreign origin
+#90 [PASS] ACCESS       32ms  Containment and release refuse anonymous callers
+#91 [PASS] ACCESS       33ms  Containment refuses loopback and malformed targets
+#92 [PASS] ACCESS       82ms  A contained address is refused at the gate
+#93 [PASS] ACCESS       12ms  Telemetry injection needs a credential
+#94 [PASS] ACCESS      109ms  A sensor speaks only for its own asset
+#95 [PASS] ACCESS       11ms  The telemetry stream refuses anonymous sockets
+#96 [PASS] ACCESS       56ms  The audit trail chain verifies
+#97 [PASS] ACCESS       20ms  A plain request under /ws does not proxy back into this server
+#98 [PASS] DETECTION   511ms  ARP poisoning of the gateway is detected
+#99 [PASS] DETECTION  1037ms  Ransomware tripwire fires on a decoy and never touches user files
+#100 [PASS] MITRE         1ms  The feed reads the technique the event carries, and never infers one
+#101 [PASS] AI          126ms  Local classification does not block on corpus retrieval
+--------------------------------------------------------------------
+TOTAL: 92  PASS: 92  WARN: 0  FAIL: 0
+Wrote audit_results.json

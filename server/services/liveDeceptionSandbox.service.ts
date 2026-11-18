@@ -324,7 +324,7 @@ export class LiveDeceptionSandbox {
     // Support the pipelines and chains an attacker actually types; each
     // segment is interpreted and only the last segment's output is returned,
     // which matches shell semantics closely enough to be convincing.
-    const segments = line.split(/\s*(?:\|\||&&|;|\|)\s*/).filter(Boolean);
+    const segments = line.split(/\|\||&&|;|\|/).map(s => s.trim()).filter(Boolean);
     let out = '';
     let code = 0;
     let mutated = false;

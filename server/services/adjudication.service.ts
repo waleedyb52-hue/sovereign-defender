@@ -1,4 +1,4 @@
-import { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync, type StatementSync } from 'node:sqlite';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -81,19 +81,29 @@ const PAYLOAD_SAMPLE_MAX = 2048;
  * tuning was in place and did nothing here, because the leak was upstream of folds
  * entirely: evaluation data was becoming training data before any fold existed.
  *
- * The prefixes match what the harnesses already use, so no harness had to change:
- *   10.20.x  eval_harness.ts        (Set A)
- *   10.30.x  eval_holdout_b.ts      (Set B)
- *   10.80.x  eval_from_adjudicated.ts
- *   10.90.x  seed_adjudication_drill.ts
+ * WHO DECIDES THAT TRAFFIC IS EVALUATION — the server, not the request body
  *
- * A header is honoured too, for a harness that cannot control its source address.
- * Both are checked; either one excludes.
+ * The first version of this guard keyed on `packet.srcIp`, a field the caller writes. Any
+ * authenticated caller could keep a payload out of analyst review by claiming a 10.20.x
+ * source, and genuine detections from a network that happens to use 10.20/16, 10.30/16,
+ * 10.40/16, 10.80/16 or 10.90/16 — common enterprise ranges — never reached the queue.
+ *
+ * The decision is now made by the route from facts the server verifies itself (see
+ * `isVerifiedEvaluationRequest` in server.ts): the request carries EVALUATION_SOURCE_HEADER,
+ * the caller authenticated as ADMIN, and the TCP peer is a direct loopback connection with
+ * no forwarding headers. The route passes the result as `isEvaluationSource`; nothing in the
+ * packet can set it. The harnesses send the header:
+ *   eval_harness.ts (Set A), eval_holdout_b.ts (Set B), eval_external_httpparams.ts,
+ *   eval_from_adjudicated.ts.
+ * seed_adjudication_drill.ts deliberately does not: it exists to put traffic in the queue.
+ *
+ * EVALUATION_SOURCE_PREFIXES is kept only to recognise labels written before this change
+ * (audit/retract_evaluation_labels.ts); it no longer excludes anything at the queue entry.
  */
-export const EVALUATION_SOURCE_PREFIXES = ['10.20.', '10.30.', '10.80.', '10.90.'] as const;
+export const EVALUATION_SOURCE_PREFIXES = ['10.20.', '10.30.', '10.40.', '10.80.', '10.90.'] as const;
 export const EVALUATION_SOURCE_HEADER = 'x-sd-evaluation-source';
 
-/** Whether this source is an evaluation harness rather than traffic to learn from. */
+/** Whether a stored source address falls in a historical harness range. Not a queue guard. */
 export function isEvaluationSource(srcIp: string): boolean {
   const ip = String(srcIp ?? '');
   return EVALUATION_SOURCE_PREFIXES.some(p => ip.startsWith(p));
@@ -101,6 +111,56 @@ export function isEvaluationSource(srcIp: string): boolean {
 
 /** Ceiling on the unadjudicated queue, so live traffic cannot grow it without limit. */
 const PENDING_CAP = 5000;
+
+/**
+ * WRITE-BEHIND FOR THE PENDING QUEUE
+ *
+ * recordPending() runs on every uncached classification. Written straight through it was
+ * three statement compilations, an INSERT in its own transaction (one WAL sync each) and a
+ * COUNT(*) over the queue, all synchronous on the event loop: a CPU profile under load put
+ * more busy time in this one function than in everything else on the request path combined.
+ *
+ * Pending rows are now collected in memory and written in one transaction at most every
+ * FLUSH_INTERVAL_MS, or sooner when FLUSH_MAX_ROWS accumulate. Only the pending queue is
+ * deferred. Labels - the append-only, provenance-bearing record - are still written
+ * synchronously by adjudicate(), and every method that reads the queue flushes first, so no
+ * caller can observe the buffer. What is given up is durability of the last few
+ * milliseconds of suggestions-for-review if the process is killed, never of a ruling.
+ *
+ * SD_ADJUDICATION_WRITE_BEHIND=off restores the write-through path, so the two can be
+ * measured against each other on the same machine and database (scripts/perf-ab.mjs).
+ */
+const WRITE_BEHIND = process.env.SD_ADJUDICATION_WRITE_BEHIND !== 'off';
+/**
+ * SD_ADJUDICATION_FLUSH_MS lengthens the interval for the shutdown tests, which need rows to
+ * still be in the buffer when the signal arrives. Clamped; production leaves it unset.
+ */
+const FLUSH_INTERVAL_MS = Math.min(600_000, Math.max(10, Number(process.env.SD_ADJUDICATION_FLUSH_MS) || 50));
+const FLUSH_MAX_ROWS = 256;
+
+interface BufferedPending {
+  id: string;
+  hash: string;
+  sample: string;
+  verdict: string;
+  score: number;
+  family: string;
+  sigs: string;
+  srcIp: string;
+  detectedAt: string;
+  /** Sightings accumulated while buffered. */
+  seen: number;
+}
+
+/** One exit hook for every store, so buffered rows are written on a normal shutdown. */
+const liveStores = new Set<{ flushPending(): void }>();
+let exitHookInstalled = false;
+function registerForExitFlush(store: { flushPending(): void }) {
+  liveStores.add(store);
+  if (exitHookInstalled) return;
+  exitHookInstalled = true;
+  process.on('exit', () => { for (const st of liveStores) st.flushPending(); });
+}
 
 export interface PendingDetection {
   id: string;
@@ -190,6 +250,12 @@ export class AdjudicationService {
   private persistent = false;
   /** Detections refused as evaluation traffic. Reported, so the filter is auditable. */
   private evaluationSourcesRejected = 0;
+  /** Pending rows not yet written, keyed by payload hash. See WRITE-BEHIND above. */
+  private pendingBuffer = new Map<string, BufferedPending>();
+  private flushTimer: ReturnType<typeof setTimeout> | null = null;
+  private stmtSettled: StatementSync | null = null;
+  private stmtExisting: StatementSync | null = null;
+  private stmtUpsert: StatementSync | null = null;
 
   constructor(dbPath?: string) {
     const target = dbPath ?? path.join(process.cwd(), 'data', 'adjudication.db');
@@ -206,6 +272,7 @@ export class AdjudicationService {
       this.persistent = false;
     }
     this.migrate();
+    if (WRITE_BEHIND) registerForExitFlush(this);
   }
 
   private migrate() {
@@ -292,7 +359,10 @@ export class AdjudicationService {
     machineSignatures: string[];
     srcIp: string;
     detectedAt?: string;
-    /** Set by a caller that knows it is an evaluation harness, whatever its address. */
+    /**
+     * Set by the route from server-verified facts (ADMIN caller, direct loopback, declared
+     * evaluation). Never derived from the packet: `srcIp` is the caller's claim.
+     */
     isEvaluationSource?: boolean;
   }): string | null {
     if (!this.ready) return null;
@@ -302,12 +372,13 @@ export class AdjudicationService {
     // Evaluation traffic is refused here, at the only entry point into the queue.
     // Filtering later — in the export, or in a fold — would be too late: the label
     // would already exist, and a label is the thing that contaminates.
-    if (isEvaluationSource(input.srcIp) || input.isEvaluationSource) {
+    if (input.isEvaluationSource === true) {
       this.evaluationSourcesRejected++;
       return null;
     }
 
     const hash = AdjudicationService.sha256(payload);
+    if (WRITE_BEHIND) return this.recordPendingBuffered(hash, payload, input);
     try {
       // Already adjudicated? Then it is not pending, and re-queuing it would
       // invite a second contradictory label for the same payload.
@@ -353,9 +424,81 @@ export class AdjudicationService {
     }
   }
 
+  /** Same decisions as the write-through path above, with the write deferred to flushPending(). */
+  private recordPendingBuffered(
+    hash: string,
+    payload: string,
+    input: { machineVerdict: MachineVerdict; machineScore: number; machineFamily: string; machineSignatures: string[]; srcIp: string; detectedAt?: string }
+  ): string | null {
+    const buffered = this.pendingBuffer.get(hash);
+    if (buffered) { buffered.seen++; return buffered.id; }
+    try {
+      this.stmtSettled ??= this.db.prepare('SELECT 1 FROM labels WHERE payload_sha256 = ? LIMIT 1');
+      if (this.stmtSettled.get(hash)) return null;
+      this.stmtExisting ??= this.db.prepare('SELECT id FROM pending_detections WHERE payload_sha256 = ?');
+      const existing = this.stmtExisting.get(hash) as any;
+      const id = existing?.id ? String(existing.id) : 'det_' + crypto.randomBytes(9).toString('hex');
+      this.pendingBuffer.set(hash, {
+        id, hash, sample: payload.slice(0, PAYLOAD_SAMPLE_MAX),
+        verdict: input.machineVerdict, score: Number(input.machineScore) || 0,
+        family: input.machineFamily || 'UNKNOWN',
+        sigs: JSON.stringify(input.machineSignatures ?? []),
+        srcIp: input.srcIp || '0.0.0.0',
+        detectedAt: input.detectedAt ?? new Date().toISOString(),
+        seen: 1
+      });
+      if (this.pendingBuffer.size >= FLUSH_MAX_ROWS) this.flushPending();
+      else if (!this.flushTimer) {
+        this.flushTimer = setTimeout(() => this.flushPending(), FLUSH_INTERVAL_MS);
+        this.flushTimer.unref?.();
+      }
+      return id;
+    } catch (err: any) {
+      console.warn('[adjudication] recordPending failed:', err?.message);
+      return null;
+    }
+  }
+
+  /**
+   * Write buffered pending rows in one transaction. Safe to call at any time and from the
+   * process exit hook; a failure rolls back and drops the batch with a warning, which costs
+   * review suggestions and never a detection or a label.
+   */
+  flushPending(): void {
+    if (this.flushTimer) { clearTimeout(this.flushTimer); this.flushTimer = null; }
+    if (!this.pendingBuffer.size || !this.ready) return;
+    const batch = [...this.pendingBuffer.values()];
+    this.pendingBuffer.clear();
+    try {
+      // A sighting of a payload already queued adds to its count; a new payload inserts.
+      this.stmtUpsert ??= this.db.prepare(`
+        INSERT INTO pending_detections
+          (id, payload_sha256, payload_sample, machine_verdict, machine_score,
+           machine_family, machine_sigs, src_ip, detected_at, seen_count)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(payload_sha256) DO UPDATE SET seen_count = seen_count + excluded.seen_count
+      `);
+      this.db.exec('BEGIN IMMEDIATE');
+      for (const r of batch) {
+        this.stmtUpsert.run(r.id, r.hash, r.sample, r.verdict, r.score, r.family, r.sigs, r.srcIp, r.detectedAt, r.seen);
+      }
+      const n = Number((this.db.prepare('SELECT COUNT(*) AS n FROM pending_detections').get() as any)?.n ?? 0);
+      if (n > PENDING_CAP) {
+        this.db.prepare(
+          'DELETE FROM pending_detections WHERE id IN (SELECT id FROM pending_detections ORDER BY detected_at ASC LIMIT ?)'
+        ).run(n - PENDING_CAP);
+      }
+      this.db.exec('COMMIT');
+    } catch (err: any) {
+      try { this.db.exec('ROLLBACK'); } catch { /* nothing open */ }
+      console.warn('[adjudication] flushPending failed:', err?.message);
+    }
+  }
+
   /** Queue for the analyst, most-repeated first — highest evaluation value per decision. */
   queue(limit = 50): PendingDetection[] {
     if (!this.ready) return [];
+    this.flushPending();
     try {
       const rows = this.db.prepare(
         'SELECT * FROM pending_detections ORDER BY seen_count DESC, detected_at DESC LIMIT ?'
@@ -385,6 +528,7 @@ export class AdjudicationService {
    */
   adjudicate(input: AdjudicationInput): { ok: true; label: LabelRecord } | { ok: false; error: string } {
     if (!this.ready) return { ok: false, error: 'ADJUDICATION_STORE_UNAVAILABLE' };
+    this.flushPending();
     if (input.analystLabel !== 'MALICIOUS' && input.analystLabel !== 'BENIGN') {
       return { ok: false, error: 'INVALID_LABEL' };
     }
@@ -557,6 +701,7 @@ export class AdjudicationService {
     const fn = rows.filter(r => r.machine_verdict !== 'BLOCK' && r.analyst_label === 'MALICIOUS').length;
 
     let revisions = 0, pending = 0, retractions = 0;
+    this.flushPending();
     try {
       revisions = Number((this.db.prepare('SELECT COUNT(*) AS n FROM labels WHERE supersedes IS NOT NULL AND retraction_reason IS NULL').get() as any)?.n ?? 0);
       retractions = Number((this.db.prepare('SELECT COUNT(*) AS n FROM labels WHERE retraction_reason IS NOT NULL').get() as any)?.n ?? 0);

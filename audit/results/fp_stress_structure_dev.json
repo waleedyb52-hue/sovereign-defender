@@ -1,0 +1,20 @@
+{
+  "source": "data/external2/goodqueries.txt",
+  "skippedReservedRanks": 20000,
+  "n": 100000,
+  "thresholds": {
+    "25": {
+      "flaggedWithoutStructure": 105,
+      "flaggedWithStructure": 110,
+      "flaggedOnlyByStructure": 5
+    },
+    "55": {
+      "flaggedWithoutStructure": 105,
+      "flaggedWithStructure": 110,
+      "flaggedOnlyByStructure": 5
+    }
+  },
+  "flaggedOnlyByStructure": [],
+  "flaggedOnlyByStructureCount": 5,
+  "note": "examples removed: the second source has no stated licence and is not redistributed. Regenerate locally with the command in docs/FINAL_ENGINEERING_REPORT.md."
+}

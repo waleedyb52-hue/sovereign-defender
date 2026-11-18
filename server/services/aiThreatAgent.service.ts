@@ -53,7 +53,7 @@ const MALICIOUS_SIGNATURES: Array<{ category: string; weight: number; pattern: R
   { category: 'WEBSHELL_RCE', weight: 42, pattern: /(eval\(base64_decode|passthru\s*\(|system\s*\(|shell_exec\s*\(|assert\s*\()/i },
   { category: 'COMMAND_INJECTION', weight: 40, pattern: /(;\s*(rm|cat|wget|curl|nc|bash|sh)\s|\|\s*sh\b|`[^`]+`|\$\([^)]+\))/i },
   { category: 'SQL_INJECTION', weight: 38, pattern: /(\bunion\b\s+select\b|\bor\b\s*['"]?1['"]?\s*=\s*['"]?1|;\s*drop\s+table\b|\bxp_cmdshell\b|'\s*--)/i },
-  { category: 'XSS', weight: 33, pattern: /(<script[^>]*>|onerror\s*=|onload\s*=|javascript:)/i },
+  { category: 'XSS', weight: 33, pattern: /(<script[^<>]*>|onerror\s*=|onload\s*=|javascript:)/i },
   { category: 'PATH_TRAVERSAL', weight: 28, pattern: /(\.\.\/|\.\.\\|\/etc\/passwd|\/proc\/self\/environ)/i },
   { category: 'RECON_TOOL_SIGNATURE', weight: 20, pattern: /(sqlmap|nikto|nmap|masscan|dirbuster|hydra|gobuster)/i }
 ];

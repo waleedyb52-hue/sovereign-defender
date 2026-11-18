@@ -1,0 +1,114 @@
+{
+  "file": "data/external/httpparams_dev.csv",
+  "rows": 15491,
+  "byType": {
+    "sqli": {
+      "n": 5405,
+      "missed": 3320,
+      "missedWithNonZeroScore": 1644,
+      "missedMatchingAnyFeature": 3275,
+      "missedMatchingNoFeature": 45,
+      "features": [
+        {
+          "feature": "select with function/case/subquery",
+          "missedWithFeature": 1800,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "sql function call (char|chr|concat|cast|convert|elt|extractvalue|updatexml|...)",
+          "missedWithFeature": 1668,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "trailing sql comment",
+          "missedWithFeature": 1650,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "quote/paren break then or/and",
+          "missedWithFeature": 1532,
+          "benignWithFeature": 1
+        },
+        {
+          "feature": "numeric comparison N=N after or/and/where/having",
+          "missedWithFeature": 1493,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "select ... from",
+          "missedWithFeature": 1459,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "system catalog (all_users|sysibm|rdb$|sysusers|domain.|information_schema|mysql.db|pg_|sqlite_)",
+          "missedWithFeature": 783,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "stacked statement ;select|;declare|;exec|;waitfor|;begin|;call",
+          "missedWithFeature": 686,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "as ALIAS where",
+          "missedWithFeature": 427,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "hex literal 0x..",
+          "missedWithFeature": 321,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "time/heavy function (sleep|benchmark|waitfor|pg_sleep|dbms_lock|receive_message)",
+          "missedWithFeature": 211,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "rlike / regexp / like with subquery",
+          "missedWithFeature": 190,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "order by / group by N",
+          "missedWithFeature": 91,
+          "benignWithFeature": 0
+        },
+        {
+          "feature": "in (select|char...)",
+          "missedWithFeature": 52,
+          "benignWithFeature": 0
+        }
+      ]
+    },
+    "xss": {
+      "n": 269,
+      "missed": 97,
+      "missedWithNonZeroScore": 60,
+      "missedMatchingAnyFeature": 0,
+      "missedMatchingNoFeature": 97,
+      "features": []
+    },
+    "cmdi": {
+      "n": 45,
+      "missed": 42,
+      "missedWithNonZeroScore": 0,
+      "missedMatchingAnyFeature": 0,
+      "missedMatchingNoFeature": 42,
+      "features": []
+    },
+    "path-traversal": {
+      "n": 132,
+      "missed": 84,
+      "missedWithNonZeroScore": 0,
+      "missedMatchingAnyFeature": 0,
+      "missedMatchingNoFeature": 84,
+      "features": []
+    }
+  },
+  "benign": {
+    "n": 9640,
+    "flaggedNow": 0
+  },
+  "benignMatchingAnyFeature": 1
+}

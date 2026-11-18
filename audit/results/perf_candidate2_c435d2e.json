@@ -1,0 +1,137 @@
+{
+  "startedAt": "2026-11-15T15:52:53.052Z",
+  "host": {
+    "platform": "win32",
+    "node": "v24.20.0"
+  },
+  "api": {
+    "/api/health": {
+      "n": 300,
+      "p50": 15.28,
+      "p95": 16.53,
+      "p99": 16.93,
+      "max": 17.79
+    },
+    "/api/v1/ebpf/real-stats": {
+      "n": 300,
+      "p50": 14.97,
+      "p95": 17.02,
+      "p99": 20.09,
+      "max": 24.57
+    },
+    "/api/v1/soc/ebpf/containment-records": {
+      "n": 300,
+      "p50": 15.3,
+      "p95": 16.43,
+      "p99": 16.84,
+      "max": 17.35
+    }
+  },
+  "classifySequential": {
+    "n": 300,
+    "p50": 15.06,
+    "p95": 21.65,
+    "p99": 29.97,
+    "max": 58.81,
+    "errors": 0
+  },
+  "classifyConcurrent": [
+    {
+      "concurrency": 1,
+      "requests": 600,
+      "seconds": 8.44,
+      "reqPerSec": 71.1,
+      "n": 600,
+      "p50": 15.06,
+      "p95": 23.06,
+      "p99": 26.49,
+      "max": 61.18,
+      "statusCodes": {
+        "200": 600
+      }
+    },
+    {
+      "concurrency": 10,
+      "requests": 600,
+      "seconds": 1.2,
+      "reqPerSec": 499.6,
+      "n": 600,
+      "p50": 18.77,
+      "p95": 29.97,
+      "p99": 37.17,
+      "max": 41.14,
+      "statusCodes": {
+        "200": 600
+      }
+    },
+    {
+      "concurrency": 50,
+      "requests": 600,
+      "seconds": 1.19,
+      "reqPerSec": 504.4,
+      "n": 600,
+      "p50": 90.02,
+      "p95": 140.64,
+      "p99": 156.68,
+      "max": 160.72,
+      "statusCodes": {
+        "200": 600
+      }
+    },
+    {
+      "concurrency": 100,
+      "requests": 600,
+      "seconds": 0.94,
+      "reqPerSec": 637.3,
+      "n": 600,
+      "p50": 147.72,
+      "p95": 178.32,
+      "p99": 182.65,
+      "max": 183.81,
+      "statusCodes": {
+        "200": 600
+      }
+    }
+  ],
+  "containment": {
+    "contain": {
+      "n": 20,
+      "p50": 29.92,
+      "p95": 34.82,
+      "p99": 44.76,
+      "max": 44.76
+    },
+    "release": {
+      "n": 20,
+      "p50": 16.82,
+      "p95": 26.05,
+      "p99": 74.31,
+      "max": 74.31
+    }
+  },
+  "tripwire": {
+    "n": 6,
+    "p50": 206,
+    "p95": 247.68,
+    "p99": 247.68,
+    "max": 247.68,
+    "trials": 6,
+    "detected": 6,
+    "note": "includes the 150 ms debounce"
+  },
+  "arpSpoof": {
+    "n": 5,
+    "p50": 69.53,
+    "p95": 92.82,
+    "p99": 92.82,
+    "max": 92.82,
+    "trials": 5,
+    "detected": 5
+  },
+  "auditVerify": {
+    "ms": 30.67,
+    "ok": true,
+    "entriesChecked": 333
+  },
+  "finishedAt": "2026-11-15T15:53:28.470Z"
+}

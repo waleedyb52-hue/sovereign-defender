@@ -88,7 +88,7 @@ const DISCOVERY_SIGNALS: Array<{ pattern: RegExp; technique: string; tactic: str
   { pattern: /\bls\b|dir=|listing|\.\.\//i, technique: 'T1083 - File and Directory Discovery', tactic: 'Discovery' },
   { pattern: /id_rsa|\.ssh|credentials|\.env|token|secret/i, technique: 'T1552 - Unsecured Credentials', tactic: 'Credential Access' },
   { pattern: /ssh |scp |rsync |psexec|wmic/i, technique: 'T1021 - Remote Services', tactic: 'Lateral Movement' },
-  { pattern: /select .* from|dump|export|tar |zip /i, technique: 'T1005 - Data from Local System', tactic: 'Collection' },
+  { pattern: /select [^\n]{0,256}? from|dump|export|tar |zip /i, technique: 'T1005 - Data from Local System', tactic: 'Collection' },
   { pattern: /curl |wget |nc |\/dev\/tcp\//i, technique: 'T1048 - Exfiltration Over Alternative Protocol', tactic: 'Exfiltration' }
 ];
 

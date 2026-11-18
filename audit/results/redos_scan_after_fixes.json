@@ -1,0 +1,19 @@
+{
+  "finishedAt": "2026-11-18T04:24:51.468Z",
+  "node": "v24.20.0",
+  "platform": "win32",
+  "method": {
+    "sizes": [
+      4000,
+      16000,
+      64000
+    ],
+    "confirmBudgetMs": 150,
+    "perRegexDeadlineMs": 20000
+  },
+  "files": 46,
+  "regexes": 385,
+  "scanned": 385,
+  "seconds": 5.4,
+  "superLinear": []
+}

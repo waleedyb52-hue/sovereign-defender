@@ -1,0 +1,28 @@
+{
+  "source": "https://github.com/faizann24/Fwaf-Machine-Learning-driven-Web-Application-Firewall",
+  "licence": "none stated - local measurement only, not redistributed",
+  "goodqueries": {
+    "sha256": "4779cd9b2b1e995c40ea81ad86edaec8e405e5143e001c31625c7de4e83cb3d6",
+    "uniqueLines": 1265989
+  },
+  "badqueries": {
+    "sha256": "f2252eb0fe6f4e26c31387f49647c146f0c54f0c9473ca6271507cb7ba7ae98b",
+    "uniqueLines": 44666
+  },
+  "rule": "unique trimmed lines ranked by SHA-256(line); test = lowest 10,000 good + lowest 5,000 bad; dev benign = next 10,000 good",
+  "test": {
+    "file": "fwaf_test_sealed.csv",
+    "rows": 15000,
+    "sha256": "34fef9bc37e2bce9e9a6c895e7ca9fbb5fdbc73e5c58fe56b8d293fd85c85f14"
+  },
+  "devBenign": {
+    "file": "fwaf_dev_benign.csv",
+    "rows": 10000,
+    "sha256": "926314a2cd709af3726ca83d78f3a22249352c3bd3ff41cb30284e6d7ceaa563"
+  },
+  "caveats": [
+    "Labels are the dataset authors' and are noisy in both directions.",
+    "Attack class is not labelled, so per-class recall is unavailable on this source.",
+    "Dev benign and test benign come from the same corpus: near-duplicates across the two are possible."
+  ]
+}

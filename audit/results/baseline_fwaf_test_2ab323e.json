@@ -1,0 +1,87 @@
+{
+  "dataset": "HttpParamsDataset (Morzeux, 2016, MIT)",
+  "file": "data/external2/fwaf_test_sealed.csv",
+  "sha256": "34fef9bc37e2bce9e9a6c895e7ca9fbb5fdbc73e5c58fe56b8d293fd85c85f14",
+  "samples": 15000,
+  "failedRequests": 0,
+  "seconds": 128.6,
+  "samplesPerSecond": 116.6,
+  "sealedRun": true,
+  "all": {
+    "n": 15000,
+    "tp": 1947,
+    "fn": 3053,
+    "fp": 9,
+    "tn": 9991,
+    "precision": 0.995398773006135,
+    "recall": 0.3894,
+    "f1": 0.5598044853364003,
+    "fpr": 0.0009,
+    "accuracy": 0.7958666666666666,
+    "mcc": 0.5438588562408407,
+    "recallCI": [
+      0.3759738564851369,
+      0.40299596542129607
+    ],
+    "precisionCI": [
+      0.9912780157442916,
+      0.9975774101227786
+    ],
+    "fprCI": [
+      0.0004735716566504438,
+      0.0017097495986561175
+    ],
+    "projectedPrecisionAt2pct": 0.8982698961937716,
+    "falseAlarmsPer10k": 8.82
+  },
+  "deduplicated": {
+    "n": 15000,
+    "tp": 1947,
+    "fn": 3053,
+    "fp": 9,
+    "tn": 9991,
+    "precision": 0.995398773006135,
+    "recall": 0.3894,
+    "f1": 0.5598044853364003,
+    "fpr": 0.0009,
+    "accuracy": 0.7958666666666666,
+    "mcc": 0.5438588562408407,
+    "recallCI": [
+      0.3759738564851369,
+      0.40299596542129607
+    ],
+    "precisionCI": [
+      0.9912780157442916,
+      0.9975774101227786
+    ],
+    "fprCI": [
+      0.0004735716566504438,
+      0.0017097495986561175
+    ],
+    "projectedPrecisionAt2pct": 0.8982698961937716,
+    "falseAlarmsPer10k": 8.82
+  },
+  "byType": {
+    "norm": {
+      "n": 10000,
+      "detected": 9,
+      "rate": 0.0009,
+      "ci": [
+        0.0004735716566504438,
+        0.0017097495986561175
+      ]
+    },
+    "attack": {
+      "n": 5000,
+      "detected": 1947,
+      "rate": 0.3894,
+      "ci": [
+        0.3759738564851369,
+        0.40299596542129607
+      ]
+    }
+  },
+  "missedExamples": [],
+  "fpExamples": [],
+  "finishedAt": "2026-11-15T14:41:26.097Z"
+}

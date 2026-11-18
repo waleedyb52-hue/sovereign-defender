@@ -1,4 +1,5 @@
 import { shannonEntropy } from './payloadForensics.js';
+import { analyseSqlStructure, type SqlSignal } from './sqlStructure.js';
 
 /**
  * LOCAL PAYLOAD CLASSIFIER
@@ -38,7 +39,8 @@ export interface ClassificationResult {
 export const BLOCK_THRESHOLD = 55;
 
 interface Rule {
-  re: RegExp;
+  /** A RegExp, or an object with the same test() for checks one linear regex cannot express. */
+  re: RegExp | { test(s: string): boolean };
   weight: number;
   label: string;
   family: AttackFamily;
@@ -81,7 +83,8 @@ const RULES: Rule[] = [
   { re: /\bunion\s+(all\s+)?select\b/i, weight: 65, label: 'UNION SELECT', family: 'SQL_INJECTION' },
   { re: /\b(drop|truncate)\s+table\b/i, weight: 65, label: 'DROP/TRUNCATE TABLE', family: 'SQL_INJECTION' },
   { re: /;\s*(drop|delete|update|insert)\b/i, weight: 55, label: 'stacked SQL statement', family: 'SQL_INJECTION' },
-  { re: /\b(sleep|benchmark|waitfor\s+delay|pg_sleep)\s*\(/i, weight: 60, label: 'time-based blind SQLi', family: 'SQL_INJECTION' },
+  // sleep and benchmark are English words: "I need sleep (a lot)" is prose, sleep(5) is a call.
+  { re: /\b(sleep|benchmark)\(|\b(waitfor\s+delay|pg_sleep)\s*\(/i, weight: 60, label: 'time-based blind SQLi', family: 'SQL_INJECTION' },
   { re: /(--|#|\/\*)\s*$/, weight: 20, label: 'SQL comment terminator', family: 'SQL_INJECTION' },
   { re: /\b(information_schema|sysobjects|pg_catalog)\b/i, weight: 45, label: 'schema enumeration', family: 'SQL_INJECTION' },
 
@@ -89,7 +92,7 @@ const RULES: Rule[] = [
   { re: /<\s*script[\s>]/i, weight: 65, label: '<script> tag', family: 'XSS_ATTACK' },
   { re: /\bon(error|load|click|mouseover|focus)\s*=/i, weight: 60, label: 'inline event handler', family: 'XSS_ATTACK' },
   { re: /javascript\s*:/i, weight: 50, label: 'javascript: URI', family: 'XSS_ATTACK' },
-  { re: /<\s*(svg|img|iframe|object|embed)[^>]*\bon\w+\s*=/i, weight: 65, label: 'tag with event handler', family: 'XSS_ATTACK' },
+  { re: /<\s*(svg|img|iframe|object|embed)[^<>]*\bon\w+\s*=/i, weight: 65, label: 'tag with event handler', family: 'XSS_ATTACK' },
   { re: /document\s*\.\s*(cookie|domain)/i, weight: 45, label: 'document.cookie/domain access', family: 'XSS_ATTACK' },
   { re: /\balert\s*\(|\bprompt\s*\(/i, weight: 30, label: 'alert()/prompt()', family: 'XSS_ATTACK' },
 
@@ -98,6 +101,29 @@ const RULES: Rule[] = [
   { re: /(\.\.%2f|%2e%2e[\/\\%])/i, weight: 65, label: 'encoded traversal', family: 'PATH_TRAVERSAL' },
   { re: /\/etc\/(passwd|shadow)\b/i, weight: 70, label: 'sensitive unix path', family: 'PATH_TRAVERSAL' },
   { re: /\b(win\.ini|boot\.ini|system32\\config)\b/i, weight: 65, label: 'sensitive windows path', family: 'PATH_TRAVERSAL' },
+
+  // Dot-runs longer than ".." used as path segments, and the textual-hex spellings of "." "/"
+  // backslash that some decoders accept. One "../" is an ordinary relative path and stays allowed.
+  { re: /(?<!\.)\.{3,}[\/\\]\.{3,}[\/\\]/, weight: 60, label: 'repeated dot-run traversal', family: 'PATH_TRAVERSAL' },
+  { re: /(0x2e|\.)(0x2e|\.)(0x2f|0x5c)|0x2e0x2e[\/\\]/i, weight: 60, label: 'hex-spelled traversal', family: 'PATH_TRAVERSAL' },
+  { re: /\bweb-inf[\/\\]web\.xml\b/i, weight: 65, label: 'sensitive java descriptor path', family: 'PATH_TRAVERSAL' },
+
+  // ---- OS command injection ----
+  //
+  // A shell separator followed by a command. Short command names are also English words and
+  // field names ("name;id", "cat|dog", "Name & ID"), so they only count when the shape around
+  // them is a command line: an absolute binary path, a flag or path argument, or separators
+  // on both sides. Names with no everyday meaning count after any separator.
+  { re: /(^|[;|&`(\s])\/(usr\/)?s?bin\/(id|ls|cat|sh|bash|sleep|ping|nc|uname|whoami|netstat|ps|rm|chmod|wget|curl|echo|kill)\b/i,
+    weight: 60, label: 'absolute path to a system binary', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /(;|\|\|?|&&?|`|\$\()[\s+]*(whoami|uname|netstat|ifconfig|ipconfig|nslookup|wget|curl|ping|powershell|bash)(?=$|[\s+]*[;|&`)]|[\s+]+(-|\/|https?:|\d|\$))/i,
+    weight: 60, label: 'shell separator before a command', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /(;|\|\|?|&&|\$\()[\s+]*(id|ls|cat|dir|ps|pwd|sleep|echo|type|rm|nc|sh)[\s+]*(;|\|)/i,
+    weight: 60, label: 'command between shell separators', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /(;|\|\|?|&&?|`|\$\()[\s+]*(ls|cat|dir|ps|sleep|rm|nc|ping|netstat|type)[\s+]+(-[a-z]|\/|[a-z]:)/i,
+    weight: 60, label: 'command with flag or path argument after a separator', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /`\s*(uname|whoami|ping\s[^`]{1,60}|cat\s[^`]{1,60}|ls\s[^`]{1,60})\s*`/i,
+    weight: 60, label: 'backtick command substitution', family: 'REMOTE_CODE_EXECUTION' },
 
   // ---- Remote code execution / webshell ----
   { re: /<\?php/i, weight: 70, label: 'PHP open tag', family: 'REMOTE_CODE_EXECUTION' },
@@ -119,7 +145,7 @@ const RULES: Rule[] = [
   // operands to be bare words, so `{{ config.items() * 7 }}` — a call, which is
   // what an SSTI probe actually looks like — slipped past. A plain placeholder
   // such as {{customerName}} has no operator and still passes.
-  { re: /\{\{[^}]*[*+\-/][^}]*\}\}/, weight: 60, label: 'template expression with operator', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\{\{[^{}]*[*+\-/][^{}]*\}\}/, weight: 60, label: 'template expression with operator', family: 'REMOTE_CODE_EXECUTION' },
   { re: /<%=?[^%>]*[*+\-/][^%>]*%>/, weight: 55, label: 'ERB/JSP template expression', family: 'REMOTE_CODE_EXECUTION' },
   { re: /\$\{\s*[\w.]+\s*[*+\-/]\s*[\w.]+\s*\}/, weight: 55, label: 'EL/template expression', family: 'REMOTE_CODE_EXECUTION' },
 
@@ -136,7 +162,7 @@ const RULES: Rule[] = [
   { re: /\b(file|gopher|dict):\/\//i, weight: 60, label: 'dangerous URI scheme', family: 'REMOTE_CODE_EXECUTION' },
 
   // ---- Header / CRLF injection ----
-  { re: /(%0d%0a|[\r\n])\s*(set-cookie|location|content-length)\s*:/i, weight: 70, label: 'CRLF header injection', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /(%0d%0a|[\r\n])[ \t]*(set-cookie|location|content-length)[ \t]*:/i, weight: 70, label: 'CRLF header injection', family: 'REMOTE_CODE_EXECUTION' },
 
   // ---- LDAP injection (CWE-90) ----
   { re: /[)(]\s*\|\s*\(|\*\)\s*\(/, weight: 55, label: 'LDAP filter metacharacters', family: 'INJECTION_OTHER' },
@@ -163,14 +189,14 @@ const RULES: Rule[] = [
     weight: 60, label: 'privilege field in request body', family: 'OBJECT_TAMPERING' },
 
   // ---- Host header injection (CWE-644) ----
-  { re: /^\s*host\s*:\s*\S+[\s\S]*x-forwarded-host\s*:/im, weight: 65, label: 'conflicting Host headers', family: 'INJECTION_OTHER' },
+  { re: { test: (s: string) => { const h = /^[ \t]*host[ \t]*:[ \t]*\S/im.exec(s); return !!h && /x-forwarded-host[ \t]*:/i.test(s.slice(h.index + h[0].length)); } }, weight: 65, label: 'conflicting Host headers', family: 'INJECTION_OTHER' },
 
   // ---- Resource abuse: deeply nested query (GraphQL and similar) ----
   { re: /(\{\s*\w+\s*){12,}/, weight: 55, label: 'pathologically nested query', family: 'RESOURCE_ABUSE' },
 
   // ---- Exfiltration ----
-  { re: /\b[A-Za-z0-9+/]{16,}={0,2}\.[A-Za-z0-9+/]{16,}={0,2}\./, weight: 55, label: 'base64 chunks in DNS labels', family: 'DNS_EXFILTRATION' },
-  { re: /\b(attacker|exfil|c2)[-.][a-z0-9-]*\.(com|net|io|xyz)\b/i, weight: 50, label: 'suspicious exfil domain', family: 'DNS_EXFILTRATION' }
+  { re: /(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{16,}={0,2}\.[A-Za-z0-9+/]{16,}={0,2}\./, weight: 55, label: 'base64 chunks in DNS labels', family: 'DNS_EXFILTRATION' },
+  { re: /\b(attacker|exfil|c2)[-.][a-z0-9-]{0,63}\.(com|net|io|xyz)\b/i, weight: 50, label: 'suspicious exfil domain', family: 'DNS_EXFILTRATION' }
 ];
 
 /**
@@ -233,7 +259,9 @@ function isProseInJsonValue(payload: string): boolean {
 function looksLikeProse(payload: string): boolean {
   const words = payload.split(/\s+/).filter(Boolean);
   if (words.length < 6) return false;
-  const punctuation = (payload.match(/[.,!?]/g) || []).length;
+  // Sentence punctuation only: followed by a space or the end. The dots of an IP address or a
+  // qualified name (10.0.0.1, sysibm.systables) are not what makes text prose.
+  const punctuation = (payload.match(/[.,!?](?=\s|$)/g) || []).length;
   const hasInjectionSyntax = /['";]|--\s*$|\/\*|\bunion\b.*\bselect\b/i.test(payload);
   return punctuation >= 1 && !hasInjectionSyntax;
 }
@@ -269,7 +297,35 @@ function canonicalisePayload(raw: string): string {
   return s;
 }
 
-export function classifyPayload(rawPayload: unknown): ClassificationResult {
+/**
+ * Switches for measurement, not for operators. They exist so the audit harnesses can score
+ * each detection component with and without it (audit/eval_dev_inprocess.ts) instead of a
+ * comparison resting on an edited source file. Everything defaults to on.
+ */
+export interface ClassifyOptions {
+  /** Structural SQL analysis (sqlStructure.ts). */
+  sqlStructure?: boolean;
+}
+
+/** SD_SQL_STRUCTURE=off restores signature-only SQL detection for a whole process. */
+const SQL_STRUCTURE_DEFAULT = process.env.SD_SQL_STRUCTURE !== 'off';
+
+/**
+ * Structural signals below this weight are hints (a column-index ORDER BY, one generic
+ * function call) that a sentence could contain; at or above it they are syntax a sentence
+ * cannot contain, so the prose guard does not apply to them.
+ */
+const STRUCTURAL_PROSE_FLOOR = 40;
+
+function strongestStructure(original: string, canonical: string): SqlSignal[] {
+  const a = analyseSqlStructure(original);
+  if (canonical === original) return a;
+  const b = analyseSqlStructure(canonical);
+  const total = (x: SqlSignal[]) => x.reduce((n, sig) => n + sig.weight, 0);
+  return total(b) > total(a) ? b : a;
+}
+
+export function classifyPayload(rawPayload: unknown, options: ClassifyOptions = {}): ClassificationResult {
   const original = String(rawPayload ?? '');
   // Match against BOTH forms: canonicalisation can dissolve a signature that
   // was only present in the raw text, so a hit in either counts.
@@ -298,6 +354,18 @@ export function classifyPayload(rawPayload: unknown): ClassificationResult {
     cur.score += rule.weight;
     cur.sigs.push(rule.label);
     byFamily.set(rule.family, cur);
+  }
+
+  // Structural SQL evidence: what the payload is when read as SQL, independent of which
+  // tool produced it. Added to the SQL family alongside the signatures above.
+  if (options.sqlStructure ?? SQL_STRUCTURE_DEFAULT) {
+    for (const sig of strongestStructure(original, canonical)) {
+      if (prose && sig.weight < STRUCTURAL_PROSE_FLOOR) continue;
+      const cur = byFamily.get('SQL_INJECTION') ?? { score: 0, sigs: [] };
+      cur.score += sig.weight;
+      cur.sigs.push(sig.label);
+      byFamily.set('SQL_INJECTION', cur);
+    }
   }
 
   // Very high entropy in a short payload suggests packing/encoding, but it is
