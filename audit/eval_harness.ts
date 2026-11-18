@@ -37,6 +37,7 @@
  * Run:  npx tsx audit/eval_harness.ts
  */
 
+import { enforceGate, gateFloors } from './regressionGate.js';
 const BASE = 'http://127.0.0.1:3000';
 const KEY = process.env.ADMIN_API_KEY || 'test_admin_key_123';
 
@@ -216,5 +217,11 @@ const pct = (n: number) => (n * 100).toFixed(1) + '%';
   console.log('  Arp et al. (USENIX Sec 2022) P8 for base-rate-aware reporting.');
   console.log('  A held-out score near 100% means the harness has been contaminated.\n');
 
+  const floors = gateFloors('setA');
+  enforceGate('setA', [
+    ['in-distribution recall', inDist.recall, floors.inDistributionMinRecall, 'min'],
+    ['held-out true positives', heldOut.TP, floors.heldOutMinTP, 'min'],
+    ['held-out false positives', heldOut.FP, floors.heldOutMaxFP, 'max']
+  ]);
   process.exit(0);
 })();

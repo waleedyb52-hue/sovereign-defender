@@ -31,6 +31,7 @@
  * Run:  npx tsx audit/eval_holdout_b.ts
  */
 
+import { enforceGate, gateFloors } from './regressionGate.js';
 const BASE = 'http://127.0.0.1:3000';
 const KEY = process.env.ADMIN_API_KEY || 'test_admin_key_123';
 const DEPLOYED_PREVALENCE = 0.02;
@@ -196,5 +197,11 @@ const pct = (n: number) => (n * 100).toFixed(1) + '%';
   console.log('  Set B must not be used to write rules. Doing so converts it into');
   console.log('  Set A and the next measurement becomes worthless.\n');
 
+  const floors = gateFloors('setB');
+  enforceGate('setB', [
+    ['Tier 1 detected', t1.filter(r => r.predicted === 'MALICIOUS').length, floors.tier1MinDetected, 'min'],
+    ['Tier 2 detected', t2.filter(r => r.predicted === 'MALICIOUS').length, floors.tier2MinDetected, 'min'],
+    ['benign false positives', FP, floors.benignMaxFP, 'max']
+  ]);
   process.exit(0);
 })();

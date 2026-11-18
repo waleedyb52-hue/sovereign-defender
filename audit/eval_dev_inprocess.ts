@@ -13,6 +13,8 @@
  */
 import fs from 'fs';
 import { classifyPayload } from '../server/services/payloadClassifier.service.js';
+import crypto from 'crypto';
+import { enforceGate, gateFloors, gateRequested } from './regressionGate.js';
 
 const args = process.argv.slice(2);
 const file = args.find(a => !a.startsWith('--'));
@@ -53,6 +55,30 @@ for (const thr of [55, 25]) {
     const set = bad.filter(r => r.t === type);
     console.log(`      ${type.padEnd(16)} ${pct(set.filter(hit).length, set.length)}  (${set.filter(hit).length}/${set.length})`);
   }
+}
+if (gateRequested) {
+  // The floors were measured on one specific file; a gate run on any other file is refused
+  // rather than compared, so a renamed or re-split dataset cannot pass by accident.
+  const floors = gateFloors('httpParamsDev');
+  const sha = crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  if (sha !== floors.sha256) {
+    console.error(`\n  GATE: refused — ${file} is not the dev half the floors were measured on (${sha})`);
+    process.exit(1);
+  }
+  if (!sqlStructure) {
+    console.error('\n  GATE: refused — run with the shipped configuration (no --no-structure)');
+    process.exit(1);
+  }
+  const at = (thr: number, pred: (r: (typeof rows)[number]) => boolean) => rows.filter(r => pred(r) && r.c.score >= thr).length;
+  const checks: Array<[string, number, number, 'min' | 'max']> = [
+    ['true positives at 55', at(55, r => r.bad), floors.minTPAt55, 'min'],
+    ['true positives at 25', at(25, r => r.bad), floors.minTPAt25, 'min'],
+    ['false positives at 25', at(25, r => !r.bad), floors.maxFPAt25, 'max']
+  ];
+  for (const [cls, min] of Object.entries(floors.perClassMinTPAt25 as Record<string, number>)) {
+    checks.push([`${cls} true positives at 25`, at(25, r => r.bad && r.t === cls), min, 'min']);
+  }
+  enforceGate('httpParamsDev', checks);
 }
 if (showFp) {
   console.log('\n  benign values scoring >= 25:');
