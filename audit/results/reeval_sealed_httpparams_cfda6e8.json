@@ -1,0 +1,114 @@
+{
+  "dataset": "HttpParamsDataset (Morzeux, 2016, MIT)",
+  "file": "data/external/httpparams_sealed.csv",
+  "sha256": "be6096a7fa128ed0b38252676d3aa7cab4a41a9c1ef710f844ec8accb908ed42",
+  "samples": 15576,
+  "failedRequests": 0,
+  "seconds": 5.1,
+  "samplesPerSecond": 3026.8,
+  "sealedRun": true,
+  "all": {
+    "n": 15576,
+    "tp": 5764,
+    "fn": 148,
+    "fp": 0,
+    "tn": 9664,
+    "precision": 1,
+    "recall": 0.9749661705006766,
+    "f1": 0.987324426173347,
+    "fpr": 0,
+    "accuracy": 0.9904982023626091,
+    "mcc": 0.979928670318094,
+    "recallCI": [
+      0.970664680863204,
+      0.9786507977662439
+    ],
+    "precisionCI": [
+      0.999333962291891,
+      1
+    ],
+    "fprCI": [
+      0,
+      0.0003973585996692374
+    ],
+    "projectedPrecisionAt2pct": 1,
+    "falseAlarmsPer10k": 0
+  },
+  "deduplicated": {
+    "n": 15576,
+    "tp": 5764,
+    "fn": 148,
+    "fp": 0,
+    "tn": 9664,
+    "precision": 1,
+    "recall": 0.9749661705006766,
+    "f1": 0.987324426173347,
+    "fpr": 0,
+    "accuracy": 0.9904982023626091,
+    "mcc": 0.979928670318094,
+    "recallCI": [
+      0.970664680863204,
+      0.9786507977662439
+    ],
+    "precisionCI": [
+      0.999333962291891,
+      1
+    ],
+    "fprCI": [
+      0,
+      0.0003973585996692374
+    ],
+    "projectedPrecisionAt2pct": 1,
+    "falseAlarmsPer10k": 0
+  },
+  "byType": {
+    "norm": {
+      "n": 9664,
+      "detected": 0,
+      "rate": 0,
+      "ci": [
+        0,
+        0.0003973585996692374
+      ]
+    },
+    "sqli": {
+      "n": 5447,
+      "detected": 5439,
+      "rate": 0.9985313016339269,
+      "ci": [
+        0.997104300039325,
+        0.999255601521564
+      ]
+    },
+    "xss": {
+      "n": 263,
+      "detected": 232,
+      "rate": 0.8821292775665399,
+      "ci": [
+        0.8375487996743614,
+        0.915707064478754
+      ]
+    },
+    "cmdi": {
+      "n": 44,
+      "detected": 26,
+      "rate": 0.5909090909090909,
+      "ci": [
+        0.44409492646606574,
+        0.7231235612099318
+      ]
+    },
+    "path-traversal": {
+      "n": 158,
+      "detected": 67,
+      "rate": 0.4240506329113924,
+      "ci": [
+        0.3496922402163018,
+        0.5020146138929013
+      ]
+    }
+  },
+  "missedExamples": [],
+  "fpExamples": [],
+  "finishedAt": "2026-11-18T13:34:11.387Z"
+}

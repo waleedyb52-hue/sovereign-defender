@@ -53,3 +53,9 @@ rewriting published history, which this project does not do; it is disclosed her
 | `reeval_sealed_httpparams_99fa259.json`, `reeval_sealed_fwaf_99fa259.json` | `SD_EVAL_SEALED=1` | `99fa259` | **re-evaluation** of the final code, not new evidence |
 | `dev_httpparams_99fa259.json` | `eval_external_httpparams.ts`, `SD_EVAL_SEALED=1` | `99fa259` | regression figure |
 | `perf_ab_c435d2e_vs_27267a2.json` | `scripts/perf-ab.mjs --checkout` | `c435d2e` vs `27267a2` | interleaved, fresh worktrees and databases on both sides |
+| `fwaf_{dev,validation,benign}_before_eec3fea.json` | `audit/fwaf_dev_eval.ts` | classifier at `eec3fea` | before the second-source rules; regenerated with the classifier changes stashed, after an argument-parsing bug had written the first copies to the wrong paths |
+| `fwaf_{dev,validation,benign}_after_rules.json` | `audit/fwaf_dev_eval.ts` | `cfda6e8` | after; the validation chunk was never read |
+| `sealed_fwaf_indist_cfda6e8.json` | `eval_external_httpparams.ts`, `SD_EVAL_SEALED=1` | `cfda6e8` | Fwaf sealed test after developing on the same source: **in-distribution**, scored once |
+| `reeval_sealed_httpparams_cfda6e8.json` | same | `cfda6e8` | re-evaluation |
+| `egress_cfda6e8.json` | `zero-egress-check.mjs` | `cfda6e8` | 60 s soak |
+| `perf_ab_faad341_vs_cfda6e8.json` | `perf-ab.mjs --checkout` | `faad341` vs `cfda6e8` | interleaved; ranges overlap, no claim |
