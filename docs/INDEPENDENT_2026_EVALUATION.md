@@ -102,3 +102,79 @@ generic 1 · session 1 · non-payload 5,263 · unattributed 4,671.
   `non-payload` and `unattributed` groups are reported separately.
 - Scored once. If a figure is low, it stays the result. Any rule written afterwards is
   checked on the reserve half, and that check is labelled as such.
+
+---
+
+## Part 2 — Results (added after the single run)
+
+**Run.** 2026-11-18, ~14:09 UTC, code at `1a62551` (detector identical to `5b564ec`). Fresh
+server via `scripts/with-server.mjs`, `GEMINI_API_KEY` removed. Test-half file SHA-256
+`740bd13ec8cd569331ba863b0a6da8c739ef7d16c5edfc50ec61a12e7b29a32d`, 12,949 requests.
+**Outcomes: 12,949 ok — 0 × 413, 0 × 429, 0 × 5xx, 0 timeouts, 0 network errors, 0 unparsable.**
+Files: `audit/results/independent_modsec_test_1a62551.json` (harness output) and
+`independent_modsec_summary_1a62551.json` (`audit/summarize_independent.mjs`).
+
+### 2.1 Primary figure (pre-registered)
+
+**Route-verdict recall on the CRS payload families: 1,535 / 3,015 = 50.91 %, 95% CI [49.13 – 52.69].**
+At score ≥ 55: 1,482 / 3,015 = 49.15 % [47.37 – 50.94].
+
+All 12,949 rows, route verdict: TP 1,663 · FN 11,286 · FP 0 · TN 0 → recall 12.84 % [12.28 – 13.43].
+The same at score ≥ 25 (identical to the route here) and at ≥ 55: TP 1,605 · FN 11,344 → 12.39 %.
+That all-rows figure is dominated by the two groups ModSecurity blocked for reasons a payload
+classifier does not see (below). **Precision is trivially 100 % because the set contains no benign
+request; it carries no information. FPR, MCC and balanced accuracy are undefined on this set.**
+
+### 2.2 Per class (code `1a62551`)
+
+| Class | n | Route verdict (≥25) | 95% CI | Score ≥ 55 | 95% CI |
+|---|---:|---:|---|---:|---|
+| sqli | 1159 | 1063 (91.72%) | [89.99–93.17] | 1018 (87.83%) | [85.83–89.59] |
+| xss | 75 | 44 (58.67%) | [47.37–69.12] | 41 (54.67%) | [43.45–65.43] |
+| rce | 733 | 287 (39.15%) | [35.69–42.74] | 284 (38.74%) | [35.29–42.32] |
+| lfi | 905 | 75 (8.29%) | [6.66–10.26] | 75 (8.29%) | [6.66–10.26] |
+| rfi | 4 | 0 (0.00%) | [0.00–48.99] | 0 (0.00%) | [0.00–48.99] |
+| php | 128 | 63 (49.22%) | [40.71–57.78] | 62 (48.44%) | [39.95–57.01] |
+| java | 9 | 3 (33.33%) | [12.06–64.58] | 2 (22.22%) | [6.32–54.74] |
+| generic | 1 | 0 (0.00%) | [0.00–79.35] | 0 (0.00%) | [0.00–79.35] |
+| session | 1 | 0 (0.00%) | [0.00–79.35] | 0 (0.00%) | [0.00–79.35] |
+| non-payload | 5263 | 127 (2.41%) | [2.03–2.86] | 122 (2.32%) | [1.94–2.76] |
+| unattributed | 4671 | 1 (0.02%) | [0.00–0.12] | 1 (0.02%) | [0.00–0.12] |
+
+Classes with n < 30 (rfi, java, generic, session) are too small to support any claim.
+
+### 2.3 Earlier versions on the same file (run after 2.1; no rule was changed in between)
+
+Same harness, same test file, each from a detached worktree with a fresh server. This is a
+comparison of three frozen versions, not a second independent result.
+
+| Commit | Payload families, route | 95% CI | sqli | xss | rce | lfi | php | non-payload |
+|---|---:|---|---:|---:|---:|---:|---:|---:|
+| `2ab323e` (poster baseline) | 833/3015 = **27.63%** | [26.06–29.25] | 41.59% | 50.67% | 27.97% | 8.29% | 24.22% | 1.96% |
+| `faad341` (`main`, PR #2) | 1422/3015 = **47.16%** | [45.39–48.95] | 85.42% | 53.33% | 37.93% | 8.29% | 28.13% | 2.19% |
+| `1a62551` (PR #3 + this release) | 1535/3015 = **50.91%** | [49.13–52.69] | 91.72% | 58.67% | 39.15% | 8.29% | 49.22% | 2.41% |
+
+The intervals do not overlap. On production traffic none of the rule work saw, the gain from the
+poster baseline is **+23.3 percentage points** on the payload families. SQL injection carries most of it, at +50.1 pp.
+
+Run time for the 12,949 requests was 64.3 s at `2ab323e`, against 5.3 s and 5.5 s for the two
+later versions. That is one run each through the analysis endpoint, not a controlled
+benchmark, and is **not** claimed as a throughput figure.
+
+### 2.4 What the result says, and what it does not
+
+- **Local file inclusion is the clear gap: 8.29 % in all three versions.** Not analysed yet. One
+  candidate explanation, unverified: CRS family 930 also covers requests for restricted file
+  names, which carry no traversal sequence. Any rule written for this must be checked on the
+  reserve half (12,904 rows, untouched), and that check reported as such.
+- **`non-payload` (5,263) and `unattributed` (4,671)** are requests ModSecurity blocked with no
+  payload-family rule. Low recall there is expected for a payload classifier that does not
+  receive headers. It is reported, not excluded.
+- **Labels are ModSecurity's decisions.** Some are CRS false positives; attacks CRS missed are
+  absent. A miss here means "CRS blocked it and we did not", not proof of a real attack.
+- **No false-positive evidence comes from this set.** False-positive figures still rest on
+  HttpParams (0 / 9,664 on the sealed half, in-distribution) and the look-alike tests.
+- **This is the analysis endpoint, not inline interception.** Packets were not replayed through
+  a network path or through XDP.
+- **It is not 2026 data.** The requested 2026 set (Part 1.1) could not be obtained, and no figure
+  for it exists.

@@ -59,3 +59,6 @@ rewriting published history, which this project does not do; it is disclosed her
 | `reeval_sealed_httpparams_cfda6e8.json` | same | `cfda6e8` | re-evaluation |
 | `egress_cfda6e8.json` | `zero-egress-check.mjs` | `cfda6e8` | 60 s soak |
 | `perf_ab_faad341_vs_cfda6e8.json` | `perf-ab.mjs --checkout` | `faad341` vs `cfda6e8` | interleaved; ranges overlap, no claim |
+| `modsec_independent_manifest.json` | `audit/build_modsec_independent.mjs` | — | Zenodo 17178461 `owasp.zip`: archive md5/SHA-256, SHA-256 of each of the 30 logs, split rule, test/reserve hashes and class counts. No payloads |
+| `independent_modsec_test_1a62551.json`, `independent_modsec_summary_1a62551.json` | `audit/eval_independent.ts`, `audit/summarize_independent.mjs` | `1a62551` (detector identical to `5b564ec`) | **the independent result**, scored once under the protocol committed in `e3da1b5`; aggregate only |
+| `independent_modsec_test_{2ab323e,faad341}.json`, `independent_modsec_summary_{2ab323e,faad341}.json` | same | `2ab323e`, `faad341` (detached worktrees, fresh servers) | earlier frozen versions on the same test file, run after the primary result; no rule changed in between |
