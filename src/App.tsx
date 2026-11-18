@@ -4,6 +4,7 @@ import { SocSidebar } from './components/SocSidebar';
 import { TacticalCockpit } from './components/soc/tactical/TacticalCockpit';
 import { useTelemetry, useThreatFeed, useIsolation } from './hooks/useTelemetry';
 import { useOperator } from './components/auth/operatorContext';
+import { runAiAnalysis } from './lib/aiAnalysis';
 import {
   INITIAL_INTEL_METRICS,
   INITIAL_NETWORK_EDGES,
@@ -33,54 +34,145 @@ import {
  * to React.lazy's default-export contract without losing their prop types.
  */
 function lazyNamed<M, K extends keyof M>(loader: () => Promise<M>, key: K) {
-  return React.lazy(() => loader().then(m => ({ default: m[key] as M[K] & React.ComponentType<any> })));
+  return React.lazy(() =>
+    loader().then(m => ({ default: m[key] as M[K] & React.ComponentType<any> }))
+  );
 }
 
 const AttackSimulator = lazyNamed(() => import('./components/AttackSimulator'), 'AttackSimulator');
 const AttackGraph = lazyNamed(() => import('./components/AttackGraph'), 'AttackGraph');
-const ThreatIntelStudio = lazyNamed(() => import('./components/ThreatIntelStudio'), 'ThreatIntelStudio');
-const LiveWebsiteProtection = lazyNamed(() => import('./components/LiveWebsiteProtection'), 'LiveWebsiteProtection');
-const PacketLogsStream = lazyNamed(() => import('./components/PacketLogsStream'), 'PacketLogsStream');
+const ThreatIntelStudio = lazyNamed(
+  () => import('./components/ThreatIntelStudio'),
+  'ThreatIntelStudio'
+);
+const LiveWebsiteProtection = lazyNamed(
+  () => import('./components/LiveWebsiteProtection'),
+  'LiveWebsiteProtection'
+);
+const PacketLogsStream = lazyNamed(
+  () => import('./components/PacketLogsStream'),
+  'PacketLogsStream'
+);
 const DefenseOverview = lazyNamed(() => import('./components/DefenseOverview'), 'DefenseOverview');
 const AiAnalysisModal = lazyNamed(() => import('./components/AiAnalysisModal'), 'AiAnalysisModal');
 const ProCyberTools = lazyNamed(() => import('./components/ProCyberTools'), 'ProCyberTools');
 const ForensicsVault = lazyNamed(() => import('./components/ForensicsVault'), 'ForensicsVault');
-const SocAnalyticsDashboard = lazyNamed(() => import('./components/SocAnalyticsDashboard'), 'SocAnalyticsDashboard');
-const AlertConfigModal = lazyNamed(() => import('./components/AlertConfigModal'), 'AlertConfigModal');
-const ManualApprovalModal = lazyNamed(() => import('./components/ManualApprovalModal'), 'ManualApprovalModal');
-const DigitalTwinSimulator = lazyNamed(() => import('./components/DigitalTwinSimulator'), 'DigitalTwinSimulator');
-const BehavioralAnomalyStudio = lazyNamed(() => import('./components/BehavioralAnomalyStudio'), 'BehavioralAnomalyStudio');
-const DeceptionCommandCenter = lazyNamed(() => import('./components/DeceptionCommandCenter'), 'DeceptionCommandCenter');
-const KernelIngressPerformanceCenter = lazyNamed(() => import('./components/KernelIngressPerformanceCenter'), 'KernelIngressPerformanceCenter');
+const SocAnalyticsDashboard = lazyNamed(
+  () => import('./components/SocAnalyticsDashboard'),
+  'SocAnalyticsDashboard'
+);
+const AlertConfigModal = lazyNamed(
+  () => import('./components/AlertConfigModal'),
+  'AlertConfigModal'
+);
+const ManualApprovalModal = lazyNamed(
+  () => import('./components/ManualApprovalModal'),
+  'ManualApprovalModal'
+);
+const DigitalTwinSimulator = lazyNamed(
+  () => import('./components/DigitalTwinSimulator'),
+  'DigitalTwinSimulator'
+);
+const BehavioralAnomalyStudio = lazyNamed(
+  () => import('./components/BehavioralAnomalyStudio'),
+  'BehavioralAnomalyStudio'
+);
+const DeceptionCommandCenter = lazyNamed(
+  () => import('./components/DeceptionCommandCenter'),
+  'DeceptionCommandCenter'
+);
+const KernelIngressPerformanceCenter = lazyNamed(
+  () => import('./components/KernelIngressPerformanceCenter'),
+  'KernelIngressPerformanceCenter'
+);
 const BlueTeamConsole = lazyNamed(() => import('./components/BlueTeamConsole'), 'BlueTeamConsole');
-const ThreatLabsStudio = lazyNamed(() => import('./components/ThreatLabsStudio'), 'ThreatLabsStudio');
-const CyberTopologyMap = lazyNamed(() => import('./components/CyberTopologyMap'), 'CyberTopologyMap');
-const SiteTrafficSecurityInspector = lazyNamed(() => import('./components/SiteTrafficSecurityInspector'), 'SiteTrafficSecurityInspector');
-const FimForensicsCenter = lazyNamed(() => import('./components/FimForensicsCenter'), 'FimForensicsCenter');
-const AutonomousThreatMap = lazyNamed(() => import('./components/AutonomousThreatMap'), 'AutonomousThreatMap');
-const KioskModeWrapper = lazyNamed(() => import('./components/KioskModeWrapper'), 'KioskModeWrapper');
-const MoDWarGamesSimulator = lazyNamed(() => import('./components/MoDWarGamesSimulator'), 'MoDWarGamesSimulator');
-const SystemComplianceReport = lazyNamed(() => import('./components/SystemComplianceReport'), 'SystemComplianceReport');
+const ThreatLabsStudio = lazyNamed(
+  () => import('./components/ThreatLabsStudio'),
+  'ThreatLabsStudio'
+);
+const CyberTopologyMap = lazyNamed(
+  () => import('./components/CyberTopologyMap'),
+  'CyberTopologyMap'
+);
+const SiteTrafficSecurityInspector = lazyNamed(
+  () => import('./components/SiteTrafficSecurityInspector'),
+  'SiteTrafficSecurityInspector'
+);
+const FimForensicsCenter = lazyNamed(
+  () => import('./components/FimForensicsCenter'),
+  'FimForensicsCenter'
+);
+const AutonomousThreatMap = lazyNamed(
+  () => import('./components/AutonomousThreatMap'),
+  'AutonomousThreatMap'
+);
+const KioskModeWrapper = lazyNamed(
+  () => import('./components/KioskModeWrapper'),
+  'KioskModeWrapper'
+);
+const MoDWarGamesSimulator = lazyNamed(
+  () => import('./components/MoDWarGamesSimulator'),
+  'MoDWarGamesSimulator'
+);
+const SystemComplianceReport = lazyNamed(
+  () => import('./components/SystemComplianceReport'),
+  'SystemComplianceReport'
+);
 const KillChainPanel = lazyNamed(() => import('./components/soc/KillChainPanel'), 'KillChainPanel');
-const DefenseLayersPanel = lazyNamed(() => import('./components/soc/DefenseLayersPanel'), 'DefenseLayersPanel');
-const AdjudicationPanel = lazyNamed(() => import('./components/soc/AdjudicationPanel'), 'AdjudicationPanel');
+const DefenseLayersPanel = lazyNamed(
+  () => import('./components/soc/DefenseLayersPanel'),
+  'DefenseLayersPanel'
+);
+const AdjudicationPanel = lazyNamed(
+  () => import('./components/soc/AdjudicationPanel'),
+  'AdjudicationPanel'
+);
 const ExhibitionMode = lazyNamed(() => import('./components/soc/ExhibitionMode'), 'ExhibitionMode');
-const CorpusIntelPanel = lazyNamed(() => import('./components/soc/CorpusIntelPanel'), 'CorpusIntelPanel');
-const CyberDefendPlatform = lazyNamed(() => import('./components/soc/cyberdefend/CyberDefendPlatform'), 'CyberDefendPlatform');
+const CorpusIntelPanel = lazyNamed(
+  () => import('./components/soc/CorpusIntelPanel'),
+  'CorpusIntelPanel'
+);
+const CyberDefendPlatform = lazyNamed(
+  () => import('./components/soc/cyberdefend/CyberDefendPlatform'),
+  'CyberDefendPlatform'
+);
 const TelemetryHud = lazyNamed(() => import('./components/soc/TelemetryHud'), 'TelemetryHud');
-const EbpfTopologyGraph = lazyNamed(() => import('./components/soc/EbpfTopologyGraph'), 'EbpfTopologyGraph');
-const ThreatAuditTable = lazyNamed(() => import('./components/soc/ThreatAuditTable'), 'ThreatAuditTable');
-const IsolationProtocol = lazyNamed(() => import('./components/soc/IsolationProtocol'), 'IsolationProtocol');
-const CompliancePosture = lazyNamed(() => import('./components/soc/IsolationProtocol'), 'CompliancePosture');
+const EbpfTopologyGraph = lazyNamed(
+  () => import('./components/soc/EbpfTopologyGraph'),
+  'EbpfTopologyGraph'
+);
+const ThreatAuditTable = lazyNamed(
+  () => import('./components/soc/ThreatAuditTable'),
+  'ThreatAuditTable'
+);
+const IsolationProtocol = lazyNamed(
+  () => import('./components/soc/IsolationProtocol'),
+  'IsolationProtocol'
+);
+const CompliancePosture = lazyNamed(
+  () => import('./components/soc/IsolationProtocol'),
+  'CompliancePosture'
+);
 const IncidentQueue = lazyNamed(() => import('./components/soc/IncidentQueue'), 'IncidentQueue');
 const PostureStrip = lazyNamed(() => import('./components/soc/PostureStrip'), 'PostureStrip');
-const SecurityAnalyticsRow = lazyNamed(() => import('./components/soc/SecurityAnalyticsRow'), 'SecurityAnalyticsRow');
+const SecurityAnalyticsRow = lazyNamed(
+  () => import('./components/soc/SecurityAnalyticsRow'),
+  'SecurityAnalyticsRow'
+);
 const MitreMatrix = lazyNamed(() => import('./components/soc/MitreMatrix'), 'MitreMatrix');
-const ThreatCorpusConsole = lazyNamed(() => import('./components/soc/ThreatCorpusConsole'), 'ThreatCorpusConsole');
-const AttackPathGraph = lazyNamed(() => import('./components/soc/AttackPathGraph'), 'AttackPathGraph');
+const ThreatCorpusConsole = lazyNamed(
+  () => import('./components/soc/ThreatCorpusConsole'),
+  'ThreatCorpusConsole'
+);
+const AttackPathGraph = lazyNamed(
+  () => import('./components/soc/AttackPathGraph'),
+  'AttackPathGraph'
+);
 
 export default function App() {
   const [lang, setLang] = useState<'ar' | 'en'>('ar');
+  // Last failed operator command (isolate / release / unban), shown until dismissed.
+  const [operatorError, setOperatorError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<AppTab>('tactical_c2');
 
   // Live telemetry for the kernel HUD, topology and audit log. All parsing and
@@ -187,6 +279,12 @@ export default function App() {
       );
     } catch (err) {
       console.error('Node isolation API call failed:', err);
+      const reason = err instanceof Error ? err.message : String(err);
+      setOperatorError(
+        lang === 'ar'
+          ? `فشل أمر ${willIsolate ? 'العزل' : 'رفع العزل'} للعقدة ${nodeId} (${reason}). لم تتغير حالتها.`
+          : `${willIsolate ? 'Isolation' : 'Release'} of node ${nodeId} failed (${reason}). Its state is unchanged.`
+      );
     }
   };
 
@@ -589,39 +687,30 @@ export default function App() {
     }
   };
 
-  // Handle Gemini AI Deep Packet Analysis
-  const handleRunAiAnalyze = async (packet: TelemetryPacket) => {
-    try {
-      const response = await fetch('/api/v1/agent/ai-analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packet })
-      });
-      return await response.json();
-    } catch (err) {
-      return {
-        threatScore: 96,
-        verdict: 'BLOCK',
-        analysisEn:
-          'Deep AI inspection confirmed zero-day malicious pattern matching active threat intelligence.',
-        analysisAr:
-          'أكد فحص الذكاء الاصطناعي وجود نمط هجومي خطير يطابق استخبارات التهديدات المستحدثة.'
-      };
-    }
-  };
+  // Deep packet analysis. Transport and validation live in src/lib/aiAnalysis.ts; a failure
+  // comes back as an explicit error, never as an invented verdict.
+  const handleRunAiAnalyze = (packet: TelemetryPacket) => runAiAnalysis(packet);
 
   // Handle Unban Host
+  // The host leaves the quarantine list only after the server confirms the
+  // unban. A failed request must not make a still-banned host look released.
   const handleUnbanHost = async (ip: string) => {
     try {
-      await fetch('/api/v1/agent/unban', {
+      const response = await fetch('/api/v1/agent/unban', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ip })
       });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      setQuarantinedHosts(prev => prev.filter(h => h.ip !== ip));
     } catch (err) {
-      console.warn('Unban error:', err);
+      const reason = err instanceof Error ? err.message : String(err);
+      setOperatorError(
+        lang === 'ar'
+          ? `فشل رفع الحظر عن ${ip} (${reason}). المضيف ما زال محظورًا.`
+          : `Unban of ${ip} failed (${reason}). The host is still banned.`
+      );
     }
-    setQuarantinedHosts(prev => prev.filter(h => h.ip !== ip));
   };
 
   // Complete Telemetry, Quarantine & Graph Reset (Zero-State Reset)
@@ -674,6 +763,21 @@ export default function App() {
       className={`min-h-screen bg-black text-[#e6edf3] antialiased ${isAr ? 'rtl' : 'ltr'}`}
       dir={isAr ? 'rtl' : 'ltr'}
     >
+      {operatorError && (
+        <div
+          role="alert"
+          className="fixed inset-x-4 bottom-4 z-[100] mx-auto flex max-w-xl items-start gap-3 rounded-lg border border-rose-500/60 bg-black px-4 py-3 font-mono text-xs text-rose-300"
+        >
+          <span className="flex-1">{operatorError}</span>
+          <button
+            type="button"
+            onClick={() => setOperatorError(null)}
+            className="text-rose-200 underline"
+          >
+            {isAr ? 'إغلاق' : 'Dismiss'}
+          </button>
+        </div>
+      )}
       {/* Sleek Minimal Top Status Bar (Button-Free) */}
       <Navbar
         activeTab={activeTab}
@@ -711,323 +815,322 @@ export default function App() {
         className={`${isSidebarPinned ? (isAr ? 'mr-64' : 'ml-64') : isAr ? 'mr-16' : 'ml-16'} flex min-h-[calc(100vh-48px)] flex-col p-4 transition-all duration-300 sm:p-6 lg:p-8`}
       >
         <Suspense fallback={<ConsoleLoading isAr={isAr} />}>
-        {/* VIEW 1: Live Site Traffic & Security Inspector */}
-        {/* CYBERDEFEND: the orbital command surface. Rendered full-bleed rather
+          {/* VIEW 1: Live Site Traffic & Security Inspector */}
+          {/* CYBERDEFEND: the orbital command surface. Rendered full-bleed rather
             than inside the max-w-7xl column, because the globe theatre and the
             floating cards are positioned against the viewport. */}
-        {activeTab === 'cyberdefend' && <CyberDefendPlatform lang={lang} />}
+          {activeTab === 'cyberdefend' && <CyberDefendPlatform lang={lang} />}
 
-        {activeTab === 'site_inspector' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <SiteTrafficSecurityInspector lang={lang} />
-          </div>
-        )}
-
-        {/* VIEW 2: SOC Command & Attack Graph (Blue Team SOC) */}
-        {activeTab === 'blue_team_soc' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <BlueTeamConsole lang={lang} />
-          </div>
-        )}
-
-        {/* VIEW 3: Multi-Vector Cyber Threat Labs & Adversarial Arena */}
-        {activeTab === 'threat_labs' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <ThreatLabsStudio lang={lang} />
-          </div>
-        )}
-
-        {/* VIEW 4: File Integrity (FIM) & Digital Forensics Vault */}
-        {activeTab === 'fim_forensics' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <FimForensicsCenter lang={lang} />
-          </div>
-        )}
-
-        {/* ---- Network & kernel ---- */}
-        {activeTab === 'topology' && (
-          <div className="mx-auto w-full max-w-[1600px]">
-            <CyberTopologyMap lang={lang} />
-          </div>
-        )}
-
-        {activeTab === 'kernel_perf' && (
-          <div className="mx-auto w-full max-w-[1600px]">
-            <KernelIngressPerformanceCenter lang={lang} />
-          </div>
-        )}
-
-        {/* ---- Analytics & intelligence ---- */}
-        {activeTab === 'soc_analytics' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <SocAnalyticsDashboard lang={lang} />
-          </div>
-        )}
-
-        {activeTab === 'threat_intel' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <ThreatIntelStudio
-              lang={lang}
-              ingestedDatasets={ingestedDatasets}
-              intelMetrics={intelMetrics}
-              isIngesting={isIngesting}
-              onIngestDataset={handleIngestDataset}
-            />
-          </div>
-        )}
-
-        {activeTab === 'behavioral' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <BehavioralAnomalyStudio lang={lang} />
-          </div>
-        )}
-
-        {/* ---- Defense & response ---- */}
-        {activeTab === 'defense_overview' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <DefenseOverview
-              lang={lang}
-              quarantinedHosts={quarantinedHosts}
-              onUnbanHost={handleUnbanHost}
-            />
-          </div>
-        )}
-
-        {activeTab === 'live_protection' && !can('ADMIN') && (
-          <p className="mx-auto mb-2 w-full max-w-7xl text-xs text-amber-300">
-            {lang === 'ar'
-              ? `مفتاح التكامل يظهر لدور المسؤول فقط؛ دورك ${operator.role}.`
-              : `The integration key is shown to ADMIN only; your role is ${operator.role}.`}
-          </p>
-        )}
-        {activeTab === 'live_protection' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <LiveWebsiteProtection
-              lang={lang}
-              apiKey={apiKey}
-              onRotateKey={handleRotateKey}
-              onTestProtection={handleTestProtection}
-            />
-          </div>
-        )}
-
-        {activeTab === 'deception' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <DeceptionCommandCenter lang={lang} />
-          </div>
-        )}
-
-        {/* ---- Simulation & tooling ----
-             The simulator, the graph it feeds and the resulting packet log are
-             one workflow, so they share a view rather than three tabs. */}
-        {activeTab === 'attack_sim' && (
-          <div className="mx-auto w-full max-w-[1600px] space-y-5">
-            <AttackSimulator
-              lang={lang}
-              isStreaming={isStreaming}
-              onInjectPacket={handleInjectPacket}
-              onToggleContinuousStream={handleToggleContinuousStream}
-              latestGeneratedRules={latestGeneratedRules}
-            />
-            <AttackGraph
-              lang={lang}
-              nodes={nodes}
-              edges={edges}
-              activePackets={packetLogs}
-              onToggleIsolateNode={handleToggleIsolateNode}
-            />
-            <PacketLogsStream
-              lang={lang}
-              packets={packetLogs}
-              onInspectPacket={setInspectingPacket}
-              onClearLogs={() => setPacketLogs([])}
-            />
-          </div>
-        )}
-
-        {activeTab === 'digital_twin' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <DigitalTwinSimulator lang={lang} />
-          </div>
-        )}
-
-        {activeTab === 'forensics_vault' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <ForensicsVault lang={lang} />
-          </div>
-        )}
-
-        {activeTab === 'threat_corpus' && (
-          <div className="mx-auto w-full max-w-[1500px]">
-            <ThreatCorpusConsole lang={lang} />
-          </div>
-        )}
-
-        {activeTab === 'pro_tools' && (
-          <div className="mx-auto w-full max-w-7xl">
-            <ProCyberTools lang={lang} />
-          </div>
-        )}
-
-        {/* VIEW 5: 3D Global Threat Heatmap - FOCUS MODE (Massive Padding & Empty Space) */}
-        {activeTab === 'threat_heatmap' && (
-          <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-start space-y-5 py-2">
-            {/* Posture strip — four numbers a reviewer reads first. Quiet by
-                default; only a live critical count carries colour. */}
-            <PostureStrip
-              lang={lang}
-              flightMode={flightMode}
-              threatsBlocked={systemStatus.totalThreatsBlocked}
-            />
-
-            {/* Triage first. Mature consoles lead with the prioritised queue —
-                the analyst works a list, and opens a picture only once a row
-                earns it. This is the working surface of the platform. */}
-            <IncidentQueue lang={lang} />
-
-            {/* What the traffic is doing, where it comes from, how it is absorbed. */}
-            <SecurityAnalyticsRow lang={lang} />
-
-            {/* Coverage: the canonical MITRE view a security reviewer looks for. */}
-            <MitreMatrix lang={lang} />
-
-            {/* The attack line: how far an adversary got, and which control
-                owns each stage of the chain. */}
-            <KillChainPanel lang={lang} />
-
-            {/* The same story as a relationship path: actor -> controls -> assets. */}
-            <AttackPathGraph lang={lang} stoppedAt={1} actorIp="194.26.29.112" />
-
-            {/* Protection stack: what stops what, and where. */}
-            <DefenseLayersPanel lang={lang} />
-
-            {/* Exhibition mode leads the console: it is the surface a judging
-                panel is walked through, and every stage in it advances on a real
-                classifier response rather than a scripted animation. */}
-            <ExhibitionMode lang={lang} />
-
-            {/* Kernel telemetry HUD. Reads from the eBPF, FIM, agent and
-                inference-posture endpoints; every card shows an em dash rather
-                than a zero where its source did not answer. */}
-            <TelemetryHud telemetry={sdTelemetry} lang={lang} />
-
-            {/* Service topology and the audit log side by side. The table is
-                wider because it is where an analyst works for long stretches. */}
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
-              <div className="xl:col-span-2">
-                <EbpfTopologyGraph
-                  nodes={sdTelemetry.nodes}
-                  threats={sdThreatNodes}
-                  lang={lang}
-                  onIsolate={setSdIsolationTarget}
-                />
-              </div>
-              <div className="xl:col-span-3">
-                <ThreatAuditTable
-                  events={sdFeed.events}
-                  freshIds={sdFeed.freshIds}
-                  loading={sdFeed.loading}
-                  error={sdFeed.error}
-                  lang={lang}
-                  onIsolate={setSdIsolationTarget}
-                  isolating={sdIsolation.pending}
-                />
-              </div>
+          {activeTab === 'site_inspector' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <SiteTrafficSecurityInspector lang={lang} />
             </div>
+          )}
 
-            {/* Where the platform's own accuracy claim comes from: an analyst
-                ruling on live detections. Placed after the defence stack because
-                it is about how the detector is judged, not how it protects. */}
-            <AdjudicationPanel lang={lang} />
+          {/* VIEW 2: SOC Command & Attack Graph (Blue Team SOC) */}
+          {activeTab === 'blue_team_soc' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <BlueTeamConsole lang={lang} />
+            </div>
+          )}
 
-            {/* Where the corpus stands, how it is folded, and whether the traffic
-                has moved since. Sits under the adjudication surface because it is
-                what that surface feeds. */}
-            <CorpusIntelPanel lang={lang} />
+          {/* VIEW 3: Multi-Vector Cyber Threat Labs & Adversarial Arena */}
+          {activeTab === 'threat_labs' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <ThreatLabsStudio lang={lang} />
+            </div>
+          )}
 
-            {/* Sovereignty posture, driven by the live configuration rather than
-                printed unconditionally. */}
-            <CompliancePosture
-              lang={lang}
-              zeroEgress={sdTelemetry.inference.zeroExternalApiCalls}
-            />
+          {/* VIEW 4: File Integrity (FIM) & Digital Forensics Vault */}
+          {activeTab === 'fim_forensics' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <FimForensicsCenter lang={lang} />
+            </div>
+          )}
 
-            {/* Geographic context last. It needs the full width — the map owns
-                floating overlays that collide the moment the column narrows. */}
-            <div className="soc-panel flex h-[520px] overflow-hidden p-2">
-              <AutonomousThreatMap
+          {/* ---- Network & kernel ---- */}
+          {activeTab === 'topology' && (
+            <div className="mx-auto w-full max-w-[1600px]">
+              <CyberTopologyMap lang={lang} />
+            </div>
+          )}
+
+          {activeTab === 'kernel_perf' && (
+            <div className="mx-auto w-full max-w-[1600px]">
+              <KernelIngressPerformanceCenter lang={lang} />
+            </div>
+          )}
+
+          {/* ---- Analytics & intelligence ---- */}
+          {activeTab === 'soc_analytics' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <SocAnalyticsDashboard lang={lang} />
+            </div>
+          )}
+
+          {activeTab === 'threat_intel' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <ThreatIntelStudio
                 lang={lang}
-                isKioskMode={false}
-                onToggleKiosk={() => setIsKioskMode(true)}
+                ingestedDatasets={ingestedDatasets}
+                intelMetrics={intelMetrics}
+                isIngesting={isIngesting}
+                onIngestDataset={handleIngestDataset}
               />
             </div>
-          </div>
-        )}
+          )}
+
+          {activeTab === 'behavioral' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <BehavioralAnomalyStudio lang={lang} />
+            </div>
+          )}
+
+          {/* ---- Defense & response ---- */}
+          {activeTab === 'defense_overview' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <DefenseOverview
+                lang={lang}
+                quarantinedHosts={quarantinedHosts}
+                onUnbanHost={handleUnbanHost}
+              />
+            </div>
+          )}
+
+          {activeTab === 'live_protection' && !can('ADMIN') && (
+            <p className="mx-auto mb-2 w-full max-w-7xl text-xs text-amber-300">
+              {lang === 'ar'
+                ? `مفتاح التكامل يظهر لدور المسؤول فقط؛ دورك ${operator.role}.`
+                : `The integration key is shown to ADMIN only; your role is ${operator.role}.`}
+            </p>
+          )}
+          {activeTab === 'live_protection' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <LiveWebsiteProtection
+                lang={lang}
+                apiKey={apiKey}
+                onRotateKey={handleRotateKey}
+                onTestProtection={handleTestProtection}
+              />
+            </div>
+          )}
+
+          {activeTab === 'deception' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <DeceptionCommandCenter lang={lang} />
+            </div>
+          )}
+
+          {/* ---- Simulation & tooling ----
+             The simulator, the graph it feeds and the resulting packet log are
+             one workflow, so they share a view rather than three tabs. */}
+          {activeTab === 'attack_sim' && (
+            <div className="mx-auto w-full max-w-[1600px] space-y-5">
+              <AttackSimulator
+                lang={lang}
+                isStreaming={isStreaming}
+                onInjectPacket={handleInjectPacket}
+                onToggleContinuousStream={handleToggleContinuousStream}
+                latestGeneratedRules={latestGeneratedRules}
+              />
+              <AttackGraph
+                lang={lang}
+                nodes={nodes}
+                edges={edges}
+                activePackets={packetLogs}
+                onToggleIsolateNode={handleToggleIsolateNode}
+              />
+              <PacketLogsStream
+                lang={lang}
+                packets={packetLogs}
+                onInspectPacket={setInspectingPacket}
+                onClearLogs={() => setPacketLogs([])}
+              />
+            </div>
+          )}
+
+          {activeTab === 'digital_twin' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <DigitalTwinSimulator lang={lang} />
+            </div>
+          )}
+
+          {activeTab === 'forensics_vault' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <ForensicsVault lang={lang} />
+            </div>
+          )}
+
+          {activeTab === 'threat_corpus' && (
+            <div className="mx-auto w-full max-w-[1500px]">
+              <ThreatCorpusConsole lang={lang} />
+            </div>
+          )}
+
+          {activeTab === 'pro_tools' && (
+            <div className="mx-auto w-full max-w-7xl">
+              <ProCyberTools lang={lang} />
+            </div>
+          )}
+
+          {/* VIEW 5: 3D Global Threat Heatmap - FOCUS MODE (Massive Padding & Empty Space) */}
+          {activeTab === 'threat_heatmap' && (
+            <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col justify-start space-y-5 py-2">
+              {/* Posture strip — four numbers a reviewer reads first. Quiet by
+                default; only a live critical count carries colour. */}
+              <PostureStrip
+                lang={lang}
+                flightMode={flightMode}
+                threatsBlocked={systemStatus.totalThreatsBlocked}
+              />
+
+              {/* Triage first. Mature consoles lead with the prioritised queue —
+                the analyst works a list, and opens a picture only once a row
+                earns it. This is the working surface of the platform. */}
+              <IncidentQueue lang={lang} />
+
+              {/* What the traffic is doing, where it comes from, how it is absorbed. */}
+              <SecurityAnalyticsRow lang={lang} />
+
+              {/* Coverage: the canonical MITRE view a security reviewer looks for. */}
+              <MitreMatrix lang={lang} />
+
+              {/* The attack line: how far an adversary got, and which control
+                owns each stage of the chain. */}
+              <KillChainPanel lang={lang} />
+
+              {/* The same story as a relationship path: actor -> controls -> assets. */}
+              <AttackPathGraph lang={lang} stoppedAt={1} actorIp="194.26.29.112" />
+
+              {/* Protection stack: what stops what, and where. */}
+              <DefenseLayersPanel lang={lang} />
+
+              {/* Exhibition mode leads the console: it is the surface a judging
+                panel is walked through, and every stage in it advances on a real
+                classifier response rather than a scripted animation. */}
+              <ExhibitionMode lang={lang} />
+
+              {/* Kernel telemetry HUD. Reads from the eBPF, FIM, agent and
+                inference-posture endpoints; every card shows an em dash rather
+                than a zero where its source did not answer. */}
+              <TelemetryHud telemetry={sdTelemetry} lang={lang} />
+
+              {/* Service topology and the audit log side by side. The table is
+                wider because it is where an analyst works for long stretches. */}
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+                <div className="xl:col-span-2">
+                  <EbpfTopologyGraph
+                    nodes={sdTelemetry.nodes}
+                    threats={sdThreatNodes}
+                    lang={lang}
+                    onIsolate={setSdIsolationTarget}
+                  />
+                </div>
+                <div className="xl:col-span-3">
+                  <ThreatAuditTable
+                    events={sdFeed.events}
+                    freshIds={sdFeed.freshIds}
+                    loading={sdFeed.loading}
+                    error={sdFeed.error}
+                    lang={lang}
+                    onIsolate={setSdIsolationTarget}
+                    isolating={sdIsolation.pending}
+                  />
+                </div>
+              </div>
+
+              {/* Where the platform's own accuracy claim comes from: an analyst
+                ruling on live detections. Placed after the defence stack because
+                it is about how the detector is judged, not how it protects. */}
+              <AdjudicationPanel lang={lang} />
+
+              {/* Where the corpus stands, how it is folded, and whether the traffic
+                has moved since. Sits under the adjudication surface because it is
+                what that surface feeds. */}
+              <CorpusIntelPanel lang={lang} />
+
+              {/* Sovereignty posture, driven by the live configuration rather than
+                printed unconditionally. */}
+              <CompliancePosture
+                lang={lang}
+                zeroEgress={sdTelemetry.inference.zeroExternalApiCalls}
+              />
+
+              {/* Geographic context last. It needs the full width — the map owns
+                floating overlays that collide the moment the column narrows. */}
+              <div className="soc-panel flex h-[520px] overflow-hidden p-2">
+                <AutonomousThreatMap
+                  lang={lang}
+                  isKioskMode={false}
+                  onToggleKiosk={() => setIsKioskMode(true)}
+                />
+              </div>
+            </div>
+          )}
         </Suspense>
       </main>
 
       {/* Modals load on first open; nothing to show while their chunk arrives. */}
       <Suspense fallback={null}>
+        {/* Pure SOC Wall Kiosk Display (Hides All Navigation & Shows Map + Auto-Ticker) */}
+        {isKioskMode && <KioskModeWrapper lang={lang} onExitKiosk={() => setIsKioskMode(false)} />}
 
-      {/* Pure SOC Wall Kiosk Display (Hides All Navigation & Shows Map + Auto-Ticker) */}
-      {isKioskMode && <KioskModeWrapper lang={lang} onExitKiosk={() => setIsKioskMode(false)} />}
+        {/* AI Deep Threat Inspector Modal */}
+        {inspectingPacket && (
+          <AiAnalysisModal
+            packet={inspectingPacket}
+            onClose={() => setInspectingPacket(null)}
+            onRunAiAnalyze={handleRunAiAnalyze}
+            lang={lang}
+          />
+        )}
 
-      {/* AI Deep Threat Inspector Modal */}
-      {inspectingPacket && (
-        <AiAnalysisModal
-          packet={inspectingPacket}
-          onClose={() => setInspectingPacket(null)}
-          onRunAiAnalyze={handleRunAiAnalyze}
+        {/* Multi-Channel Alerts Configuration Modal (Feature 3) */}
+        <AlertConfigModal
+          isOpen={isAlertModalOpen}
+          onClose={() => setIsAlertModalOpen(false)}
           lang={lang}
         />
-      )}
 
-      {/* Multi-Channel Alerts Configuration Modal (Feature 3) */}
-      <AlertConfigModal
-        isOpen={isAlertModalOpen}
-        onClose={() => setIsAlertModalOpen(false)}
-        lang={lang}
-      />
+        {/* Manual Approval Queue Modal (Feature 5) */}
+        <ManualApprovalModal
+          isOpen={isApprovalModalOpen}
+          onClose={() => setIsApprovalModalOpen(false)}
+          lang={lang}
+          queue={approvalQueue}
+          onActionComplete={() => {
+            fetchApprovalQueue();
+            syncServerState();
+          }}
+        />
 
-      {/* Manual Approval Queue Modal (Feature 5) */}
-      <ManualApprovalModal
-        isOpen={isApprovalModalOpen}
-        onClose={() => setIsApprovalModalOpen(false)}
-        lang={lang}
-        queue={approvalQueue}
-        onActionComplete={() => {
-          fetchApprovalQueue();
-          syncServerState();
-        }}
-      />
+        {/* MoD War Games Executive Red Team Presentation Simulator */}
+        <MoDWarGamesSimulator
+          isOpen={isWarGamesOpen}
+          onClose={() => setIsWarGamesOpen(false)}
+          lang={lang}
+          onForceHeatmapTab={() => setActiveTab('threat_heatmap')}
+        />
 
-      {/* MoD War Games Executive Red Team Presentation Simulator */}
-      <MoDWarGamesSimulator
-        isOpen={isWarGamesOpen}
-        onClose={() => setIsWarGamesOpen(false)}
-        lang={lang}
-        onForceHeatmapTab={() => setActiveTab('threat_heatmap')}
-      />
+        {/* System Readiness & Compliance Certificate (NIST SP 800-207 & MoD SCDS-2026-V9) */}
+        <SystemComplianceReport
+          isOpen={isComplianceReportOpen}
+          onClose={() => setIsComplianceReportOpen(false)}
+          isAr={lang === 'ar'}
+        />
 
-      {/* System Readiness & Compliance Certificate (NIST SP 800-207 & MoD SCDS-2026-V9) */}
-      <SystemComplianceReport
-        isOpen={isComplianceReportOpen}
-        onClose={() => setIsComplianceReportOpen(false)}
-        isAr={lang === 'ar'}
-      />
-
-      <IsolationProtocol
-        target={sdIsolationTarget}
-        onClose={() => {
-          setSdIsolationTarget(null);
-          sdIsolation.clearResult();
-        }}
-        onConfirm={sdIsolation.isolate}
-        onRelease={sdIsolation.release}
-        pending={sdIsolation.pending}
-        result={sdIsolation.result}
-        lang={lang}
-      />
+        <IsolationProtocol
+          target={sdIsolationTarget}
+          onClose={() => {
+            setSdIsolationTarget(null);
+            sdIsolation.clearResult();
+          }}
+          onConfirm={sdIsolation.isolate}
+          onRelease={sdIsolation.release}
+          pending={sdIsolation.pending}
+          result={sdIsolation.result}
+          lang={lang}
+        />
       </Suspense>
     </div>
   );
@@ -1036,7 +1139,10 @@ export default function App() {
 /** Shown in the content area while a console's chunk loads. States what is happening, nothing more. */
 function ConsoleLoading({ isAr }: { isAr: boolean }) {
   return (
-    <p className="py-10 text-center font-mono text-xs tracking-widest text-cyan-400/70" role="status">
+    <p
+      className="py-10 text-center font-mono text-xs tracking-widest text-cyan-400/70"
+      role="status"
+    >
       {isAr ? 'جارٍ تحميل الكونسول…' : 'LOADING CONSOLE…'}
     </p>
   );

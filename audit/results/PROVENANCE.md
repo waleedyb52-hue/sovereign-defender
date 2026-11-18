@@ -53,3 +53,12 @@ rewriting published history, which this project does not do; it is disclosed her
 | `reeval_sealed_httpparams_99fa259.json`, `reeval_sealed_fwaf_99fa259.json` | `SD_EVAL_SEALED=1` | `99fa259` | **re-evaluation** of the final code, not new evidence |
 | `dev_httpparams_99fa259.json` | `eval_external_httpparams.ts`, `SD_EVAL_SEALED=1` | `99fa259` | regression figure |
 | `perf_ab_c435d2e_vs_27267a2.json` | `scripts/perf-ab.mjs --checkout` | `c435d2e` vs `27267a2` | interleaved, fresh worktrees and databases on both sides |
+| `fwaf_{dev,validation,benign}_before_eec3fea.json` | `audit/fwaf_dev_eval.ts` | classifier at `eec3fea` | before the second-source rules; regenerated with the classifier changes stashed, after an argument-parsing bug had written the first copies to the wrong paths |
+| `fwaf_{dev,validation,benign}_after_rules.json` | `audit/fwaf_dev_eval.ts` | `cfda6e8` | after; the validation chunk was never read |
+| `sealed_fwaf_indist_cfda6e8.json` | `eval_external_httpparams.ts`, `SD_EVAL_SEALED=1` | `cfda6e8` | Fwaf sealed test after developing on the same source: **in-distribution**, scored once |
+| `reeval_sealed_httpparams_cfda6e8.json` | same | `cfda6e8` | re-evaluation |
+| `egress_cfda6e8.json` | `zero-egress-check.mjs` | `cfda6e8` | 60 s soak |
+| `perf_ab_faad341_vs_cfda6e8.json` | `perf-ab.mjs --checkout` | `faad341` vs `cfda6e8` | interleaved; ranges overlap, no claim |
+| `modsec_independent_manifest.json` | `audit/build_modsec_independent.mjs` | — | Zenodo 17178461 `owasp.zip`: archive md5/SHA-256, SHA-256 of each of the 30 logs, split rule, test/reserve hashes and class counts. No payloads |
+| `independent_modsec_test_1a62551.json`, `independent_modsec_summary_1a62551.json` | `audit/eval_independent.ts`, `audit/summarize_independent.mjs` | `1a62551` (detector identical to `5b564ec`) | **the independent result**, scored once under the protocol committed in `e3da1b5`; aggregate only |
+| `independent_modsec_test_{2ab323e,faad341}.json`, `independent_modsec_summary_{2ab323e,faad341}.json` | same | `2ab323e`, `faad341` (detached worktrees, fresh servers) | earlier frozen versions on the same test file, run after the primary result; no rule changed in between |

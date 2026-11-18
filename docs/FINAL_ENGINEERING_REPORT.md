@@ -14,6 +14,7 @@ Detailed tables: [`IMPROVEMENT_EVIDENCE.md`](IMPROVEMENT_EVIDENCE.md) · per-cha
 |---|---|---|
 | External recall +20 pp, held-out | HttpParams sealed half **40.54% → 97.28%** (+56.7 pp), FP 0 / 9,664 | Yes, in-distribution |
 | — on a second, independent source | Fwaf sealed test **38.94% → 41.60%** (+2.7 pp), FP 9 → 12 of 10,000 | **No** |
+| — after the follow-up work on that source (section 4d) | Fwaf sealed test **41.60% → 67.24%**; never-read validation chunk 40.72% → 67.38%. **In-distribution** now: Fwaf is no longer an independent test | n/a — a third, untouched dataset is needed for an out-of-distribution claim |
 | Throughput +20% | Final code against the baseline, interleaved on the same machine the same day: median **172.6 → 316.9 req/s (+83.6 %)**, ranges 156–181 vs 306–648, no overlap. (Pass-day figures: 172.8–205.4 → 510.6–555.1.) | Yes |
 | p95 at 100 clients not worse | Same interleaved run: median p95 772.5 → 425.1 ms | Yes |
 | No regressions | lint 0 errors, unit 251 / 251, build ok, audit suite 94 / 94 (Windows and Linux CI), Set A / Set B unchanged, dev-half gate at its floors | Yes |
@@ -102,6 +103,17 @@ thresholds and every class; Set A and Set B unchanged (all three enforced by the
 API contracts otherwise unchanged: `ClassificationResult` and the `/api/v1/agent/ai-analyze`
 response keep their fields; `classifyPayload()` gained an optional second argument used only by
 harnesses.
+
+## 4d. Follow-ups after the merge (branch `improvement/followups-defense`)
+
+Started from the merged `main` (`faad341`). Full record: EXPERIMENT_LOG cycle 7.
+
+| Follow-up | Result |
+|---|---|
+| Console honesty (`315b63c`) | The deep-analysis modal no longer invents a verdict on a network failure, no longer renders an error reply as an analysis, no longer draws fixed "XAI" percentages, and names the engine that actually ran. Transport and zod validation in `src/lib/aiAnalysis.ts` |
+| Per-caller budget (`eec3fea`) | 64 MiB of payload per caller per minute (principal + TCP peer), 256-char floor per request, 429 + `Retry-After` when spent; verified evaluation exempt. Real-server check in CI. No effect on the audit suite or the perf benchmark at the default |
+| Second-source gaps (`cfda6e8`) | 22 structural rules (shell expansion, Windows cmd, PHP complex syntax, RFI, HTML injection without `<script>`) plus named-entity and NFKC canonicalisation. Fwaf: dev 40.57 → 66.79 %, never-read validation 40.72 → 67.38 %, sealed 41.60 → 67.24 % (in-distribution). Benign-labelled flags rose 131 → 1,565 of 100 k on the dev side, every new one a scanner probe the source mislabels; 0 genuine false positives found. HttpParams FP stayed 0. Set B Tier 2 3 → 4 is a side effect of NFKC and is not counted |
+| Throughput | Interleaved `faad341` vs `cfda6e8`: no regression measured (ranges overlap; same-code runs varied 4× that day) |
 
 ## 5. Before / after
 
@@ -251,10 +263,17 @@ Expected SHA-256: `payload_full.csv` `a4e62ba1…f03d`; dev half `45cf0f1c…319
   analysed structurally (a cost bound; section 4b). An injection with more than 128 KB of filler
   on both sides is judged by the signature rules alone. The usual padding attack — filler first,
   injection last — is covered at any size.
-- **No request-count limit on the sovereign path.** After the srcIp fix the self-DoS limiter
-  applies only to the external-model path, keyed on the caller. The local path is bounded per
-  request (1 MiB, linear rules, roughly 0.1 s per MB of signature work) but an authenticated
-  caller can still send many requests. A cost-based per-caller budget is the next step.
+- **Per-caller budget, not a global one.** Since section 4d each caller (principal + TCP peer)
+  gets 64 MiB of classification per minute. Many distinct authenticated callers together are
+  not capped; a global ceiling would be the next step if that matters for a deployment.
+- **No independent test set is left.** HttpParams and Fwaf have both been developed against;
+  their sealed figures are in-distribution. Any claim about unseen attack sources needs a third
+  dataset, scored once.
+- **Fwaf "benign" labels are unusable as a false-positive measure.** About 1.6 % of its
+  benign-labelled lines are scanner probes (RFI to 192.168.202.x and cirt.net, Nessus command
+  probes); on the dev side every newly flagged one was read and none was benign. Real-world
+  false-positive evidence still rests on HttpParams (0 / 19,304) and the hand-written
+  look-alike tests.
 - **Write-behind trade-off.** A normal stop (SIGINT, SIGTERM, Ctrl+C, docker stop) now flushes
   the buffer. A hard kill (SIGKILL, `taskkill /F`, Windows TerminateProcess, OOM, crash, power
   loss) still loses up to 50 ms or 256 pending-review rows. Labels and the audit trail are
@@ -294,14 +313,14 @@ PR #2; nothing is merged.
 
 ## 11. Recommended next engineering priorities
 
-0. **A cost-based per-caller budget on the sovereign path** (bytes classified per minute per
-   principal), now that identity comes from the server rather than the request body.
-1. **Third independent evaluation set** with class labels (for example a SQLi corpus not built
-   with sqlmap), scored once, before any further SQLi claim.
-2. **Second-source gap, by size:** encoded command injection (commix-style `$(echo …)`,
-   `$((a+b))`, `$IFS`), XSS markup without script tags (`<meta http-equiv>`, attribute
-   injection), remote file inclusion (URL in a path-like parameter). Develop on Fwaf attack lines
-   outside the sealed ranks, which are allowed; keep the sealed ranks closed.
+*Done in section 4d: the per-caller budget and the second-source gaps.*
+
+1. **Third independent evaluation set** with class labels and modern API traffic, scored once.
+   Both existing sources have now been developed against, so this is the only way to make an
+   out-of-distribution claim again.
+2. **Remaining Fwaf misses** (~33 % of attack lines): mostly scanner requests for script paths
+   with no payload, and the scanner marker `XXpathXX`, which were deliberately not written as
+   rules.
 3. **Scanner probes with no payload** (requests for `/javascript/java.exe`) cannot be judged from
    the payload. They need request-rate or path-reputation signals, not rules.
 4. Decide whether evaluation should send no `vector` (threshold 55) and republish both figures.

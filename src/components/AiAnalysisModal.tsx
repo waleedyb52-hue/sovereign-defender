@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ModalShell } from './ui/modal';
 import { TelemetryPacket } from '../types';
+import type { AnalyzeOutcome } from '../lib/aiAnalysis';
 import {
   Sparkles,
   X,
@@ -17,7 +18,7 @@ import {
 interface AiAnalysisModalProps {
   packet: TelemetryPacket | null;
   onClose: () => void;
-  onRunAiAnalyze: (packet: TelemetryPacket) => Promise<any>;
+  onRunAiAnalyze: (packet: TelemetryPacket) => Promise<AnalyzeOutcome>;
   lang: 'ar' | 'en';
 }
 
@@ -30,7 +31,9 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
   const isAr = lang === 'ar';
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [aiResult, setAiResult] = useState<any>(null);
+  const [outcome, setOutcome] = useState<AnalyzeOutcome | null>(null);
+  const aiResult = outcome?.kind === 'ok' ? outcome.result : null;
+  const failure = outcome?.kind === 'error' ? outcome : null;
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   // The manual window-level Escape listener was removed: it fired even when
@@ -62,14 +65,22 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
   const handleTriggerAnalysis = async () => {
     setIsLoading(true);
     try {
-      const res = await onRunAiAnalyze(packet);
-      setAiResult(res);
-    } catch (err) {
-      console.error('AI Analysis failed:', err);
+      setOutcome(await onRunAiAnalyze(packet));
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Which engine actually produced the verdict. The panel used to say "Gemini" whatever
+  // ran; on a sovereign deployment the only engine is the local classifier.
+  const engineLabel = aiResult
+    ? aiResult.aiGenerated
+      ? isAr ? 'نموذج خارجي (Gemini)' : 'External model (Gemini)'
+      : isAr ? 'المصنّف المحلي' : 'Local classifier'
+    : null;
+  const analysisText = aiResult
+    ? (isAr ? aiResult.analysisAr || aiResult.analysisEn : aiResult.analysisEn || aiResult.analysisAr)
+    : packet.reason;
 
   const iptablesRule =
     aiResult?.rules?.iptables ||
@@ -102,9 +113,7 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-white">
-                {isAr
-                  ? 'الفحص التكتيكي للتهديد بالذكاء الاصطناعي (Gemini AI Inspector)'
-                  : 'Deep AI Threat & Kernel Defense Inspector'}
+                {isAr ? 'التحليل العميق للحزمة' : 'Deep packet analysis'}
               </h3>
               <p className="font-mono text-xs text-slate-400">
                 Target: {packet.srcIp} → {packet.dstIp}:{packet.port} ({packet.vector})
@@ -157,13 +166,15 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
           </div>
         </div>
 
-        {/* Gemini AI Deep Reasoning Box */}
+        {/* Analysis result */}
         <div className="space-y-3 rounded-xl border border-cyan-500/30 bg-gradient-to-br from-cyan-950/40 via-slate-950 to-slate-900 p-4">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
               <Sparkles className="h-4 w-4" />
               <span>
-                {isAr ? 'تحليل نموذج Gemini 3.7 Flash المتقدم:' : 'Gemini AI Deep Reasoning:'}
+                {engineLabel
+                  ? `${isAr ? 'نتيجة' : 'Result from'}: ${engineLabel}`
+                  : isAr ? 'التحليل:' : 'Analysis:'}
               </span>
             </span>
 
@@ -184,63 +195,80 @@ export const AiAnalysisModal: React.FC<AiAnalysisModalProps> = ({
                     ? isAr
                       ? 'جاري التحليل...'
                       : 'Analyzing...'
-                    : isAr
-                      ? 'تحليل الآن'
-                      : 'Run Deep Analysis'}
+                    : failure
+                      ? isAr
+                        ? 'إعادة المحاولة'
+                        : 'Retry'
+                      : isAr
+                        ? 'تحليل الآن'
+                        : 'Run analysis'}
                 </span>
               </button>
             )}
           </div>
 
-          <p className="font-sans text-xs leading-relaxed text-slate-200">
-            {aiResult?.analysisAr || aiResult?.analysisEn || packet.reason}
-          </p>
+          {failure && (
+            <div role="alert" className="rounded-lg border border-rose-500/40 bg-rose-950/40 p-3 font-sans text-xs text-rose-200">
+              <span className="block font-bold">
+                {isAr ? 'تعذّر التحليل — لا يوجد حكم.' : 'Analysis failed — there is no verdict.'}
+              </span>
+              <span className="block font-mono text-[11px] text-rose-300">
+                {failure.status ?? (isAr ? 'لا استجابة' : 'no response')} · {failure.code}
+              </span>
+              {(isAr ? failure.messageAr || failure.message : failure.message || failure.messageAr) && (
+                <span className="mt-1 block">
+                  {isAr ? failure.messageAr || failure.message : failure.message || failure.messageAr}
+                </span>
+              )}
+            </div>
+          )}
 
-          {/* Explainable AI (XAI) Feature Attribution Weights */}
+          <p className="font-sans text-xs leading-relaxed text-slate-200">{analysisText}</p>
+
+          {/* What actually fired. This replaces four fixed "XAI attribution" bars (38/32/18/12 %)
+              that were drawn the same for every packet — numbers that measured nothing. */}
           <div className="space-y-1.5 border-t border-cyan-500/20 pt-2 text-xs">
             <span className="mb-1 block text-[11px] font-bold text-slate-300">
-              {isAr
-                ? 'أوزان الميزات المفسرة للقرار (Explainable AI Attribution):'
-                : 'Explainable AI (XAI) Attribution Breakdown:'}
+              {isAr ? 'ما الذي أطلق القرار:' : 'What produced the verdict:'}
             </span>
-            <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
-              <div>
-                <div className="mb-0.5 flex justify-between text-slate-400">
-                  <span>Payload Entropy:</span>
-                  <span className="font-bold text-cyan-300">38%</span>
+            {aiResult?.detection ? (
+              <div className="space-y-1 font-mono text-[11px] text-slate-300">
+                <div>
+                  {isAr ? 'الحكم' : 'Verdict'}: <span className="font-bold text-white">{aiResult.verdict}</span>
+                  {' · '}
+                  {isAr ? 'الصنف' : 'Family'}: <span className="text-cyan-300">{aiResult.detection.family}</span>
+                  {' · '}
+                  {isAr ? 'الدرجة' : 'Score'}: <span className="text-cyan-300">{aiResult.detection.score}</span>
+                  {typeof aiResult.detection.entropy === 'number' && (
+                    <>
+                      {' · '}
+                      {isAr ? 'الإنتروبيا' : 'Entropy'}: <span className="text-cyan-300">{aiResult.detection.entropy}</span>
+                    </>
+                  )}
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full w-[38%] bg-cyan-500"></div>
-                </div>
+                {aiResult.detection.signatures.length ? (
+                  <ul className="list-inside list-disc text-emerald-300">
+                    {aiResult.detection.signatures.map(s => (
+                      <li key={s}>{s}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <span className="block text-slate-400">
+                    {isAr ? 'لم تُطلق أي قاعدة.' : 'No rule fired.'}
+                  </span>
+                )}
               </div>
-              <div>
-                <div className="mb-0.5 flex justify-between text-slate-400">
-                  <span>Signature Match:</span>
-                  <span className="font-bold text-cyan-300">32%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full w-[32%] bg-cyan-500"></div>
-                </div>
-              </div>
-              <div>
-                <div className="mb-0.5 flex justify-between text-slate-400">
-                  <span>Burst Rate Anomaly:</span>
-                  <span className="font-bold text-amber-300">18%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full w-[18%] bg-amber-500"></div>
-                </div>
-              </div>
-              <div>
-                <div className="mb-0.5 flex justify-between text-slate-400">
-                  <span>Packet Size Variance:</span>
-                  <span className="font-bold text-rose-300">12%</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                  <div className="h-full w-[12%] bg-rose-500"></div>
-                </div>
-              </div>
-            </div>
+            ) : (
+              <span className="block font-sans text-[11px] text-slate-400">
+                {aiResult
+                  ? isAr
+                    ? 'هذا المحرك لا يُرجع تفصيلاً مقاساً للإشارات.'
+                    : 'This engine returns no measured signal breakdown.'
+                  : isAr
+                    ? 'شغّل التحليل لعرض القواعد التي أُطلقت فعلاً.'
+                    : 'Run the analysis to see the rules that actually fired.'}
+              </span>
+            )}
           </div>
         </div>
 

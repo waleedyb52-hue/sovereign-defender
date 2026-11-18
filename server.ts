@@ -58,6 +58,7 @@ import { globalIterativeRetrieval } from './server/services/iterativeRetrieval.s
 import { corroborate, corroborationEnabled } from './server/services/corpusCorroboration.service.js';
 import { globalAdjudication, EVALUATION_SOURCE_HEADER } from './server/services/adjudication.service.js';
 import { installGracefulShutdown } from './server/gracefulShutdown.js';
+import { budgetFromEnv } from './server/classificationBudget.js';
 import { globalKernelMitigationDriver } from './server/services/kernelMitigationDriver.js';
 import { globalSelfHealingLedger } from './server/services/selfHealingLedger.service.js';
 import { globalInLineInterceptionEngine } from './server/services/inLineInterception.service.js';
@@ -1814,6 +1815,9 @@ function isVerifiedEvaluation(req: express.Request, caller: Principal | null): b
  */
 const MAX_ANALYZE_PAYLOAD_CHARS = 1_048_576;
 
+/** Per-caller budget of characters classified per minute (server/classificationBudget.ts). */
+const classificationBudget = budgetFromEnv();
+
 // 3. AI Threat Deep Analysis with Gemini API (@google/genai)
 app.post('/api/v1/agent/ai-analyze', async (req, res) => {
   const { packet } = req.body || {};
@@ -1852,6 +1856,21 @@ app.post('/api/v1/agent/ai-analyze', async (req, res) => {
       limitChars: MAX_ANALYZE_PAYLOAD_CHARS,
       receivedChars: payloadStr.length
     });
+  }
+
+  // Per-caller budget for the local classifier. Verified evaluation traffic is exempt: it is
+  // an ADMIN on loopback measuring the detector, and a budget would only distort the run.
+  if (classificationBudget && !evaluation) {
+    const decision = classificationBudget.charge(callerKey(req, caller), payloadStr.length);
+    if (!decision.ok) {
+      res.setHeader('Retry-After', String(decision.retryAfterSec));
+      return res.status(429).json({
+        error: 'CLASSIFICATION_BUDGET_EXCEEDED',
+        message: `This caller has used its classification budget for the minute; retry in ${decision.retryAfterSec} s.`,
+        messageAr: `استنفد هذا المتصل ميزانية التصنيف لهذه الدقيقة؛ أعد المحاولة بعد ${decision.retryAfterSec} ثانية.`,
+        retryAfterSec: decision.retryAfterSec
+      });
+    }
   }
   const aiCacheHash = computeEvaluationHash(safeSrcIp, 'AI_ANALYSIS', packet.vector || 'ANOMALY', payloadStr);
   const cachedAi = evaluationCache.get(aiCacheHash);

@@ -46,6 +46,20 @@ interface Rule {
   family: AttackFamily;
 }
 
+const INCLUDE_PARAM = /(path|dir|root|inc|include|script|lib|base|conf|config|folder|fichero|template)/i;
+const URL_CARRYING_PARAM = /(url|uri|href|link|src)$/i;
+const PARAM_WITH_REMOTE_URL = /[?&;]([\w\[\]"'.-]{1,60})=[ \t]*(?:https?|ftp):\/\//gi;
+
+/** True when a parameter named like an include path/root is given a remote URL. */
+function includeParamWithRemoteUrl(s: string): boolean {
+  PARAM_WITH_REMOTE_URL.lastIndex = 0;
+  for (let m = PARAM_WITH_REMOTE_URL.exec(s); m; m = PARAM_WITH_REMOTE_URL.exec(s)) {
+    const name = m[1].replace(/[\[\]"'.]+/g, '_');
+    if (INCLUDE_PARAM.test(name) && !URL_CARRYING_PARAM.test(name.replace(/_+$/, ''))) return true;
+  }
+  return false;
+}
+
 /**
  * Weights are calibrated so a single unambiguous signature (a script tag, a
  * PHP open tag, a traversal sequence) clears the threshold alone, while
@@ -124,6 +138,57 @@ const RULES: Rule[] = [
     weight: 60, label: 'command with flag or path argument after a separator', family: 'REMOTE_CODE_EXECUTION' },
   { re: /`\s*(uname|whoami|ping\s[^`]{1,60}|cat\s[^`]{1,60}|ls\s[^`]{1,60})\s*`/i,
     weight: 60, label: 'backtick command substitution', family: 'REMOTE_CODE_EXECUTION' },
+
+  // ---- Shell expansion syntax (found missing on the second source's development lines) ----
+  //
+  // Command injection that verifies itself through shell expansion rather than by running a
+  // named command: arithmetic expansion $((a+b)), command substitution $(cmd), $IFS used
+  // as a space, ${#var} length expansion, and test brackets [ n -eq m ]. These are shell
+  // grammar, not any tool's text, and a web parameter has no business containing them.
+  { re: /\$\(\(\s*\d+\s*[-+*\/%]\s*\d+\s*\)\)/, weight: 60, label: 'shell arithmetic expansion', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\$\(\s*(echo|cat|id|uname|whoami|sleep|expr|printf|ls|pwd|wget|curl|nslookup|ping|hostname|tr|wc|base64)\b/i,
+    weight: 65, label: 'shell command substitution', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\$\{?IFS\b/, weight: 60, label: '$IFS used as a separator', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\$\{#\w{1,32}\}/, weight: 45, label: 'shell length expansion', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\[\s+[\w${}#]{1,40}\s+-(eq|ne|gt|lt|ge|le)\s+[\w${}#]{1,40}\s+\]/, weight: 45, label: 'shell test bracket', family: 'REMOTE_CODE_EXECUTION' },
+  // The number must end the command (end, separator, comment, quote): "…; sleep 8 hours" is prose.
+  { re: /(;|\|\|?|&&?|\n)[ \t]*sleep[ \t]+\d{1,3}[ \t]*($|[;&|#`)\\\/'"])/i, weight: 60, label: 'sleep after a shell separator', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /`\s*echo\s[^`]{1,80}`/i, weight: 55, label: 'backtick echo substitution', family: 'REMOTE_CODE_EXECUTION' },
+  // Windows command lines: cmd /c, tftp downloads, ping with count flags, & rem comments.
+  { re: /(^|[?&=\s'"])\/c[ +]+(dir|tftp|type|copy|del|net|ping|echo|whoami|ver)\b/i, weight: 60, label: 'cmd /c invocation', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\btftp[ +]+-i[ +]+\S{1,253}[ +]+get\b/i, weight: 65, label: 'tftp download', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\bping[ \t,]+-[nwc][ \t,]+\d{1,6}\b/i, weight: 50, label: 'ping with count/timeout flag', family: 'REMOTE_CODE_EXECUTION' },
+  // Corroboration only: a parameter can be named "rem" (?a=1&rem=5), so on its own this must
+  // stay below every blocking threshold.
+  { re: /[&|;][ \t]*rem\b/i, weight: 15, label: 'cmd rem after a separator', family: 'REMOTE_CODE_EXECUTION' },
+
+  // ---- PHP code injection through complex syntax ----
+  { re: /\$\{\s*(phpinfo|system|exec|passthru|shell_exec|eval|assert|exit|popen)\s*\(/i, weight: 65, label: 'PHP ${...} code injection', family: 'REMOTE_CODE_EXECUTION' },
+  { re: /\bphpinfo\s*\(\s*\)/i, weight: 55, label: 'phpinfo() call', family: 'REMOTE_CODE_EXECUTION' },
+
+  // ---- Remote file inclusion ----
+  //
+  // A parameter whose name says it holds an include path or root, given a remote URL. Left out:
+  // "file", "url", "next", "redirect", and any name ending in url/uri/href/link/src — those
+  // carry URLs by design (?file=https://cdn/a.pdf, Swagger UI's ?configUrl=, ?baseUrl=). The
+  // check is a small function rather than one regex so the name test cannot backtrack.
+  { re: { test: (s: string) => includeParamWithRemoteUrl(s) },
+    weight: 60, label: 'remote URL in a path/include parameter', family: 'PATH_TRAVERSAL' },
+  // Any parameter given a remote URL that ends in "??" or a NUL: the classic way to make an
+  // included remote file ignore the ".php" the application appends. A single trailing "?" is
+  // not enough on its own — a redirect to "https://example.com/?" is legitimate — and was
+  // measured to add 39 of 10,000 development attacks, so it was left out.
+  { re: /=[ \t]*(https?|ftp):\/\/[^\s&?]{1,400}(\?\?|%00|\\x00|\u0000)(?=$|&|\s)/i,
+    weight: 55, label: 'remote URL with an RFI terminator', family: 'PATH_TRAVERSAL' },
+  { re: /\b(php|expect|phar|zip|data):\/\/(filter|input|stdin|text|\w{1,40}\/)/i, weight: 65, label: 'PHP stream wrapper', family: 'PATH_TRAVERSAL' },
+
+  // ---- HTML injection that needs no <script> ----
+  { re: /<\s*meta\b[^<>]{0,200}http-equiv\s*=\s*['"]?\s*(set-cookie|refresh)\b/i, weight: 65, label: 'meta http-equiv injection', family: 'XSS_ATTACK' },
+  { re: /<\s*(iframe|frame|frameset|object|embed|applet|base)\b/i, weight: 60, label: 'active-content tag injection', family: 'XSS_ATTACK' },
+  { re: /<\s*link\b[^<>]{0,200}\bhref\s*=/i, weight: 55, label: 'link tag injection', family: 'XSS_ATTACK' },
+  { re: /<\s*style\b[^<>]{0,200}>[^<]{0,200}(expression\s*\(|@import|url\s*\()/i, weight: 55, label: 'style injection', family: 'XSS_ATTACK' },
+  { re: /\bj\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*:/i, weight: 50, label: 'javascript: URI split by whitespace', family: 'XSS_ATTACK' },
+  { re: /\bvbscript\s*:/i, weight: 50, label: 'vbscript: URI', family: 'XSS_ATTACK' },
 
   // ---- Remote code execution / webshell ----
   { re: /<\?php/i, weight: 70, label: 'PHP open tag', family: 'REMOTE_CODE_EXECUTION' },
@@ -276,6 +341,11 @@ function looksLikeProse(payload: string): boolean {
  * whole class at once, which is cheaper and more durable than writing a rule
  * per evasion trick.
  */
+const NAMED_ENTITIES: Record<string, string> = {
+  tab: '\t', newline: '\n', colon: ':', lpar: '(', rpar: ')', lt: '<', gt: '>',
+  quot: '"', apos: "'", sol: '/', bsol: '\\', period: '.', amp: '&'
+};
+
 function canonicalisePayload(raw: string): string {
   let s = raw;
   // Bounded recursive URL-decode: catches %252e (double-encoded) without
@@ -294,6 +364,13 @@ function canonicalisePayload(raw: string): string {
     const n = parseInt(c, /^[0-9]+$/.test(c) ? 10 : 16);
     return Number.isFinite(n) && n < 0x110000 ? String.fromCodePoint(n) : ' ';
   });
+  // Named entities a browser decodes inside attribute values and URLs, used to split
+  // keywords ("j&Tab;a&Tab;v&Tab;a…"). Only the handful that matter; unknown names stay.
+  s = s.replace(/&(Tab|NewLine|colon|lpar|rpar|lt|gt|quot|apos|sol|bsol|period|amp);/gi, (_m, name: string) =>
+    NAMED_ENTITIES[name.toLowerCase()] ?? _m);
+  // Unicode compatibility forms: full-width "．．／", the long s in "ſcript", ligatures. NFKC
+  // folds them to what a server or browser will eventually treat them as.
+  s = s.normalize('NFKC');
   return s;
 }
 

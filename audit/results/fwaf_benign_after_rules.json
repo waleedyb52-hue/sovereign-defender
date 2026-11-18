@@ -1,0 +1,11 @@
+{
+  "chunk": "benign",
+  "file": "goodqueries.txt",
+  "ranks": "20000..119999",
+  "n": 100000,
+  "flaggedAt25": 1565,
+  "flaggedAt55": 1565,
+  "rateAt25": 0.0157,
+  "rateAt55": 0.0157,
+  "meaning": "flag rate on benign-labelled lines (labels are noisy)"
+}

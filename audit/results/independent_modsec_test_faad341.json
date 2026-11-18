@@ -1,0 +1,851 @@
+{
+  "dataset": "Zenodo-17178461-ModSecurity-production-2025-test-half",
+  "sha256": "740bd13ec8cd569331ba863b0a6da8c739ef7d16c5edfc50ec61a12e7b29a32d",
+  "samples": 12949,
+  "commit": "faad341",
+  "category": "independent — scored once on frozen code and protocol",
+  "outcomes": {
+    "ok": 12949
+  },
+  "seconds": 5.3,
+  "samplesPerSecond": 2448.8,
+  "overall": {
+    "route": {
+      "n": 12949,
+      "tp": 1538,
+      "fn": 11411,
+      "fp": 0,
+      "tn": 0,
+      "recall": 0.11877365047494015,
+      "precision": 1,
+      "f1": 0.21232829433285014,
+      "fpr": null,
+      "mcc": null,
+      "balancedAccuracy": null,
+      "recallCI": [
+        0.113314,
+        0.124459
+      ],
+      "precisionCI": [
+        0.997508,
+        1
+      ],
+      "fprCI": null,
+      "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+    },
+    "score25": {
+      "n": 12949,
+      "tp": 1538,
+      "fn": 11411,
+      "fp": 0,
+      "tn": 0,
+      "recall": 0.11877365047494015,
+      "precision": 1,
+      "f1": 0.21232829433285014,
+      "fpr": null,
+      "mcc": null,
+      "balancedAccuracy": null,
+      "recallCI": [
+        0.113314,
+        0.124459
+      ],
+      "precisionCI": [
+        0.997508,
+        1
+      ],
+      "fprCI": null,
+      "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+    },
+    "score55": {
+      "n": 12949,
+      "tp": 1464,
+      "fn": 11485,
+      "fp": 0,
+      "tn": 0,
+      "recall": 0.11305892346899374,
+      "precision": 1,
+      "f1": 0.2031499340872823,
+      "fpr": null,
+      "mcc": null,
+      "balancedAccuracy": null,
+      "recallCI": [
+        0.107719,
+        0.118628
+      ],
+      "precisionCI": [
+        0.997383,
+        1
+      ],
+      "fprCI": null,
+      "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+    }
+  },
+  "byClass": {
+    "generic": {
+      "route": {
+        "n": 1,
+        "tp": 0,
+        "fn": 1,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.793457
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 1,
+        "tp": 0,
+        "fn": 1,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.793457
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 1,
+        "tp": 0,
+        "fn": 1,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.793457
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "java": {
+      "route": {
+        "n": 9,
+        "tp": 3,
+        "fn": 6,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.3333333333333333,
+        "precision": 1,
+        "f1": 0.5,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.120582,
+          0.645803
+        ],
+        "precisionCI": [
+          0.438494,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 9,
+        "tp": 3,
+        "fn": 6,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.3333333333333333,
+        "precision": 1,
+        "f1": 0.5,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.120582,
+          0.645803
+        ],
+        "precisionCI": [
+          0.438494,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 9,
+        "tp": 2,
+        "fn": 7,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.2222222222222222,
+        "precision": 1,
+        "f1": 0.3636363636363636,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.063224,
+          0.547417
+        ],
+        "precisionCI": [
+          0.342372,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "lfi": {
+      "route": {
+        "n": 905,
+        "tp": 75,
+        "fn": 830,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.08287292817679558,
+        "precision": 1,
+        "f1": 0.15306122448979592,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.066626,
+          0.102647
+        ],
+        "precisionCI": [
+          0.951274,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 905,
+        "tp": 75,
+        "fn": 830,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.08287292817679558,
+        "precision": 1,
+        "f1": 0.15306122448979592,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.066626,
+          0.102647
+        ],
+        "precisionCI": [
+          0.951274,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 905,
+        "tp": 75,
+        "fn": 830,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.08287292817679558,
+        "precision": 1,
+        "f1": 0.15306122448979592,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.066626,
+          0.102647
+        ],
+        "precisionCI": [
+          0.951274,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "non-payload": {
+      "route": {
+        "n": 5263,
+        "tp": 115,
+        "fn": 5148,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.02185065551966559,
+        "precision": 1,
+        "f1": 0.04276682781703235,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.018236,
+          0.026163
+        ],
+        "precisionCI": [
+          0.967675,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 5263,
+        "tp": 115,
+        "fn": 5148,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.02185065551966559,
+        "precision": 1,
+        "f1": 0.04276682781703235,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.018236,
+          0.026163
+        ],
+        "precisionCI": [
+          0.967675,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 5263,
+        "tp": 111,
+        "fn": 5152,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.02109063271898157,
+        "precision": 1,
+        "f1": 0.04131001116486789,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.017544,
+          0.025336
+        ],
+        "precisionCI": [
+          0.966549,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "php": {
+      "route": {
+        "n": 128,
+        "tp": 36,
+        "fn": 92,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.28125,
+        "precision": 1,
+        "f1": 0.43902439024390244,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.210612,
+          0.364636
+        ],
+        "precisionCI": [
+          0.903578,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 128,
+        "tp": 36,
+        "fn": 92,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.28125,
+        "precision": 1,
+        "f1": 0.43902439024390244,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.210612,
+          0.364636
+        ],
+        "precisionCI": [
+          0.903578,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 128,
+        "tp": 36,
+        "fn": 92,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.28125,
+        "precision": 1,
+        "f1": 0.43902439024390244,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.210612,
+          0.364636
+        ],
+        "precisionCI": [
+          0.903578,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "rce": {
+      "route": {
+        "n": 733,
+        "tp": 278,
+        "fn": 455,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.3792633015006821,
+        "precision": 1,
+        "f1": 0.5499505440158259,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.344853,
+          0.414933
+        ],
+        "precisionCI": [
+          0.98637,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 733,
+        "tp": 278,
+        "fn": 455,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.3792633015006821,
+        "precision": 1,
+        "f1": 0.5499505440158259,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.344853,
+          0.414933
+        ],
+        "precisionCI": [
+          0.98637,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 733,
+        "tp": 278,
+        "fn": 455,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.3792633015006821,
+        "precision": 1,
+        "f1": 0.5499505440158259,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.344853,
+          0.414933
+        ],
+        "precisionCI": [
+          0.98637,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "rfi": {
+      "route": {
+        "n": 4,
+        "tp": 0,
+        "fn": 4,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.4899
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 4,
+        "tp": 0,
+        "fn": 4,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.4899
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 4,
+        "tp": 0,
+        "fn": 4,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.4899
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "session": {
+      "route": {
+        "n": 1,
+        "tp": 0,
+        "fn": 1,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.793457
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 1,
+        "tp": 0,
+        "fn": 1,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.793457
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 1,
+        "tp": 0,
+        "fn": 1,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0,
+        "precision": null,
+        "f1": null,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0,
+          0.793457
+        ],
+        "precisionCI": null,
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "sqli": {
+      "route": {
+        "n": 1159,
+        "tp": 990,
+        "fn": 169,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.8541846419327006,
+        "precision": 1,
+        "f1": 0.9213587715216379,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.832696,
+          0.873333
+        ],
+        "precisionCI": [
+          0.996135,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 1159,
+        "tp": 990,
+        "fn": 169,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.8541846419327006,
+        "precision": 1,
+        "f1": 0.9213587715216379,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.832696,
+          0.873333
+        ],
+        "precisionCI": [
+          0.996135,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 1159,
+        "tp": 924,
+        "fn": 235,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.7972389991371872,
+        "precision": 1,
+        "f1": 0.8871819491118579,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.773127,
+          0.819387
+        ],
+        "precisionCI": [
+          0.99586,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "unattributed": {
+      "route": {
+        "n": 4671,
+        "tp": 1,
+        "fn": 4670,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.00021408691928923143,
+        "precision": 1,
+        "f1": 0.0004280821917808219,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.000038,
+          0.001212
+        ],
+        "precisionCI": [
+          0.206543,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 4671,
+        "tp": 1,
+        "fn": 4670,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.00021408691928923143,
+        "precision": 1,
+        "f1": 0.0004280821917808219,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.000038,
+          0.001212
+        ],
+        "precisionCI": [
+          0.206543,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 4671,
+        "tp": 1,
+        "fn": 4670,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.00021408691928923143,
+        "precision": 1,
+        "f1": 0.0004280821917808219,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.000038,
+          0.001212
+        ],
+        "precisionCI": [
+          0.206543,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    },
+    "xss": {
+      "route": {
+        "n": 75,
+        "tp": 40,
+        "fn": 35,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.5333333333333333,
+        "precision": 1,
+        "f1": 0.6956521739130436,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.421573,
+          0.641845
+        ],
+        "precisionCI": [
+          0.912375,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score25": {
+        "n": 75,
+        "tp": 40,
+        "fn": 35,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.5333333333333333,
+        "precision": 1,
+        "f1": 0.6956521739130436,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.421573,
+          0.641845
+        ],
+        "precisionCI": [
+          0.912375,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "score55": {
+        "n": 75,
+        "tp": 37,
+        "fn": 38,
+        "fp": 0,
+        "tn": 0,
+        "recall": 0.49333333333333335,
+        "precision": 1,
+        "f1": 0.6607142857142857,
+        "fpr": null,
+        "mcc": null,
+        "balancedAccuracy": null,
+        "recallCI": [
+          0.383298,
+          0.604018
+        ],
+        "precisionCI": [
+          0.905939,
+          1
+        ],
+        "fprCI": null,
+        "note": "no benign rows in this set: precision, FPR, MCC and balanced accuracy are not defined"
+      },
+      "failedRequests": 0
+    }
+  },
+  "finishedAt": "2026-11-18T14:11:44.992Z"
+}

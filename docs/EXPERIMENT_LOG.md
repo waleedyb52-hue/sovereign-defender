@@ -111,6 +111,51 @@ checked `grep`'s exit code instead of `vitest`'s (fixed in `c31c91c`).
 Detection after all cycle-6 changes: HttpParams dev half in-process, identical to
 candidate-48h-2 at both thresholds and every class (gate output, `regression_gate.json`).
 
+## Cycle 7 — follow-ups after the merge (branch `improvement/followups-defense`)
+
+Started from `main` at the merge commit `faad341` (identical tree to the measured `25639a4`).
+
+### 7a. Console honesty (`315b63c`)
+
+The deep-analysis modal rendered any HTTP reply as an analysis, invented a verdict (BLOCK, score
+96, "zero-day confirmed") on a network failure, drew four fixed "XAI attribution" bars
+(38/32/18/12 %) for every packet, and called every result "Gemini". Transport and zod validation
+moved to `src/lib/aiAnalysis.ts`; the modal now shows a result, or an explicit error with the
+status and the server's message, names the engine that ran, and lists the rules that fired.
+7 unit tests. Not checked in a browser: it needs a signed-in operator session.
+
+### 7b. Per-caller classification budget (`eec3fea`)
+
+| Field | Value |
+|---|---|
+| Problem | After the srcIp fix the local path had no per-caller bound: one authenticated client could send 1 MiB payloads back to back |
+| Change | `server/classificationBudget.ts`: token bucket in characters per minute, keyed on principal + TCP peer; 256-char floor per request; bounded caller map. Default 64 MiB/min; 429 `CLASSIFICATION_BUDGET_EXCEEDED` + `Retry-After`. Verified evaluation exempt |
+| Evidence | Real server at 1 MiB/min (`audit/budget_check.mjs`, in CI): 700 KB → 200, next 700 KB → 429 (Retry-After 22 s), verified evaluation → 200. At the default budget: audit suite 94/94, perf benchmark 1–100 clients with zero non-200 |
+| Decision | **Keep** |
+
+### 7c. Second-source gaps (`cfda6e8`)
+
+| Field | Value |
+|---|---|
+| Data | Fwaf attack ranks 5,000–14,999 (dev, read); 15,000–24,999 (validation, never read, scored before and after only); benign-labelled ranks 20,000–119,999 (read for false positives). Sealed ranks untouched until the end |
+| Hypothesis | The misses (cycle 4 diagnosis) are shell expansion syntax, Windows command lines, PHP complex-syntax injection, remote file inclusion and HTML injection without `<script>` — classes with no rule, not obfuscations of covered ones |
+| Rules | 22 structural rules plus named-entity decoding and Unicode NFKC in canonicalisation. Deliberately not written: payload-less script-path requests, the scanner marker `XXpathXX`, lone quotes |
+| Narrowed during the cycle | `rem` alone cannot block; `file`/`url` and `*url/*uri/*href/*link/*src` parameters are not include-named (Swagger's `?configUrl=`); a single trailing `?` is not an RFI terminator (worth 39 of 10,000 dev attacks); `sleep N` must end the command |
+| Fwaf dev | 40.57 % → **66.79 %** |
+| Fwaf validation (never read) | 40.72 % → **67.38 %** |
+| Fwaf benign-labelled 100 k | 131 → 1,565 flags. Every newly flagged line read: all scanner probes the source labels good (192.168.202.x, `cirt.net/rfiinc.txt`, acunetix/vulnweb hosts, Nessus ping/sleep/rem). Genuine false positives: **0** |
+| HttpParams dev | 5,739 → 5,750 at 25; XSS 232 → 243; FP 0 |
+| Set A / Set B | Set A held-out 13 → 14 of 14. Set B Tier 1 15/15, benign 0/22. **Tier 2 3 → 4 of 12** (unicode-bypass, a side effect of NFKC; the Tier 2 miss list was known when NFKC was chosen, so not counted; floor stays 3) |
+| Fwaf sealed test (scored once, end of cycle) | 41.60 % → **67.24 %** recall. Benign-labelled flags 12 → 157 of 10,000 (1.57 %) — the same rate as the dev-side benign-labelled lines (1.57 %), every one of which was a scanner probe. The sealed lines were not opened. **This is now an in-distribution figure for Fwaf**, like the HttpParams sealed half for HttpParams |
+| HttpParams sealed half (re-evaluation) | 97.28 % → 97.50 % (XSS 83.27 % → 88.21 %), FP 0 |
+| Throughput | Interleaved `faad341` vs `cfda6e8`: medians 804 vs 1,220 req/s, ranges 350–1,473 vs 1,042–1,343 (overlap; the machine varied 4× between runs of the same code). No gain claimed; no regression measured |
+| Other checks | ReDoS 0 of 412; unit tests 306/306; audit suite 94/94; zero egress (60 s) |
+| Decision | **Keep** |
+
+Found during the cycle: a look-alike test written in cycle 5 ("`?dir=http://10.0.0.5:8080/x`") had
+been adapted from a benign-labelled Fwaf line that was in fact a scanner's RFI probe. The new RFI
+rule flagged it; the URL was removed from that test.
+
 ## Considered and not built
 
 | Candidate | Why not |

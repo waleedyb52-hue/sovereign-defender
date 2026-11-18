@@ -1,0 +1,14 @@
+{
+  "finishedAt": "2026-11-18T13:35:15.511Z",
+  "node": "v24.20.0",
+  "platform": "win32",
+  "soakSeconds": 60,
+  "classifierRequestsSent": 50,
+  "postureReportsZeroExternalApiCalls": true,
+  "externalAttempts": 0,
+  "lanAttempts": 0,
+  "externalDestinations": [],
+  "lanDestinations": [],
+  "events": [],
+  "limits": "In-process probe: child processes and native modules are not observed. Confirm with a host packet capture."
+}

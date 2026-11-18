@@ -1,0 +1,276 @@
+{
+  "source": "audit/results/independent_modsec_test_2ab323e.json",
+  "datasetSha256": "740bd13ec8cd569331ba863b0a6da8c739ef7d16c5edfc50ec61a12e7b29a32d",
+  "commit": "2ab323e",
+  "outcomes": {
+    "ok": 12949
+  },
+  "primary": {
+    "definition": "route-verdict recall over CRS payload families (pre-registered)",
+    "n": 3015,
+    "tp": 833,
+    "fn": 2182,
+    "recall": 0.276285,
+    "recallCI": [
+      0.260616,
+      0.292524
+    ]
+  },
+  "payloadFamiliesAtScore55": {
+    "n": 3015,
+    "tp": 815,
+    "fn": 2200,
+    "recall": 0.270315,
+    "recallCI": [
+      0.254762,
+      0.286453
+    ]
+  },
+  "nonPayloadGroups": {
+    "non-payload": {
+      "n": 5263,
+      "tp": 103,
+      "fn": 5160,
+      "recall": 0.019571,
+      "recallCI": [
+        0.016164,
+        0.023678
+      ]
+    },
+    "unattributed": {
+      "n": 4671,
+      "tp": 0,
+      "fn": 4671,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.000822
+      ]
+    }
+  },
+  "perClassRoute": {
+    "sqli": {
+      "n": 1159,
+      "tp": 482,
+      "fn": 677,
+      "recall": 0.415876,
+      "recallCI": [
+        0.387823,
+        0.444484
+      ]
+    },
+    "xss": {
+      "n": 75,
+      "tp": 38,
+      "fn": 37,
+      "recall": 0.506667,
+      "recallCI": [
+        0.395982,
+        0.616702
+      ]
+    },
+    "rce": {
+      "n": 733,
+      "tp": 205,
+      "fn": 528,
+      "recall": 0.279673,
+      "recallCI": [
+        0.248392,
+        0.31325
+      ]
+    },
+    "lfi": {
+      "n": 905,
+      "tp": 75,
+      "fn": 830,
+      "recall": 0.082873,
+      "recallCI": [
+        0.066626,
+        0.102647
+      ]
+    },
+    "rfi": {
+      "n": 4,
+      "tp": 0,
+      "fn": 4,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.4899
+      ]
+    },
+    "php": {
+      "n": 128,
+      "tp": 31,
+      "fn": 97,
+      "recall": 0.242188,
+      "recallCI": [
+        0.176186,
+        0.323213
+      ]
+    },
+    "java": {
+      "n": 9,
+      "tp": 2,
+      "fn": 7,
+      "recall": 0.222222,
+      "recallCI": [
+        0.063224,
+        0.547417
+      ]
+    },
+    "generic": {
+      "n": 1,
+      "tp": 0,
+      "fn": 1,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.793457
+      ]
+    },
+    "session": {
+      "n": 1,
+      "tp": 0,
+      "fn": 1,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.793457
+      ]
+    },
+    "non-payload": {
+      "n": 5263,
+      "tp": 103,
+      "fn": 5160,
+      "recall": 0.019571,
+      "recallCI": [
+        0.016164,
+        0.023678
+      ]
+    },
+    "unattributed": {
+      "n": 4671,
+      "tp": 0,
+      "fn": 4671,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.000822
+      ]
+    }
+  },
+  "perClassScore55": {
+    "sqli": {
+      "n": 1159,
+      "tp": 467,
+      "fn": 692,
+      "recall": 0.402934,
+      "recallCI": [
+        0.375061,
+        0.431448
+      ]
+    },
+    "xss": {
+      "n": 75,
+      "tp": 36,
+      "fn": 39,
+      "recall": 0.48,
+      "recallCI": [
+        0.370689,
+        0.59126
+      ]
+    },
+    "rce": {
+      "n": 733,
+      "tp": 204,
+      "fn": 529,
+      "recall": 0.278308,
+      "recallCI": [
+        0.247084,
+        0.311845
+      ]
+    },
+    "lfi": {
+      "n": 905,
+      "tp": 75,
+      "fn": 830,
+      "recall": 0.082873,
+      "recallCI": [
+        0.066626,
+        0.102647
+      ]
+    },
+    "rfi": {
+      "n": 4,
+      "tp": 0,
+      "fn": 4,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.4899
+      ]
+    },
+    "php": {
+      "n": 128,
+      "tp": 31,
+      "fn": 97,
+      "recall": 0.242188,
+      "recallCI": [
+        0.176186,
+        0.323213
+      ]
+    },
+    "java": {
+      "n": 9,
+      "tp": 2,
+      "fn": 7,
+      "recall": 0.222222,
+      "recallCI": [
+        0.063224,
+        0.547417
+      ]
+    },
+    "generic": {
+      "n": 1,
+      "tp": 0,
+      "fn": 1,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.793457
+      ]
+    },
+    "session": {
+      "n": 1,
+      "tp": 0,
+      "fn": 1,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.793457
+      ]
+    },
+    "non-payload": {
+      "n": 5263,
+      "tp": 101,
+      "fn": 5162,
+      "recall": 0.019191,
+      "recallCI": [
+        0.015819,
+        0.023263
+      ]
+    },
+    "unattributed": {
+      "n": 4671,
+      "tp": 0,
+      "fn": 4671,
+      "recall": 0,
+      "recallCI": [
+        0,
+        0.000822
+      ]
+    }
+  },
+  "generatedAt": "2026-11-18T14:11:34.807Z"
+}

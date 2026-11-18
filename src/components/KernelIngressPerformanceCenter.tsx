@@ -516,7 +516,11 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                 {isAr ? 'توفير الحصة' : 'AI Quota Saved'}
               </div>
               <div className="text-lg font-black text-cyan-400">
-                {cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage || 96.8}%
+                {cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage == null
+                  ? isAr
+                    ? 'غير متاح'
+                    : 'N/A'
+                  : `${cache.aiQuotaEfficiency.apiQuotaSavedPercentage}%`}
               </div>
               <div className="font-mono text-[9px] text-cyan-300/80">Bloom + LRU Bypass</div>
             </div>
@@ -578,7 +582,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                 className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
                   active
                     ? 'bg-cyan-500 font-black text-slate-950 shadow-lg shadow-cyan-500/20'
-                    : 'border border-slate-800 bg-slate-900/80 text-slate-300 hover:bg-slate-800 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
+                    : 'border border-slate-800 bg-slate-900/80 text-slate-300 shadow-[0_0_20px_rgba(0,255,255,0.08)] hover:bg-slate-800'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
@@ -593,7 +597,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
       {activeSubTab === 'OVERVIEW' && (
         <div className="space-y-6">
           {/* Live Canvas High-Rate Stream Widget */}
-          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-2.5">
                 <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-2 text-cyan-400">
@@ -641,7 +645,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
           {/* 4 Architectural Pillar Cards */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {/* Pillar 1: eBPF XDP */}
-            <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-5 transition hover:border-cyan-500/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] transition hover:border-cyan-500/40">
               <div>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2 text-rose-400">
@@ -664,7 +668,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                 <div className="flex justify-between text-slate-400">
                   <span>Drops Total:</span>
                   <span className="font-bold text-rose-400">
-                    {xdp?.xdpDropCount?.toLocaleString() || '3,410'}
+                    {xdp?.xdpDropCount?.toLocaleString() ?? (isAr ? 'غير متاح' : 'N/A')}
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-400">
@@ -677,7 +681,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
             </div>
 
             {/* Pillar 2: Bloom Filter */}
-            <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-5 transition hover:border-cyan-500/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] transition hover:border-cyan-500/40">
               <div>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-2 text-cyan-400">
@@ -700,21 +704,25 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                 <div className="flex justify-between text-slate-400">
                   <span>Clean Bypassed:</span>
                   <span className="font-bold text-cyan-400">
-                    {cache?.tier2BloomFilter?.cleanTrafficBypassedCount?.toLocaleString() ||
-                      '24,820'}
+                    {cache?.tier2BloomFilter?.cleanTrafficBypassedCount?.toLocaleString() ??
+                      (isAr ? 'غير متاح' : 'N/A')}
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-400">
                   <span>Quota Saved:</span>
                   <span className="font-bold text-emerald-400">
-                    {cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage || 96.8}%
+                    {cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage == null
+                      ? isAr
+                        ? 'غير متاح'
+                        : 'N/A'
+                      : `${cache.aiQuotaEfficiency.apiQuotaSavedPercentage}%`}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Pillar 3: Async Worker Pool */}
-            <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-5 transition hover:border-cyan-500/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] transition hover:border-cyan-500/40">
               <div>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-2 text-cyan-400">
@@ -737,7 +745,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                 <div className="flex justify-between text-slate-400">
                   <span>Tasks Completed:</span>
                   <span className="font-bold text-cyan-400">
-                    {workers?.tasksCompletedTotal?.toLocaleString() || '2,480'}
+                    {workers?.tasksCompletedTotal?.toLocaleString() ?? (isAr ? 'غير متاح' : 'N/A')}
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-400">
@@ -750,7 +758,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
             </div>
 
             {/* Pillar 4: Token Bucket */}
-            <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-5 transition hover:border-cyan-500/40 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] transition hover:border-cyan-500/40">
               <div>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-2 text-amber-400">
@@ -777,7 +785,8 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                 <div className="flex justify-between text-slate-400">
                   <span>Priority Protected:</span>
                   <span className="font-bold text-emerald-400">
-                    {bucket?.prioritizedSecurityVerdictsCount?.toLocaleString() || '18,130'}
+                    {bucket?.prioritizedSecurityVerdictsCount?.toLocaleString() ??
+                      (isAr ? 'غير متاح' : 'N/A')}
                   </span>
                 </div>
               </div>
@@ -791,7 +800,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Driver Status & Mode Switcher */}
           <div className="space-y-6 lg:col-span-1">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
               <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-white">
                 <Zap className="h-4 w-4 text-cyan-400" />
                 <span>{isAr ? 'وضع تشغيل معالج XDP' : 'XDP Driver Attachment Mode'}</span>
@@ -829,7 +838,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                     className={`w-full rounded-xl border p-3 text-left transition ${
                       xdp?.mode === m.id
                         ? 'border-cyan-500/50 bg-cyan-500/20 text-white'
-                        : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-slate-200 shadow-[0_0_20px_rgba(0,255,255,0.08)]'
+                        : 'border-slate-800 bg-slate-950/60 text-slate-400 shadow-[0_0_20px_rgba(0,255,255,0.08)] hover:text-slate-200'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -856,7 +865,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
             </div>
 
             {/* Manual BPF Pin Form */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
               <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-white">
                 <Lock className="h-4 w-4 text-rose-400" />
                 <span>
@@ -879,7 +888,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                     value={manualIpToPin}
                     onChange={e => setManualIpToPin(e.target.value)}
                     placeholder="198.51.100.99"
-                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 font-mono text-xs text-white outline-none focus:border-cyan-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
+                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 font-mono text-xs text-white shadow-[0_0_20px_rgba(0,255,255,0.08)] outline-none focus:border-cyan-500"
                   />
                 </div>
                 <div>
@@ -891,7 +900,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                     value={pinReason}
                     onChange={e => setPinReason(e.target.value)}
                     placeholder="Kernel Pin: Zero-Day Exploit"
-                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 font-mono text-xs text-white outline-none focus:border-cyan-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
+                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 font-mono text-xs text-white shadow-[0_0_20px_rgba(0,255,255,0.08)] outline-none focus:border-cyan-500"
                   />
                 </div>
                 <button
@@ -921,7 +930,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                   RX Packets (Ingress)
                 </div>
                 <div className="mt-1 font-mono text-xl font-black text-white">
-                  {xdp?.rxPacketsTotal?.toLocaleString() || '42,890'}
+                  {xdp?.rxPacketsTotal?.toLocaleString() ?? (isAr ? 'غير متاح' : 'N/A')}
                 </div>
               </div>
               <div className="rounded-xl border border-rose-500/30 bg-slate-900/90 p-4">
@@ -929,7 +938,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                   XDP_DROP (Zero-Copy)
                 </div>
                 <div className="mt-1 font-mono text-xl font-black text-rose-400">
-                  {xdp?.xdpDropCount?.toLocaleString() || '3,410'}
+                  {xdp?.xdpDropCount?.toLocaleString() ?? (isAr ? 'غير متاح' : 'N/A')}
                 </div>
               </div>
               <div className="rounded-xl border border-emerald-500/30 bg-slate-900/90 p-4">
@@ -937,7 +946,7 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                   XDP_PASS (Forwarded)
                 </div>
                 <div className="mt-1 font-mono text-xl font-black text-emerald-400">
-                  {xdp?.xdpPassCount?.toLocaleString() || '39,180'}
+                  {xdp?.xdpPassCount?.toLocaleString() ?? (isAr ? 'غير متاح' : 'N/A')}
                 </div>
               </div>
               <div className="rounded-xl border border-cyan-500/30 bg-slate-900/90 p-4">
@@ -945,13 +954,13 @@ export const KernelIngressPerformanceCenter: React.FC<KernelIngressPerformanceCe
                   XDP_REDIRECT (Trap)
                 </div>
                 <div className="mt-1 font-mono text-xl font-black text-cyan-400">
-                  {xdp?.xdpRedirectCount?.toLocaleString() || '300'}
+                  {xdp?.xdpRedirectCount?.toLocaleString() ?? (isAr ? 'غير متاح' : 'N/A')}
                 </div>
               </div>
             </div>
 
             {/* In-Kernel BPF Maps Table */}
-            <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/90 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
               <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/60 p-4 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                 <div className="flex items-center gap-2">
                   <Database className="h-4 w-4 text-cyan-400" />
@@ -1040,7 +1049,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Interactive Bloom Test Playground */}
           <div className="space-y-6 lg:col-span-1">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
               <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-white">
                 <Sparkles className="h-4 w-4 text-cyan-400" />
                 <span>
@@ -1065,7 +1074,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
                     value={testSignature}
                     onChange={e => setTestSignature(e.target.value)}
                     placeholder="GET /api/v1/products"
-                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 font-mono text-xs text-white outline-none focus:border-cyan-500 shadow-[0_0_20px_rgba(0,255,255,0.08)]"
+                    className="mt-1 w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 font-mono text-xs text-white shadow-[0_0_20px_rgba(0,255,255,0.08)] outline-none focus:border-cyan-500"
                   />
                 </div>
 
@@ -1141,7 +1150,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
 
           {/* Caching Metrics & Quota Savings */}
           <div className="space-y-6 lg:col-span-2">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
               <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-white">
                 <Layers className="h-4 w-4 text-emerald-400" />
                 <span>
@@ -1157,7 +1166,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
                     Tier 1: Hot LRU Cache
                   </div>
                   <div className="mt-1 font-mono text-2xl font-black text-emerald-400">
-                    {cache?.tier1HotCache?.hits?.toLocaleString() || '16,420'}
+                    {cache?.tier1HotCache?.hits?.toLocaleString() ?? (isAr ? 'غير متاح' : 'N/A')}
                   </div>
                   <div className="mt-1 text-[11px] text-slate-400">
                     Hit Ratio:{' '}
@@ -1172,8 +1181,8 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
                     Tier 2: Bloom Filter
                   </div>
                   <div className="mt-1 font-mono text-2xl font-black text-cyan-400">
-                    {cache?.tier2BloomFilter?.cleanTrafficBypassedCount?.toLocaleString() ||
-                      '24,820'}
+                    {cache?.tier2BloomFilter?.cleanTrafficBypassedCount?.toLocaleString() ??
+                      (isAr ? 'غير متاح' : 'N/A')}
                   </div>
                   <div className="mt-1 text-[11px] text-slate-400">
                     FP Rate Est:{' '}
@@ -1188,7 +1197,8 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
                     Gemini AI Invocations
                   </div>
                   <div className="mt-1 font-mono text-2xl font-black text-cyan-400">
-                    {cache?.aiQuotaEfficiency?.geminiAiDeepEvaluations?.toLocaleString() || '1,650'}
+                    {cache?.aiQuotaEfficiency?.geminiAiDeepEvaluations?.toLocaleString() ??
+                      (isAr ? 'غير متاح' : 'N/A')}
                   </div>
                   <div className="mt-1 text-[11px] text-slate-400">Zero-Day Escalations Only</div>
                 </div>
@@ -1199,26 +1209,45 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-300">AI Compute & Quota Saved vs Raw Ingestion</span>
                   <span className="text-emerald-400">
-                    {cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage || 96.8}% Saved
+                    {cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage == null
+                      ? isAr
+                        ? 'غير متاح'
+                        : 'N/A'
+                      : `${cache.aiQuotaEfficiency.apiQuotaSavedPercentage}%`}{' '}
+                    Saved
                   </span>
                 </div>
                 <div className="flex h-4 w-full overflow-hidden rounded-full border border-slate-800 bg-slate-950 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
                   <div
                     style={{
-                      width: `${cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage || 96.8}%`
+                      width: `${cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage ?? 0}%`
                     }}
                     className="h-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-cyan-500"
                   />
                   <div
                     style={{
-                      width: `${100 - (cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage || 96.8)}%`
+                      width: `${cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage == null ? 0 : 100 - cache.aiQuotaEfficiency.apiQuotaSavedPercentage}%`
                     }}
                     className="h-full bg-cyan-600"
                   />
                 </div>
                 <div className="flex justify-between font-mono text-[11px] text-slate-400">
-                  <span>Fast-Path Resolved: 96.8%</span>
-                  <span>Deep AI Analyzed: 3.2%</span>
+                  <span>
+                    Fast-Path Resolved:{' '}
+                    {cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage == null
+                      ? isAr
+                        ? 'غير متاح'
+                        : 'N/A'
+                      : `${cache.aiQuotaEfficiency.apiQuotaSavedPercentage}%`}
+                  </span>
+                  <span>
+                    Deep AI Analyzed:{' '}
+                    {cache?.aiQuotaEfficiency?.apiQuotaSavedPercentage == null
+                      ? isAr
+                        ? 'غير متاح'
+                        : 'N/A'
+                      : `${(100 - cache.aiQuotaEfficiency.apiQuotaSavedPercentage).toFixed(1)}%`}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1231,7 +1260,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Worker Pool Activity */}
-            <div className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl lg:col-span-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl lg:col-span-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Cpu className="h-4 w-4 text-cyan-400" />
@@ -1315,7 +1344,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
             </div>
 
             {/* Event Loop Health Meter */}
-            <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+            <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <Activity className="h-4 w-4 text-emerald-400" />
                 <span>{isAr ? 'صحة حلقة أحداث خادم Node.js' : 'Express Event Loop Delay'}</span>
@@ -1359,7 +1388,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
       {activeSubTab === 'BACKPRESSURE' && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Token Bucket Water-Level Animation */}
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl lg:col-span-1 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl lg:col-span-1">
             <h3 className="flex items-center gap-2 text-sm font-bold text-white">
               <Activity className="h-4 w-4 text-amber-400" />
               <span>{isAr ? 'مستوى خزان التوكنات اللحظي' : 'Token Bucket Level'}</span>
@@ -1407,7 +1436,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
           </div>
 
           {/* Load Shedding & Traffic Prioritization Metrics */}
-          <div className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl lg:col-span-2 shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+          <div className="space-y-6 rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl lg:col-span-2">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <ShieldCheck className="h-4 w-4 text-emerald-400" />
@@ -1434,7 +1463,8 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
                   Prioritized Security Verdicts
                 </div>
                 <div className="mt-1 font-mono text-2xl font-black text-white">
-                  {bucket?.prioritizedSecurityVerdictsCount?.toLocaleString() || '18,130'}
+                  {bucket?.prioritizedSecurityVerdictsCount?.toLocaleString() ??
+                    (isAr ? 'غير متاح' : 'N/A')}
                 </div>
                 <p className="mt-1 text-[11px] text-slate-400">
                   100% Guaranteed throughput for hard blocks & critical alarms.
@@ -1446,7 +1476,8 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
                   Shed Passive Logs (Under Load)
                 </div>
                 <div className="mt-1 font-mono text-2xl font-black text-amber-400">
-                  {bucket?.shedTelemetryPacketsCount?.toLocaleString() || '320'}
+                  {bucket?.shedTelemetryPacketsCount?.toLocaleString() ??
+                    (isAr ? 'غير متاح' : 'N/A')}
                 </div>
                 <p className="mt-1 text-[11px] text-slate-400">
                   Non-critical passive logging shed during high saturation spikes.
@@ -1477,7 +1508,7 @@ int xdp_sovereign_filter(struct xdp_md *ctx) {
 
       {/* SUB-TAB 6: DEDICATED HIGH-RATE CANVAS STREAM */}
       {activeSubTab === 'CANVAS_STREAM' && (
-        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-white">
