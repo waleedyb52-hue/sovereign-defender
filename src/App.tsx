@@ -4,6 +4,7 @@ import { SocSidebar } from './components/SocSidebar';
 import { TacticalCockpit } from './components/soc/tactical/TacticalCockpit';
 import { useTelemetry, useThreatFeed, useIsolation } from './hooks/useTelemetry';
 import { useOperator } from './components/auth/operatorContext';
+import { runAiAnalysis } from './lib/aiAnalysis';
 import {
   INITIAL_INTEL_METRICS,
   INITIAL_NETWORK_EDGES,
@@ -589,26 +590,9 @@ export default function App() {
     }
   };
 
-  // Handle Gemini AI Deep Packet Analysis
-  const handleRunAiAnalyze = async (packet: TelemetryPacket) => {
-    try {
-      const response = await fetch('/api/v1/agent/ai-analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packet })
-      });
-      return await response.json();
-    } catch (err) {
-      return {
-        threatScore: 96,
-        verdict: 'BLOCK',
-        analysisEn:
-          'Deep AI inspection confirmed zero-day malicious pattern matching active threat intelligence.',
-        analysisAr:
-          'أكد فحص الذكاء الاصطناعي وجود نمط هجومي خطير يطابق استخبارات التهديدات المستحدثة.'
-      };
-    }
-  };
+  // Deep packet analysis. Transport and validation live in src/lib/aiAnalysis.ts; a failure
+  // comes back as an explicit error, never as an invented verdict.
+  const handleRunAiAnalyze = (packet: TelemetryPacket) => runAiAnalysis(packet);
 
   // Handle Unban Host
   const handleUnbanHost = async (ip: string) => {
