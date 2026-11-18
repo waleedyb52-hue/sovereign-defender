@@ -2,6 +2,10 @@
 //
 //   node scripts/perf-ab.mjs <ENV_NAME> <valueA> <valueB> [rounds=3] [out.json]
 //   node scripts/perf-ab.mjs SD_ADJUDICATION_WRITE_BEHIND off on 3 audit/results/perf_ab_writebehind.json
+//   node scripts/perf-ab.mjs --checkout <dirA> <dirB> 3 out.json
+//
+// With --checkout, A and B are two working trees (e.g. `git worktree add`), and each run starts
+// server.ts from that tree, so two commits can be compared the same way as two settings.
 //
 // Two back-to-back runs of the SAME code on this laptop differed by 19% in throughput
 // (audit/results/baseline_perf_*.json), so a single before/after pair cannot support a 20%
@@ -31,10 +35,12 @@ const pct = (a, p) => { const s = [...a].sort((x, y) => x - y); return +s[Math.m
 const median = a => pct(a, 50);
 let serial = Date.now() % 100000;
 
+const byCheckout = name === '--checkout';
+
 async function oneRun(value) {
-  const env = { ...process.env, ADMIN_API_KEY: KEY, [name]: value };
+  const env = byCheckout ? { ...process.env, ADMIN_API_KEY: KEY } : { ...process.env, ADMIN_API_KEY: KEY, [name]: value };
   delete env.GEMINI_API_KEY;
-  const server = spawn(process.execPath, ['--import', 'tsx', 'server.ts'], { env, stdio: 'ignore' });
+  const server = spawn(process.execPath, ['--import', 'tsx', 'server.ts'], { env, stdio: 'ignore', cwd: byCheckout ? value : process.cwd() });
   try {
     let up = false;
     for (let i = 0; i < 180 && !up; i++) { await sleep(500); up = await fetch(`${B}/api/health`).then(r => r.ok).catch(() => false); }

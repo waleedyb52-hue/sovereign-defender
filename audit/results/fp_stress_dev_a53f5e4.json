@@ -1,0 +1,18 @@
+{
+  "source": "data/external2/goodqueries.txt",
+  "skippedReservedRanks": 20000,
+  "n": 100000,
+  "thresholds": {
+    "25": {
+      "flaggedWithoutStructure": 126,
+      "flaggedWithStructure": 131,
+      "flaggedOnlyByStructure": 5
+    },
+    "55": {
+      "flaggedWithoutStructure": 126,
+      "flaggedWithStructure": 131,
+      "flaggedOnlyByStructure": 5
+    }
+  },
+  "flaggedOnlyByStructureCount": 5
+}

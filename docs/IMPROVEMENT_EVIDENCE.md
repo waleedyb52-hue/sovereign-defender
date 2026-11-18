@@ -110,14 +110,25 @@ the classifier (≈ 30 µs) and outside the write that was removed. Not investig
 Poster comparison: the poster's 183 req/s / p95 790 ms were taken on a different host and are
 not used as a baseline.
 
+### Same-day interleaved comparison on the final code (2026-11-18)
+
+| | A | B | Change |
+|---|---|---|---|
+| `2ab323e` → final (`perf_ab_2ab323e_vs_27267a2.json`) | median 172.6 req/s (156.2–181.4) | median 316.9 req/s (306.1–647.8) | **+83.6 %, ranges separated**; p95 772.5 → 425.1 ms; 0 failed |
+| `c435d2e` → final (`perf_ab_c435d2e_vs_27267a2.json`) | median 255.9 req/s (235.1–276.8) | median 285.4 req/s (267.9–286.0) | +11.5 %, ranges overlap; review fixes cost nothing measurable |
+
+Same code, different days: `c435d2e` read 637.3 req/s on 2026-11-15 and 255.9 on 2026-11-18.
+Only same-day interleaved runs are compared.
+
 ## 5. Tests
 
 | | Before | After |
 |---|---|---|
 | `npm run lint` | 0 errors | 0 errors |
-| `npx vitest run` | 53 / 53 | 172 / 172 |
+| `npx vitest run` | 53 / 53 | 251 / 251 after the review fixes (172 at `237420e`, 208 at `c435d2e`) |
 | `npm run build` | — | succeeds |
-| Audit suite (`audit/audit_suite.ts`) | 92 / 92 (29 Sep report) | 92 / 92 — `audit/results/audit_suite_237420e.txt` |
+| Audit suite (`audit/audit_suite.ts`) | 92 / 92 (29 Sep report) | 94 / 94 after the review fixes (#102, #103 added); 92 / 92 at `237420e` — `audit/results/audit_suite_237420e.txt` |
+| ReDoS scan (`audit/redos_scan.mjs`, 385 regexes) | 13 super-linear (`redos_scan_before_fixes.json`) | 0 (`redos_scan_after_fixes.json`) |
 
 ## 6. Zero egress
 
@@ -148,7 +159,11 @@ Files: `reeval_sealed_httpparams_c435d2e.json`, `reeval_sealed_fwaf_c435d2e.json
 
 1. Before the split was made, the very first whole-file run printed 12 missed examples from the
    whole file, so up to 12 strings may belong to what became the sealed half. They were removed
-   from the stored JSON. No rule contains a literal from any dataset; the rules are structural.
+   from the stored JSON by editing it — which broke this project's own rule that results are
+   generated, never edited. Three more files were edited the same way to drop second-source
+   lines. All four are listed in [`audit/results/PROVENANCE.md`](../audit/results/PROVENANCE.md)
+   with clean regenerated replacements; the regenerated baselines match the edited files figure
+   for figure. No rule contains a literal from any dataset; the rules are structural.
 2. Both sealed sets were scored three times: on `2ab323e`, on `237420e` (the independent
    result), and on `c435d2e` after the padding fix (a re-evaluation, identical result). The
    post-freeze changes were driven by hand-written tests, not by sealed results.
@@ -156,6 +171,7 @@ Files: `reeval_sealed_httpparams_c435d2e.json`, `reeval_sealed_fwaf_c435d2e.json
    55. Unchanged from the poster's method, so before and after are the same measurement.
 4. The local adjudication queue (`data/adjudication.db`, not in git) still holds 1,942 rows from
    10.40.x — external-harness payloads from earlier runs, including sealed-half strings. They
-   were not deleted. 10.40.x is now an evaluation source and no further rows are added.
+   were not deleted. Harnesses now declare evaluation traffic with a header the server verifies
+   (ADMIN + direct loopback), so no further harness rows are added.
 5. The second source has no stated licence and is used for local measurement only; it is not
    committed. Its labels are noisy in both directions.

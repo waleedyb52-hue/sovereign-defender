@@ -58,7 +58,7 @@ candidate (cycle 4).
 | Hypothesis | Throughput is bounded by synchronous per-request work, not by the classifier |
 | Evidence before coding | CPU profile under 50-client load: `recordPending` 17.7% of wall time (≈30% of non-idle), drift detection 2.9%, everything else < 2.2% each. Classifier itself ≈ 30 µs |
 | Changed files | `server/services/adjudication.service.ts`, `src/__tests__/adjudicationWriteBehind.test.ts`, `scripts/perf-ab.mjs` |
-| Design | Pending rows buffered, one transaction per 50 ms or 256 rows; labels still synchronous; every reader flushes first; exit hook flushes. `SD_ADJUDICATION_WRITE_BEHIND=off` restores write-through. 10.40.x added to evaluation sources |
+| Design | Pending rows buffered, one transaction per 50 ms or 256 rows; labels still synchronous; every reader flushes first; exit hook flushes. `SD_ADJUDICATION_WRITE_BEHIND=off` restores write-through. 10.40.x added to evaluation sources. **Corrected in cycle 6:** the exit hook does not run on SIGINT/SIGTERM (Node ends without emitting `exit`), so this design lost the buffer on every normal stop until graceful shutdown was added; and the 10.40.x range was a caller-supplied address, replaced in cycle 6 by a server-verified flag |
 | Measurement | Interleaved A/B, 3 rounds each, fresh server per run, 100 clients, 3,000 unique payloads (`perf_ab_writebehind.json`) |
 | Result | median **176.8 → 454.9 req/s**; ranges 140.4–188.5 vs 432.2–550.4 (no overlap); p95 657 → 315 ms; p99 702 → 333 ms; 0 failed; RSS 289 → 284 MB |
 | Detection | Unchanged: route dev-half confusion matrix after this commit equals cycle 2's in-process result (TP 5,739) |
@@ -86,6 +86,30 @@ No code change. Scored once each, `SD_EVAL_SEALED=1`, fresh server. Results in
 | Tests | unit 208 / 208; audit suite 92 / 92; Set A / Set B unchanged |
 | Throughput @100 | 637.3 req/s, one run; within noise, no gain claimed |
 | Decision | **Keep** |
+
+## Cycle 6 — fixes from the PR #2 review (`c139113` … `27267a2`)
+
+The review of PR #2 returned NOT READY TO MERGE. Each finding was fixed in its own commit, with
+the dev half, Set A and Set B as the regression check and the sealed sets left alone.
+
+| Finding | Evidence | Fix | Verified by |
+|---|---|---|---|
+| **B1** quadratic backtracking in the dot-run traversal rule added in cycle 2 | 80 KB of dots: 5,112 ms in `classifyPayload` | Start only at the beginning of a dot run: `(?<!\.)\.{3,}[\/\\]\.{3,}[\/\\]` | 4 ms on the same input; dev half identical |
+| **P1** same defect in the pre-existing DNS base64 rule | 80 KB of `/bin/`: 5,991 ms | Start only at the beginning of a base64 run | 4 ms |
+| 11 more super-linear regexes found by the new scanner (`audit/redos_scan.mjs`, 385 regexes) | 5 more in the classifier, 6 in other services; 2 of those take honeypot input and were reachable **without authentication** | Bounded or anchored rewrites; one replaced by two index scans | Scanner: 13 → 0 of 385; each rewrite compared with its original on attack and look-alike samples (`redosFixes.test.ts`, 39 cases) |
+| **srcIp** decided two security matters | Rate-limit key and review exclusion both read `packet.srcIp`, which the caller writes | Exclusion only for ADMIN + direct loopback + declared header; limiter keyed on principal + TCP peer, on the model path it protects; payloads above 1 MiB refused with 413 | Audit #102 (claimed 10.20.x is still reviewed; verified evaluation is not), #103 (413; injection at the end of a 1 MiB payload detected) |
+| **B2** write-behind lost its buffer on every normal stop | `server.ts` had no SIGINT/SIGTERM handlers | `server/gracefulShutdown.ts`: flush at once, close, flush again, exit 0 | Child process with a real SQLite file: SIGTERM and SIGINT write all 25 rows, SIGKILL writes 0 (control). Real-server SIGTERM check in CI |
+| **C1** CI detection steps could not fail | Both harnesses end with `process.exit(0)` | `--gate` with floors in `audit/regression_gate.json`; dev-half gate pinned by SHA-256; audit suite, ReDoS scan and shutdown check added to CI | Each gate passes on the real floors and exits 1 when one floor is raised above the measured value |
+| **D1** docs and result files disagreed | A stale 172/172, the exit-hook claim, four result files edited by hand | Docs corrected; `audit/results/PROVENANCE.md`; the four files regenerated without samples | Regenerated baselines identical to the edited ones, figure for figure |
+
+Also found and fixed on the way: `seed_adjudication_drill.ts` had been silently broken by the
+10.90.x exclusion (it exists to fill the review queue); verified evaluation traffic no longer
+feeds drift statistics or the learner's retention store; a unit test committed in `0c4f9a0`
+still asserted the old exclusion and failed — the commit went in because the command chain
+checked `grep`'s exit code instead of `vitest`'s (fixed in `c31c91c`).
+
+Detection after all cycle-6 changes: HttpParams dev half in-process, identical to
+candidate-48h-2 at both thresholds and every class (gate output, `regression_gate.json`).
 
 ## Considered and not built
 

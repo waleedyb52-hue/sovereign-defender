@@ -39,8 +39,17 @@ Hashes and the split rule are in `audit/results/external_split_manifest.json`. T
    request counts against the system.
 6. Report the confusion matrix, precision, recall, F1, MCC and 95% Wilson intervals, per class
    and overall, with the dataset SHA-256 and the commit. Never a single blended "efficiency" number.
-7. Never edit a results JSON or a poster figure by hand. Regenerate it.
+7. Never edit a results JSON or a poster figure by hand. Regenerate it. If a file must not carry
+   samples, generate it without them (`SD_EVAL_SEALED=1`, `--no-samples`). This rule was broken
+   once in the 48-hour pass; `audit/results/PROVENANCE.md` records what was edited and the clean
+   regenerated replacements.
 8. If something could not be measured, write that down with the reason.
+9. Evaluation traffic is declared with the `x-sd-evaluation-source: 1` header, which the server
+   honours only from an ADMIN caller on a direct loopback connection. Never by source address:
+   `packet.srcIp` is written by the caller and decides nothing.
+10. Detection floors live in `audit/regression_gate.json`; harnesses run with `--gate` exit 1 if a
+    figure falls below its floor. Raise a floor after a measured gain; lowering one needs the
+    reason in the commit.
 
 ## Leak checks before reporting a number
 

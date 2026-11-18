@@ -168,6 +168,10 @@ Limits: 45-second soak, in-process probe only. Child processes and jobs on timer
    (`globalAdjudication.recordPending`, `data/adjudication.db`, git-ignored). After today's
    runs that queue contains sealed-half payloads. Do not browse the adjudication panel on this
    machine, or clear the store, before rule work.
+   *Resolved later in the pass:* harnesses now declare evaluation traffic with a header that
+   the server honours only from an ADMIN caller on a direct loopback connection, and such
+   traffic never enters the queue. The rows written before that remain (FINAL_ENGINEERING_REPORT
+   section 4c).
 3. **No maintained `libinjection` package exists on npm** (`npm view libinjection` → 404).
    Using it would mean compiling the C library to WASM or a native addon inside the 48 hours.
 

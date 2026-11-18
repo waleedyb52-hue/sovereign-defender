@@ -32,8 +32,13 @@ Read the current file before proposing anything. Do not infer behaviour from rul
    names with apostrophes such as `o'brien`, arithmetic like `price=10-5`, Spanish/Arabic text).
 4. **Normalisation must be bounded and meaning-preserving**: cap input length and decode rounds,
    never decode base64 speculatively on every request, keep matching against the raw form too.
-5. **No catastrophic regex.** Avoid nested quantifiers over overlapping classes; the classifier
-   runs on attacker-controlled input of up to megabytes.
+5. **No super-linear regex.** Run `node audit/redos_scan.mjs` after any regex change; CI fails if
+   any of the server's regexes grows super-linearly. Reading patterns by eye missed 13 of them,
+   including one added during the 48-hour pass. The usual causes: a span like `[^>]*` or
+   `[\s\S]*` that can run past the next occurrence of the pattern's own start (use `[^<>]*`, or a
+   bound), `\s*` at the start of a line-anchored pattern (use `[ \t]*`), and an unanchored run
+   like `\.{3,}` or `[A-Za-z0-9+/]{16,}` that is retried from every position (add a lookbehind so
+   it only starts at the beginning of a run). The route refuses payloads over 1 MiB.
 6. Keep `ClassificationResult` and the `/ai-analyze` response shape unchanged. New evidence goes
    in `signatures`.
 
@@ -55,8 +60,9 @@ justified), `npm run lint` and `npx vitest run` pass.
 ## Verification
 
 ```bash
-npm run lint && npx vitest run
-npx tsx audit/eval_harness.ts && npx tsx audit/eval_holdout_b.ts
+npm run lint && npx vitest run && node audit/redos_scan.mjs
+npx tsx audit/eval_dev_inprocess.ts data/external/httpparams_dev.csv --gate
+npx tsx audit/eval_harness.ts --gate && npx tsx audit/eval_holdout_b.ts --gate
 node scripts/compare-detection.mjs audit/results/baseline_external_dev_2ab323e.json out.json
 ```
 

@@ -1,8 +1,9 @@
 # Sovereign Defender — 48-hour engineering pass, final report
 
-**Date:** 2026-11-15 · **Branch:** `improvement/48h-detection-performance` · **Before:** `2ab323e`
-(code identical to the poster's `989befb`) · **After:** `c435d2e`, tag `candidate-48h-2`
-(sealed sets first scored on `237420e`, tag `candidate-48h-1`; see section 4b)
+**Dates:** 2026-11-15 (pass), 2026-11-18 (review fixes) · **Branch:** `improvement/48h-detection-performance`
+· **Before:** `2ab323e` (code identical to the poster's `989befb`) · **After:** the branch head after
+the review fixes (section 4c). Sealed sets first scored on `237420e` (tag `candidate-48h-1`);
+later scores are labelled re-evaluations.
 
 Detailed tables: [`IMPROVEMENT_EVIDENCE.md`](IMPROVEMENT_EVIDENCE.md) · per-change record:
 [`EXPERIMENT_LOG.md`](EXPERIMENT_LOG.md) · baseline: [`BASELINE_METRICS.md`](BASELINE_METRICS.md).
@@ -13,10 +14,11 @@ Detailed tables: [`IMPROVEMENT_EVIDENCE.md`](IMPROVEMENT_EVIDENCE.md) · per-cha
 |---|---|---|
 | External recall +20 pp, held-out | HttpParams sealed half **40.54% → 97.28%** (+56.7 pp), FP 0 / 9,664 | Yes, in-distribution |
 | — on a second, independent source | Fwaf sealed test **38.94% → 41.60%** (+2.7 pp), FP 9 → 12 of 10,000 | **No** |
-| Throughput +20% (≥ 220 req/s) | 100 clients: **172.8–205.4 → 510.6–555.1 req/s**; interleaved A/B median 176.8 → 454.9 | Yes |
-| p95 at 100 clients not worse | 500.8–583.2 → 212.1–248.3 ms | Yes |
-| No regressions | lint 0 errors, unit 208 / 208, build ok, audit suite 92 / 92, Set B unchanged | Yes |
-| Zero egress | 0 external connection attempts over a 300 s soak (in-process probe) | Yes, within the probe's limits |
+| Throughput +20% | Final code against the baseline, interleaved on the same machine the same day: median **172.6 → 316.9 req/s (+83.6 %)**, ranges 156–181 vs 306–648, no overlap. (Pass-day figures: 172.8–205.4 → 510.6–555.1.) | Yes |
+| p95 at 100 clients not worse | Same interleaved run: median p95 772.5 → 425.1 ms | Yes |
+| No regressions | lint 0 errors, unit 251 / 251, build ok, audit suite 94 / 94 (Windows and Linux CI), Set A / Set B unchanged, dev-half gate at its floors | Yes |
+| No super-linear regex | 0 of 385 regexes in the server (was 13) | Yes |
+| Zero egress | 0 external connection attempts: 300 s soak on `237420e`, 120 s soak on the final code (in-process probe) | Yes, within the probe's limits |
 
 The headline improvement is real and was measured on data no rule was written from. It is also
 narrower than the number suggests: it is an improvement against the payload templates of the
@@ -49,7 +51,7 @@ the 97% figure is quoted.
 | `7a46165` | Merge of `origin/main` with `Data` renamed to `notebooks/cic_ids2018_colab.py` |
 | `ac9dc78` | `server/services/sqlStructure.ts`: linear SQL tokenizer, tried on the text as given and from inside a single- or double-quoted string, scoring syntax not text. Wired into `classifyPayload()` as SQL-family evidence; prose guard still applies to weak signals |
 | `d7ae2a3` | Command-injection shapes requiring a command-line form; dot-run and hex-spelled traversal; sentence-only punctuation in the prose guard |
-| `237420e` | Pending-queue write-behind (labels stay synchronous, readers flush first, exit hook); 10.40.x reserved as an evaluation source |
+| `237420e` | Pending-queue write-behind (labels stay synchronous, readers flush first, exit hook — which turned out not to run on SIGINT/SIGTERM; fixed in 4c); 10.40.x reserved as an evaluation source (replaced in 4c by a server-verified flag) |
 
 ## 4b. After the sealed runs: padding-bypass fix (`c435d2e`, tag `candidate-48h-2`)
 
@@ -73,8 +75,33 @@ independent evidence. Structural cost on 10 MB adversarial filler: 37–65 ms. T
 clients 637.3 req/s in one run — within the run-to-run noise of this laptop; no gain is claimed.
 Zero-egress check not re-run: no network code or dependency changed.
 
-API contracts unchanged: `ClassificationResult` and the `/api/v1/agent/ai-analyze` response
-keep their fields; `classifyPayload()` gained an optional second argument used only by harnesses.
+## 4c. Fixes from the PR #2 review (`c139113` … final)
+
+An engineering and security review of PR #2 returned **NOT READY TO MERGE**. What it found, and
+what was done:
+
+| # | Finding | Severity | Fix | Evidence |
+|---|---|---|---|---|
+| B1 | The dot-run traversal rule added in `d7ae2a3` backtracked quadratically | High, introduced by this PR | Anchored to the start of a dot run | 80 KB of dots: 5,112 ms → 4 ms |
+| P1 | Same defect in the pre-existing DNS base64 rule | High, pre-existing | Anchored to the start of a base64 run | 80 KB of `/bin/`: 5,991 ms → 4 ms |
+| — | 11 further super-linear regexes, found by a new scanner over all 385 regexes in the server | 2 reachable **without authentication** (deception-sandbox input); others behind auth or on model output | Bounded / anchored rewrites, each compared with its original on attack and look-alike samples | `audit/redos_scan.mjs`: 13 → 0; `redosFixes.test.ts` 39 cases |
+| S1 | `packet.srcIp`, written by the caller, keyed the rate limiter and decided exclusion from analyst review | Medium | Review exclusion only for ADMIN + direct loopback + declared header; limiter keyed on principal + TCP peer on the model path it protects; payloads > 1 MiB refused with 413 | Audit #102, #103 |
+| B2 | Write-behind buffer lost on every normal stop: no SIGINT/SIGTERM handlers; the report's exit-hook claim was wrong | Medium | `server/gracefulShutdown.ts` | Real SQLite file in a child process: SIGTERM/SIGINT write 25/25, SIGKILL 0/25 (control). Real server in CI: SIGTERM wrote 20/20, exit 0 |
+| C1 | CI detection steps could not fail (`process.exit(0)` regardless of result) | Medium | `--gate` floors in `audit/regression_gate.json`; dev-half gate pinned by SHA-256; audit suite, ReDoS scan and shutdown check in CI | Each gate exits 1 when a floor is raised above the measured value |
+| D1 | Docs vs results inconsistencies; four result files edited by hand | Low | Docs corrected; files regenerated; `audit/results/PROVENANCE.md` | Regenerated baselines identical to the edited ones |
+
+Changes to the `/api/v1/agent/ai-analyze` contract, both deliberate: a payload above 1,048,576
+characters now gets **413 `PAYLOAD_TOO_LARGE`** instead of being classified; and the self-DoS
+limiter (429) now applies only when an external model is configured, keyed on the caller. On the
+sovereign path no 429 is returned; per-request cost is bounded by the size limit and linear-time
+rules instead. Response fields are unchanged.
+
+Detection after these fixes: HttpParams dev half in-process identical to `candidate-48h-2` at both
+thresholds and every class; Set A and Set B unchanged (all three enforced by the CI gate).
+
+API contracts otherwise unchanged: `ClassificationResult` and the `/api/v1/agent/ai-analyze`
+response keep their fields; `classifyPayload()` gained an optional second argument used only by
+harnesses.
 
 ## 5. Before / after
 
@@ -106,6 +133,24 @@ second source exist to cover that gap.
 
 ### Performance (100 concurrent clients)
 
+Throughput on this laptop moves a lot from day to day: `c435d2e` measured 637.3 req/s on
+2026-11-15 and 255.9 req/s (median of 3) on 2026-11-18. Figures from different days are not
+compared. The final claim rests on interleaved A/B runs on the same day, fresh server and fresh
+database per run:
+
+| Interleaved, 2026-11-18, 3 rounds each | A | B | Change |
+|---|---|---|---|
+| Baseline `2ab323e` (A) vs final code (B) — `perf_ab_2ab323e_vs_27267a2.json` | 172.6 req/s (156.2–181.4), p95 772.5 ms | **316.9 req/s (306.1–647.8), p95 425.1 ms** | **+83.6 %**, ranges separated |
+| `candidate-48h-2` (A) vs final code (B) — `perf_ab_c435d2e_vs_27267a2.json` | 255.9 req/s (235.1–276.8), p95 633.1 ms | 285.4 req/s (267.9–286.0), p95 476.9 ms | +11.5 %, ranges overlap: **no regression from the review fixes** |
+| Failed requests | 0 | 0 | |
+| RSS after load (medians) | 303.3 / 380.0 MB | 377.0 / 340.2 MB | inconsistent between the two runs; follows GC timing. Not heap-profiled |
+
+A single standard benchmark on the final code the same morning read 365.8 / 364.2 req/s
+(`perf_final_99fa259_run*.json`); against the candidates' pass-day figures that looked like a
+34 % drop, which the interleaved run shows was the machine, not the code.
+
+Pass-day figures (2026-11-15), kept for the record:
+
 | | Before | After |
 |---|---|---|
 | Throughput, standard benchmark (2 runs each) | 172.8 / 205.4 req/s | 555.1 / 510.6 req/s |
@@ -128,6 +173,9 @@ on the frozen candidate, `GEMINI_API_KEY` removed, 50 classifier requests then a
 | `/inference-posture` `zeroExternalApiCalls` | true | true |
 | Positive control (`fetch https://example.com` under the probe) | logged as EXTERNAL dns + tcp:443 | same probe, unchanged |
 
+Re-run on the final code after the review fixes (`egress_final_99fa259.json`): 120 s soak,
+0 external, 0 LAN, posture reports zero external calls.
+
 No dependency was added in this pass, so the candidate adds no new outbound path.
 
 Outbound code paths that exist and are **off by default**, found by grep (each trigger read,
@@ -145,11 +193,16 @@ and no host packet capture was taken.
 | Check | Result |
 |---|---|
 | `npm run lint` | 0 errors |
-| `npx vitest run` | 208 / 208 (53 existing + 155 new) |
+| `npx vitest run` | 251 / 251 (53 existing + 198 new), Windows and Linux CI; on Linux the shutdown tests use real OS signals |
 | `npm run build` | succeeds |
-| `npx tsx audit/audit_suite.ts` | 92 / 92 PASS, 0 WARN, 0 FAIL |
+| `npx tsx audit/audit_suite.ts` | 94 / 94 PASS (92 existing + #102, #103), Windows and Linux CI |
+| `node audit/redos_scan.mjs` | 0 of 385 super-linear (was 13) |
+| Detection gates (`--gate`) | dev half, Set A, Set B at their floors; each shown to fail when a floor is raised |
+| Real-server SIGTERM flush (`audit/shutdown_flush_check.mjs`, CI) | 20 / 20 rows written, exit 0 |
 | Set A / Set B | 1 miss (was 2) / unchanged |
 | Write-behind tests with the buffer off | 5 / 5 |
+
+CI evidence is published as annotations on each run, readable without a GitHub login.
 
 ## 8. Environment and reproduction
 
@@ -198,16 +251,27 @@ Expected SHA-256: `payload_full.csv` `a4e62ba1…f03d`; dev half `45cf0f1c…319
   analysed structurally (a cost bound; section 4b). An injection with more than 128 KB of filler
   on both sides is judged by the signature rules alone. The usual padding attack — filler first,
   injection last — is covered at any size.
-- **Rate limit keys on a caller-supplied address.** The `/ai-analyze` self-DoS limiter uses
-  `packet.srcIp` from the request body, so a client can rotate it. Not changed in this pass; it
-  matters for any per-request cost, including the signature rules' ~0.5–1.1 s on a 10 MB body.
-- **Write-behind trade-off.** Up to 50 ms or 256 pending-review suggestions can be lost on a
-  hard kill. Labels are not affected.
+- **No request-count limit on the sovereign path.** After the srcIp fix the self-DoS limiter
+  applies only to the external-model path, keyed on the caller. The local path is bounded per
+  request (1 MiB, linear rules, roughly 0.1 s per MB of signature work) but an authenticated
+  caller can still send many requests. A cost-based per-caller budget is the next step.
+- **Write-behind trade-off.** A normal stop (SIGINT, SIGTERM, Ctrl+C, docker stop) now flushes
+  the buffer. A hard kill (SIGKILL, `taskkill /F`, Windows TerminateProcess, OOM, crash, power
+  loss) still loses up to 50 ms or 256 pending-review rows. Labels and the audit trail are
+  written synchronously and are not affected.
+- **Windows signal delivery is not tested end to end.** One Windows process cannot send SIGTERM
+  to another, so on Windows the shutdown tests raise the signal in-process; real delivery is
+  proven on Linux in CI. Ctrl+C in a Windows console delivers SIGINT, which the same handler
+  covers, but no automated test drives it.
+- **Drift and retention input changed.** Verified evaluation traffic no longer feeds drift
+  statistics or the learner's retention store; before this change harness traffic did.
 - **Single-request latency** (~15 ms) is unexplained and unchanged.
 - **Not measured:** Linux, XDP generic or native, kernel latency, built-bundle throughput, a
   host packet capture. No kernel figure in this report; containment ran in simulation on
   Windows.
-- **CI workflow** has not run on GitHub yet (nothing pushed).
+- **Pre-edit result files are in public history.** Four result files were edited by hand
+  before the review; their originals at `ac9dc78` / `17e0d23` contain a few dozen lines of the
+  unlicensed second source. See `audit/results/PROVENANCE.md`.
 
 ## 10. Git commits and evidence
 
@@ -220,14 +284,18 @@ ac9dc78 feat(detect): structural SQL injection analysis alongside the signature 
 1f54c62 chore(eval): reproducible baseline, dev/sealed split, gates and project skills
 ```
 
-Evidence files: `audit/results/` (baseline_*, sealed_*, reeval_sealed_*, dev_*, full_*, perf_*, perf_ab_*,
-fp_stress_*, dev_miss_analysis_*, fwaf_transfer_diagnosis_*, egress_*, audit_suite_*,
-manifests). Nothing pushed to the remote.
+Review-fix commits after `candidate-48h-2`: `c139113` (7 classifier regexes, scanner),
+`53b3db5` (6 more regexes), `0c4f9a0` + `c31c91c` (srcIp trust), `03d9430` (graceful shutdown),
+`a53f5e4`, `99fa259`, `27267a2` (CI gates, evidence), and the documentation commit.
+
+Evidence files: `audit/results/`, described file by file in
+[`audit/results/PROVENANCE.md`](../audit/results/PROVENANCE.md). The branch is pushed and is
+PR #2; nothing is merged.
 
 ## 11. Recommended next engineering priorities
 
-0. **Key the `/ai-analyze` rate limit on the socket address**, not `packet.srcIp`, keeping an
-   explicit allowance for the evaluation harnesses.
+0. **A cost-based per-caller budget on the sovereign path** (bytes classified per minute per
+   principal), now that identity comes from the server rather than the request body.
 1. **Third independent evaluation set** with class labels (for example a SQLi corpus not built
    with sqlmap), scored once, before any further SQLi claim.
 2. **Second-source gap, by size:** encoded command injection (commix-style `$(echo …)`,

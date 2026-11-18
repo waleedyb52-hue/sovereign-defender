@@ -1,0 +1,18 @@
+{
+  "source": "data/external2/badqueries.txt",
+  "ranks": "5000..14999 (disjoint from the sealed test)",
+  "n": 10000,
+  "detectedAt25": 4057,
+  "recallAt25": 0.4057,
+  "missed": 5943,
+  "missedByShape": {
+    "other": 2493,
+    "scanner probe of a known script path (no payload)": 969,
+    "shell / command shapes": 940,
+    "script/event-handler markup (XSS-like)": 679,
+    "plain path, no parameters": 466,
+    "remote file inclusion / URL in parameter": 220,
+    "traversal or sensitive file path": 120,
+    "SQL words": 56
+  }
+}

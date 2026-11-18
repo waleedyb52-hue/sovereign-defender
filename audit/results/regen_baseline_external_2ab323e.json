@@ -1,0 +1,114 @@
+{
+  "dataset": "HttpParamsDataset (Morzeux, 2016, MIT)",
+  "file": "C:/Users/walee/OneDrive/Desktop/sovereign-defender/sovereign-defender/data/external/payload_full.csv",
+  "sha256": "a4e62ba13435ad3dd583c5790db2175629020fc41c56e1b26baa02a9ae45f03d",
+  "samples": 31067,
+  "failedRequests": 0,
+  "seconds": 326.8,
+  "samplesPerSecond": 95.1,
+  "sealedRun": true,
+  "all": {
+    "n": 31067,
+    "tp": 4813,
+    "fn": 6950,
+    "fp": 0,
+    "tn": 19304,
+    "precision": 1,
+    "recall": 0.40916432882768,
+    "f1": 0.580719111969112,
+    "fpr": 0,
+    "accuracy": 0.776289953970451,
+    "mcc": 0.5484976817197048,
+    "recallCI": [
+      0.40030993907361506,
+      0.41807803004802246
+    ],
+    "precisionCI": [
+      0.9992024649513074,
+      1
+    ],
+    "fprCI": [
+      -1.3549830666766617e-20,
+      0.00019896579221988228
+    ],
+    "projectedPrecisionAt2pct": 1,
+    "falseAlarmsPer10k": 0
+  },
+  "deduplicated": {
+    "n": 31067,
+    "tp": 4813,
+    "fn": 6950,
+    "fp": 0,
+    "tn": 19304,
+    "precision": 1,
+    "recall": 0.40916432882768,
+    "f1": 0.580719111969112,
+    "fpr": 0,
+    "accuracy": 0.776289953970451,
+    "mcc": 0.5484976817197048,
+    "recallCI": [
+      0.40030993907361506,
+      0.41807803004802246
+    ],
+    "precisionCI": [
+      0.9992024649513074,
+      1
+    ],
+    "fprCI": [
+      -1.3549830666766617e-20,
+      0.00019896579221988228
+    ],
+    "projectedPrecisionAt2pct": 1,
+    "falseAlarmsPer10k": 0
+  },
+  "byType": {
+    "norm": {
+      "n": 19304,
+      "detected": 0,
+      "rate": 0,
+      "ci": [
+        -1.3549830666766617e-20,
+        0.00019896579221988228
+      ]
+    },
+    "sqli": {
+      "n": 10852,
+      "detected": 4271,
+      "rate": 0.3935680058975304,
+      "ci": [
+        0.3844153857660026,
+        0.40279595305824833
+      ]
+    },
+    "xss": {
+      "n": 532,
+      "detected": 451,
+      "rate": 0.8477443609022557,
+      "ci": [
+        0.8147294476704974,
+        0.875773118759582
+      ]
+    },
+    "cmdi": {
+      "n": 89,
+      "detected": 6,
+      "rate": 0.06741573033707865,
+      "ci": [
+        0.03126095907688764,
+        0.139369447982017
+      ]
+    },
+    "path-traversal": {
+      "n": 290,
+      "detected": 85,
+      "rate": 0.29310344827586204,
+      "ci": [
+        0.24369205619033726,
+        0.3479246515869142
+      ]
+    }
+  },
+  "missedExamples": [],
+  "fpExamples": [],
+  "finishedAt": "2026-11-18T04:48:57.253Z"
+}
