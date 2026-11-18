@@ -1,0 +1,214 @@
+{
+  "source": "Zenodo 17178461 — A Thirty-Day Dataset of Malicious HTTP Requests Blocked by OWASP ModSecurity on a Production Web Server",
+  "license": "CC BY 4.0",
+  "published": "2025-09-22",
+  "archive": {
+    "name": "owasp.zip",
+    "bytes": 29524147,
+    "md5": "95b7a8237abc163d8ca31e49f7318efd",
+    "sha256": "3c4c976f58cd2da61a543a237ede770529ceee59cdb09295a5998d420a8b30b8"
+  },
+  "logFiles": [
+    {
+      "file": "01-Aug-2025/modsec_audit.anon.log",
+      "bytes": 15700182,
+      "sha256": "e9edee99a0ba06e2870793a5e901c67e23572004a295ca61d0a1af3ee70b8168"
+    },
+    {
+      "file": "02-Aug-2025/modsec_audit.anon.log",
+      "bytes": 14011797,
+      "sha256": "e265a0753adbfd82b44c408e6fae7eeb0b0b634647513c9dfb619afb13dbce0b"
+    },
+    {
+      "file": "03-Aug-2025/modsec_audit.anon.log",
+      "bytes": 13688518,
+      "sha256": "d249804b48d4e317d553d609a16bff00db0e0399277b0f0e32608b97fbba73d7"
+    },
+    {
+      "file": "04-Aug-2025/modsec_audit.anon.log",
+      "bytes": 19051086,
+      "sha256": "b90ff25089610f3b4bdcc716b38c28d2682a87328fffe48e7c5f046050656071"
+    },
+    {
+      "file": "05-Aug-2025/modsec_audit.anon.log",
+      "bytes": 12284012,
+      "sha256": "232d44048cfe1deafa21e7b6da586b011b2f10e0e48dcabe69d37162014e9ce5"
+    },
+    {
+      "file": "06-Aug-2025/modsec_audit.anon.log",
+      "bytes": 9655572,
+      "sha256": "1834d6b2cbcf7f0caa9a02793ad72eb22740614096d2474bdc1f17ea4544209a"
+    },
+    {
+      "file": "07-Aug-2025/modsec_audit.anon.log",
+      "bytes": 5207452,
+      "sha256": "30063af45ee0892d0f3d08b8a6de1bd8e7054cccc79714f97391b744e5715f64"
+    },
+    {
+      "file": "08-Aug-2025/modsec_audit.anon.log",
+      "bytes": 6966788,
+      "sha256": "acd427e2eacd76b39713dab4485534dad08fd8a6de81fcdfb458439ad1c89320"
+    },
+    {
+      "file": "09-Aug-2025/modsec_audit.anon.log",
+      "bytes": 9334725,
+      "sha256": "65f9f592a65d719028b8d8d9c1ae8d2e0c41f0a9dd7c5167a908a1742a3e7aaa"
+    },
+    {
+      "file": "10-Aug-2025/modsec_audit.anon.log",
+      "bytes": 18915840,
+      "sha256": "d091a3332d6f1ebb7703a577cd6ac022fd94586fde43665eb162e37f87941958"
+    },
+    {
+      "file": "11-Aug-2025/modsec_audit.anon.log",
+      "bytes": 8923257,
+      "sha256": "e429cada2b44aea7da627d9e7b9faa2fa0590ed48711753822fd78ec9f6d642a"
+    },
+    {
+      "file": "12-Aug-2025/modsec_audit.anon.log",
+      "bytes": 6696690,
+      "sha256": "01010a1bfabbd7b75fee039760ac6005f498e40801efa3481f7e3140dfc66a3a"
+    },
+    {
+      "file": "13-Aug-2025/modsec_audit.anon.log",
+      "bytes": 14787975,
+      "sha256": "251818f8ca475e21307cf748398df7b349075a8933001a4f35722e8fb83b91ab"
+    },
+    {
+      "file": "14-Aug-2025/modsec_audit.anon.log",
+      "bytes": 25280186,
+      "sha256": "3fb551068ea6bf343dedc5e9d0c0d7908735154933d2c9b2d83af88217bdc9df"
+    },
+    {
+      "file": "15-Aug-2025/modsec_audit.anon.log",
+      "bytes": 29819162,
+      "sha256": "8bc6ae7e900270c68e70a9158ebd76cfd345063be7b0bedd83b0b4b0bf7d5f35"
+    },
+    {
+      "file": "16-Aug-2025/modsec_audit.anon.log",
+      "bytes": 28610507,
+      "sha256": "03301927a82403e5400af4f22e5a614bbec32c1e23b80eb98643ecd0bb0c90e1"
+    },
+    {
+      "file": "17-Aug-2025/modsec_audit.anon.log",
+      "bytes": 16854779,
+      "sha256": "9bea3219dcd9f39985122cdbdb4545c98d0c94fb9f5bcf36fe2056a9be072bf2"
+    },
+    {
+      "file": "18-Aug-2025/modsec_audit.anon.log",
+      "bytes": 9562224,
+      "sha256": "ea0bc64e0b39cbde66186460aa9197ba773233cce2ce0674687674968fcc90e7"
+    },
+    {
+      "file": "19-Aug-2025/modsec_audit.anon.log",
+      "bytes": 10998728,
+      "sha256": "ef5a960ca07f6f6a91fcd8e47bac82f179818026ae04a61866be9f15c16819b8"
+    },
+    {
+      "file": "20-Aug-2025/modsec_audit.anon.log",
+      "bytes": 7756179,
+      "sha256": "72647cec73408ef3ec0c2845fc361f758337961a78bb85c7fd64fdfb2065d999"
+    },
+    {
+      "file": "21-Aug-2025/modsec_audit.anon.log",
+      "bytes": 7856891,
+      "sha256": "3600baddfdee7e746fa7f06a9758fa99d630e0743b2e2e8418dad8fac0526dae"
+    },
+    {
+      "file": "22-Aug-2025/modsec_audit.anon.log",
+      "bytes": 7650484,
+      "sha256": "7acba81f46dd8285908af71e58306ce1d6db3278d86111881e9f0fced5ae89f8"
+    },
+    {
+      "file": "23-Aug-2025/modsec_audit.anon.log",
+      "bytes": 10238170,
+      "sha256": "c9069bda57b9bd59ad9a4b91ef0519dd44347d5ccf253baebb699bea3aa8f255"
+    },
+    {
+      "file": "24-Aug-2025/modsec_audit.anon.log",
+      "bytes": 9168597,
+      "sha256": "10db8569419b15a19a79be9b4109eea83e21817bb8611212217bed212bf2f962"
+    },
+    {
+      "file": "25-Aug-2025/modsec_audit.anon.log",
+      "bytes": 9567254,
+      "sha256": "b0ac7beacb2ae921f615805871c83ec658bea9bf05197d4d3b2fe4029fcec020"
+    },
+    {
+      "file": "27-Jul-2025/modsec_audit.anon.log",
+      "bytes": 7879784,
+      "sha256": "22424a36f73115a0dd6b06aa7a55aabd4959508a21761343db2dc24e5bba64ac"
+    },
+    {
+      "file": "28-Jul-2025/modsec_audit.anon.log",
+      "bytes": 34162911,
+      "sha256": "c6986082519713f0f34f3c7564aeb8d406d5d0a27422781cb64fed40bde5ee8f"
+    },
+    {
+      "file": "29-Jul-2025/modsec_audit.anon.log",
+      "bytes": 7871082,
+      "sha256": "c9013bfc843e2ee17d6e61ddfef3d341ee183ba5f022f11b452d85354f6efb50"
+    },
+    {
+      "file": "30-Jul-2025/modsec_audit.anon.log",
+      "bytes": 8257881,
+      "sha256": "bc501e078c4e2ced796ded7ef606a107e0f74872b825e7723b395c46c05c1329"
+    },
+    {
+      "file": "31-Jul-2025/modsec_audit.anon.log",
+      "bytes": 11204898,
+      "sha256": "dfbf2544119bd4d1cfcfc39a636e93cb173bce6a98a7b9accf07afed6b61d806"
+    }
+  ],
+  "records": 151845,
+  "recordsWithoutRequestLine": 0,
+  "uniquePayloads": 25853,
+  "duplicatesRemoved": 125992,
+  "split": "SHA-256(payload)[0] & 1 == 0 -> test, else reserve",
+  "test": {
+    "n": 12949,
+    "sha256": "740bd13ec8cd569331ba863b0a6da8c739ef7d16c5edfc50ec61a12e7b29a32d",
+    "byClass": {
+      "php": 128,
+      "lfi": 905,
+      "non-payload": 5263,
+      "rce": 733,
+      "sqli": 1159,
+      "unattributed": 4671,
+      "rfi": 4,
+      "xss": 75,
+      "java": 9,
+      "session": 1,
+      "generic": 1
+    }
+  },
+  "reserve": {
+    "n": 12904,
+    "sha256": "28bc8ff7baef26eb8db8209a22b5ca8ec2d96edf15aa1a22f8a2680ddc5fb18f",
+    "byClass": {
+      "non-payload": 5321,
+      "rce": 716,
+      "sqli": 1182,
+      "unattributed": 4560,
+      "lfi": 899,
+      "xss": 83,
+      "php": 121,
+      "rfi": 8,
+      "java": 13,
+      "generic": 1
+    },
+    "note": "not scored; kept for a later independent check"
+  },
+  "payloadFamilies": [
+    "sqli",
+    "xss",
+    "rce",
+    "lfi",
+    "rfi",
+    "php",
+    "generic",
+    "java",
+    "session"
+  ],
+  "builtAt": "2026-11-18T14:06:22.455Z"
+}

@@ -627,13 +627,15 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className="rounded-xl border border-[#0e3a44] bg-[#03070c] p-4">
                       <div className="text-xs text-[#8aa4b8] uppercase">
-                        {isAr ? 'معدل الحزم المختبر' : 'Tested Packet Ingress'}
+                        {isAr ? 'معدل الحزم (غير مُقاس)' : 'Packet Ingress (not measured)'}
                       </div>
                       <div className="mt-1 font-mono text-2xl font-bold text-white">
-                        5,000,000 PPS
+                        {isAr ? 'غير مُقاس' : 'Not measured'}
                       </div>
                       <div className="mt-1 text-[11px] text-[#10b981]">
-                        {isAr ? 'حجم التدفق: 56.8 جيجابت/ث' : 'Throughput: 56.8 Gbps'}
+                        {isAr
+                          ? 'لا يوجد ملف قياس لهذا الرقم؛ XDP الأصلي لم يُتحقق منه'
+                          : 'No measurement file exists for this figure; native XDP is unverified'}
                       </div>
                     </div>
                     <div className="rounded-xl border border-[#0e3a44] bg-[#03070c] p-4">
@@ -641,10 +643,12 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                         {isAr ? 'الحزم المسقطة بسرعة العتاد' : 'Hardware Wire-Speed Drops'}
                       </div>
                       <div className="mt-1 font-mono text-2xl font-bold text-[#f43f5e]">
-                        4,825,000 Pkts
+                        {isAr ? 'غير مُقاس' : 'Not measured'}
                       </div>
                       <div className="mt-1 text-[11px] text-[#8aa4b8]">
-                        {isAr ? 'معدل الإسقاط XDP: 96.5%' : 'XDP Drop Ratio: 96.5%'}
+                        {isAr
+                          ? 'لا يوجد ملف قياس لهذا الرقم؛ XDP الأصلي لم يُتحقق منه'
+                          : 'No measurement file exists for this figure; native XDP is unverified'}
                       </div>
                     </div>
                     <div className="rounded-xl border border-[#0e3a44] bg-[#03070c] p-4">
@@ -652,10 +656,12 @@ export const SystemComplianceReport: React.FC<ComplianceReportProps> = ({
                         {isAr ? 'تأخير حلقة أحداث Node.js' : 'Event Loop Lag Delay'}
                       </div>
                       <div className="mt-1 font-mono text-2xl font-bold text-[#10b981]">
-                        1.84 ms
+                        {isAr ? 'غير مُقاس' : 'Not measured'}
                       </div>
                       <div className="mt-1 text-[11px] text-[#10b981]">
-                        {isAr ? 'أقصى تأخير: 3.2ms (ممتاز)' : 'Max Delay: 3.2ms (Safe < 15ms)'}
+                        {isAr
+                          ? 'لا يوجد ملف قياس لهذا الرقم؛ XDP الأصلي لم يُتحقق منه'
+                          : 'No measurement file exists for this figure; native XDP is unverified'}
                       </div>
                     </div>
                   </div>

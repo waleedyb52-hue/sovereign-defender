@@ -151,7 +151,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                 {isAr ? 'العينات المتعلمة:' : 'Learned Samples:'}
               </span>
               <span className="text-2xl font-black text-cyan-400">
-                {baseline?.sampleCount.toLocaleString() || '20,000'}
+                {baseline?.sampleCount?.toLocaleString() ?? (isAr ? 'غير متاح' : 'N/A')}
               </span>
               <span className="block text-[9px] font-bold text-emerald-400">ONLINE LEARNING</span>
             </div>
@@ -179,7 +179,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
         {/* Left Column: Baseline Statistical Profile & Threshold Tuner (6 Cols) */}
         <div className="space-y-5 lg:col-span-6">
           {/* Baseline Metric Cards */}
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <BarChart3 className="h-4 w-4 text-cyan-400" />
@@ -272,7 +272,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
           </div>
 
           {/* Active Drift Flags Log */}
-          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-xl shadow-[0_0_20px_rgba(0,255,255,0.08)]">
+          <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/95 p-5 shadow-[0_0_20px_rgba(0,255,255,0.08)] shadow-xl">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
@@ -344,7 +344,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                   step="0.1"
                   value={testReqRate}
                   onChange={e => setTestReqRate(parseFloat(e.target.value))}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white shadow-[0_0_20px_rgba(0,255,255,0.08)] focus:border-cyan-500 focus:outline-none"
                 />
               </div>
 
@@ -359,7 +359,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                   step="0.01"
                   value={testEntropy}
                   onChange={e => setTestEntropy(parseFloat(e.target.value))}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white shadow-[0_0_20px_rgba(0,255,255,0.08)] focus:border-cyan-500 focus:outline-none"
                 />
               </div>
 
@@ -371,7 +371,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                   type="number"
                   value={testPacketSize}
                   onChange={e => setTestPacketSize(parseInt(e.target.value))}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white focus:border-cyan-500 focus:outline-none shadow-[0_0_20px_rgba(0,255,255,0.08)]"
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 font-mono text-xs text-white shadow-[0_0_20px_rgba(0,255,255,0.08)] focus:border-cyan-500 focus:outline-none"
                 />
               </div>
             </div>
@@ -430,9 +430,7 @@ export const BehavioralAnomalyStudio: React.FC<BehavioralAnomalyStudioProps> = (
                 </div>
                 <div className="rounded bg-slate-950/80 p-2">
                   <span className="block text-[10px] text-slate-400">Δ Z(Entropy):</span>
-                  <span className="font-bold text-cyan-300">
-                    {evalResult.deviations.zEntropy}σ
-                  </span>
+                  <span className="font-bold text-cyan-300">{evalResult.deviations.zEntropy}σ</span>
                 </div>
                 <div className="rounded bg-slate-950/80 p-2">
                   <span className="block text-[10px] text-slate-400">Δ Z(Size):</span>
