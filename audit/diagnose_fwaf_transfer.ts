@@ -7,14 +7,19 @@
  * second source contains that the first does not. It changes nothing and is not a score:
  * the shapes below are heuristics for describing data, not detection rules.
  *
- * Run:  npx tsx audit/diagnose_fwaf_transfer.ts data/external2/badqueries.txt [N=10000] [out.json]
+ * Run:  npx tsx audit/diagnose_fwaf_transfer.ts data/external2/badqueries.txt [N=10000] [out.json] [--no-samples]
+ *
+ * --no-samples: counts only; no example lines in the JSON or on the console. The second source
+ * states no licence, so result files committed to the repository are written this way.
  */
 import fs from 'fs';
 import crypto from 'crypto';
 import { classifyPayload } from '../server/services/payloadClassifier.service.js';
 
-const file = process.argv[2];
-const N = Number(process.argv[3] || 10000);
+const noSamples = process.argv.includes('--no-samples');
+const positional = process.argv.slice(2).filter(a => !a.startsWith('--'));
+const file = positional[0];
+const N = Number(positional[1] || 10000);
 if (!file || !fs.existsSync(file) || /sealed/i.test(file)) {
   console.error('Usage: npx tsx audit/diagnose_fwaf_transfer.ts <badqueries.txt> [N] [out.json]');
   process.exit(2);
@@ -50,7 +55,7 @@ const out = {
   source: file, ranks: `5000..${5000 + sample.length - 1} (disjoint from the sealed test)`, n: sample.length,
   detectedAt25: detected, recallAt25: +(detected / sample.length).toFixed(4), missed: missed.length,
   missedByShape: Object.fromEntries(Object.entries(buckets).sort((a, b) => b[1] - a[1])),
-  examples: examplesBy
+  ...(noSamples ? {} : { examples: examplesBy })
 };
-if (process.argv[4]) fs.writeFileSync(process.argv[4], JSON.stringify(out, null, 2) + '\n');
+if (positional[2]) fs.writeFileSync(positional[2], JSON.stringify(out, null, 2) + '\n');
 console.log(JSON.stringify(out, null, 2));

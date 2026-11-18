@@ -8,14 +8,19 @@
  * source's "good" label is noisy (it contains real attacks), so every newly flagged line is
  * printed for a human to judge rather than counted as a false alarm automatically.
  *
- * Run:  npx tsx audit/fp_stress_dev.ts data/external2/goodqueries.txt [N=100000] [out.json]
+ * Run:  npx tsx audit/fp_stress_dev.ts data/external2/goodqueries.txt [N=100000] [out.json] [--no-samples]
+ *
+ * --no-samples: counts only; neither the JSON nor the console gets a sample line. The second
+ * source states no licence, so result files committed to the repository are written this way.
  */
 import fs from 'fs';
 import crypto from 'crypto';
 import { classifyPayload } from '../server/services/payloadClassifier.service.js';
 
-const file = process.argv[2];
-const N = Number(process.argv[3] || 100000);
+const noSamples = process.argv.includes('--no-samples');
+const positional = process.argv.slice(2).filter(a => !a.startsWith('--'));
+const file = positional[0];
+const N = Number(positional[1] || 100000);
 if (!file || !fs.existsSync(file)) { console.error('Usage: npx tsx audit/fp_stress_dev.ts <goodqueries.txt> [N] [out.json]'); process.exit(2); }
 const sha = (s: string) => crypto.createHash('sha256').update(s).digest('hex');
 const lines = [...new Set(fs.readFileSync(file, 'utf-8').split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0 && l.length <= 4000))];
@@ -35,7 +40,8 @@ for (const thr of [55, 25]) {
   }
   out.thresholds[thr] = { flaggedWithoutStructure: before, flaggedWithStructure: after, flaggedOnlyByStructure: added };
 }
-out.flaggedOnlyByStructure = newly;
-if (process.argv[4]) fs.writeFileSync(process.argv[4], JSON.stringify(out, null, 2) + '\n');
+out.flaggedOnlyByStructureCount = newly.length;
+if (!noSamples) out.flaggedOnlyByStructure = newly;
+if (positional[2]) fs.writeFileSync(positional[2], JSON.stringify(out, null, 2) + '\n');
 console.log(JSON.stringify(out.thresholds, null, 2));
-for (const r of newly) console.log(`[${r.score}] ${r.payload}   {${r.signatures.join(' | ')}}`);
+if (!noSamples) for (const r of newly) console.log(`[${r.score}] ${r.payload}   {${r.signatures.join(' | ')}}`);
