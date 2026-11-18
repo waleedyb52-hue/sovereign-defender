@@ -57,6 +57,7 @@ import { globalContinualLearner, decidePromotion, type LabelledSample } from './
 import { globalIterativeRetrieval } from './server/services/iterativeRetrieval.service.js';
 import { corroborate, corroborationEnabled } from './server/services/corpusCorroboration.service.js';
 import { globalAdjudication, EVALUATION_SOURCE_HEADER } from './server/services/adjudication.service.js';
+import { installGracefulShutdown } from './server/gracefulShutdown.js';
 import { globalKernelMitigationDriver } from './server/services/kernelMitigationDriver.js';
 import { globalSelfHealingLedger } from './server/services/selfHealingLedger.service.js';
 import { globalInLineInterceptionEngine } from './server/services/inLineInterception.service.js';
@@ -7683,6 +7684,14 @@ async function startServer() {
       console.log('  └─────────────────────────────────────────────────────────────────────┘');
       console.log('');
     }
+  });
+
+  // Ctrl+C, docker stop and systemd send SIGINT/SIGTERM, which by default end Node without
+  // running 'exit' handlers. The adjudication queue is written behind the request path, so
+  // without this every normal stop could drop up to 50 ms of detections awaiting review.
+  installGracefulShutdown({
+    server: httpServer,
+    flush: [{ name: 'adjudication pending queue', run: () => globalAdjudication.flushPending() }]
   });
 }
 
