@@ -1,0 +1,124 @@
+{
+  "finishedAt": "2026-11-15T16:46:14.391Z",
+  "node": "v24.20.0",
+  "platform": "win32",
+  "method": {
+    "sizes": [
+      4000,
+      16000,
+      64000
+    ],
+    "confirmBudgetMs": 150,
+    "perRegexDeadlineMs": 20000
+  },
+  "files": 46,
+  "regexes": 385,
+  "scanned": 385,
+  "seconds": 98,
+  "superLinear": [
+    {
+      "file": "server/services/adversaryProfiler.service.ts",
+      "line": 91,
+      "source": "select .* from|dump|export|tar |zip ",
+      "flags": "i",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"SELECT \" repeated: 1.9 ms @4000, 24.8 ms @16000, 465 ms @64000"
+    },
+    {
+      "file": "server/services/aiThreatAgent.service.ts",
+      "line": 56,
+      "source": "(<script[^>]*>|onerror\\s*=|onload\\s*=|javascript:)",
+      "flags": "i",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"<script \" repeated: 0.8 ms @4000, 14.9 ms @16000, 433 ms @64000"
+    },
+    {
+      "file": "server/services/httpTrafficTelemetry.service.ts",
+      "line": 905,
+      "source": "\\{[\\s\\S]*\\}",
+      "flags": "",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"{\" repeated: 6.4 ms @4000, 162.1 ms @16000, 2164 ms @64000"
+    },
+    {
+      "file": "server/services/liveDeceptionSandbox.service.ts",
+      "line": 327,
+      "source": "\\s*(?:\\|\\||&&|;|\\|)\\s*",
+      "flags": "",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \" \" repeated: 12.3 ms @4000, 233.8 ms @16000, 3663 ms @64000"
+    },
+    {
+      "file": "server/services/payloadClassifier.service.ts",
+      "line": 94,
+      "source": "<\\s*(svg|img|iframe|object|embed)[^>]*\\bon\\w+\\s*=",
+      "flags": "i",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"<svg \" repeated: 1.5 ms @4000, 31.5 ms @16000, 663 ms @64000"
+    },
+    {
+      "file": "server/services/payloadClassifier.service.ts",
+      "line": 106,
+      "source": "(\\.{3,}[\\/\\\\]){2,}",
+      "flags": "",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \".\" repeated: 10.1 ms @4000, 211.1 ms @16000, 4513 ms @64000"
+    },
+    {
+      "file": "server/services/payloadClassifier.service.ts",
+      "line": 147,
+      "source": "\\{\\{[^}]*[*+\\-/][^}]*\\}\\}",
+      "flags": "",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"{\" repeated: 13.6 ms @4000, 194.8 ms @16000, 3668 ms @64000"
+    },
+    {
+      "file": "server/services/payloadClassifier.service.ts",
+      "line": 164,
+      "source": "(%0d%0a|[\\r\\n])\\s*(set-cookie|location|content-length)\\s*:",
+      "flags": "i",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"\\n\" repeated: 24.3 ms @4000, 337.2 ms @16000, 4792 ms @64000"
+    },
+    {
+      "file": "server/services/payloadClassifier.service.ts",
+      "line": 191,
+      "source": "^\\s*host\\s*:\\s*\\S+[\\s\\S]*x-forwarded-host\\s*:",
+      "flags": "im",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"\\r\\n\" repeated: 14.2 ms @4000, 278.3 ms @16000, 4929 ms @64000"
+    },
+    {
+      "file": "server/services/payloadClassifier.service.ts",
+      "line": 197,
+      "source": "\\b[A-Za-z0-9+/]{16,}={0,2}\\.[A-Za-z0-9+/]{16,}={0,2}\\.",
+      "flags": "",
+      "verdict": "TIMEOUT",
+      "detail": "no result within 20 s"
+    },
+    {
+      "file": "server/services/payloadClassifier.service.ts",
+      "line": 198,
+      "source": "\\b(attacker|exfil|c2)[-.][a-z0-9-]*\\.(com|net|io|xyz)\\b",
+      "flags": "i",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"c2-\" repeated: 9.9 ms @4000, 86.4 ms @16000, 1841 ms @64000"
+    },
+    {
+      "file": "server/services/threatMemory.service.ts",
+      "line": 763,
+      "source": "^\\s*(system|assistant|user|developer)\\s*:",
+      "flags": "gim",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"\\r\\n\" repeated: 11.6 ms @4000, 265.9 ms @16000, 7203 ms @64000"
+    },
+    {
+      "file": "server/services/threatMemory.service.ts",
+      "line": 764,
+      "source": "<\\/?(system|assistant|user|instruction|untrusted_payload|retrieved_corpus_evidence)[^>]*>",
+      "flags": "gi",
+      "verdict": "SUPER_LINEAR",
+      "detail": "input \"<user \" repeated: 3.1 ms @4000, 39.1 ms @16000, 647 ms @64000"
+    }
+  ]
+}

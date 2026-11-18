@@ -902,9 +902,12 @@ Provide a 2-sentence technical summary in English and Arabic explaining the mali
         });
 
         const text = response.text || '';
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
+        // First "{" to last "}" — what /\{[\s\S]*\}/ matched, without its quadratic
+        // backtracking on text full of unmatched braces.
+        const open = text.indexOf('{');
+        const close = text.lastIndexOf('}');
+        if (open !== -1 && close > open) {
+          const parsed = JSON.parse(text.slice(open, close + 1));
           if (parsed.summaryEn) aiSummaryEn = parsed.summaryEn;
           if (parsed.summaryAr) aiSummaryAr = parsed.summaryAr;
           if (parsed.threatScore) threatScore = parsed.threatScore;
