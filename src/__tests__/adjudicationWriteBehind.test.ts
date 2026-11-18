@@ -46,12 +46,17 @@ describe('adjudication pending queue — write-behind', () => {
     expect(store.recordPending({ ...base, payload: 'rule on me' })).toBeNull();
   });
 
-  it('evaluation sources, including the external-dataset harness, never enter the queue', () => {
+  it('only the server-verified evaluation flag keeps traffic out of the queue', () => {
     const store = new AdjudicationService(':memory:');
+    // A claimed source address is the caller's statement and must not exclude anything.
     for (const ip of ['10.20.0.1', '10.30.1.2', '10.40.3.4', '10.80.0.9', '10.90.5.5']) {
-      expect(store.recordPending({ ...base, payload: `eval ${ip}`, srcIp: ip })).toBeNull();
+      expect(store.recordPending({ ...base, payload: `claimed ${ip}`, srcIp: ip })).not.toBeNull();
     }
-    expect(store.queue(50)).toHaveLength(0);
+    // The flag the route sets after verifying ADMIN + direct loopback + declared evaluation.
+    expect(store.recordPending({ ...base, payload: 'verified evaluation', isEvaluationSource: true })).toBeNull();
+    const queued = store.queue(50).map(r => r.payloadSample);
+    expect(queued).toHaveLength(5);
+    expect(queued).not.toContain('verified evaluation');
   });
 
   it('stats count buffered rows', () => {
